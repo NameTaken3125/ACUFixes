@@ -27,6 +27,10 @@ namespace Base
 	bool Shutdown();
 	bool Detach();
 
+    // To be implemented by user.
+    void ImGuiLayer_WhenMenuIsOpen();
+    void ImGuiLayer_EvenWhenMenuIsClosed();
+
 	namespace Data
 	{
 		extern HMODULE                 hModule;

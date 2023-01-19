@@ -32,8 +32,10 @@ HRESULT PRESENT_CALL Base::Hooks::Present(IDXGISwapChain* thisptr, UINT SyncInte
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
+    Base::ImGuiLayer_EvenWhenMenuIsClosed();
 	if (Data::ShowMenu)
 	{
+        Base::ImGuiLayer_WhenMenuIsOpen();
 		ImGui::Begin("ImGui Window");
 		ImGui::Text("Test ImGUI Window");
 		if (ImGui::Button("Detach"))
