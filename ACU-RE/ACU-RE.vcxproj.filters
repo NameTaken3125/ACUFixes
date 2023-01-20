@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="src\framework.h" />
+    <ClInclude Include="src\pch.h" />
+    <ClInclude Include="inc\basic_types.h" />
+    <ClInclude Include="inc\CameraManager.h" />
+    <ClInclude Include="inc\MandatoryUniverseComponent.h" />
+    <ClInclude Include="inc\ManagedObject.h" />
+    <ClInclude Include="inc\ACUPlayerCameraComponent.h" />
+    <ClInclude Include="inc\Component.h" />
+    <ClInclude Include="inc\Entity.h" />
+    <ClInclude Include="inc\BaseEntity.h" />
+    <ClInclude Include="inc\World.h" />
+    <ClInclude Include="inc\BhvAssassin.h" />
+    <ClInclude Include="inc\CharacterAI.h" />
+    <ClInclude Include="inc\ACUGetSingletons.h" />
+    <ClInclude Include="inc\SmallArray.h" />
+    <ClInclude Include="inc\Statechart.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\pch.cpp" />
+    <ClCompile Include="src\ACU-RE.cpp" />
+    <ClCompile Include="src\ACUPlayerCameraComponent.cpp" />
+    <ClCompile Include="src\World.cpp" />
+    <ClCompile Include="src\BhvAssassin.cpp" />
+    <ClCompile Include="src\ACUGetSingletons.cpp" />
+  </ItemGroup>
+</Project>
