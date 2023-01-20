@@ -11,5 +11,7 @@
 #include <imgui/imgui_impl_dx11.h>
 
 #include <memory>
+#include <vector>
+#include <array>
 #include <optional>
 #include <iostream>

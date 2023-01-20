@@ -1,6 +1,6 @@
 #pragma once
 
-#include "vmath.h"
+#include "vmath/vmath.h"
 
 #include "Component.h"
 

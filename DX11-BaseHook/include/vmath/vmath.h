@@ -2245,6 +2245,17 @@ public:
 
 		return ret;
 	}
+    template<typename VecType>
+	static Matrix4<T> createTranslation(const Vector3<VecType>& vec3)
+	{
+		Matrix4 ret;
+		ret.at(3, 0) = vec3.x;
+		ret.at(3, 1) = vec3.y;
+		ret.at(3, 2) = vec3.z;
+		ret.at(3, 3) = 1;
+
+		return ret;
+	}
 	
 	/**
 	 * Create scale matrix with @a sx, @a sy, and @a sz

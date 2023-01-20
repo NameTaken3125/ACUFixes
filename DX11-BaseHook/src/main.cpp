@@ -75,22 +75,28 @@ void SetCorrectViewMatrix(Matrix4f& matOut)
     matOut = cameraMat.inverse();
 }
 
+#include "ACUGetSingletons.h"
+#include "Entity.h"
 void ImGuizmoLayer()
 {
     SetProjMatrix();
     SetCorrectViewMatrix(gameMatView);
 
     // On a pile of junk next to the artiste.
-    static Vector3f pos{ 127.82f, 704.28f, 1.06f };
-    static Matrix4f transformCube = MakeSimpleDebugTransform(pos);
-    static Matrix4f transformGrid = transformCube;
+    static Vector3f testPosition{ 127.82f, 704.28f, 1.06f };
+    static Matrix4f transformGrid = MakeSimpleDebugTransform(testPosition) * Matrix4f::createRotationAroundAxis(-90, 0, 0);
 
-    //static glm::vec3 pos{ 127.82, 704.28, 1.06 };
-    //static glm::mat4 transformCube = MakeSimpleDebugTransform(pos);
-    //static glm::mat4 transformGrid = transformCube;
+    static std::vector<Matrix4f> cubeTransforms = []() {std::vector<Matrix4f> vec; vec.reserve(16); return vec; }();
+    cubeTransforms.clear();
+    cubeTransforms.push_back(MakeSimpleDebugTransform(testPosition));
+    Entity* player = ACU::GetPlayer();
+    if (player)
+    {
+        cubeTransforms.push_back(MakeSimpleDebugTransform(player->GetPosition().xyz()));
+    }
 
     ImGuizmo::DrawGrid((float*)&gameMatView, (float*)&gameMatProj, (float*)&transformGrid, 5);
-    ImGuizmo::DrawCubes((float*)&gameMatView, (float*)&gameMatProj, (float*)&transformCube, 1);
+    ImGuizmo::DrawCubes((float*)&gameMatView, (float*)&gameMatProj, (float*)cubeTransforms.data(), cubeTransforms.size());
 }
 void DrawImGuizmo()
 {
