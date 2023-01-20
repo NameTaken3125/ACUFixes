@@ -44,23 +44,14 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
 }
 
 
-Matrix4f MakeMatProj()
-{
-    float m[16]{
-        1.399690509f, 0, 0, 0,
-        0, 2.488338709f, 0.001058201073f, 0,
-        0, 0, 0, 0.1000022292f,
-        0, 0, -1, 0 };
-    return Matrix4f{ m }.transpose();
-}
 Matrix4f MakeSimpleDebugTransform(const Vector3f& position)
 {
     return Matrix4f::createTranslation(position.x, position.y, position.z) * Matrix4f::createScale(0.1f, 0.1f, 0.1f);
 }
+#include "RenderValuesHolder.h"
 void GetProj(Matrix4f& matOut)
 {
-    static Matrix4f gameMatProj = MakeMatProj();
-    matOut = gameMatProj;
+    matOut = RenderValuesHolder::GetSingleton()->matProjection_mb;
 }
 void SetProjMatrix()
 {
@@ -70,7 +61,7 @@ void SetProjMatrix()
 // Why don't you stop rotating your matrices, game?
 void SetCorrectViewMatrix(Matrix4f& matOut)
 {
-    Matrix4f cameraMat = **(Matrix4f**)0x14521AAA8;
+    Matrix4f cameraMat = RenderValuesHolder::GetSingleton()->cameraTransform;
     cameraMat = cameraMat * Matrix4f::createRotationAroundAxis(-90, 0, 0);
     matOut = cameraMat.inverse();
 }
@@ -96,7 +87,7 @@ void ImGuizmoLayer()
     }
 
     ImGuizmo::DrawGrid((float*)&gameMatView, (float*)&gameMatProj, (float*)&transformGrid, 5);
-    ImGuizmo::DrawCubes((float*)&gameMatView, (float*)&gameMatProj, (float*)cubeTransforms.data(), cubeTransforms.size());
+    ImGuizmo::DrawCubes((float*)&gameMatView, (float*)&gameMatProj, (float*)cubeTransforms.data(), (int)cubeTransforms.size());
 }
 void DrawImGuizmo()
 {

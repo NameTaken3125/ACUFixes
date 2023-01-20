@@ -17,6 +17,7 @@
     <ClInclude Include="inc\ACUGetSingletons.h" />
     <ClInclude Include="inc\SmallArray.h" />
     <ClInclude Include="inc\Statechart.h" />
+    <ClInclude Include="inc\RenderValuesHolder.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />
