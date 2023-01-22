@@ -226,6 +226,7 @@
     <ClCompile Include="src\hooks\hooks.cpp" />
     <ClCompile Include="src\hooks\Present.cpp" />
     <ClCompile Include="src\hooks\WndProc.cpp" />
+    <ClCompile Include="src\ImGui3D.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -247,6 +248,7 @@
     <ClInclude Include="include\libmem++\libmem.hpp" />
     <ClInclude Include="include\vmath\vmath.h" />
     <ClInclude Include="src\base.h" />
+    <ClInclude Include="src\ImGui3D.h" />
     <ClInclude Include="src\pch.h" />
   </ItemGroup>
   <ItemGroup>

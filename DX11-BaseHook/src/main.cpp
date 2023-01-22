@@ -65,9 +65,28 @@ void SetCorrectViewMatrix(Matrix4f& matOut)
     cameraMat = cameraMat * Matrix4f::createRotationAroundAxis(-90, 0, 0);
     matOut = cameraMat.inverse();
 }
+namespace ImGuiCTX {
 
+class Window
+{
+    bool m_isOpened = false;
+public:
+    Window(const std::string_view& windowName, bool* p_open = NULL, ImGuiWindowFlags flags = 0)
+    {
+        m_isOpened = ImGui::Begin(windowName.data(), p_open, flags);
+    }
+    ~Window()
+    {
+        ImGui::End();
+    }
+    operator bool() { return m_isOpened; }
+};
+}
 #include "ACUGetSingletons.h"
 #include "Entity.h"
+
+#include "ImGui3D.h"
+
 void ImGuizmoLayer()
 {
     SetProjMatrix();
@@ -85,9 +104,18 @@ void ImGuizmoLayer()
     {
         cubeTransforms.push_back(MakeSimpleDebugTransform(player->GetPosition().xyz()));
     }
-
     ImGuizmo::DrawGrid((float*)&gameMatView, (float*)&gameMatProj, (float*)&transformGrid, 5);
     ImGuizmo::DrawCubes((float*)&gameMatView, (float*)&gameMatProj, (float*)cubeTransforms.data(), (int)cubeTransforms.size());
+
+
+    static ImGui3D::ImGuiWireModel grid5_model = ImGui3D::GenerateGrid(5, 2);
+
+    ImGui3D::g_ViewProjection = gameMatProj * gameMatView;
+    ImGui3D::g_DrawList = ImGui::GetWindowDrawList();
+
+    ImGui3D::DrawWireModel(ImGui3D::GetArrowModel(), testPosition);
+    ImGui3D::DrawWireModelTransform(ImGui3D::GetArrowModel(), player->GetTransform());
+    ImGui3D::DrawWireModelTransform(grid5_model, player->GetTransform());
 }
 void DrawImGuizmo()
 {
@@ -122,21 +150,19 @@ void Base::ImGuiLayer_EvenWhenMenuIsClosed()
 {
     DrawImGuizmo();
 
-    ImGui::SetNextWindowBgAlpha(0.1f); // Transparent background
-    ImVec2 overlayWindowSize{ 200, 33 };
-    ImGui::SetNextWindowSize(overlayWindowSize, ImGuiCond_Always);
+    ImGui::SetNextWindowBgAlpha(0.3f); // Transparent background
     ImGui::SetNextWindowPos({ 0, 0 }, ImGuiCond_Always);
     ImGuiWindowFlags window_flags = 0;
     window_flags |= ImGuiWindowFlags_NoDecoration;
     window_flags |= ImGuiWindowFlags_NoMove;
-    window_flags |= ImGuiWindowFlags_NoResize;
+    window_flags |= ImGuiWindowFlags_AlwaysAutoResize;
     window_flags |= ImGuiWindowFlags_NoFocusOnAppearing;
     window_flags |= ImGuiWindowFlags_NoNav;
     window_flags |= ImGuiWindowFlags_NoInputs;
 
     if (ImGui::Begin("Always enabled overlay", nullptr, window_flags ))
     {
-        ImGui::Text("Overlay on");
+        ImGui::Text("Overlay on. Press INSERT to open ImGui menu.");
     }
     ImGui::End();
 }
@@ -145,6 +171,7 @@ DWORD WINAPI MainThread(LPVOID lpThreadParameter)
 {
 	Base::Data::hModule = (HMODULE)lpThreadParameter;
 	Base::Init();
+    Base::Data::ShowMenu = false;
     while (!Base::Data::Detached)
     {
         Sleep(100);

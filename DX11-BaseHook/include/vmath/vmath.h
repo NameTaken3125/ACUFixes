@@ -1589,6 +1589,10 @@ public:
 		const T invW = 1.0 / w;
 		return Vector3<T>(x * invW, y * invW, z * invW);
 	}
+    Vector2<T> xy()
+    {
+        return Vector2<T>(x, y);
+    }
 
 	//-------------[ output operator ]------------------------
 	/**
