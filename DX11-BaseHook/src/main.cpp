@@ -1,9 +1,10 @@
 #include "pch.h"
+
 #include "base.h"
-#include "ImGuizmo/ImGuizmo.h"
-
-
 #include "vmath/vmath.h"
+#include "ImGuizmo/ImGuizmo.h"
+#include "ImGui3D.h"
+
 
 
 Matrix4f gameMatView;
@@ -26,10 +27,49 @@ void ImGuiPrintMatrix(const Matrix4f& mat)
     ss << #x << ": " << std::hex << (uintptr_t)x;\
     ImGui::Text(ss.str().c_str());\
 }
+Vector3f g_VisualizedDebugLocation;
+Vector3f g_VisualizedDebugDirection;
+std::optional<Vector3f> ParseVector3fFromClipboard()
+{
+    std::stringstream ss;
+    ss << ImGui::GetClipboardText();
+    std::istream_iterator<float> the_end;
+    std::istream_iterator<float> inputFloatIterator{ ss };
+    Vector3f result;
+    for (size_t i = 0; i < 3; i++)
+    {
+        if (inputFloatIterator == the_end)
+        {
+            // Failed to parse 3 floats.
+            return {};
+        }
+        ((float*)&result)[i] = *inputFloatIterator;
+        inputFloatIterator++;
+    }
+    // Parsed all 3 floats.
+    return result;
+}
+void VisualizeLocationFromClipboard()
+{
+    g_VisualizedDebugLocation = ParseVector3fFromClipboard().value_or(g_VisualizedDebugLocation);
+}
+void VisualizeDirectionFromClipboard()
+{
+    g_VisualizedDebugDirection = ParseVector3fFromClipboard().value_or(g_VisualizedDebugDirection);
+}
 void Base::ImGuiLayer_WhenMenuIsOpen()
 {
+    ImGui::GetIO().MouseDrawCursor = true;
     if (ImGui::Begin("Stuff"))
     {
+        if (ImGui::Button("Visualize location from clipboard"))
+        {
+            VisualizeLocationFromClipboard();
+        }
+        if (ImGui::Button("Visualize direction from clipboard"))
+        {
+            VisualizeDirectionFromClipboard();
+        }
         IMGUI_DUMPHEX(Data::pSwapChain);
         IMGUI_DUMPHEX(Data::pPresent);
         IMGUI_DUMPHEX(Data::pDxDevice11);
@@ -43,19 +83,17 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
     ImGui::End();
 }
 
+#include "ACUGetSingletons.h"
+#include "Entity.h"
+#include "RenderValuesHolder.h"
 
 Matrix4f MakeSimpleDebugTransform(const Vector3f& position)
 {
     return Matrix4f::createTranslation(position.x, position.y, position.z) * Matrix4f::createScale(0.1f, 0.1f, 0.1f);
 }
-#include "RenderValuesHolder.h"
-void GetProj(Matrix4f& matOut)
+void SetProjMatrix(Matrix4f& matOut)
 {
     matOut = RenderValuesHolder::GetSingleton()->matProjection_mb;
-}
-void SetProjMatrix()
-{
-    GetProj(gameMatProj);
 }
 // The stupid game has the camera matrix all rotated around.
 // Why don't you stop rotating your matrices, game?
@@ -82,14 +120,39 @@ public:
     operator bool() { return m_isOpened; }
 };
 }
-#include "ACUGetSingletons.h"
-#include "Entity.h"
 
-#include "ImGui3D.h"
+
+struct ChooseLessAlignedVector
+{
+    Vector3f moreAligned;
+    Vector3f lessAligned;
+    ChooseLessAlignedVector(const Vector3f& alignedWith, const Vector3f& _1, const Vector3f _2)
+    {
+        float al1 = abs(alignedWith.dotProduct(_1));
+        float al2 = abs(alignedWith.dotProduct(_2));
+        moreAligned = (al1 < al2) ? _2 : _1;
+        lessAligned = (al1 < al2) ? _1 : _2;
+    }
+};
+Matrix3f MakeRotationAlignZWithVector(Vector3f axisZ)
+{
+    axisZ.normalize();
+    const Vector3f regularX = { 1, 0, 0 };
+    const Vector3f regularY = { 0, 1, 0 };
+    ChooseLessAlignedVector otherAxes{ axisZ, regularX, regularY };
+    Vector3f axisX = otherAxes.lessAligned;
+    Vector3f axisY = axisX.crossProduct(axisZ).normalized();
+    axisX.normalize();
+    float result[9] = {
+        axisX.x, axisX.y, axisX.z,
+        axisY.x, axisY.y, axisY.z,
+        axisZ.x, axisZ.y, axisZ.z };
+    return result;
+}
 
 void ImGuizmoLayer()
 {
-    SetProjMatrix();
+    SetProjMatrix(gameMatProj);
     SetCorrectViewMatrix(gameMatView);
 
     // On a pile of junk next to the artiste.
@@ -102,17 +165,20 @@ void ImGuizmoLayer()
     Entity* player = ACU::GetPlayer();
     if (player)
     {
-        cubeTransforms.push_back(MakeSimpleDebugTransform(player->GetPosition().xyz()));
+        cubeTransforms.push_back(MakeSimpleDebugTransform(player->GetPosition()));
     }
-    ImGuizmo::DrawGrid((float*)&gameMatView, (float*)&gameMatProj, (float*)&transformGrid, 5);
     ImGuizmo::DrawCubes((float*)&gameMatView, (float*)&gameMatProj, (float*)cubeTransforms.data(), (int)cubeTransforms.size());
-
 
     static ImGui3D::ImGuiWireModel grid5_model = ImGui3D::GenerateGrid(5, 2);
 
     ImGui3D::g_ViewProjection = gameMatProj * gameMatView;
     ImGui3D::g_DrawList = ImGui::GetWindowDrawList();
 
+    Matrix4f debugDirectionTransform;
+    debugDirectionTransform.setRotation(MakeRotationAlignZWithVector(g_VisualizedDebugDirection));
+    debugDirectionTransform = Matrix4f::createTranslation(player->GetPosition()) * debugDirectionTransform;
+    ImGui3D::DrawWireModelTransform(ImGui3D::GetArrowModel(), debugDirectionTransform);
+    ImGui3D::DrawWireModel(ImGui3D::GetCrossModel(), g_VisualizedDebugLocation);
     ImGui3D::DrawWireModel(ImGui3D::GetArrowModel(), testPosition);
     ImGui3D::DrawWireModelTransform(ImGui3D::GetArrowModel(), player->GetTransform());
     ImGui3D::DrawWireModelTransform(grid5_model, player->GetTransform());

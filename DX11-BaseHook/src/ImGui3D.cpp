@@ -131,5 +131,25 @@ ImGuiWireModel& GetArrowModel()
         } };
     return arrowModel;
 }
+ImGuiWireModel& GetCrossModel()
+{
+    static ImGuiWireModel crossModel = {
+        // Points.
+        {
+            {-1, 0, 0},
+            {1, 0, 0},
+            {0, -1, 0},
+            {0, 1, 0},
+            {0, 0, -1},
+            {0, 0, 1},
+        },
+        // Edges
+        {
+            {0, 1, ImGui3D::axisColors[ImGui3D::Axis::X]},
+            {2, 3, ImGui3D::axisColors[ImGui3D::Axis::Y]},
+            {4, 5, ImGui3D::axisColors[ImGui3D::Axis::Z]},
+        } };
+    return crossModel;
+}
 
 } // namespace ImGui3D

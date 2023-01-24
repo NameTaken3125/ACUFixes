@@ -68,6 +68,7 @@ static ImU32 axisColors[3] = {
 };
 ImGuiWireModel GenerateGrid(int howManyPointsOnSide = 5, float sideLength = 1);
 ImGuiWireModel& GetArrowModel();
+ImGuiWireModel& GetCrossModel();
 
 
 void DrawWireModel(const ImGui3D::ImGuiWireModel& model, const Vector3f& position);

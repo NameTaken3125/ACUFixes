@@ -17,6 +17,6 @@ public:
 
     // @helper_functions
     Matrix4f& GetTransform() { return mainTransform; }
-    Vector4f& GetPosition() { return *(Vector4f*)((char*)&mainTransform + 0x30); }
+    Vector3f& GetPosition() { return *(Vector3f*)((char*)&mainTransform + 0x30); }
 }; //Size: 0x0078
 assert_sizeof(BaseEntity, 0x78);
