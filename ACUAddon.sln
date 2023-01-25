@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ACUAddon", "ACUAddon\ACUAdd
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ACU-RE", "ACU-RE\ACU-RE.vcxproj", "{3CE83CE0-69AA-4C6E-9476-2E9DC734B47F}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DX11-BaseHook", "DX11-BaseHook\DX11-BaseHook.vcxproj", "{493E69B7-9966-4B96-94BA-158EA9FA50C8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -31,6 +33,14 @@ Global
 		{3CE83CE0-69AA-4C6E-9476-2E9DC734B47F}.Release|x64.Build.0 = Release|x64
 		{3CE83CE0-69AA-4C6E-9476-2E9DC734B47F}.Release|x86.ActiveCfg = Release|Win32
 		{3CE83CE0-69AA-4C6E-9476-2E9DC734B47F}.Release|x86.Build.0 = Release|Win32
+		{493E69B7-9966-4B96-94BA-158EA9FA50C8}.Debug|x64.ActiveCfg = Debug|x64
+		{493E69B7-9966-4B96-94BA-158EA9FA50C8}.Debug|x64.Build.0 = Debug|x64
+		{493E69B7-9966-4B96-94BA-158EA9FA50C8}.Debug|x86.ActiveCfg = Debug|Win32
+		{493E69B7-9966-4B96-94BA-158EA9FA50C8}.Debug|x86.Build.0 = Debug|Win32
+		{493E69B7-9966-4B96-94BA-158EA9FA50C8}.Release|x64.ActiveCfg = Release|x64
+		{493E69B7-9966-4B96-94BA-158EA9FA50C8}.Release|x64.Build.0 = Release|x64
+		{493E69B7-9966-4B96-94BA-158EA9FA50C8}.Release|x86.ActiveCfg = Release|Win32
+		{493E69B7-9966-4B96-94BA-158EA9FA50C8}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

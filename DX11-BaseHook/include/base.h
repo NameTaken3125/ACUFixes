@@ -2,7 +2,12 @@
 #ifndef BASE_H
 #define BASE_H
 
-#include "pch.h"
+#include "libmem++/old-libmem-platform-defines.h"
+#include <Windows.h>
+struct IDXGISwapChain;
+struct ID3D11Device;
+struct ID3D11DeviceContext;
+struct ID3D11RenderTargetView;
 
 #if defined(MEM_86)
 #define WNDPROC_INDEX GWL_WNDPROC
@@ -31,6 +36,8 @@ namespace Base
     void ImGuiLayer_WhenMenuIsOpen();
     void ImGuiLayer_EvenWhenMenuIsClosed();
 
+    using voidptr_t = void*;
+    using size_t = ::size_t;
 	namespace Data
 	{
 		extern HMODULE                 hModule;
@@ -42,10 +49,10 @@ namespace Base
 		extern void*                   pSwapChainTable[D3D11SC_LEN];
 		extern void*                   pContextTable  [D3D11CTX_LEN];
 		extern HWND                    hWindow;
-		extern mem::voidptr_t          pPresent;
+		extern voidptr_t               pPresent;
 		extern Present_t               oPresent;
 		extern WndProc_t               oWndProc;
-		extern mem::size_t             szPresent;
+		extern size_t                  szPresent;
 		extern UINT                    WmKeys[0xFF];
 		extern bool                    Detached;
 		extern bool                    IsImGuiInitialized;

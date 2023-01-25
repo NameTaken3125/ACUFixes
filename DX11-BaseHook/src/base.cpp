@@ -11,13 +11,13 @@ IDXGISwapChain*         Base::Data::pSwapChain  = (IDXGISwapChain*)NULL;
 ID3D11DeviceContext*    Base::Data::pContext    = (ID3D11DeviceContext*)NULL;
 ID3D11RenderTargetView* Base::Data::pMainRenderTargetView = (ID3D11RenderTargetView*)NULL;
 HWND                    Base::Data::hWindow     = (HWND)NULL;
-mem::voidptr_t          Base::Data::pPresent    = (mem::voidptr_t)NULL;
+Base::voidptr_t         Base::Data::pPresent    = (mem::voidptr_t)NULL;
 Present_t               Base::Data::oPresent    = (Present_t)NULL;
 WndProc_t               Base::Data::oWndProc    = (WndProc_t)NULL;
 #if defined(MEM_86)
-mem::size_t             Base::Data::szPresent = 5;
+Base::size_t            Base::Data::szPresent = 5;
 #elif defined(MEM_64)
-mem::size_t             Base::Data::szPresent = 19;
+Base::size_t            Base::Data::szPresent = 19;
 #endif
 UINT                    Base::Data::WmKeys[0xFF];
 bool                    Base::Data::Detached   = false;
