@@ -11,3 +11,6 @@
 #include "BhvAssassin.h"
 #include "CharacterAI.h"
 #include "Statechart.h"
+
+#include "Parkour_PotentialWindowEntry.h"
+#include "Parkour_WhileOnWallSystem.h"

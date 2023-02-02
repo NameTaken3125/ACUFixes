@@ -14,6 +14,10 @@ public:
 
     uint16 capacityAndFlags;
     uint16 size;
+
+    using iterator = T*;
+    iterator begin() { return arr; }
+    iterator end() { return arr + size; }
 }; // Size: 0xC
 #pragma pack(pop)
 
