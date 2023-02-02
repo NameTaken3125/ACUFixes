@@ -2,6 +2,8 @@
 #ifndef BASE_H
 #define BASE_H
 
+#pragma comment(lib, "d3d11.lib")
+
 #include "libmem++/old-libmem-platform-defines.h"
 #include <Windows.h>
 struct IDXGISwapChain;
