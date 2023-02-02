@@ -4,6 +4,7 @@
 #include "vmath/vmath.h"
 #include "ImGuizmo/ImGuizmo.h"
 #include "ImGui3D.h"
+#include "ImGuiCTX.h"
 
 
 
@@ -102,23 +103,6 @@ void SetCorrectViewMatrix(Matrix4f& matOut)
     Matrix4f cameraMat = RenderValuesHolder::GetSingleton()->cameraTransform;
     cameraMat = cameraMat * Matrix4f::createRotationAroundAxis(-90, 0, 0);
     matOut = cameraMat.inverse();
-}
-namespace ImGuiCTX {
-
-class Window
-{
-    bool m_isOpened = false;
-public:
-    Window(const std::string_view& windowName, bool* p_open = NULL, ImGuiWindowFlags flags = 0)
-    {
-        m_isOpened = ImGui::Begin(windowName.data(), p_open, flags);
-    }
-    ~Window()
-    {
-        ImGui::End();
-    }
-    operator bool() { return m_isOpened; }
-};
 }
 
 
@@ -233,14 +217,23 @@ void Base::ImGuiLayer_EvenWhenMenuIsClosed()
     ImGui::End();
 }
 
+#include "ConsoleForOutput.h"
+
+void DisableMainIntegrityCheck();
 DWORD WINAPI MainThread(LPVOID lpThreadParameter)
 {
+    {
+    ConsoleForOutput _console;
+    RedirectSTDOUTToConsole _stdout;
+    std::cout << "Opened console." << std::endl;
+    DisableMainIntegrityCheck();
 	Base::Data::hModule = (HMODULE)lpThreadParameter;
 	Base::Init();
     Base::Data::ShowMenu = false;
     while (!Base::Data::Detached)
     {
         Sleep(100);
+    }
     }
     FreeLibraryAndExitThread(Base::Data::hModule, TRUE);
 	return TRUE;
