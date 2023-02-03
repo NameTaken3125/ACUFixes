@@ -158,14 +158,17 @@ void ImGuizmoLayer()
     ImGui3D::g_ViewProjection = gameMatProj * gameMatView;
     ImGui3D::g_DrawList = ImGui::GetWindowDrawList();
 
-    Matrix4f debugDirectionTransform;
-    debugDirectionTransform.setRotation(MakeRotationAlignZWithVector(g_VisualizedDebugDirection));
-    debugDirectionTransform = Matrix4f::createTranslation(player->GetPosition()) * debugDirectionTransform;
-    ImGui3D::DrawWireModelTransform(ImGui3D::GetArrowModel(), debugDirectionTransform);
-    ImGui3D::DrawWireModel(ImGui3D::GetCrossModel(), g_VisualizedDebugLocation);
     ImGui3D::DrawWireModel(ImGui3D::GetArrowModel(), testPosition);
-    ImGui3D::DrawWireModelTransform(ImGui3D::GetArrowModel(), player->GetTransform());
-    ImGui3D::DrawWireModelTransform(grid5_model, player->GetTransform());
+    if (player)
+    {
+        Matrix4f debugDirectionTransform;
+        debugDirectionTransform.setRotation(MakeRotationAlignZWithVector(g_VisualizedDebugDirection));
+        debugDirectionTransform = Matrix4f::createTranslation(player->GetPosition()) * debugDirectionTransform;
+        ImGui3D::DrawWireModelTransform(ImGui3D::GetArrowModel(), debugDirectionTransform);
+        ImGui3D::DrawWireModel(ImGui3D::GetCrossModel(), g_VisualizedDebugLocation);
+        ImGui3D::DrawWireModelTransform(ImGui3D::GetArrowModel(), player->GetTransform());
+        ImGui3D::DrawWireModelTransform(grid5_model, player->GetTransform());
+    }
 }
 void DrawImGuizmo()
 {
