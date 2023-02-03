@@ -58,11 +58,13 @@ void VisualizeDirectionFromClipboard()
 {
     g_VisualizedDebugDirection = ParseVector3fFromClipboard().value_or(g_VisualizedDebugDirection);
 }
+void DrawHacksControls();
 void Base::ImGuiLayer_WhenMenuIsOpen()
 {
     ImGui::GetIO().MouseDrawCursor = true;
     if (ImGui::Begin("Stuff"))
     {
+        DrawHacksControls();
         if (ImGui::Button("Visualize location from clipboard"))
         {
             VisualizeLocationFromClipboard();

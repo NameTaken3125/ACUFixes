@@ -183,8 +183,12 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="src\AutoAssemblerKinda.cpp" />
+    <ClCompile Include="src\CheatEngineMemoryQuery_TEST.cpp" />
     <ClCompile Include="src\ConsoleForOutput.cpp" />
     <ClCompile Include="src\DisableIntegrityChecks.cpp" />
+    <ClCompile Include="src\Hacks_ImGuiControl.cpp" />
+    <ClCompile Include="src\Hack_EnterWindowsWhenRisPressed.cpp" />
     <ClCompile Include="src\ImGui3D.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\pch.cpp">
@@ -197,7 +201,9 @@
   <ItemGroup>
     <ClInclude Include="include\ImGuizmo\ImGuizmo.h" />
     <ClInclude Include="include\vmath\vmath.h" />
+    <ClInclude Include="src\AutoAssemblerKinda.h" />
     <ClInclude Include="src\ConsoleForOutput.h" />
+    <ClInclude Include="src\Hack_EnterWindowsWhenRisPressed.h" />
     <ClInclude Include="src\ImGui3D.h" />
     <ClInclude Include="src\ImGuiCTX.h" />
     <ClInclude Include="src\ImGuiTextWindows.h" />
