@@ -6,12 +6,12 @@
 
 
 uint32_t float_bytes(float f) { return (uint32_t&)f; }
-void Patch_RunWindowEntryTesterIfRequested_asmonly(SymbolWithAnAddress& isRequestedToEnterWindow);
-void Patch_RunWindowEntryTesterIfRequested_cppTrampoline(SymbolWithAnAddress& isRequestedToEnterWindow);
-void Patch_RememberRbuttonState(AllocatedWriteableSymbol& isRequestedToEnterWindow);
-void Patch_AlwaysRunWindowEntryTester();
-void Patch_FakeIsMovingFlag();
-void Patch_AllowEnteringWindowsWithoutLeaningIntoThem(AllocatedWriteableSymbol& isRequestedToEnterWindow);
+void Patch_RunWindowEntryTesterIfRequested_asmonly(SymbolWithAnAddress& isRequestedToEnterWindow, AssemblerContext* m_ctx);
+void Patch_RunWindowEntryTesterIfRequested_cppTrampoline(SymbolWithAnAddress& isRequestedToEnterWindow, AssemblerContext* m_ctx);
+void Patch_RememberRbuttonState(AllocatedWriteableSymbol& isRequestedToEnterWindow, AssemblerContext* m_ctx);
+void Patch_AlwaysRunWindowEntryTester(AssemblerContext* m_ctx);
+void Patch_FakeIsMovingFlag(AssemblerContext* m_ctx);
+void Patch_AllowEnteringWindowsWithoutLeaningIntoThem(AllocatedWriteableSymbol& isRequestedToEnterWindow, AssemblerContext* m_ctx);
 EnterWindowWhenRisPressed::EnterWindowWhenRisPressed()
 {
     /*
@@ -36,13 +36,13 @@ EnterWindowWhenRisPressed::EnterWindowWhenRisPressed()
     isRequestedToEnterWindow = {
         dq(0)
     };
-    Patch_RememberRbuttonState(isRequestedToEnterWindow);
-    Patch_AlwaysRunWindowEntryTester();
-    Patch_FakeIsMovingFlag();
-    Patch_RunWindowEntryTesterIfRequested_cppTrampoline(isRequestedToEnterWindow);
-    Patch_AllowEnteringWindowsWithoutLeaningIntoThem(isRequestedToEnterWindow);
+    Patch_RememberRbuttonState(isRequestedToEnterWindow, m_ctx.get());
+    Patch_AlwaysRunWindowEntryTester(m_ctx.get());
+    Patch_FakeIsMovingFlag(m_ctx.get());
+    Patch_RunWindowEntryTesterIfRequested_cppTrampoline(isRequestedToEnterWindow, m_ctx.get());
+    Patch_AllowEnteringWindowsWithoutLeaningIntoThem(isRequestedToEnterWindow, m_ctx.get());
 }
-void Patch_AllowEnteringWindowsWithoutLeaningIntoThem(AllocatedWriteableSymbol& isRequestedToEnterWindow)
+void Patch_AllowEnteringWindowsWithoutLeaningIntoThem(AllocatedWriteableSymbol& isRequestedToEnterWindow, AssemblerContext* m_ctx)
 {
 
     /*
@@ -80,9 +80,8 @@ void Patch_AllowEnteringWindowsWithoutLeaningIntoThem(AllocatedWriteableSymbol& 
         "E9", RIP(allowEnterWindowsWithoutLeaningIntoThem__return)                   //- jmp ACU.exe+133D37
     };
 }
-void Patch_FakeIsMovingFlag()
+void Patch_FakeIsMovingFlag(AssemblerContext* m_ctx)
 {
-
     DEFINE_ADDR(fake_isMoving_flag, 0x141A4CBDC);
     DEFINE_ADDR(fake_isMoving_flag__return, 0x141A4CBDC + 7);
     ALLOC(fake_isMoving_flag__cave, 0x100, 0x141A4CBDC);
@@ -101,17 +100,15 @@ void Patch_FakeIsMovingFlag()
         E9)", RIP(fake_isMoving_flag__return)
     };
 }
-void Patch_AlwaysRunWindowEntryTester()
+void Patch_AlwaysRunWindowEntryTester(AssemblerContext* m_ctx)
 {
-
     DEFINE_ADDR(alwaysRunWindowEntryTester, 0x141A4C612);
     alwaysRunWindowEntryTester = {
         nop(6)
     };
 }
-void Patch_RememberRbuttonState(AllocatedWriteableSymbol& isRequestedToEnterWindow)
+void Patch_RememberRbuttonState(AllocatedWriteableSymbol& isRequestedToEnterWindow, AssemblerContext* m_ctx)
 {
-
     DEFINE_ADDR(setRbuttonState, 0x142739C90);
     LABEL(setRbuttonState_return);
     ALLOC(setRbuttonState_cave, 0x1000, 0x142739C90);
@@ -177,7 +174,7 @@ void RunWindowEntryEntryTesterInitAndScan(
         int noop = 0;
     }();
 }
-void Patch_RunWindowEntryTesterIfRequested_cppTrampoline(SymbolWithAnAddress& isRequestedToEnterWindow)
+void Patch_RunWindowEntryTesterIfRequested_cppTrampoline(SymbolWithAnAddress& isRequestedToEnterWindow, AssemblerContext* m_ctx)
 {
     DEFINE_ADDR(runWindowEntrySearch, 0x141A4C618);
     DEFINE_ADDR(runWindowEntrySearch__return, 0x141A4C689);
@@ -211,7 +208,7 @@ void Patch_RunWindowEntryTesterIfRequested_cppTrampoline(SymbolWithAnAddress& is
         dq((uintptr_t)&RunWindowEntryEntryTesterInitAndScan),
     };
 }
-void Patch_RunWindowEntryTesterIfRequested_asmonly(SymbolWithAnAddress& isRequestedToEnterWindow)
+void Patch_RunWindowEntryTesterIfRequested_asmonly(SymbolWithAnAddress& isRequestedToEnterWindow, AssemblerContext* m_ctx)
 {
 
     /*

@@ -1,8 +1,6 @@
 #include "pch.h"
 #include "AutoAssemblerKinda.h"
 
-AssemblerContext* g_assemblerContext = nullptr;
-
 SYSTEM_INFO& GetCachedSystemInfo()
 {
     static SYSTEM_INFO sysinfo = []() {SYSTEM_INFO sysinfo; GetSystemInfo(&sysinfo); return sysinfo; }();
@@ -198,7 +196,7 @@ SymbolWithAnAddress* AssemblerContext::GetSymbol(const std::string_view& symbolN
 }
 StaticSymbol& AssemblerContext::MakeNew_Define(uintptr_t addr, const std::string_view& symbolName)
 {
-    auto& newItem = m_Symbols.emplace_back(std::make_unique<StaticSymbol>(addr));
+    auto& newItem = m_Symbols.emplace_back(std::make_unique<StaticSymbol>(addr, this));
     newItem->m_SymbolName = symbolName;
     StaticSymbol* asDef = static_cast<StaticSymbol*>(newItem.get());
     m_DefinesQuickAccess.push_back(asDef);
@@ -214,7 +212,7 @@ Label& AssemblerContext::MakeNew_Label(const std::string_view& symbolName)
 }
 AllocatedWriteableSymbol& AssemblerContext::MakeNew_Alloc(uint32_t size, const std::string_view& symbolName, uintptr_t preferredAddr)
 {
-    auto& newItem = m_Symbols.emplace_back(std::make_unique<AllocatedWriteableSymbol>(std::optional<uintptr_t>()));
+    auto& newItem = m_Symbols.emplace_back(std::make_unique<AllocatedWriteableSymbol>(std::optional<uintptr_t>(), this));
     newItem->m_SymbolName = symbolName;
     AllocatedWriteableSymbol* asAlloc = static_cast<AllocatedWriteableSymbol*>(newItem.get());
     asAlloc->m_SizeToAllocate = size;
@@ -310,20 +308,20 @@ void WriteableSymbol::ProcessNewCodeElements(size_t idxToStartProcessingFrom)
             }
         }
         else if (RIP* relAddr = std::get_if<RIP>(&block)) {
-            g_assemblerContext->AddSymbolRef(relAddr->m_Symbol, SymbolMention(*this, (int)m_resultantCode.size(), SymbolMentionTypeRelative{ relAddr->m_HowManyBytesUntilTheEndOfOpcodeIncludingThese4bytes }));
+            m_ctx->AddSymbolRef(relAddr->m_Symbol, SymbolMention(*this, (int)m_resultantCode.size(), SymbolMentionTypeRelative{ relAddr->m_HowManyBytesUntilTheEndOfOpcodeIncludingThese4bytes }));
             _4bytes_t relativeAddrPlaceholderZeros = { 0 };
             for (byte b : relativeAddrPlaceholderZeros) {
                 m_resultantCode.push_back(b);
             }
         }
         else if (ABS* absAddr = std::get_if<ABS>(&block)) {
-            g_assemblerContext->AddSymbolRef(absAddr->m_Symbol, SymbolMention(*this, (int)m_resultantCode.size(), SymbolMentionTypeAbsolute{ absAddr->m_AbsoluteAddrWidth }));
+            m_ctx->AddSymbolRef(absAddr->m_Symbol, SymbolMention(*this, (int)m_resultantCode.size(), SymbolMentionTypeAbsolute{ absAddr->m_AbsoluteAddrWidth }));
             for (size_t i = 0; i < absAddr->m_AbsoluteAddrWidth; i++) {
                 m_resultantCode.push_back(0);
             }
         }
         else if (LabelPlacement* labelAssignment = std::get_if<LabelPlacement>(&block)) {
-            g_assemblerContext->AssignLabel(labelAssignment->m_Label, *this, (uint32_t)m_resultantCode.size());
+            m_ctx->AssignLabel(labelAssignment->m_Label, *this, (uint32_t)m_resultantCode.size());
         }
     }
 }
@@ -359,11 +357,22 @@ void AssemblerContext::AllocateVariables()
 {
     for (auto& currentAlloc : m_AllocsQuickAccess)
     {
-        void* freeRegionNearby = FindFreeBlockForRegion(currentAlloc->m_PreferredAddr, currentAlloc->m_SizeToAllocate);
-        void* allocBase = VirtualAlloc(freeRegionNearby, currentAlloc->m_SizeToAllocate, MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+        void* allocBase = nullptr;
+        // 10 tries is a very simplified version of what Cheat Engine itself is doing
+        // (<Cheat Engine source code>/CheatEngine/autoassembler.pas, line 3265).
+        constexpr size_t numTries = 10;
+        for (size_t i = 0; i < numTries; i++)
+        {
+            void* freeRegionNearby = FindFreeBlockForRegion(currentAlloc->m_PreferredAddr, currentAlloc->m_SizeToAllocate);
+            allocBase = VirtualAlloc(freeRegionNearby, currentAlloc->m_SizeToAllocate, MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+            if (allocBase)
+            {
+                break;
+            }
+        }
         if (!allocBase)
         {
-            throw(std::exception("Failed to allocate."));
+            throw(std::exception("AssemblerContext::AllocateVariables(): Failed to allocate."));
         }
         currentAlloc->m_SuccessfulAllocBase = (uintptr_t)allocBase;
         currentAlloc->m_ResolvedAddr = currentAlloc->m_SuccessfulAllocBase;
@@ -417,4 +426,88 @@ void AssemblerContext::ResolveSymbolReferences()
             }
         }
     }
+}
+
+AutoAssemblerCodeHolder_Base::AutoAssemblerCodeHolder_Base()
+    : m_ctx(std::make_unique<AssemblerContext>())
+{}
+void AutoAssemblerCodeHolder_Base::PresetScript_CCodeInTheMiddle(uintptr_t whereToInject, size_t howManyBytesStolen, CCodeInTheMiddleFunctionPtr_t receiverFunc, std::optional<uintptr_t> whereToReturn, bool isNeedToExecuteStolenBytesAfterwards)
+{
+    std::string symbolsBaseName = "injectAt_" + std::to_string(whereToInject);
+    DEFINE_ADDR_NAMED(injectAt, symbolsBaseName, whereToInject);
+    uintptr_t injectionReturnAddr = whereToReturn ? whereToReturn.value() : whereToInject + howManyBytesStolen;
+    DEFINE_ADDR_NAMED(injection_return, symbolsBaseName + "__return", injectionReturnAddr);
+
+    ALLOC_NAMED(newmem, symbolsBaseName + "__newmem", 0x1000, whereToInject);
+    LABEL_NAMED(ccode_flattened, symbolsBaseName + "__ccode_flattened");
+    LABEL_NAMED(cave_entrance, symbolsBaseName + "__cave_entrance");
+    /*DEFINE_ADDR(injectAt, whereToInject);
+    uintptr_t injectionReturnAddr = whereToReturn ? whereToReturn.value() : whereToInject + howManyBytesStolen;
+    DEFINE_ADDR(injection_return, injectionReturnAddr);
+
+    ALLOC(newmem, 0x1000, whereToInject);
+    LABEL(ccode_flattened);
+    LABEL(cave_entrance);*/
+
+    injectAt = {
+        0xE9, RIP(cave_entrance),
+        nop(howManyBytesStolen - 5),
+    };
+    newmem = {
+        PutLabel(ccode_flattened),
+        "9C                  "              //  - pushfq
+        "50                  "              //  - push rax
+        "48 8B C4            "              //  - mov rax,rsp
+        "48 83 E4 F0         "              //  - and rsp,-10               // align down to 0x10-byte boundary
+        "48 81 EC A0020000   "              //  - sub rsp,000002A0
+        "0FAE 44 24 20       "              //  - fxsave [rsp+20]
+        "48 89 9C 24 20020000"              //  - mov [rsp+00000220],rbx
+        "48 89 8C 24 28020000"              //  - mov [rsp+00000228],rcx
+        "48 89 94 24 30020000"              //  - mov [rsp+00000230],rdx
+        "48 89 B4 24 38020000"              //  - mov [rsp+00000238],rsi
+        "48 89 BC 24 40020000"              //  - mov [rsp+00000240],rdi
+        "48 89 84 24 48020000"              //  - mov [rsp+00000248],rax
+        "48 89 AC 24 50020000"              //  - mov [rsp+00000250],rbp
+        "4C 89 84 24 58020000"              //  - mov [rsp+00000258],r8
+        "4C 89 8C 24 60020000"              //  - mov [rsp+00000260],r9
+        "4C 89 94 24 68020000"              //  - mov [rsp+00000268],r10
+        "4C 89 9C 24 70020000"              //  - mov [rsp+00000270],r11
+        "4C 89 A4 24 78020000"              //  - mov [rsp+00000278],r12
+        "4C 89 AC 24 80020000"              //  - mov [rsp+00000280],r13
+        "4C 89 B4 24 88020000"              //  - mov [rsp+00000288],r14
+        "4C 89 BC 24 90020000"              //  - mov [rsp+00000290],r15
+        "48 8D 4C 24 20      "              //  - lea rcx,[rsp+20]
+        "FF 15 80000000      "              //  - call qword ptr [label_externalFuncAddrBelow]  - doesn't need RIP-adjustment, because that label goes immediately after the end of current function, and distance to it is known.
+        "4C 8B BC 24 90020000"              //  - mov r15,[rsp+00000290]
+        "4C 8B B4 24 88020000"              //  - mov r14,[rsp+00000288]
+        "4C 8B AC 24 80020000"              //  - mov r13,[rsp+00000280]
+        "4C 8B A4 24 78020000"              //  - mov r12,[rsp+00000278]
+        "4C 8B 9C 24 70020000"              //  - mov r11,[rsp+00000270]
+        "4C 8B 94 24 68020000"              //  - mov r10,[rsp+00000268]
+        "4C 8B 8C 24 60020000"              //  - mov r9,[rsp+00000260]
+        "4C 8B 84 24 58020000"              //  - mov r8,[rsp+00000258]
+        "48 8B AC 24 50020000"              //  - mov rbp,[rsp+00000250]
+        "48 8B BC 24 40020000"              //  - mov rdi,[rsp+00000240]
+        "48 8B B4 24 38020000"              //  - mov rsi,[rsp+00000238]
+        "48 8B 94 24 30020000"              //  - mov rdx,[rsp+00000230]
+        "48 8B 8C 24 28020000"              //  - mov rcx,[rsp+00000228]
+        "48 8B 9C 24 20020000"              //  - mov rbx,[rsp+00000220]
+        "0FAE 4C 24 20       "              //  - fxrstor [rsp+20]
+        "48 8B A4 24 48020000"              //  - mov rsp,[rsp+00000248]
+        "58                  "              //  - pop rax
+        "9D                  "              //  - popfq
+        "C3                  "              //  - ret
+    //label_externalFuncAddrBelow:
+        , dq((unsigned long long)receiverFunc),
+        PutLabel(cave_entrance),
+        "E8", RIP(ccode_flattened),         //  - call ccode_flattened
+    };
+    if (isNeedToExecuteStolenBytesAfterwards)
+    {
+        ByteVector&& currentBytes = injectAt.CopyCurrentBytes(howManyBytesStolen);
+        newmem += {db(std::move(currentBytes.m_bytes))};
+    }
+    newmem += {
+        0xE9, RIP(injection_return),        //  - jmp injection_return
+    };
 }

@@ -183,12 +183,12 @@ The workflow I had in mind is the following:
 
 #include <vector>
 
-#define DEFINE_ADDR(symbol, addr) static StaticSymbol& symbol = g_assemblerContext->MakeNew_Define(addr, #symbol);
-#define DEFINE_ADDR_NAMED(symbol, name, addr) static StaticSymbol& symbol = g_assemblerContext->MakeNew_Define(addr, name);
-#define ALLOC(symbol, size, preferredAddrOptional) static AllocatedWriteableSymbol& symbol = g_assemblerContext->MakeNew_Alloc(size, #symbol, preferredAddrOptional);
-#define ALLOC_NAMED(symbol, name, size, preferredAddrOptional) static AllocatedWriteableSymbol& symbol = g_assemblerContext->MakeNew_Alloc(size, name, preferredAddrOptional);
-#define LABEL(symbol) static Label& symbol = g_assemblerContext->MakeNew_Label(#symbol);
-#define LABEL_NAMED(symbol, name) static Label& symbol = g_assemblerContext->MakeNew_Label(name);
+#define DEFINE_ADDR(symbol, addr) static StaticSymbol& symbol = m_ctx->MakeNew_Define(addr, #symbol);
+#define DEFINE_ADDR_NAMED(symbol, name, addr) static StaticSymbol& symbol = m_ctx->MakeNew_Define(addr, name);
+#define ALLOC(symbol, size, preferredAddrOptional) static AllocatedWriteableSymbol& symbol = m_ctx->MakeNew_Alloc(size, #symbol, preferredAddrOptional);
+#define ALLOC_NAMED(symbol, name, size, preferredAddrOptional) static AllocatedWriteableSymbol& symbol = m_ctx->MakeNew_Alloc(size, name, preferredAddrOptional);
+#define LABEL(symbol) static Label& symbol = m_ctx->MakeNew_Label(#symbol);
+#define LABEL_NAMED(symbol, name) static Label& symbol = m_ctx->MakeNew_Label(name);
 
 class db
 {
@@ -345,8 +345,9 @@ class AssemblerContext;
 class WriteableSymbol : public SymbolWithAnAddress
 {
     friend AssemblerContext;
+    AssemblerContext* m_ctx;
 public:
-    WriteableSymbol(std::optional<uintptr_t> m_ConstantAddress) : SymbolWithAnAddress(m_ConstantAddress) {}
+    WriteableSymbol(std::optional<uintptr_t> m_ConstantAddress, AssemblerContext* ctx) : SymbolWithAnAddress(m_ConstantAddress), m_ctx(ctx) {}
     WriteableSymbol& operator=(const std::vector<CodeElement>& codeElements) { SetCodeElements(codeElements); return *this; }
     WriteableSymbol& operator+=(const std::vector<CodeElement>& codeElements) { AppendCodeElements(codeElements); return *this; }
     void SetCodeElements(const std::vector<CodeElement>& codeElements);
@@ -417,36 +418,101 @@ public:
 };
 
 
-extern AssemblerContext* g_assemblerContext;
+#include "basic_types.h"
+typedef struct {
+    union {
+        struct {
+            float f0;
+            float f1;
+            float f2;
+            float f3;
+        };
+        struct {
+            double d0;
+            double d1;
+        };
+        float fa[4];
+        double da[2];
+    };
+} xmmreg, * pxmmreg;
+struct AllRegisters
+{
+    char pad_0[0xA0];
+    xmmreg XMM0;
+    xmmreg XMM1;
+    xmmreg XMM2;
+    xmmreg XMM3;
+    xmmreg XMM4;
+    xmmreg XMM5;
+    xmmreg XMM6;
+    xmmreg XMM7;
+    xmmreg XMM8;
+    xmmreg XMM9;
+    xmmreg XMM10;
+    xmmreg XMM11;
+    xmmreg XMM12;
+    xmmreg XMM13;
+    xmmreg XMM14;
+    xmmreg XMM15;
+    char pad_1A0[0x200 - 0x1A0];
+    unsigned long long rbx_;
+    unsigned long long rcx_;
+    unsigned long long rdx_;
+    unsigned long long rsi_;
+    unsigned long long rdi_;
+    unsigned long long* rax_;
+    unsigned long long rbp_;
+    unsigned long long r8_;
+    unsigned long long r9_;
+    unsigned long long r10_;
+    unsigned long long r11_;
+    unsigned long long r12_;
+    unsigned long long r13_;
+    unsigned long long r14_;
+    unsigned long long r15_;
+};
+assert_offsetof(AllRegisters, XMM0, 0xA0);
+assert_offsetof(AllRegisters, XMM15, 0x190);
+assert_offsetof(AllRegisters, rbx_, 0x200);
+class AutoAssemblerCodeHolder_Base
+{
+public:
+    std::unique_ptr<AssemblerContext> m_ctx;
+public:
+    AutoAssemblerCodeHolder_Base();
+    using CCodeInTheMiddleFunctionPtr_t = void (*)(AllRegisters * parameters);
+    /*
+    The freaking god-combo of AutoAssembler.
+    jmp newmem
+    -> store registers
+    -> call [externalFuncAddr] (with ptr to registers as parameter)
+    -> restore registers
+    -> execute stolen bytes
+    -> jmp return
+    */
+    void PresetScript_CCodeInTheMiddle(uintptr_t whereToInject, size_t howManyBytesStolen, CCodeInTheMiddleFunctionPtr_t receiverFunc, std::optional<uintptr_t> whereToReturn, bool isNeedToExecuteStolenBytesAfterwards);
+};
 template<class HasAutoAssemblerCodeInConstructor>
 class AutoAssembleWrapper
 {
 private:
-    // On construction of this tiny helper object, the global AC is set.
-    struct ACLocalSetter {
-        AssemblerContext m_AssemblerContext;
-        ACLocalSetter() { g_assemblerContext = &m_AssemblerContext; }
-    };
-    ACLocalSetter m_ctx;
     HasAutoAssemblerCodeInConstructor m_CodeHolderInstantiation;
 public:
     AutoAssembleWrapper()
-        : m_ctx()   // Global Context is set before AA code is run.
-        , m_CodeHolderInstantiation()
+        : m_CodeHolderInstantiation()
     {
-        m_ctx.m_AssemblerContext.AllocateVariables();
-        m_ctx.m_AssemblerContext.ResolveSymbolAddresses();
-        m_ctx.m_AssemblerContext.ResolveSymbolReferences();
-        g_assemblerContext = nullptr;
+        m_CodeHolderInstantiation.m_ctx->AllocateVariables();
+        m_CodeHolderInstantiation.m_ctx->ResolveSymbolAddresses();
+        m_CodeHolderInstantiation.m_ctx->ResolveSymbolReferences();
     }
     void Activate()
     {
-        m_ctx.m_AssemblerContext.WriteChanges();
+        m_CodeHolderInstantiation.m_ctx->WriteChanges();
         m_IsActive = true;
     }
     void Deactivate()
     {
-        m_ctx.m_AssemblerContext.Unwrite();
+        m_CodeHolderInstantiation.m_ctx->Unwrite();
         m_IsActive = false;
     }
     void Toggle()
@@ -462,9 +528,9 @@ public:
         if (m_IsActive) { Deactivate(); }
     }
 
-    AssemblerContext& debug_GetAssemblerContext() { return m_ctx.m_AssemblerContext; }
+    AssemblerContext& debug_GetAssemblerContext() { return *m_CodeHolderInstantiation.m_ctx; }
 private:
     bool m_IsActive = false;
 };
 
-#define debug_GET_AA_SYMBOL(symbol) SymbolWithAnAddress* symbol = g_assemblerContext->GetSymbol(#symbol);
+#define debug_GET_AA_SYMBOL(assemblerCtxReference, symbol) SymbolWithAnAddress* symbol = assemblerCtxReference.GetSymbol(#symbol);
