@@ -25,9 +25,7 @@ void DrawHacksControls_notasync()
 }
 
 // Async-constructing the AutoAssemblerWrapper<CodeHolderObject> is better, because all the VirtualAllocs
-// produce a noticeable stutter on creationg otherwise.
-// But I cannot use it if there are at least two users of `g_assemblerContext`.
-// The global needs to be removed.
+// produce a noticeable stutter on creation otherwise.
 template<typename Ty>
 class AsyncConstructed
 {
@@ -62,18 +60,21 @@ void InspectAllRegisters(AllRegisters* parameters)
     int noop = 0;
 }
 
-struct CCodeInTheMiddle : AutoAssemblerCodeHolder_Base
+struct CCodeInTheMiddle_TEST : AutoAssemblerCodeHolder_Base
 {
-    CCodeInTheMiddle();
+    CCodeInTheMiddle_TEST();
 };
-CCodeInTheMiddle::CCodeInTheMiddle()
+CCodeInTheMiddle_TEST::CCodeInTheMiddle_TEST()
 {
     CCodeInTheMiddleFunctionPtr_t receiverFunc = &InspectAllRegisters;
-    uintptr_t whereToInject = 0x141A4C618;
-    constexpr size_t howManyBytesStolen = 8;
-    std::optional<uintptr_t> whereToReturn;
+    uintptr_t whereToInject = 0x141A4C641;
+    constexpr size_t howManyBytesStolen = 5;
     const bool isNeedToExecuteStolenBytesAfterwards = true;
-    PresetScript_CCodeInTheMiddle(whereToInject, howManyBytesStolen, receiverFunc, whereToReturn, isNeedToExecuteStolenBytesAfterwards);
+    PresetScript_CCodeInTheMiddle(
+        whereToInject, howManyBytesStolen
+        , receiverFunc
+        , RETURN_TO_RIGHT_AFTER_STOLEN_BYTES
+        , isNeedToExecuteStolenBytesAfterwards);
 }
 void DrawHacksControls()
 {
@@ -82,7 +83,7 @@ void DrawHacksControls()
     //          which is a simplified version of what Cheat Engine is doing and is fine for now.
 
     static AsyncConstructed<AutoAssembleWrapper<EnterWindowWhenRisPressed>> enteringWindows;
-    static AsyncConstructed<AutoAssembleWrapper<CCodeInTheMiddle>> ccodeInTheMiddle;
+    static AsyncConstructed<AutoAssembleWrapper<CCodeInTheMiddle_TEST>> ccodeInTheMiddle;
 
     if (auto* instance = enteringWindows.get())
     {

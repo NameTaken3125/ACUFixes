@@ -481,6 +481,7 @@ public:
 public:
     AutoAssemblerCodeHolder_Base();
     using CCodeInTheMiddleFunctionPtr_t = void (*)(AllRegisters * parameters);
+    static std::optional<uintptr_t> RETURN_TO_RIGHT_AFTER_STOLEN_BYTES;
     /*
     The freaking god-combo of AutoAssembler.
     jmp newmem
@@ -490,7 +491,10 @@ public:
     -> execute stolen bytes
     -> jmp return
     */
-    void PresetScript_CCodeInTheMiddle(uintptr_t whereToInject, size_t howManyBytesStolen, CCodeInTheMiddleFunctionPtr_t receiverFunc, std::optional<uintptr_t> whereToReturn, bool isNeedToExecuteStolenBytesAfterwards);
+    void PresetScript_CCodeInTheMiddle(
+        uintptr_t whereToInject , size_t howManyBytesStolen
+        , CCodeInTheMiddleFunctionPtr_t receiverFunc
+        , std::optional<uintptr_t> whereToReturn = RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, bool isNeedToExecuteStolenBytesAfterwards = true);
 };
 template<class HasAutoAssemblerCodeInConstructor>
 class AutoAssembleWrapper

@@ -428,6 +428,7 @@ void AssemblerContext::ResolveSymbolReferences()
     }
 }
 
+std::optional<uintptr_t> AutoAssemblerCodeHolder_Base::RETURN_TO_RIGHT_AFTER_STOLEN_BYTES;
 AutoAssemblerCodeHolder_Base::AutoAssemblerCodeHolder_Base()
     : m_ctx(std::make_unique<AssemblerContext>())
 {}
@@ -441,13 +442,6 @@ void AutoAssemblerCodeHolder_Base::PresetScript_CCodeInTheMiddle(uintptr_t where
     ALLOC_NAMED(newmem, symbolsBaseName + "__newmem", 0x1000, whereToInject);
     LABEL_NAMED(ccode_flattened, symbolsBaseName + "__ccode_flattened");
     LABEL_NAMED(cave_entrance, symbolsBaseName + "__cave_entrance");
-    /*DEFINE_ADDR(injectAt, whereToInject);
-    uintptr_t injectionReturnAddr = whereToReturn ? whereToReturn.value() : whereToInject + howManyBytesStolen;
-    DEFINE_ADDR(injection_return, injectionReturnAddr);
-
-    ALLOC(newmem, 0x1000, whereToInject);
-    LABEL(ccode_flattened);
-    LABEL(cave_entrance);*/
 
     injectAt = {
         0xE9, RIP(cave_entrance),
