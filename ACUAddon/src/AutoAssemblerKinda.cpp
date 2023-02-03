@@ -434,7 +434,9 @@ AutoAssemblerCodeHolder_Base::AutoAssemblerCodeHolder_Base()
 {}
 void AutoAssemblerCodeHolder_Base::PresetScript_CCodeInTheMiddle(uintptr_t whereToInject, size_t howManyBytesStolen, CCodeInTheMiddleFunctionPtr_t receiverFunc, std::optional<uintptr_t> whereToReturn, bool isNeedToExecuteStolenBytesAfterwards)
 {
-    std::string symbolsBaseName = "injectAt_" + std::to_string(whereToInject);
+    std::stringstream ss;
+    ss << std::hex << whereToInject;
+    std::string symbolsBaseName = "injectAt_" + ss.str();
     DEFINE_ADDR_NAMED(injectAt, symbolsBaseName, whereToInject);
     uintptr_t injectionReturnAddr = whereToReturn ? whereToReturn.value() : whereToInject + howManyBytesStolen;
     DEFINE_ADDR_NAMED(injection_return, symbolsBaseName + "__return", injectionReturnAddr);

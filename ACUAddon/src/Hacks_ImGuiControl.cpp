@@ -76,38 +76,82 @@ CCodeInTheMiddle_TEST::CCodeInTheMiddle_TEST()
         , RETURN_TO_RIGHT_AFTER_STOLEN_BYTES
         , isNeedToExecuteStolenBytesAfterwards);
 }
+struct AllowSlowMenacingWalk : AutoAssemblerCodeHolder_Base
+{
+    AllowSlowMenacingWalk();
+};
+#include <vmath/vmath.h>
+void AttenuateMovementVector(AllRegisters* params)
+{
+    Vector2f& movementVector = (Vector2f&)*params->rax_;
+    const bool isCapsLockOn = (GetKeyState(VK_CAPITAL) & 0x0001) != 0;
+    if (isCapsLockOn)
+    {
+        movementVector *= 0.5f;
+        int noop = 0;
+    }
+}
+AllowSlowMenacingWalk::AllowSlowMenacingWalk()
+{
+    CCodeInTheMiddleFunctionPtr_t receiverFunc = &AttenuateMovementVector;
+    uintptr_t whereToInject = 0x142739CBE;
+    constexpr size_t howManyBytesStolen = 7;
+    const bool isNeedToExecuteStolenBytesAfterwards = true;
+    PresetScript_CCodeInTheMiddle(
+        whereToInject, howManyBytesStolen
+        , receiverFunc
+        , RETURN_TO_RIGHT_AFTER_STOLEN_BYTES
+        , isNeedToExecuteStolenBytesAfterwards);
+}
+class MyHacks
+{
+public:
+    AutoAssembleWrapper<EnterWindowWhenRisPressed> enteringWindows;
+    AutoAssembleWrapper<CCodeInTheMiddle_TEST> ccodeInTheMiddle;
+    AutoAssembleWrapper<AllowSlowMenacingWalk> menacingWalk;
+    void DrawControls()
+    {
+        if (auto* instance = &enteringWindows)
+        {
+            bool isActive = instance->IsActive();
+            if (ImGui::Checkbox("Enter windows by pressing R", &isActive))
+            {
+                instance->Toggle();
+            }
+            DrawAssemblerContextDebug(instance->debug_GetAssemblerContext());
+        }
+
+        if (auto* instance = &ccodeInTheMiddle)
+        {
+            bool isActive = instance->IsActive();
+            if (ImGui::Checkbox("Inspect all registers at 0x141A4C641", &isActive))
+            {
+                instance->Toggle();
+            }
+        }
+
+        if (auto* instance = &menacingWalk)
+        {
+            bool isActive = instance->IsActive();
+            if (ImGui::Checkbox("Allow Slow Menacing Walk", &isActive))
+            {
+                instance->Toggle();
+            }
+        }
+    }
+};
 void DrawHacksControls()
 {
     // WARNING: running 2+ of these in async has been known to create a race in AssemblerContext::AllocateVariables()
     //          (between `FindFreeBlockForRegion()` and `VirtualAlloc()`). This has been alleviated by adding 10 tries,
     //          which is a simplified version of what Cheat Engine is doing and is fine for now.
 
-    static AsyncConstructed<AutoAssembleWrapper<EnterWindowWhenRisPressed>> enteringWindows;
-    static AsyncConstructed<AutoAssembleWrapper<CCodeInTheMiddle_TEST>> ccodeInTheMiddle;
-
-    if (auto* instance = enteringWindows.get())
+    static AsyncConstructed<MyHacks> myHacks;
+    if (auto* instance = myHacks.get())
     {
-        bool isActive = instance->IsActive();
-        if (ImGui::Checkbox("Enter windows by pressing R", &isActive))
-        {
-            instance->Toggle();
-        }
-        DrawAssemblerContextDebug(instance->debug_GetAssemblerContext());
+        instance->DrawControls();
     }
-    else if (auto* exc = enteringWindows.GetException())
-    {
-        int noop = 0;
-    }
-
-    if (auto* instance = ccodeInTheMiddle.get())
-    {
-        bool isActive = instance->IsActive();
-        if (ImGui::Checkbox("Inspect all registers", &isActive))
-        {
-            instance->Toggle();
-        }
-    }
-    else if (auto* exc = ccodeInTheMiddle.GetException())
+    else if (auto* exc = myHacks.GetException())
     {
         int noop = 0;
     }

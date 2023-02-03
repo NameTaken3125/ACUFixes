@@ -183,12 +183,12 @@ The workflow I had in mind is the following:
 
 #include <vector>
 
-#define DEFINE_ADDR(symbol, addr) static StaticSymbol& symbol = m_ctx->MakeNew_Define(addr, #symbol);
-#define DEFINE_ADDR_NAMED(symbol, name, addr) static StaticSymbol& symbol = m_ctx->MakeNew_Define(addr, name);
-#define ALLOC(symbol, size, preferredAddrOptional) static AllocatedWriteableSymbol& symbol = m_ctx->MakeNew_Alloc(size, #symbol, preferredAddrOptional);
-#define ALLOC_NAMED(symbol, name, size, preferredAddrOptional) static AllocatedWriteableSymbol& symbol = m_ctx->MakeNew_Alloc(size, name, preferredAddrOptional);
-#define LABEL(symbol) static Label& symbol = m_ctx->MakeNew_Label(#symbol);
-#define LABEL_NAMED(symbol, name) static Label& symbol = m_ctx->MakeNew_Label(name);
+#define DEFINE_ADDR(symbol, addr) StaticSymbol& symbol = m_ctx->MakeNew_Define(addr, #symbol);
+#define DEFINE_ADDR_NAMED(symbol, name, addr) StaticSymbol& symbol = m_ctx->MakeNew_Define(addr, name);
+#define ALLOC(symbol, size, preferredAddrOptional) AllocatedWriteableSymbol& symbol = m_ctx->MakeNew_Alloc(size, #symbol, preferredAddrOptional);
+#define ALLOC_NAMED(symbol, name, size, preferredAddrOptional) AllocatedWriteableSymbol& symbol = m_ctx->MakeNew_Alloc(size, name, preferredAddrOptional);
+#define LABEL(symbol) Label& symbol = m_ctx->MakeNew_Label(#symbol);
+#define LABEL_NAMED(symbol, name) Label& symbol = m_ctx->MakeNew_Label(name);
 
 class db
 {
