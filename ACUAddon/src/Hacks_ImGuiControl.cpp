@@ -103,47 +103,131 @@ AllowSlowMenacingWalk::AllowSlowMenacingWalk()
         , RETURN_TO_RIGHT_AFTER_STOLEN_BYTES
         , isNeedToExecuteStolenBytesAfterwards);
 }
+template<typename floatlike>
+floatlike simple_interp(floatlike mn, floatlike mx)
+{
+    auto now = GetTickCount64();
+    float speed = 0.001f * 1.5f;
+    float interp = sin(now * speed);
+    interp = (interp + 1) / 2;
+    return mn + (mx - mn) * interp;
+}
+void FOVGames(AllRegisters* params)
+{
+    params->XMM1.f0 = simple_interp(0.5f, 1.0f);
+}
+struct PlayWithFOV : AutoAssemblerCodeHolder_Base
+{
+    PlayWithFOV()
+    {
+        PresetScript_CCodeInTheMiddle(
+            0x141F3FE3B, 6
+            , FOVGames
+            , RETURN_TO_RIGHT_AFTER_STOLEN_BYTES
+            , true);
+    }
+};
+
+#include "ManagedObject.h"
+#include "ACUGetSingletons.h"
+#include "Entity.h"
+class ITargetPrecision : public Object
+{
+public:
+    char pad_0008[32]; //0x0008
+}; //Size: 0x0028
+
+class ThrowTargetPrecision : public ITargetPrecision
+{
+public:
+    char pad_0028[8]; //0x0028
+    Vector4f predictionBeamEnd; //0x0030
+    char pad_0040[36]; //0x0040
+    float angleZ; //0x0064
+    float distanceToBeamEnd; //0x0068
+    float heightWhereTheCameraAims; //0x006C
+    Vector4f predictionBeamOrigin; //0x0070
+    float flt_80; //0x0080
+    float flt_84; //0x0084
+    float flt_88; //0x0088
+    float flt_8C; //0x008C
+    float flt_90; //0x0090
+    char pad_0094[12]; //0x0094
+}; //Size: 0x00A0
+void MakeAimHeightOscillate(AllRegisters* params)
+{
+    float result = simple_interp(0.5f, 5.0f);
+    params->XMM0.f0 = result;
+}
+struct PlayWithBombAimCameraTracker : AutoAssemblerCodeHolder_Base
+{
+    PlayWithBombAimCameraTracker()
+    {
+        PresetScript_CCodeInTheMiddle(
+            0x14055B464, 5
+            , MakeAimHeightOscillate
+            , RETURN_TO_RIGHT_AFTER_STOLEN_BYTES
+            , true);
+    }
+};
+void OverrideThrowPredictorBeamPosition(AllRegisters* params)
+{
+    // At this injection point (0x14055B4BB) RBX == ThrowTargetPrecision* and takes two values:
+    // two systems that receive messages about the predictor beam's results.
+    // One regulates camera rotation around Z, the other one - rotation around camera's left-right axis.
+    Entity* player = ACU::GetPlayer();
+    static Vector4f farthestResult;
+    ThrowTargetPrecision* thr = (ThrowTargetPrecision*)params->rbx_;
+    thr->predictionBeamEnd.z = player->GetPosition().z + 1;
+    //(Vector3f&)thr->predictionBeamEnd = player->GetPosition() + Vector3f{ 0, 3, 1 };
+}
+struct PlayWithBombAimCameraTracker2 : AutoAssemblerCodeHolder_Base
+{
+    PlayWithBombAimCameraTracker2()
+    {
+        PresetScript_CCodeInTheMiddle(
+            0x14055B4BB, 8
+            , OverrideThrowPredictorBeamPosition
+            , RETURN_TO_RIGHT_AFTER_STOLEN_BYTES
+            , true);
+    }
+};
 class MyHacks
 {
 public:
     AutoAssembleWrapper<EnterWindowWhenRisPressed> enteringWindows;
     AutoAssembleWrapper<CCodeInTheMiddle_TEST> ccodeInTheMiddle;
     AutoAssembleWrapper<AllowSlowMenacingWalk> menacingWalk;
-    void DrawControls()
+    AutoAssembleWrapper<PlayWithFOV> fovGames;
+    AutoAssembleWrapper<PlayWithBombAimCameraTracker> bombAimExperiments;
+    AutoAssembleWrapper<PlayWithBombAimCameraTracker2> bombAimExperiments2;
+    template<class Hack>
+    void DrawCheckboxForHack(Hack& hack, const std::string_view& text)
     {
-        if (auto* instance = &enteringWindows)
+        if (auto* instance = &hack)
         {
             bool isActive = instance->IsActive();
-            if (ImGui::Checkbox("Enter windows by pressing R", &isActive))
-            {
-                instance->Toggle();
-            }
-            DrawAssemblerContextDebug(instance->debug_GetAssemblerContext());
-        }
-
-        if (auto* instance = &ccodeInTheMiddle)
-        {
-            bool isActive = instance->IsActive();
-            if (ImGui::Checkbox("Inspect all registers at 0x141A4C641", &isActive))
-            {
-                instance->Toggle();
-            }
-        }
-
-        if (auto* instance = &menacingWalk)
-        {
-            bool isActive = instance->IsActive();
-            if (ImGui::Checkbox("Allow Slow Menacing Walk", &isActive))
+            if (ImGui::Checkbox(text.data(), &isActive))
             {
                 instance->Toggle();
             }
         }
     }
+    void DrawControls()
+    {
+        DrawCheckboxForHack(enteringWindows, "Enter windows by pressing R");
+        DrawCheckboxForHack(ccodeInTheMiddle, "Inspect all registers at 0x141A4C641");
+        DrawCheckboxForHack(menacingWalk, "Allow Slow Menacing Walk");
+        DrawCheckboxForHack(fovGames, "Play with FOV");
+        DrawCheckboxForHack(bombAimExperiments, "Bomb aim experiments");
+        DrawCheckboxForHack(bombAimExperiments2, "Bomb aim experiments2");
+    }
 };
 void DrawHacksControls()
 {
     // WARNING: running 2+ of these in async has been known to create a race in AssemblerContext::AllocateVariables()
-    //          (between `FindFreeBlockForRegion()` and `VirtualAlloc()`). This has been alleviated by adding 10 tries,
+    //          (between `FindFreeBlockForRegion()` and `VirtualAlloc()`).
+    //          This has been only very slightly alleviated by adding 10 tries,
     //          which is a simplified version of what Cheat Engine is doing and is fine for now.
 
     static AsyncConstructed<MyHacks> myHacks;
