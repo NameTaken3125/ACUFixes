@@ -96,9 +96,9 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
     }
 }
 
-#include "ACUGetSingletons.h"
-#include "Entity.h"
-#include "RenderValuesHolder.h"
+#include "ACU/ACUGetSingletons.h"
+#include "ACU/Entity.h"
+#include "ACU/RenderValuesHolder.h"
 
 Matrix4f MakeSimpleDebugTransform(const Vector3f& position)
 {

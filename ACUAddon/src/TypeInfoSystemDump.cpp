@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include "TypeInfo.h"
+#include "ACU/TypeInfo.h"
 #include "ImGuiCTX.h"
 
 bool IsInMainGameModule(uintptr_t addr)
@@ -262,6 +262,7 @@ void TypeInfoSystemDump::Draw()
             "to get through the rest of the list, but the crashes will still happen.\n"
             "To fully create the dump, just restart the game a few times, starting from the last failed type.\n"
             "Will only take 3-4 repeats.\n"
+            "The results will be appended to imgui_log.txt in the game's directory.\n"
         );
         static size_t attemptedConstructionFirstIdx = 0;
         static size_t howManyToAttempt = 10000;

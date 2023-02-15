@@ -417,8 +417,8 @@ public:
     SymbolWithAnAddress* GetSymbol(const std::string_view& symbolName);
 };
 
-
-#include "basic_types.h"
+// Only included for the asserts.
+#include "ACU/basic_types.h"
 typedef struct {
     union {
         struct {

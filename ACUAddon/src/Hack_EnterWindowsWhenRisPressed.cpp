@@ -131,8 +131,8 @@ void Patch_RememberRbuttonState(AllocatedWriteableSymbol& isRequestedToEnterWind
 using FuncName##_t = returnType(callingConvention*)allParamsInParentheses;\
 FuncName##_t FuncName = (FuncName##_t)relativeOffset;
 
-#include "Parkour_PotentialWindowEntry.h"
-#include "SmallArray.h"
+#include "ACU/Parkour_PotentialWindowEntry.h"
+#include "ACU/SmallArray.h"
 class WindowEntryTester;
 DEFINE_GAME_FUNCTION(WindowEntryTester__InitializeForFrame_mb, 0x1401858D0, int, __fastcall, (WindowEntryTester* a1, Vector4f* p_handsPosition, Vector4f* p_movementDirInGroundPlane, float p_WASDmagnitude, int p_eq6fullLean, __int64 p_currentLedge_mb));
 DEFINE_GAME_FUNCTION(FindMatchingParkourActionsForCurrentMovement_P, 0x140185630, __int64, __fastcall, (WindowEntryTester* a1, Vector4f* p_handsPosition, Vector4f* p_towardWallCoplanarWithPlayerEntity, Vector4f* p_movementDirInGroundPlane, float p_WASDmagnitude, int p_eq6_fullLean, unsigned __int8 a7, __int64 p_currentLedge_mb, SmallArray<PotentialWindowEntry*>* p_arrayPotentialMovesOut));

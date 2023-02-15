@@ -1,8 +1,8 @@
 #include "pch.h"
 
-#include "World.h"
-#include "Entity.h"
-#include "ACUPlayerCameraComponent.h"
+#include "ACU/World.h"
+#include "ACU/Entity.h"
+#include "ACU/ACUPlayerCameraComponent.h"
 
 
 World* World::GetSingleton()

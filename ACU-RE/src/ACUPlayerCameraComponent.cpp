@@ -1,8 +1,8 @@
 #include "pch.h"
 
-#include "ACUPlayerCameraComponent.h"
-#include "CameraManager.h"
-#include "SmallArray.h"
+#include "ACU/ACUPlayerCameraComponent.h"
+#include "ACU/CameraManager.h"
+#include "ACU/SmallArray.h"
 
 ACUPlayerCameraComponent* ACUPlayerCameraComponent::GetSingleton()
 {

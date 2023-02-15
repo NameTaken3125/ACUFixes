@@ -128,9 +128,9 @@ struct PlayWithFOV : AutoAssemblerCodeHolder_Base
     }
 };
 
-#include "ManagedObject.h"
-#include "ACUGetSingletons.h"
-#include "Entity.h"
+#include "ACU/ManagedObject.h"
+#include "ACU/ACUGetSingletons.h"
+#include "ACU/Entity.h"
 class ITargetPrecision : public Object
 {
 public:
