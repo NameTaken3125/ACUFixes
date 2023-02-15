@@ -73,4 +73,14 @@ ImGuiWireModel& GetCrossModel();
 
 void DrawWireModel(const ImGui3D::ImGuiWireModel& model, const Vector3f& position);
 void DrawWireModelTransform(const ImGui3D::ImGuiWireModel& model, const Matrix4f& transform);
+
+void DrawLocationOnce(const Vector3f& location);
+void DrawLocationAndPersist(const Vector3f& location);
+void DrawLocationNamed(const Vector3f& location, const std::string_view& name);
+
+void DrawMarkers();
+void DrawPersistent3DMarkersControls();
 }
+
+
+std::optional<Vector3f> ParseVector3fFromClipboard();

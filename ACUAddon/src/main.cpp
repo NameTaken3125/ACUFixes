@@ -28,31 +28,11 @@ void ImGuiPrintMatrix(const Matrix4f& mat)
     ss << #x << ": " << std::hex << (uintptr_t)x;\
     ImGui::Text(ss.str().c_str());\
 }
-Vector3f g_VisualizedDebugLocation;
 Vector3f g_VisualizedDebugDirection;
-std::optional<Vector3f> ParseVector3fFromClipboard()
-{
-    std::stringstream ss;
-    ss << ImGui::GetClipboardText();
-    std::istream_iterator<float> the_end;
-    std::istream_iterator<float> inputFloatIterator{ ss };
-    Vector3f result;
-    for (size_t i = 0; i < 3; i++)
-    {
-        if (inputFloatIterator == the_end)
-        {
-            // Failed to parse 3 floats.
-            return {};
-        }
-        ((float*)&result)[i] = *inputFloatIterator;
-        inputFloatIterator++;
-    }
-    // Parsed all 3 floats.
-    return result;
-}
 void VisualizeLocationFromClipboard()
 {
-    g_VisualizedDebugLocation = ParseVector3fFromClipboard().value_or(g_VisualizedDebugLocation);
+    Vector3f visualizedLoc = ParseVector3fFromClipboard().value_or(Vector3f());
+    ImGui3D::DrawLocationNamed(visualizedLoc, "Vizualized Loc");
 }
 void VisualizeDirectionFromClipboard()
 {
@@ -67,9 +47,9 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
     {
         if (ImGuiCTX::TabBar _tabbar{ "MainWindowTabs" })
         {
-            if (ImGuiCTX::Tab _mainTab{ "MainTab" })
+            if (ImGuiCTX::Tab _3dMarkersTab{ "3D Markers" })
             {
-                DrawHacksControls();
+                ImGui3D::DrawPersistent3DMarkersControls();
                 if (ImGui::Button("Visualize location from clipboard"))
                 {
                     VisualizeLocationFromClipboard();
@@ -78,6 +58,10 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
                 {
                     VisualizeDirectionFromClipboard();
                 }
+            }
+            if (ImGuiCTX::Tab _mainTab{ "MainTab" })
+            {
+                DrawHacksControls();
                 IMGUI_DUMPHEX(Data::pSwapChain);
                 IMGUI_DUMPHEX(Data::pPresent);
                 IMGUI_DUMPHEX(Data::pDxDevice11);
@@ -171,13 +155,13 @@ void ImGuizmoLayer()
     ImGui3D::g_DrawList = ImGui::GetWindowDrawList();
 
     ImGui3D::DrawWireModel(ImGui3D::GetArrowModel(), testPosition);
+    ImGui3D::DrawMarkers();
     if (player)
     {
         Matrix4f debugDirectionTransform;
         debugDirectionTransform.setRotation(MakeRotationAlignZWithVector(g_VisualizedDebugDirection));
         debugDirectionTransform = Matrix4f::createTranslation(player->GetPosition()) * debugDirectionTransform;
         ImGui3D::DrawWireModelTransform(ImGui3D::GetArrowModel(), debugDirectionTransform);
-        ImGui3D::DrawWireModel(ImGui3D::GetCrossModel(), g_VisualizedDebugLocation);
         ImGui3D::DrawWireModelTransform(ImGui3D::GetArrowModel(), player->GetTransform());
         ImGui3D::DrawWireModelTransform(grid5_model, player->GetTransform());
     }
@@ -189,6 +173,7 @@ void DrawImGuizmo()
     // ImGuizmo only draws within the bounds of an ImGui Window.
     // Create a window the size of the screen with a transparent background.
     ImVec2 windowSize = { 1680, 1050 };
+    ImGui3D::g_WindowSize = (Vector2f&)windowSize;
     ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
     ImGui::SetNextWindowPos({ 0, 0 }, ImGuiCond_Always);
     ImGuiWindowFlags imguizmoWindowFlags = 0;

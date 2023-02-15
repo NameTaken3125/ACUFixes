@@ -1,9 +1,10 @@
 #include "pch.h"
 
 #include "ImGui3D.h"
+#include "ImGuiCTX.h"
 
 namespace ImGui3D {
-Vector2f g_WindowSize = { 1680, 1050 };
+Vector2f g_WindowSize;
 
 Matrix4f g_ViewProjection;
 ImDrawList* g_DrawList = nullptr;
@@ -152,4 +153,126 @@ ImGuiWireModel& GetCrossModel()
     return crossModel;
 }
 
+
+std::vector<Vector3f> m_LocationsOnce;
+using MarkerID_t = std::variant<std::string, int>;
+std::unordered_map<MarkerID_t, Vector3f> m_LocationsWithID;
+std::atomic<int> m_IntegralIDCounter{};
+void DrawLocationOnce(const Vector3f& location)
+{
+    m_LocationsOnce.push_back(location);
+}
+void DrawLocationAndPersist(const Vector3f& location)
+{
+    m_LocationsWithID[m_IntegralIDCounter++] = location;
+}
+void DrawLocationNamed(const Vector3f& location, const std::string_view& name)
+{
+    m_LocationsWithID[name.data()] = location;
+}
+void DrawMarkers()
+{
+    for (auto& pt : m_LocationsOnce)
+    {
+        ImGui3D::DrawWireModel(ImGui3D::GetCrossModel(), pt);
+    }
+    m_LocationsOnce.clear();
+    for (auto& [id, pt] : m_LocationsWithID)
+    {
+        ImGui3D::DrawWireModel(ImGui3D::GetCrossModel(), pt);
+    }
+}
+
+void DrawPersistent3DMarkersControls()
+{
+    ImGuiCTX::WindowChild _{ "PersistentMarkers", {0, 250}, true };
+    if (ImGui::Button("Add"))
+    {
+        DrawLocationAndPersist(Vector3f());
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Add from clipboard"))
+    {
+        std::optional<Vector3f> parsedVec = ParseVector3fFromClipboard();
+        if (parsedVec)
+        {
+            DrawLocationAndPersist(*parsedVec);
+        }
+    }
+
+    static std::optional<MarkerID_t> lastSelectedMarkerIDforPopup;
+    std::optional<MarkerID_t> selectedMarkerID;
+    std::optional<MarkerID_t> toDelete;
+    ImGui::Columns(2);
+    for (auto& [id, pt] : m_LocationsWithID)
+    {
+        ImGui::PushID((const void*)&pt);
+        std::string asString = pt.toString();
+        if (const std::string* strId = std::get_if<std::string>(&id))
+        {
+            asString.append(" - \"" + *strId + '"');
+        }
+        if (ImGui::Selectable(asString.c_str()))
+        {
+            selectedMarkerID = id;
+        }
+        ImGui::NextColumn();
+        if (ImGui::Button("Delete"))
+        {
+            toDelete = id;
+        }
+        ImGui::NextColumn();
+        ImGui::PopID();
+    }
+
+    if (selectedMarkerID)
+    {
+        lastSelectedMarkerIDforPopup = selectedMarkerID;
+        ImGui::OpenPopup("PersistentMarkerCtxMenu");
+    }
+    if (ImGuiCTX::Popup _{ "PersistentMarkerCtxMenu" })
+    {
+        if (ImGui::Button("Parse Location from Clipboard"))
+        {
+            std::optional<Vector3f> parsedVec = ParseVector3fFromClipboard();
+            if (parsedVec)
+            {
+                m_LocationsWithID[lastSelectedMarkerIDforPopup.value()] = *parsedVec;
+            }
+        }
+        ImGui::DragFloat3("Location", m_LocationsWithID[lastSelectedMarkerIDforPopup.value()], 0.1f);
+        if (ImGui::Button("Delete"))
+        {
+            toDelete = lastSelectedMarkerIDforPopup;
+            ImGui::CloseCurrentPopup();
+        }
+    }
+    if (toDelete)
+    {
+        m_LocationsWithID.erase(*toDelete);
+    }
+}
+
 } // namespace ImGui3D
+
+
+std::optional<Vector3f> ParseVector3fFromClipboard()
+{
+    std::stringstream ss;
+    ss << ImGui::GetClipboardText();
+    std::istream_iterator<float> the_end;
+    std::istream_iterator<float> inputFloatIterator{ ss };
+    Vector3f result;
+    for (size_t i = 0; i < 3; i++)
+    {
+        if (inputFloatIterator == the_end)
+        {
+            // Failed to parse 3 floats.
+            return {};
+        }
+        ((float*)&result)[i] = *inputFloatIterator;
+        inputFloatIterator++;
+    }
+    // Parsed all 3 floats.
+    return result;
+}
