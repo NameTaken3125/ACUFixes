@@ -20,6 +20,7 @@
     <ClInclude Include="inc\RenderValuesHolder.h" />
     <ClInclude Include="inc\Parkour_PotentialWindowEntry.h" />
     <ClInclude Include="inc\Parkour_WhileOnWallSystem.h" />
+    <ClInclude Include="inc\TypeInfo.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />

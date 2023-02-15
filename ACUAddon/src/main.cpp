@@ -59,31 +59,41 @@ void VisualizeDirectionFromClipboard()
     g_VisualizedDebugDirection = ParseVector3fFromClipboard().value_or(g_VisualizedDebugDirection);
 }
 void DrawHacksControls();
+void TypeInfoSystemTests();
 void Base::ImGuiLayer_WhenMenuIsOpen()
 {
-    ImGui::GetIO().MouseDrawCursor = true;
-    if (ImGui::Begin("Stuff"))
+    ImGui::ShowDemoWindow();
+    if (ImGuiCTX::Window _mainWindow{ "Stuff" })
     {
-        DrawHacksControls();
-        if (ImGui::Button("Visualize location from clipboard"))
+        if (ImGuiCTX::TabBar _tabbar{ "MainWindowTabs" })
         {
-            VisualizeLocationFromClipboard();
+            if (ImGuiCTX::Tab _mainTab{ "MainTab" })
+            {
+                DrawHacksControls();
+                if (ImGui::Button("Visualize location from clipboard"))
+                {
+                    VisualizeLocationFromClipboard();
+                }
+                if (ImGui::Button("Visualize direction from clipboard"))
+                {
+                    VisualizeDirectionFromClipboard();
+                }
+                IMGUI_DUMPHEX(Data::pSwapChain);
+                IMGUI_DUMPHEX(Data::pPresent);
+                IMGUI_DUMPHEX(Data::pDxDevice11);
+                IMGUI_DUMPHEX(Data::pContext);
+                ImGui::Text("Projection tuning:");
+                ImGui::Text("View:");
+                ImGuiPrintMatrix(gameMatView);
+                ImGui::Text("Proj:");
+                ImGuiPrintMatrix(gameMatProj);
+            }
+            if (ImGuiCTX::Tab _typeInfosTab{ "TypeInfosTab" })
+            {
+                TypeInfoSystemTests();
+            }
         }
-        if (ImGui::Button("Visualize direction from clipboard"))
-        {
-            VisualizeDirectionFromClipboard();
-        }
-        IMGUI_DUMPHEX(Data::pSwapChain);
-        IMGUI_DUMPHEX(Data::pPresent);
-        IMGUI_DUMPHEX(Data::pDxDevice11);
-        IMGUI_DUMPHEX(Data::pContext);
-        ImGui::Text("Projection tuning:");
-        ImGui::Text("View:");
-        ImGuiPrintMatrix(gameMatView);
-        ImGui::Text("Proj:");
-        ImGuiPrintMatrix(gameMatProj);
     }
-    ImGui::End();
 }
 
 #include "ACUGetSingletons.h"

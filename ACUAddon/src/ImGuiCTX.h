@@ -20,6 +20,50 @@ public:
     }
     operator bool() { return m_isOpened; }
 };
+class WindowChild
+{
+public:
+    WindowChild(const char* str_id, const ImVec2& size = ImVec2(0, 0), bool border = false, ImGuiWindowFlags flags = 0)
+    {
+        ImGui::BeginChild(str_id, size, border, flags);
+    }
+    ~WindowChild()
+    {
+        ImGui::EndChild();
+    }
+};
+class TabBar
+{
+    bool m_opened;
+public:
+    TabBar(const char* str_id, ImGuiTabBarFlags flags = 0)
+    {
+        m_opened = ImGui::BeginTabBar(str_id, flags);
+    }
+    ~TabBar()
+    {
+        if (m_opened) {
+            ImGui::EndTabBar();
+        }
+    }
+    operator bool() { return m_opened; }
+};
+class Tab
+{
+    bool m_opened;
+public:
+    Tab(const char* label, bool* p_open = NULL, ImGuiTabItemFlags flags = 0)
+    {
+        m_opened = ImGui::BeginTabItem(label, p_open, flags);
+    }
+    ~Tab()
+    {
+        if (m_opened) {
+            ImGui::EndTabItem();
+        }
+    }
+    operator bool() { return m_opened; }
+};
 class TreeNode
 {
     bool m_opened;
@@ -32,6 +76,38 @@ public:
     {
         if (m_opened) {
             ImGui::TreePop();
+        }
+    }
+    operator bool() { return m_opened; }
+};
+class Popup
+{
+    bool m_opened;
+public:
+    Popup(const char* std_id, ImGuiWindowFlags flags = 0)
+    {
+        m_opened = ImGui::BeginPopup(std_id, flags);
+    }
+    ~Popup()
+    {
+        if (m_opened) {
+            ImGui::EndPopup();
+        }
+    }
+    operator bool() { return m_opened; }
+};
+class PopupModal
+{
+    bool m_opened;
+public:
+    PopupModal(const char* name, bool* p_open = NULL, ImGuiWindowFlags flags = 0)
+    {
+        m_opened = ImGui::BeginPopupModal(name, p_open, flags);
+    }
+    ~PopupModal()
+    {
+        if (m_opened) {
+            ImGui::EndPopup();
         }
     }
     operator bool() { return m_opened; }

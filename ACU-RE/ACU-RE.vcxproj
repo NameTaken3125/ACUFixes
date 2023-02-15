@@ -179,6 +179,7 @@
     <ClInclude Include="inc\RenderValuesHolder.h" />
     <ClInclude Include="inc\SmallArray.h" />
     <ClInclude Include="inc\Statechart.h" />
+    <ClInclude Include="inc\TypeInfo.h" />
     <ClInclude Include="inc\World.h" />
     <ClInclude Include="src\framework.h" />
     <ClInclude Include="src\pch.h" />

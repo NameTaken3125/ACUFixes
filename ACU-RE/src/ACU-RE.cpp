@@ -14,3 +14,5 @@
 
 #include "Parkour_PotentialWindowEntry.h"
 #include "Parkour_WhileOnWallSystem.h"
+
+#include "TypeInfo.h"

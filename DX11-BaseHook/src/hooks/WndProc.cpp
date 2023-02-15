@@ -13,6 +13,7 @@ LRESULT CALLBACK Base::Hooks::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		{
 		case Data::Keys::ToggleMenu:
 			Data::ShowMenu = !Data::ShowMenu;
+            ImGui::GetIO().MouseDrawCursor = Data::ShowMenu;
 			break;
 		case Data::Keys::DetachDll:
 			Base::Detach();

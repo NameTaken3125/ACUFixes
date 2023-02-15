@@ -13,6 +13,7 @@
 #include <memory>
 #include <vector>
 #include <array>
+#include <set>
 #include <iostream>
 #include <sstream>
 #include <optional>
