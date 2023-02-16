@@ -153,22 +153,36 @@ ImGuiWireModel& GetCrossModel()
     return crossModel;
 }
 
-
 std::vector<Vector3f> m_LocationsOnce;
-using MarkerID_t = std::variant<std::string, int>;
-std::unordered_map<MarkerID_t, Vector3f> m_LocationsWithID;
+struct PersistentMarker_Location
+{
+    Vector3f m_Location;
+    std::optional<std::string> m_Name;
+};
 std::atomic<int> m_IntegralIDCounter{};
+using MarkerID_t = int;
+std::unordered_map<std::string, MarkerID_t> m_MarkerIDforName;
+std::map<MarkerID_t, PersistentMarker_Location> m_LocationsWithID;
 void DrawLocationOnce(const Vector3f& location)
 {
     m_LocationsOnce.push_back(location);
 }
 void DrawLocationAndPersist(const Vector3f& location)
 {
-    m_LocationsWithID[m_IntegralIDCounter++] = location;
+    m_LocationsWithID[m_IntegralIDCounter++].m_Location = location;
 }
-void DrawLocationNamed(const Vector3f& location, const std::string_view& name)
+void DrawLocationNamed(const Vector3f& location, const std::string& name)
 {
-    m_LocationsWithID[name.data()] = location;
+    auto foundID = m_MarkerIDforName.find(name);
+    const bool needsNewID = foundID == m_MarkerIDforName.end();
+    MarkerID_t id = needsNewID ? MarkerID_t{ m_IntegralIDCounter++ } : foundID->second;
+    auto& marker = m_LocationsWithID[id];
+    if (needsNewID)
+    {
+        m_MarkerIDforName[name] = id;
+        marker.m_Name = name;
+    }
+    marker.m_Location = location;
 }
 std::optional<MarkerID_t> g_HoveredEditableMarkerID;
 void DrawMarkers()
@@ -181,7 +195,7 @@ void DrawMarkers()
     for (auto& [id, pt] : m_LocationsWithID)
     {
         float thicknessMultiplier = (g_HoveredEditableMarkerID && *g_HoveredEditableMarkerID == id) ? 3 : 1;
-        ImGui3D::DrawWireModel(ImGui3D::GetCrossModel(), pt, thicknessMultiplier);
+        ImGui3D::DrawWireModel(ImGui3D::GetCrossModel(), pt.m_Location, thicknessMultiplier);
     }
 }
 
@@ -210,10 +224,10 @@ void DrawPersistent3DMarkersControls()
     for (auto& [id, pt] : m_LocationsWithID)
     {
         ImGui::PushID((const void*)&pt);
-        std::string asString = pt.toString();
-        if (const std::string* strId = std::get_if<std::string>(&id))
+        std::string asString = pt.m_Location.toString();
+        if (pt.m_Name)
         {
-            asString.append(" - \"" + *strId + '"');
+            asString.append(" - \"" + *pt.m_Name + '"');
         }
         if (ImGui::Selectable(asString.c_str()))
         {
@@ -244,10 +258,10 @@ void DrawPersistent3DMarkersControls()
             std::optional<Vector3f> parsedVec = ParseVector3fFromClipboard();
             if (parsedVec)
             {
-                m_LocationsWithID[lastSelectedMarkerIDforPopup.value()] = *parsedVec;
+                m_LocationsWithID[lastSelectedMarkerIDforPopup.value()].m_Location = *parsedVec;
             }
         }
-        ImGui::DragFloat3("Location", m_LocationsWithID[lastSelectedMarkerIDforPopup.value()], 0.1f);
+        ImGui::DragFloat3("Location", m_LocationsWithID[lastSelectedMarkerIDforPopup.value()].m_Location, 0.1f);
         if (ImGui::Button("Delete"))
         {
             toDelete = lastSelectedMarkerIDforPopup;

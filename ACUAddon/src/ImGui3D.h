@@ -76,7 +76,7 @@ void DrawWireModelTransform(const ImGui3D::ImGuiWireModel& model, const Matrix4f
 
 void DrawLocationOnce(const Vector3f& location);
 void DrawLocationAndPersist(const Vector3f& location);
-void DrawLocationNamed(const Vector3f& location, const std::string_view& name);
+void DrawLocationNamed(const Vector3f& location, const std::string& name);
 
 void DrawMarkers();
 void DrawPersistent3DMarkersControls();
