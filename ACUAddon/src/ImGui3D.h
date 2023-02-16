@@ -71,8 +71,8 @@ ImGuiWireModel& GetArrowModel();
 ImGuiWireModel& GetCrossModel();
 
 
-void DrawWireModel(const ImGui3D::ImGuiWireModel& model, const Vector3f& position);
-void DrawWireModelTransform(const ImGui3D::ImGuiWireModel& model, const Matrix4f& transform);
+void DrawWireModel(const ImGui3D::ImGuiWireModel& model, const Vector3f& position, float thicknessMultiplier = 1);
+void DrawWireModelTransform(const ImGui3D::ImGuiWireModel& model, const Matrix4f& transform, float thicknessMultiplier = 1);
 
 void DrawLocationOnce(const Vector3f& location);
 void DrawLocationAndPersist(const Vector3f& location);

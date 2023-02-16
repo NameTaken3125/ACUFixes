@@ -21,8 +21,8 @@ std::optional<Vector2f> World2Screen(const Vector3f& ptWorld)
     ptScreenSpace *= g_WindowSize / 2;
     return ptScreenSpace;
 };
-
-void DrawWireModel(const ImGuiWireModel& model, const Vector3f& position)
+const float g_WireModelDefaultThickness = 2;
+void DrawWireModel(const ImGuiWireModel& model, const Vector3f& position, float thicknessMultiplier)
 {
     for (size_t i = 0; i < model.points.size(); i++)
     {
@@ -34,10 +34,10 @@ void DrawWireModel(const ImGuiWireModel& model, const Vector3f& position)
         Vector3f lineEnd_world = model.worldPoints[e.idx2];
         std::optional<Vector2f> lineStart_window = World2Screen(lineStart_world); if (!lineStart_window) { continue; }
         std::optional<Vector2f> lineEnd_window = World2Screen(lineEnd_world); if (!lineEnd_window) { continue; }
-        g_DrawList->AddLine((ImVec2&)lineStart_window.value(), (ImVec2&)lineEnd_window.value(), e.color, 2);
+        g_DrawList->AddLine((ImVec2&)lineStart_window.value(), (ImVec2&)lineEnd_window.value(), e.color, g_WireModelDefaultThickness * thicknessMultiplier);
     }
 }
-void DrawWireModelTransform(const ImGuiWireModel& model, const Matrix4f& transform)
+void DrawWireModelTransform(const ImGuiWireModel& model, const Matrix4f& transform, float thicknessMultiplier)
 {
     for (size_t i = 0; i < model.points.size(); i++)
     {
@@ -49,7 +49,7 @@ void DrawWireModelTransform(const ImGuiWireModel& model, const Matrix4f& transfo
         Vector3f lineEnd_world = model.worldPoints[e.idx2];
         std::optional<Vector2f> lineStart_window = World2Screen(lineStart_world); if (!lineStart_window) { continue; }
         std::optional<Vector2f> lineEnd_window = World2Screen(lineEnd_world); if (!lineEnd_window) { continue; }
-        g_DrawList->AddLine((ImVec2&)lineStart_window.value(), (ImVec2&)lineEnd_window.value(), e.color, 2);
+        g_DrawList->AddLine((ImVec2&)lineStart_window.value(), (ImVec2&)lineEnd_window.value(), e.color, g_WireModelDefaultThickness * thicknessMultiplier);
     }
 }
 ImGuiWireModel GenerateGrid(int howManyPointsOnSide, float sideLength)
@@ -170,6 +170,7 @@ void DrawLocationNamed(const Vector3f& location, const std::string_view& name)
 {
     m_LocationsWithID[name.data()] = location;
 }
+std::optional<MarkerID_t> g_HoveredEditableMarkerID;
 void DrawMarkers()
 {
     for (auto& pt : m_LocationsOnce)
@@ -179,7 +180,8 @@ void DrawMarkers()
     m_LocationsOnce.clear();
     for (auto& [id, pt] : m_LocationsWithID)
     {
-        ImGui3D::DrawWireModel(ImGui3D::GetCrossModel(), pt);
+        float thicknessMultiplier = (g_HoveredEditableMarkerID && *g_HoveredEditableMarkerID == id) ? 3 : 1;
+        ImGui3D::DrawWireModel(ImGui3D::GetCrossModel(), pt, thicknessMultiplier);
     }
 }
 
@@ -204,6 +206,7 @@ void DrawPersistent3DMarkersControls()
     std::optional<MarkerID_t> selectedMarkerID;
     std::optional<MarkerID_t> toDelete;
     ImGui::Columns(2);
+    g_HoveredEditableMarkerID.reset();
     for (auto& [id, pt] : m_LocationsWithID)
     {
         ImGui::PushID((const void*)&pt);
@@ -215,6 +218,10 @@ void DrawPersistent3DMarkersControls()
         if (ImGui::Selectable(asString.c_str()))
         {
             selectedMarkerID = id;
+        }
+        if (ImGui::IsItemHovered())
+        {
+            g_HoveredEditableMarkerID = id;
         }
         ImGui::NextColumn();
         if (ImGui::Button("Delete"))
