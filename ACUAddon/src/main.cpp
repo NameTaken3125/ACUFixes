@@ -34,6 +34,17 @@ void VisualizeLocationFromClipboard()
     Vector3f visualizedLoc = ParseVector3fFromClipboard().value_or(Vector3f());
     ImGui3D::DrawLocationNamed(visualizedLoc, "Vizualized Loc");
 }
+
+#include "ACU/ACUGetSingletons.h"
+#include "ACU/Entity.h"
+#include "ACU/RenderValuesHolder.h"
+
+void VisualizeCurrentPlayerLocation()
+{
+    Entity* player = ACU::GetPlayer();
+    Vector3f loc = player ? player->GetPosition() : Vector3f();
+    ImGui3D::DrawLocationNamed(loc, "Player");
+}
 void VisualizeDirectionFromClipboard()
 {
     g_VisualizedDebugDirection = ParseVector3fFromClipboard().value_or(g_VisualizedDebugDirection);
@@ -58,6 +69,10 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
                 {
                     VisualizeDirectionFromClipboard();
                 }
+                if (ImGui::Button("Visualize current Player Location"))
+                {
+                    VisualizeCurrentPlayerLocation();
+                }
             }
             if (ImGuiCTX::Tab _mainTab{ "MainTab" })
             {
@@ -79,10 +94,6 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
         }
     }
 }
-
-#include "ACU/ACUGetSingletons.h"
-#include "ACU/Entity.h"
-#include "ACU/RenderValuesHolder.h"
 
 Matrix4f MakeSimpleDebugTransform(const Vector3f& position)
 {
@@ -130,76 +141,9 @@ Matrix3f MakeRotationAlignZWithVector(Vector3f axisZ)
     return result;
 }
 
-void ImGuizmoLayer()
+
+void DrawSuccessfulInjectionIndicatorOverlay()
 {
-    SetProjMatrix(gameMatProj);
-    SetCorrectViewMatrix(gameMatView);
-
-    // On a pile of junk next to the artiste.
-    static Vector3f testPosition{ 127.82f, 704.28f, 1.06f };
-    static Matrix4f transformGrid = MakeSimpleDebugTransform(testPosition) * Matrix4f::createRotationAroundAxis(-90, 0, 0);
-
-    static std::vector<Matrix4f> cubeTransforms = []() {std::vector<Matrix4f> vec; vec.reserve(16); return vec; }();
-    cubeTransforms.clear();
-    cubeTransforms.push_back(MakeSimpleDebugTransform(testPosition));
-    Entity* player = ACU::GetPlayer();
-    if (player)
-    {
-        cubeTransforms.push_back(MakeSimpleDebugTransform(player->GetPosition()));
-    }
-    ImGuizmo::DrawCubes((float*)&gameMatView, (float*)&gameMatProj, (float*)cubeTransforms.data(), (int)cubeTransforms.size());
-
-    static ImGui3D::ImGuiWireModel grid5_model = ImGui3D::GenerateGrid(5, 2);
-
-    ImGui3D::g_ViewProjection = gameMatProj * gameMatView;
-    ImGui3D::g_DrawList = ImGui::GetWindowDrawList();
-
-    ImGui3D::DrawWireModel(ImGui3D::GetArrowModel(), testPosition);
-    ImGui3D::DrawMarkers();
-    if (player)
-    {
-        Matrix4f debugDirectionTransform;
-        debugDirectionTransform.setRotation(MakeRotationAlignZWithVector(g_VisualizedDebugDirection));
-        debugDirectionTransform = Matrix4f::createTranslation(player->GetPosition()) * debugDirectionTransform;
-        ImGui3D::DrawWireModelTransform(ImGui3D::GetArrowModel(), debugDirectionTransform);
-        ImGui3D::DrawWireModelTransform(ImGui3D::GetArrowModel(), player->GetTransform());
-        ImGui3D::DrawWireModelTransform(grid5_model, player->GetTransform());
-    }
-}
-void DrawImGuizmo()
-{
-    ImGuizmo::SetOrthographic(false);
-    ImGuizmo::BeginFrame();
-    // ImGuizmo only draws within the bounds of an ImGui Window.
-    // Create a window the size of the screen with a transparent background.
-    ImVec2 windowSize = { 1680, 1050 };
-    ImGui3D::g_WindowSize = (Vector2f&)windowSize;
-    ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
-    ImGui::SetNextWindowPos({ 0, 0 }, ImGuiCond_Always);
-    ImGuiWindowFlags imguizmoWindowFlags = 0;
-    imguizmoWindowFlags |= ImGuiWindowFlags_NoBackground;
-    imguizmoWindowFlags |= ImGuiWindowFlags_NoDecoration;
-    imguizmoWindowFlags |= ImGuiWindowFlags_NoMove;
-    imguizmoWindowFlags |= ImGuiWindowFlags_NoResize;
-    imguizmoWindowFlags |= ImGuiWindowFlags_NoFocusOnAppearing;
-    imguizmoWindowFlags |= ImGuiWindowFlags_NoNav;
-    imguizmoWindowFlags |= ImGuiWindowFlags_NoInputs;
-
-    if (ImGui::Begin( "ImGuizmos", 0, imguizmoWindowFlags))
-    {
-        // More setup.
-        ImGuizmo::SetDrawlist();
-        ImGuizmo::SetRect(0, 0, windowSize.x, windowSize.y);
-        ImGuizmo::Enable(false);
-        // Draw ImGuizmo's gizmos, cubes, grids, etc.
-        ImGuizmoLayer();
-    }
-    ImGui::End();
-}
-void Base::ImGuiLayer_EvenWhenMenuIsClosed()
-{
-    DrawImGuizmo();
-
     ImGui::SetNextWindowBgAlpha(0.3f); // Transparent background
     ImGui::SetNextWindowPos({ 0, 0 }, ImGuiCond_Always);
     ImGuiWindowFlags window_flags = 0;
@@ -210,13 +154,46 @@ void Base::ImGuiLayer_EvenWhenMenuIsClosed()
     window_flags |= ImGuiWindowFlags_NoNav;
     window_flags |= ImGuiWindowFlags_NoInputs;
 
-    if (ImGui::Begin("Always enabled overlay", nullptr, window_flags ))
+    if (ImGui::Begin("Always enabled overlay", nullptr, window_flags))
     {
         ImGui::Text("Overlay on. Press INSERT to open ImGui menu.");
     }
     ImGui::End();
 }
+#include "ImGui3DRenderer.h"
+void ImGui3D::CalculateViewProjectionForCurrentFrame(Matrix4f& viewProjOut)
+{
+    SetProjMatrix(gameMatProj);
+    SetCorrectViewMatrix(gameMatView);
+    viewProjOut = gameMatProj * gameMatView;
+}
+void ImGui3D::WhatIsActuallyDrawnForFrame()
+{
+    ImGui3D::DrawMarkers();
+    // On a pile of junk next to the artiste.
+    static Vector3f testPosition{ 127.82f, 704.28f, 1.06f };
+    static Matrix4f transformGrid = MakeSimpleDebugTransform(testPosition) * Matrix4f::createRotationAroundAxis(-90, 0, 0);
 
+    Entity* player = ACU::GetPlayer();
+
+    static ImGui3D::ImGuiWireModel grid5_model = ImGui3D::GenerateGrid(5, 2);
+
+    ImGui3D::DrawWireModel(ImGui3D::GetArrowModel(), testPosition);
+    if (player)
+    {
+        Matrix4f debugDirectionTransform;
+        debugDirectionTransform.setRotation(MakeRotationAlignZWithVector(g_VisualizedDebugDirection));
+        debugDirectionTransform = Matrix4f::createTranslation(player->GetPosition()) * debugDirectionTransform;
+        ImGui3D::DrawWireModelTransform(ImGui3D::GetArrowModel(), debugDirectionTransform);
+        ImGui3D::DrawWireModelTransform(ImGui3D::GetArrowModel(), player->GetTransform());
+        ImGui3D::DrawWireModelTransform(grid5_model, player->GetTransform());
+    }
+}
+void Base::ImGuiLayer_EvenWhenMenuIsClosed()
+{
+    ImGui3D::DrawStuff();
+    DrawSuccessfulInjectionIndicatorOverlay();
+}
 #include "ConsoleForOutput.h"
 
 void DisableMainIntegrityCheck();
