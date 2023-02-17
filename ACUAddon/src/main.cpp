@@ -2,11 +2,14 @@
 
 #include "base.h"
 #include "vmath/vmath.h"
-#include "ImGuizmo/ImGuizmo.h"
-#include "ImGui3D.h"
+#include <vmath/vmath_extra.h>
 #include "ImGuiCTX.h"
+#include "ImGui3D.h"
+#include "ImGui3DRenderer.h"
 
-
+#include "ACU/ACUGetSingletons.h"
+#include "ACU/Entity.h"
+#include "ACU/RenderValuesHolder.h"
 
 Matrix4f gameMatView;
 Matrix4f gameMatProj;
@@ -35,9 +38,6 @@ void VisualizeLocationFromClipboard()
     ImGui3D::DrawLocationNamed(visualizedLoc, "Vizualized Loc");
 }
 
-#include "ACU/ACUGetSingletons.h"
-#include "ACU/Entity.h"
-#include "ACU/RenderValuesHolder.h"
 
 void VisualizeCurrentPlayerLocation()
 {
@@ -99,47 +99,7 @@ Matrix4f MakeSimpleDebugTransform(const Vector3f& position)
 {
     return Matrix4f::createTranslation(position.x, position.y, position.z) * Matrix4f::createScale(0.1f, 0.1f, 0.1f);
 }
-void SetProjMatrix(Matrix4f& matOut)
-{
-    matOut = RenderValuesHolder::GetSingleton()->matProjection_mb;
-}
-// The stupid game has the camera matrix all rotated around.
-// Why don't you stop rotating your matrices, game?
-void SetCorrectViewMatrix(Matrix4f& matOut)
-{
-    Matrix4f cameraMat = RenderValuesHolder::GetSingleton()->cameraTransform;
-    cameraMat = cameraMat * Matrix4f::createRotationAroundAxis(-90, 0, 0);
-    matOut = cameraMat.inverse();
-}
 
-
-struct ChooseLessAlignedVector
-{
-    Vector3f moreAligned;
-    Vector3f lessAligned;
-    ChooseLessAlignedVector(const Vector3f& alignedWith, const Vector3f& _1, const Vector3f _2)
-    {
-        float al1 = abs(alignedWith.dotProduct(_1));
-        float al2 = abs(alignedWith.dotProduct(_2));
-        moreAligned = (al1 < al2) ? _2 : _1;
-        lessAligned = (al1 < al2) ? _1 : _2;
-    }
-};
-Matrix3f MakeRotationAlignZWithVector(Vector3f axisZ)
-{
-    axisZ.normalize();
-    const Vector3f regularX = { 1, 0, 0 };
-    const Vector3f regularY = { 0, 1, 0 };
-    ChooseLessAlignedVector otherAxes{ axisZ, regularX, regularY };
-    Vector3f axisX = otherAxes.lessAligned;
-    Vector3f axisY = axisX.crossProduct(axisZ).normalized();
-    axisX.normalize();
-    float result[9] = {
-        axisX.x, axisX.y, axisX.z,
-        axisY.x, axisY.y, axisY.z,
-        axisZ.x, axisZ.y, axisZ.z };
-    return result;
-}
 
 
 void DrawSuccessfulInjectionIndicatorOverlay()
@@ -160,7 +120,18 @@ void DrawSuccessfulInjectionIndicatorOverlay()
     }
     ImGui::End();
 }
-#include "ImGui3DRenderer.h"
+void SetProjMatrix(Matrix4f& matOut)
+{
+    matOut = RenderValuesHolder::GetSingleton()->matProjection_mb;
+}
+// The stupid game has the camera matrix all rotated around.
+// Why don't you stop rotating your matrices, game?
+void SetCorrectViewMatrix(Matrix4f& matOut)
+{
+    Matrix4f cameraMat = RenderValuesHolder::GetSingleton()->cameraTransform;
+    cameraMat = cameraMat * Matrix4f::createRotationAroundAxis(-90, 0, 0);
+    matOut = cameraMat.inverse();
+}
 void ImGui3D::CalculateViewProjectionForCurrentFrame(Matrix4f& viewProjOut)
 {
     SetProjMatrix(gameMatProj);

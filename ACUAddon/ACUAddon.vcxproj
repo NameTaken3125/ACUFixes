@@ -171,12 +171,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="include\ImGuizmo\ImGuizmo.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="include\vmath\vmath.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -201,8 +195,8 @@
     <ClCompile Include="src\TypeInfoSystemDump.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\ImGuizmo\ImGuizmo.h" />
     <ClInclude Include="include\vmath\vmath.h" />
+    <ClInclude Include="include\vmath\vmath_extra.h" />
     <ClInclude Include="src\AutoAssemblerKinda.h" />
     <ClInclude Include="src\ConsoleForOutput.h" />
     <ClInclude Include="src\Hack_EnterWindowsWhenRisPressed.h" />
