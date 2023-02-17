@@ -141,7 +141,7 @@ class ThrowTargetPrecision : public ITargetPrecision
 {
 public:
     char pad_0028[8]; //0x0028
-    Vector4f predictionBeamEnd; //0x0030
+    Vector4f cameraTrackerMovingTowardPredictionBeamEnd; //0x0030       // Crawls toward the target when aiming.
     char pad_0040[36]; //0x0040
     float angleZ; //0x0064
     float distanceToBeamEnd; //0x0068
@@ -170,6 +170,7 @@ struct PlayWithBombAimCameraTracker : AutoAssemblerCodeHolder_Base
             , true);
     }
 };
+#include "ImGui3D.h"
 void OverrideThrowPredictorBeamPosition(AllRegisters* params)
 {
     // At this injection point (0x14055B4BB) RBX == ThrowTargetPrecision* and takes two values:
@@ -178,8 +179,10 @@ void OverrideThrowPredictorBeamPosition(AllRegisters* params)
     Entity* player = ACU::GetPlayer();
     static Vector4f farthestResult;
     ThrowTargetPrecision* thr = (ThrowTargetPrecision*)params->rbx_;
-    thr->predictionBeamEnd.z = player->GetPosition().z + 1;
-    //(Vector3f&)thr->predictionBeamEnd = player->GetPosition() + Vector3f{ 0, 3, 1 };
+    ImGui3D::DrawLocationNamed((Vector3f&)thr->predictionBeamOrigin, "Prediction beam origin");
+    ImGui3D::DrawLocationNamed((Vector3f&)thr->cameraTrackerMovingTowardPredictionBeamEnd, "Prediction beam terminus");
+    thr->cameraTrackerMovingTowardPredictionBeamEnd.z = player->GetPosition().z + 1;
+    //(Vector3f&)thr->cameraTrackerMovingTowardPredictionBeamEnd = player->GetPosition() + Vector3f{ 0, 3, 1 };
 }
 struct PlayWithBombAimCameraTracker2 : AutoAssemblerCodeHolder_Base
 {

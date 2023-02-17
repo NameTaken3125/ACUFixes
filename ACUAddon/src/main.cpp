@@ -25,12 +25,8 @@ void ImGuiPrintMatrix(const Matrix4f& mat)
         );
     }
 }
-#define IMGUI_DUMPHEX(x)\
-{\
-    std::stringstream ss;\
-    ss << #x << ": " << std::hex << (uintptr_t)x;\
-    ImGui::Text(ss.str().c_str());\
-}
+#define IMGUI_DUMPHEX(integerVar)\
+ImGui::Text(#integerVar ": %llx", (uintptr_t)integerVar);
 Vector3f g_VisualizedDebugDirection;
 void VisualizeLocationFromClipboard()
 {
