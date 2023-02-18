@@ -49,7 +49,10 @@ void DrawHacksControls();
 void TypeInfoSystemTests();
 void Base::ImGuiLayer_WhenMenuIsOpen()
 {
-    ImGui::ShowDemoWindow();
+    static bool enableDemoWindow = false;
+    if (enableDemoWindow) {
+        ImGui::ShowDemoWindow();
+    }
     if (ImGuiCTX::Window _mainWindow{ "Stuff" })
     {
         if (ImGuiCTX::TabBar _tabbar{ "MainWindowTabs" })
@@ -83,9 +86,13 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
                 ImGui::Text("Proj:");
                 ImGuiPrintMatrix(gameMatProj);
             }
-            if (ImGuiCTX::Tab _typeInfosTab{ "TypeInfosTab" })
+            if (ImGuiCTX::Tab _typeInfosTab{ "TypeInfos" })
             {
                 TypeInfoSystemTests();
+            }
+            if (ImGuiCTX::Tab _typeInfosTab{ "ImGui demo" })
+            {
+                ImGui::Checkbox("Show ImGui demo window", &enableDemoWindow);
             }
         }
     }
