@@ -16,3 +16,7 @@
 #include "ACU/Parkour_WhileOnWallSystem.h"
 
 #include "ACU/TypeInfo.h"
+
+#include "ACU/CameraSelectorBlenderNode.h"
+#include "ACU/CameraData.h"
+#include "ACU/CurvePoints.h"

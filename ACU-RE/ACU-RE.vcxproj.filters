@@ -21,6 +21,9 @@
     <ClInclude Include="inc\ACU\TypeInfo.h" />
     <ClInclude Include="inc\ACU\World.h" />
     <ClInclude Include="inc\ACU\basic_types.h" />
+    <ClInclude Include="inc\ACU\CameraSelectorBlenderNode.h" />
+    <ClInclude Include="inc\ACU\CameraData.h" />
+    <ClInclude Include="inc\ACU\CurvePoints.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />

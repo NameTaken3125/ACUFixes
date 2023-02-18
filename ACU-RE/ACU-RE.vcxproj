@@ -168,9 +168,12 @@
     <ClInclude Include="inc\ACU\BaseEntity.h" />
     <ClInclude Include="inc\ACU\basic_types.h" />
     <ClInclude Include="inc\ACU\BhvAssassin.h" />
+    <ClInclude Include="inc\ACU\CameraData.h" />
     <ClInclude Include="inc\ACU\CameraManager.h" />
+    <ClInclude Include="inc\ACU\CameraSelectorBlenderNode.h" />
     <ClInclude Include="inc\ACU\CharacterAI.h" />
     <ClInclude Include="inc\ACU\Component.h" />
+    <ClInclude Include="inc\ACU\CurvePoints.h" />
     <ClInclude Include="inc\ACU\Entity.h" />
     <ClInclude Include="inc\ACU\ManagedObject.h" />
     <ClInclude Include="inc\ACU\MandatoryUniverseComponent.h" />
