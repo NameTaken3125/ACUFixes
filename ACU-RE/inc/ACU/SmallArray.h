@@ -18,6 +18,8 @@ public:
     using iterator = T*;
     iterator begin() { return arr; }
     iterator end() { return arr + size; }
+
+    T& operator[](int idx) { return arr[idx]; }
 }; // Size: 0xC
 #pragma pack(pop)
 

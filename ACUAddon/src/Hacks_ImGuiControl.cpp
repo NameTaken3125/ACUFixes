@@ -195,6 +195,9 @@ struct PlayWithBombAimCameraTracker2 : AutoAssemblerCodeHolder_Base
             , true);
     }
 };
+
+
+#include "Hack_ModifyAimingFOV.h"
 class MyHacks
 {
 public:
@@ -204,6 +207,7 @@ public:
     AutoAssembleWrapper<PlayWithFOV> fovGames;
     AutoAssembleWrapper<PlayWithBombAimCameraTracker> bombAimExperiments;
     AutoAssembleWrapper<PlayWithBombAimCameraTracker2> bombAimExperiments2;
+    AutoAssembleWrapper<ModifyConditionalFOVs> modifyConditionalFOVs;
     template<class Hack>
     void DrawCheckboxForHack(Hack& hack, const std::string_view& text)
     {
@@ -224,6 +228,7 @@ public:
         DrawCheckboxForHack(fovGames, "Play with FOV");
         DrawCheckboxForHack(bombAimExperiments, "Bomb aim experiments");
         DrawCheckboxForHack(bombAimExperiments2, "Bomb aim experiments2");
+        DrawCheckboxForHack(modifyConditionalFOVs, "Modify conditional FOVs");
     }
 };
 void DrawHacksControls()

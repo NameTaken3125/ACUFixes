@@ -57,6 +57,19 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
     {
         if (ImGuiCTX::TabBar _tabbar{ "MainWindowTabs" })
         {
+            if (ImGuiCTX::Tab _mainTab{ "Main Tab" })
+            {
+                DrawHacksControls();
+                IMGUI_DUMPHEX(Data::pSwapChain);
+                IMGUI_DUMPHEX(Data::pPresent);
+                IMGUI_DUMPHEX(Data::pDxDevice11);
+                IMGUI_DUMPHEX(Data::pContext);
+                ImGui::Text("Projection tuning:");
+                ImGui::Text("View:");
+                ImGuiPrintMatrix(gameMatView);
+                ImGui::Text("Proj:");
+                ImGuiPrintMatrix(gameMatProj);
+            }
             if (ImGuiCTX::Tab _3dMarkersTab{ "3D Markers" })
             {
                 ImGui3D::DrawPersistent3DMarkersControls();
@@ -72,19 +85,6 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
                 {
                     VisualizeCurrentPlayerLocation();
                 }
-            }
-            if (ImGuiCTX::Tab _mainTab{ "MainTab" })
-            {
-                DrawHacksControls();
-                IMGUI_DUMPHEX(Data::pSwapChain);
-                IMGUI_DUMPHEX(Data::pPresent);
-                IMGUI_DUMPHEX(Data::pDxDevice11);
-                IMGUI_DUMPHEX(Data::pContext);
-                ImGui::Text("Projection tuning:");
-                ImGui::Text("View:");
-                ImGuiPrintMatrix(gameMatView);
-                ImGui::Text("Proj:");
-                ImGuiPrintMatrix(gameMatProj);
             }
             if (ImGuiCTX::Tab _typeInfosTab{ "TypeInfos" })
             {

@@ -183,6 +183,7 @@
     <ClCompile Include="src\DisableIntegrityChecks.cpp" />
     <ClCompile Include="src\Hacks_ImGuiControl.cpp" />
     <ClCompile Include="src\Hack_EnterWindowsWhenRisPressed.cpp" />
+    <ClCompile Include="src\Hack_ModifyAimingFOV.cpp" />
     <ClCompile Include="src\ImGui3D.cpp" />
     <ClCompile Include="src\ImGui3DRenderer.cpp" />
     <ClCompile Include="src\main.cpp" />
@@ -200,6 +201,7 @@
     <ClInclude Include="src\AutoAssemblerKinda.h" />
     <ClInclude Include="src\ConsoleForOutput.h" />
     <ClInclude Include="src\Hack_EnterWindowsWhenRisPressed.h" />
+    <ClInclude Include="src\Hack_ModifyAimingFOV.h" />
     <ClInclude Include="src\ImGui3D.h" />
     <ClInclude Include="src\ImGui3DRenderer.h" />
     <ClInclude Include="src\ImGuiCTX.h" />
