@@ -8,8 +8,9 @@
 
 #include "MovabilityUtils.h"
 
-struct ObjectRegistry_Entry
+class ObjectRegistry_Entry
 {
+public:
     CameraSelectorBlenderNode* node;
     uint64 qword_8;
     uint64 hash_mb;
@@ -20,6 +21,7 @@ assert_sizeof(ObjectRegistry_Entry, 0x18);
 
 class AutoRestoredValue
 {
+public:
     std::reference_wrapper<float> valueRef;
     float initialValue;
 public:
@@ -29,6 +31,62 @@ public:
     {
         valueRef.get() = initialValue;
     }
+};
+
+
+class FOVCurveAccessor
+{
+    std::vector<std::unique_ptr<AutoRestoredValue>> m_AutoRestoredValues;
+    void SaveAllCurvePointsForFutureAccessAndRestoration(ObjectRegistry_Entry* cameraMode)
+    {
+        std::vector<std::unique_ptr<AutoRestoredValue>> savedValuesBackups;
+        auto& horizontalPts = cameraMode->node->cameraData->horizontalCurvePts;
+        savedValuesBackups.reserve((size_t)horizontalPts.size * 3);
+        for (auto& horPt : horizontalPts)
+        {
+            for (auto& verPt : horPt->verticalCurvePts)
+            {
+                float& fovRef = verPt->pointData.fov;
+                savedValuesBackups.push_back(std::make_unique<AutoRestoredValue>(fovRef));
+            }
+        }
+        m_AutoRestoredValues = std::move(savedValuesBackups);
+    }
+public:
+    FOVCurveAccessor(ObjectRegistry_Entry* cameraMode)
+    {
+        SaveAllCurvePointsForFutureAccessAndRestoration(cameraMode);
+    }
+    void SetAllPointsInAllCurvesToConstantValue(float value)
+    {
+        // While aiming bombs, the FOV is actually determined by interpolating a curve
+        // specific to this mode. For example, in the case of aiming while standing not-behind-cover,
+        // there is a single curve with three curve values something like [0.436, 0.436, 0.785].
+        // Presumably the first and last values are at the edges of interpolation, while the middle one lies somewhere between.
+        // The "t" value of interpolation is _perhaps_ the rotation of the camera around the left-right axis.
+        // For example, if you examine the ACUPlayerCameraComponent::fov while aiming a bomb, you're likely to find
+        // values of somewhere around `0.55`. This suggests that the curve is usually evaluated somewhere
+        // between the middle and right points. As a result, just by changing the middle value, the
+        // curve evaluation will produce a value between `newMiddleValue` and `0.785`.
+        // So by setting the middle value to `1.0f`, you'll start seeing actual FOVs of around `0.88`.
+        // FOV will therefore be increased but not constant, thus retaining some variation.
+        // However, I have found that I like the more consistent feel produced by a flat constant curve
+        // (i.e. all points set to the same value).
+        for (auto& ref : m_AutoRestoredValues)
+        {
+            ref->valueRef.get() = value;
+        }
+    }
+};
+class FOVCurvesDatabase
+{
+public:
+    std::optional<FOVCurveAccessor> curve_BombAim;
+    std::optional<FOVCurveAccessor> curve_BombAimFromBehindCover;
+
+    NON_MOVABLE(FOVCurvesDatabase);
+    FOVCurvesDatabase() = default;
+    static FOVCurvesDatabase& GetSingleton() { static FOVCurvesDatabase inst; return inst; }
 };
 
 /*
@@ -69,46 +127,54 @@ void WhenCameraBlendingModeChanged_HijackConditionalFOVs(AllRegisters* params)
 {
     constexpr uint64 objHash_BombAimRegular = 0x12F9251F30;
     constexpr uint64 objHash_BombAimFromCover = 0x34CE205063;
-    // While aiming bombs, the FOV is actually determined by interpolating a curve
-    // specific to this mode. For example, in the case of aiming while standing not-behind-cover,
-    // there is a single curve with three curve values something like [0.436, 0.436, 0.785].
-    // Presumably the first and last values are at the edges of interpolation, while the middle one lies somewhere between.
-    // The "t" value of interpolation is _perhaps_ the rotation of the camera around the left-right axis.
-    // For example, if you examine the ACUPlayerCameraComponent::fov while aiming a bomb, you're likely to find
-    // values of somewhere around `0.55`. This suggests that the curve is usually evaluated somewhere
-    // between the middle and right points. As a result, just by changing the middle value, the
-    // curve evaluation will produce a value between `newMiddleValue` and `0.785`.
-    // So by setting the middle value to `1.0f`, you'll start seeing actual FOVs of around `0.88`.
-    // FOV will therefore be increased but not constant, thus retaining some variation.
-    // However, I have found that I like the more consistent feel produced by a flat constant curve
-    // (i.e. all points set to the same value).
-    constexpr float newFOVwhileAimingBomb = 1.0f; // = 1.5f;
-    constexpr float newFOVwhileAimingBombFromBehindCover = 1.0f;
     ObjectRegistry_Entry* newCameraMode = (ObjectRegistry_Entry*)params->rbx_;
-    auto SetInterpolationCurveToAConstantValueAndSavePreviousValues = [](ObjectRegistry_Entry* cameraMode, float value) -> std::vector<std::unique_ptr<AutoRestoredValue>>
-    {
-        std::vector<std::unique_ptr<AutoRestoredValue>> savedValuesBackups;
-        auto& horizontalPts = cameraMode->node->cameraData->horizontalCurvePts;
-        savedValuesBackups.reserve((size_t)horizontalPts.size * 3);
-        for (auto& horPt : horizontalPts)
-        {
-            for (auto& verPt : horPt->verticalCurvePts)
-            {
-                float& fovRef = verPt->pointData.fov;
-                savedValuesBackups.push_back(std::make_unique<AutoRestoredValue>(fovRef));
-                fovRef = value;
-            }
-        }
-        return savedValuesBackups;
-    };
     if (newCameraMode->hash_mb == objHash_BombAimRegular)
     {
-        static auto __autoRestoreValues = SetInterpolationCurveToAConstantValueAndSavePreviousValues(newCameraMode, newFOVwhileAimingBomb);
+        auto& fovCurves = FOVCurvesDatabase::GetSingleton();
+        if (!fovCurves.curve_BombAim)
+        {
+            fovCurves.curve_BombAim = FOVCurveAccessor(newCameraMode);
+        }
     }
     else if (newCameraMode->hash_mb == objHash_BombAimFromCover)
     {
-        static auto __autoRestoreValues = SetInterpolationCurveToAConstantValueAndSavePreviousValues(newCameraMode, newFOVwhileAimingBombFromBehindCover);
+        auto& fovCurves = FOVCurvesDatabase::GetSingleton();
+        if (!fovCurves.curve_BombAimFromBehindCover)
+        {
+            fovCurves.curve_BombAimFromBehindCover = FOVCurveAccessor(newCameraMode);
+        }
     }
+}
+template<typename floatlike>
+floatlike simple_interp(floatlike mn, floatlike mx)
+{
+    auto now = GetTickCount64();
+    float speed = 0.001f * 1.5f;
+    float interp = sin(now * speed);
+    interp = (interp + 1) / 2;
+    return mn + (mx - mn) * interp;
+}
+#include "ACU/ACUPlayerCameraComponent.h"
+bool IsInBombAimMode(ACUPlayerCameraComponent* cameraCpnt)
+{
+    return true;
+}
+constexpr float g_newFOVwhileAimingBomb = 1.0f; // = 1.5f;
+constexpr float g_newFOVwhileAimingBombFromBehindCover = 1.0f;
+void UpdateConditionalFOVCurves(ACUPlayerCameraComponent* cameraCpnt)
+{
+    auto& fovCurves = FOVCurvesDatabase::GetSingleton();
+    if (IsInBombAimMode(cameraCpnt))
+    {
+        if (fovCurves.curve_BombAim)
+        {
+            fovCurves.curve_BombAim->SetAllPointsInAllCurvesToConstantValue(simple_interp(0.5f, 1.5f));
+        }
+    }
+}
+void WhenCameraUpdateStarts(AllRegisters* params)
+{
+    UpdateConditionalFOVCurves((ACUPlayerCameraComponent*)params->r14_);
 }
 ModifyConditionalFOVs::ModifyConditionalFOVs()
 {
@@ -116,6 +182,14 @@ ModifyConditionalFOVs::ModifyConditionalFOVs()
     PresetScript_CCodeInTheMiddle(
         onCameraBlendingModeChanged, 7
         , WhenCameraBlendingModeChanged_HijackConditionalFOVs
+        , RETURN_TO_RIGHT_AFTER_STOLEN_BYTES
+        , true);
+
+
+    constexpr uintptr_t onCameraUpdateStarts = 0x141F3F1EE;
+    PresetScript_CCodeInTheMiddle(
+        onCameraUpdateStarts, 7
+        , WhenCameraUpdateStarts
         , RETURN_TO_RIGHT_AFTER_STOLEN_BYTES
         , true);
 }
