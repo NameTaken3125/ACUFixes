@@ -66,6 +66,12 @@ public:
     {
         SaveAllCurvePointsForFutureAccessAndRestoration(cameraMode);
     }
+private:
+    float m_CurrentEffectiveFOV;
+public:
+    float GetCurrentEffectiveFOV() { return m_CurrentEffectiveFOV; }
+    void SetEffectiveFOV(float value) { SetAllPointsInAllCurvesToConstantValue(value); }
+private:
     void SetAllPointsInAllCurvesToConstantValue(float value)
     {
         // While aiming bombs, the FOV is actually determined by interpolating a curve
@@ -174,6 +180,33 @@ bool IsInBombAimFromBehindCoverMode(ACUPlayerCameraComponent* cameraCpnt)
 }
 constexpr float g_newFOVwhileAimingBomb = 1.0f; // = 1.5f;
 constexpr float g_newFOVwhileAimingBombFromBehindCover = 1.0f;
+class FOVWhileAimingManager_AugmentedZoomOnRightClick
+{
+    const float m_goalFOVWhileAimingWithoutRMB = g_newFOVwhileAimingBomb;
+    const float m_goalFOVWhileAimingAndPressingRMB = 0.60f;
+public:
+    void AugmentZoomDependingOnRMB(FOVCurvesDatabase& fovCurves)
+    {
+        FOVCurveAccessor& cameraModeController = *fovCurves.curve_BombAim;
+        //cameraModeController.SetEffectiveFOV(g_newFOVwhileAimingBomb);
+        //return;
+        const bool isRMBpressed = GetAsyncKeyState(VK_RBUTTON);
+        const float targetFOV = isRMBpressed ? m_goalFOVWhileAimingAndPressingRMB : m_goalFOVWhileAimingWithoutRMB;
+        const float currentEffectiveFOV = cameraModeController.GetCurrentEffectiveFOV();
+        float newEffectiveFOV = CalculateNewEffectiveFOVForTarget(targetFOV, currentEffectiveFOV);
+        cameraModeController.SetEffectiveFOV(newEffectiveFOV);
+    }
+private:
+    float CalculateNewEffectiveFOVForTarget(float targetValue, float currentValue)
+    {
+        // This needs some nice looking interpolation, sigmoid or smth? Preferably stateless.
+        return targetValue;
+    }
+public:
+    NON_MOVABLE(FOVWhileAimingManager_AugmentedZoomOnRightClick);
+    FOVWhileAimingManager_AugmentedZoomOnRightClick() = default;
+    static FOVWhileAimingManager_AugmentedZoomOnRightClick& GetSingleton() { static FOVWhileAimingManager_AugmentedZoomOnRightClick inst; return inst; }
+};
 void UpdateConditionalFOVCurves(ACUPlayerCameraComponent* cameraCpnt)
 {
     auto& fovCurves = FOVCurvesDatabase::GetSingleton();
@@ -181,14 +214,14 @@ void UpdateConditionalFOVCurves(ACUPlayerCameraComponent* cameraCpnt)
     {
         if (fovCurves.curve_BombAim)
         {
-            fovCurves.curve_BombAim->SetAllPointsInAllCurvesToConstantValue(g_newFOVwhileAimingBomb);
+            FOVWhileAimingManager_AugmentedZoomOnRightClick::GetSingleton().AugmentZoomDependingOnRMB(fovCurves);
         }
     }
     else if (IsInBombAimFromBehindCoverMode(cameraCpnt))
     {
         if (fovCurves.curve_BombAimFromBehindCover)
         {
-            fovCurves.curve_BombAimFromBehindCover->SetAllPointsInAllCurvesToConstantValue(g_newFOVwhileAimingBombFromBehindCover);
+            fovCurves.curve_BombAimFromBehindCover->SetEffectiveFOV(g_newFOVwhileAimingBombFromBehindCover);
         }
     }
 }
