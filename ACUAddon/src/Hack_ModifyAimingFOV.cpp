@@ -33,6 +33,15 @@ public:
     }
 };
 
+#include "ACU/GameStatsManager.h"
+
+namespace ACU
+{
+float GetCurrentTime_UnpausedGame()
+{
+    return GameStatsManager::GetSingleton()->GetCurrentTime_UnpausedGame();
+}
+} // namespace ACU
 
 class FOVCurveAccessor
 {
@@ -89,6 +98,8 @@ public:
     static FOVCurvesDatabase& GetSingleton() { static FOVCurvesDatabase inst; return inst; }
 };
 
+constexpr uint64 objHash_BombAimRegular = 0x12F9251F30;
+constexpr uint64 objHash_BombAimFromCover = 0x34CE205063;
 /*
 When player is aiming a bomb throw, the camera "tries to" follow the predicted landing position
 (actually, it seems to gradually follow a tracker that gradually follows the predicted landing position).
@@ -125,8 +136,6 @@ When aiming bomb from behind cover:
 */
 void WhenCameraBlendingModeChanged_HijackConditionalFOVs(AllRegisters* params)
 {
-    constexpr uint64 objHash_BombAimRegular = 0x12F9251F30;
-    constexpr uint64 objHash_BombAimFromCover = 0x34CE205063;
     ObjectRegistry_Entry* newCameraMode = (ObjectRegistry_Entry*)params->rbx_;
     if (newCameraMode->hash_mb == objHash_BombAimRegular)
     {
@@ -146,10 +155,10 @@ void WhenCameraBlendingModeChanged_HijackConditionalFOVs(AllRegisters* params)
     }
 }
 template<typename floatlike>
-floatlike simple_interp(floatlike mn, floatlike mx)
+floatlike simple_interp_using_game_time(floatlike mn, floatlike mx)
 {
-    auto now = GetTickCount64();
-    float speed = 0.001f * 1.5f;
+    auto now = ACU::GetCurrentTime_UnpausedGame();
+    float speed = 1.5f;
     float interp = sin(now * speed);
     interp = (interp + 1) / 2;
     return mn + (mx - mn) * interp;
@@ -157,7 +166,11 @@ floatlike simple_interp(floatlike mn, floatlike mx)
 #include "ACU/ACUPlayerCameraComponent.h"
 bool IsInBombAimMode(ACUPlayerCameraComponent* cameraCpnt)
 {
-    return true;
+    return cameraCpnt->currentCameraSelectorBlenderNode->hash_mb == objHash_BombAimRegular;
+}
+bool IsInBombAimFromBehindCoverMode(ACUPlayerCameraComponent* cameraCpnt)
+{
+    return cameraCpnt->currentCameraSelectorBlenderNode->hash_mb == objHash_BombAimFromCover;
 }
 constexpr float g_newFOVwhileAimingBomb = 1.0f; // = 1.5f;
 constexpr float g_newFOVwhileAimingBombFromBehindCover = 1.0f;
@@ -168,7 +181,14 @@ void UpdateConditionalFOVCurves(ACUPlayerCameraComponent* cameraCpnt)
     {
         if (fovCurves.curve_BombAim)
         {
-            fovCurves.curve_BombAim->SetAllPointsInAllCurvesToConstantValue(simple_interp(0.5f, 1.5f));
+            fovCurves.curve_BombAim->SetAllPointsInAllCurvesToConstantValue(simple_interp_using_game_time(0.5f, 1.5f));
+        }
+    }
+    else if (IsInBombAimFromBehindCoverMode(cameraCpnt))
+    {
+        if (fovCurves.curve_BombAimFromBehindCover)
+        {
+            fovCurves.curve_BombAimFromBehindCover->SetAllPointsInAllCurvesToConstantValue(simple_interp_using_game_time(0.5f, 1.5f));
         }
     }
 }
