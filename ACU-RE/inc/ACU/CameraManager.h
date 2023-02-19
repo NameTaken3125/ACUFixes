@@ -14,7 +14,7 @@ public:
     SmallArray<ACUPlayerCameraComponent*> arr_to_ACUPlayerCameraComponent; //0x0040
     char pad_004C[76]; //0x004C
 
-    // helper_functions
+    // @helper_functions
     static CameraManager* GetSingleton() { return *(CameraManager**)0x14521AAD0; }
 }; //Size: 0x0098
 assert_sizeof(CameraManager, 0x98);

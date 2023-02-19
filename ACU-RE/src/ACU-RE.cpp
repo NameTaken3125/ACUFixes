@@ -20,3 +20,6 @@
 #include "ACU/CameraSelectorBlenderNode.h"
 #include "ACU/CameraData.h"
 #include "ACU/CurvePoints.h"
+
+#include "ACU/MandatoryUniverseComponent.h"
+#include "ACU/GameStatsManager.h"

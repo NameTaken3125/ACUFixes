@@ -175,6 +175,7 @@
     <ClInclude Include="inc\ACU\Component.h" />
     <ClInclude Include="inc\ACU\CurvePoints.h" />
     <ClInclude Include="inc\ACU\Entity.h" />
+    <ClInclude Include="inc\ACU\GameStatsManager.h" />
     <ClInclude Include="inc\ACU\ManagedObject.h" />
     <ClInclude Include="inc\ACU\MandatoryUniverseComponent.h" />
     <ClInclude Include="inc\ACU\Parkour_PotentialWindowEntry.h" />
