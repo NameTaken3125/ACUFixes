@@ -6,6 +6,8 @@
 #include "ACU/CameraData.h"
 #include "ACU/CurvePoints.h"
 
+#include "MovabilityUtils.h"
+
 struct ObjectRegistry_Entry
 {
     CameraSelectorBlenderNode* node;
@@ -21,6 +23,7 @@ class AutoRestoredValue
     std::reference_wrapper<float> valueRef;
     float initialValue;
 public:
+    NON_MOVABLE(AutoRestoredValue)
     AutoRestoredValue(float& valueRef) : valueRef(valueRef), initialValue(valueRef) {}
     ~AutoRestoredValue()
     {
@@ -61,7 +64,6 @@ the node can be found in the registry of "ObjectRegistry_Entry" with a hash of `
 When aiming bomb from behind cover:
 - Hash == 0x34CE205063.
 - There are 4 HorizontalCurvePoints, which I think correspond to 4 cardinal directions relative to the cover direction.
-  For each of those I change the `verticalCurvePts[1].fov`.
 */
 void WhenCameraBlendingModeChanged_HijackConditionalFOVs(AllRegisters* params)
 {
@@ -83,9 +85,9 @@ void WhenCameraBlendingModeChanged_HijackConditionalFOVs(AllRegisters* params)
     constexpr float newFOVwhileAimingBomb = 1.0f; // = 1.5f;
     constexpr float newFOVwhileAimingBombFromBehindCover = 1.0f;
     ObjectRegistry_Entry* newCameraMode = (ObjectRegistry_Entry*)params->rbx_;
-    auto SetInterpolationCurveToAConstantValueAndSavePreviousValues = [](ObjectRegistry_Entry* cameraMode, float value) -> std::vector<AutoRestoredValue>
+    auto SetInterpolationCurveToAConstantValueAndSavePreviousValues = [](ObjectRegistry_Entry* cameraMode, float value) -> std::vector<std::unique_ptr<AutoRestoredValue>>
     {
-        std::vector<AutoRestoredValue> savedValuesBackups;
+        std::vector<std::unique_ptr<AutoRestoredValue>> savedValuesBackups;
         auto& horizontalPts = cameraMode->node->cameraData->horizontalCurvePts;
         savedValuesBackups.reserve((size_t)horizontalPts.size * 3);
         for (auto& horPt : horizontalPts)
@@ -93,7 +95,7 @@ void WhenCameraBlendingModeChanged_HijackConditionalFOVs(AllRegisters* params)
             for (auto& verPt : horPt->verticalCurvePts)
             {
                 float& fovRef = verPt->pointData.fov;
-                savedValuesBackups.push_back(fovRef);
+                savedValuesBackups.push_back(std::make_unique<AutoRestoredValue>(fovRef));
                 fovRef = value;
             }
         }

@@ -206,6 +206,7 @@
     <ClInclude Include="src\ImGui3DRenderer.h" />
     <ClInclude Include="src\ImGuiCTX.h" />
     <ClInclude Include="src\ImGuiTextWindows.h" />
+    <ClInclude Include="src\MovabilityUtils.h" />
     <ClInclude Include="src\pch.h" />
   </ItemGroup>
   <ItemGroup>
