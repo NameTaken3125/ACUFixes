@@ -181,14 +181,14 @@ void UpdateConditionalFOVCurves(ACUPlayerCameraComponent* cameraCpnt)
     {
         if (fovCurves.curve_BombAim)
         {
-            fovCurves.curve_BombAim->SetAllPointsInAllCurvesToConstantValue(simple_interp_using_game_time(0.5f, 1.5f));
+            fovCurves.curve_BombAim->SetAllPointsInAllCurvesToConstantValue(g_newFOVwhileAimingBomb);
         }
     }
     else if (IsInBombAimFromBehindCoverMode(cameraCpnt))
     {
         if (fovCurves.curve_BombAimFromBehindCover)
         {
-            fovCurves.curve_BombAimFromBehindCover->SetAllPointsInAllCurvesToConstantValue(simple_interp_using_game_time(0.5f, 1.5f));
+            fovCurves.curve_BombAimFromBehindCover->SetAllPointsInAllCurvesToConstantValue(g_newFOVwhileAimingBombFromBehindCover);
         }
     }
 }
