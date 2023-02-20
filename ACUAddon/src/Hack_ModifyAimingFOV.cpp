@@ -37,9 +37,18 @@ public:
 
 namespace ACU
 {
+// I'm not sure if this really never fails.
+Clock& GetClock_UnpausedGame()
+{
+    return *GameStatsManager::GetSingleton()->GetClock_UnpausedGame();
+}
 float GetCurrentTime_UnpausedGame()
 {
-    return GameStatsManager::GetSingleton()->GetCurrentTime_UnpausedGame();
+    return GetClock_UnpausedGame().GetCurrentTimeFloat();
+}
+float GetCurrentDeltaTime_UnpausedGame()
+{
+    return GetClock_UnpausedGame().deltaTime_mb;
 }
 } // namespace ACU
 
@@ -70,7 +79,7 @@ private:
     float m_CurrentEffectiveFOV;
 public:
     float GetCurrentEffectiveFOV() { return m_CurrentEffectiveFOV; }
-    void SetEffectiveFOV(float value) { SetAllPointsInAllCurvesToConstantValue(value); }
+    void SetEffectiveFOV(float value) { SetAllPointsInAllCurvesToConstantValue(value); m_CurrentEffectiveFOV = value; }
 private:
     void SetAllPointsInAllCurvesToConstantValue(float value)
     {
@@ -106,6 +115,8 @@ public:
 
 constexpr uint64 objHash_BombAimRegular = 0x12F9251F30;
 constexpr uint64 objHash_BombAimFromCover = 0x34CE205063;
+constexpr float g_newFOVwhileAimingBomb = 1.0f; // = 1.5f;
+constexpr float g_newFOVwhileAimingBombFromBehindCover = 1.0f;
 /*
 When player is aiming a bomb throw, the camera "tries to" follow the predicted landing position
 (actually, it seems to gradually follow a tracker that gradually follows the predicted landing position).
@@ -149,6 +160,7 @@ void WhenCameraBlendingModeChanged_HijackConditionalFOVs(AllRegisters* params)
         if (!fovCurves.curve_BombAim)
         {
             fovCurves.curve_BombAim = FOVCurveAccessor(newCameraMode);
+            fovCurves.curve_BombAim->SetEffectiveFOV(g_newFOVwhileAimingBomb);
         }
     }
     else if (newCameraMode->hash_mb == objHash_BombAimFromCover)
@@ -157,6 +169,7 @@ void WhenCameraBlendingModeChanged_HijackConditionalFOVs(AllRegisters* params)
         if (!fovCurves.curve_BombAimFromBehindCover)
         {
             fovCurves.curve_BombAimFromBehindCover = FOVCurveAccessor(newCameraMode);
+            fovCurves.curve_BombAimFromBehindCover->SetEffectiveFOV(g_newFOVwhileAimingBombFromBehindCover);
         }
     }
 }
@@ -178,8 +191,6 @@ bool IsInBombAimFromBehindCoverMode(ACUPlayerCameraComponent* cameraCpnt)
 {
     return cameraCpnt->currentCameraSelectorBlenderNode->hash_mb == objHash_BombAimFromCover;
 }
-constexpr float g_newFOVwhileAimingBomb = 1.0f; // = 1.5f;
-constexpr float g_newFOVwhileAimingBombFromBehindCover = 1.0f;
 class FOVWhileAimingManager_AugmentedZoomOnRightClick
 {
     const float m_goalFOVWhileAimingWithoutRMB = g_newFOVwhileAimingBomb;
@@ -199,6 +210,18 @@ public:
 private:
     float CalculateNewEffectiveFOVForTarget(float targetValue, float currentValue)
     {
+        constexpr float eps = 0.01f;
+        float d = targetValue - currentValue;
+        if (abs(d) < eps) { return targetValue; }
+        constexpr float reasonableTimeForInterpolation = 0.5f;
+        constexpr float reasonablePresumedMaxDistanceBetweenTargetAndCurrentValues = 1.0f;
+        constexpr float linearInterpolationSpeed = reasonablePresumedMaxDistanceBetweenTargetAndCurrentValues / reasonableTimeForInterpolation;
+        float step = linearInterpolationSpeed * ACU::GetCurrentDeltaTime_UnpausedGame();
+        float stepSigned = targetValue > currentValue ? step: -step;
+        float newD = targetValue - (currentValue + stepSigned);
+        bool dSignChanged = (d > 0 && newD < 0) || (d < 0 && newD > 0);
+        if (dSignChanged) { return targetValue; }
+        return currentValue + stepSigned;
         // This needs some nice looking interpolation, sigmoid or smth? Preferably stateless.
         return targetValue;
     }
