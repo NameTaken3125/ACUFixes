@@ -168,8 +168,8 @@ void WhenCameraBlendingModeChanged_HijackConditionalFOVs(AllRegisters* params)
         if (!fovCurves.curve_BombAim)
         {
             fovCurves.curve_BombAim = FOVCurveAccessor(newCameraMode);
-            fovCurves.curve_BombAim->SetEffectiveFOV(ACU::Input::IsPressedRMB() ? g_GoalFOVWhileAimingAndPressingRMB : g_GoalFOVWhileAimingWithoutRMB);
         }
+        fovCurves.curve_BombAim->SetEffectiveFOV(ACU::Input::IsPressedRMB() ? g_GoalFOVWhileAimingAndPressingRMB : g_GoalFOVWhileAimingWithoutRMB);
     }
     else if (newCameraMode->hash_mb == objHash_BombAimFromCover)
     {
@@ -177,8 +177,8 @@ void WhenCameraBlendingModeChanged_HijackConditionalFOVs(AllRegisters* params)
         if (!fovCurves.curve_BombAimFromBehindCover)
         {
             fovCurves.curve_BombAimFromBehindCover = FOVCurveAccessor(newCameraMode);
-            fovCurves.curve_BombAimFromBehindCover->SetEffectiveFOV(g_newFOVwhileAimingBombFromBehindCover);
         }
+        fovCurves.curve_BombAimFromBehindCover->SetEffectiveFOV(ACU::Input::IsPressedRMB() ? g_GoalFOVWhileAimingAndPressingRMB : g_GoalFOVWhileAimingWithoutRMB);
     }
 }
 template<typename floatlike>
@@ -246,9 +246,8 @@ bool IsInBombAimFromBehindCoverMode(ACUPlayerCameraComponent* cameraCpnt)
 class FOVWhileAimingManager_AugmentedZoomOnRightClick
 {
 public:
-    void AugmentZoomDependingOnRMB_smoothstep(FOVCurvesDatabase& fovCurves)
+    void AugmentZoomDependingOnRMB(FOVCurveAccessor& cameraModeController)
     {
-        FOVCurveAccessor& cameraModeController = *fovCurves.curve_BombAim;
         const bool isRMBpressed = ACU::Input::IsPressedRMB();
         const auto [interpTo, interpFrom] =
             isRMBpressed
@@ -279,14 +278,14 @@ void UpdateConditionalFOVCurves(ACUPlayerCameraComponent* cameraCpnt)
     {
         if (fovCurves.curve_BombAim)
         {
-            FOVWhileAimingManager_AugmentedZoomOnRightClick::GetSingleton().AugmentZoomDependingOnRMB_smoothstep(fovCurves);
+            FOVWhileAimingManager_AugmentedZoomOnRightClick::GetSingleton().AugmentZoomDependingOnRMB(*fovCurves.curve_BombAim);
         }
     }
     else if (IsInBombAimFromBehindCoverMode(cameraCpnt))
     {
         if (fovCurves.curve_BombAimFromBehindCover)
         {
-            fovCurves.curve_BombAimFromBehindCover->SetEffectiveFOV(g_newFOVwhileAimingBombFromBehindCover);
+            FOVWhileAimingManager_AugmentedZoomOnRightClick::GetSingleton().AugmentZoomDependingOnRMB(*fovCurves.curve_BombAimFromBehindCover);
         }
     }
 }
