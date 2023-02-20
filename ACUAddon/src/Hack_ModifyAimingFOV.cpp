@@ -130,12 +130,62 @@ public:
 
 #include "ACU/HasInputContainers.h"
 #include "ACU/InputContainer.h"
+#include "ACU/BallisticProjectileAimingControlsSettings.h"
 
 
+// Provides access to Ballistic Projectile aiming sensitivity settings
+// and automatically restores modified values on destruction.
+class BombAimSensitivityManager
+{
+    struct SensitivitySettingsRefs
+    {
+        AutoRestoredValue m_SensitivityHor;
+        AutoRestoredValue m_SensitivityVer;
+        SensitivitySettingsRefs(BallisticProjectileAimingControlsSettings& gameSettings)
+            : m_SensitivityVer(gameSettings.sensitivityVertical)
+            , m_SensitivityHor(gameSettings.sensitivityHorizontal)
+        {}
+    };
+    std::optional<SensitivitySettingsRefs> m_CachedRefs;
+public:
+    enum class ZoomLevel {
+        NormalWithoutRMB = 0,
+        ExtraWithRMB,
+    };
+    void OnBombAimAndZoomLevelChanged(ZoomLevel zoomLevel)
+    {
+        switch (zoomLevel)
+        {
+        case BombAimSensitivityManager::ZoomLevel::NormalWithoutRMB:
+            SetSensitivityNormal();
+            break;
+        case BombAimSensitivityManager::ZoomLevel::ExtraWithRMB:
+            SetSensitivityLow();
+            break;
+        default:
+            break;
+        }
+    }
+    SensitivitySettingsRefs& GetSensitivitySettings() {
+        if (!m_CachedRefs) {
+            m_CachedRefs.emplace(BallisticProjectileAimingControlsSettings::GetSingleton());
+        }
+        return m_CachedRefs.value();
+    }
+    void SetSensitivityNormal() {
+        auto& settings = GetSensitivitySettings();
+        settings.m_SensitivityHor.valueRef.get() = settings.m_SensitivityHor.initialValue;
+        settings.m_SensitivityVer.valueRef.get() = settings.m_SensitivityVer.initialValue;
+    }
+    void SetSensitivityLow() {
+        auto& settings = GetSensitivitySettings();
+        settings.m_SensitivityHor.valueRef.get() = settings.m_SensitivityHor.initialValue / 3;
+        settings.m_SensitivityVer.valueRef.get() = settings.m_SensitivityVer.initialValue / 3;
+    }
+};
 
 namespace ACU::Input
 {
-//bool IsPressedRMB() { return GetAsyncKeyState(VK_RBUTTON); }
 bool IsPressedRMB() { return InputContainer::GetMainSingleton().keyStates_thisFrame.isPressed_RMB; }
 } // namespace ACU::Input
 
@@ -210,6 +260,14 @@ bool IsInBombAimFromBehindCoverMode(ACUPlayerCameraComponent* cameraCpnt)
 }
 class FOVWhileAimingManager_AugmentedZoomOnRightClick
 {
+    BombAimSensitivityManager m_AimSensitivity;
+    void AugmentAimSensitivity(bool isRMBpressed)
+    {
+        m_AimSensitivity.OnBombAimAndZoomLevelChanged(
+            isRMBpressed
+            ? BombAimSensitivityManager::ZoomLevel::ExtraWithRMB
+            : BombAimSensitivityManager::ZoomLevel::NormalWithoutRMB);
+    }
 public:
     void AugmentZoomDependingOnRMB(FOVCurveAccessor& cameraModeController)
     {
@@ -230,6 +288,7 @@ public:
         float newEffectiveFOV = InterpMethod::Forward(interpFrom, interpTo, newInterpTee);
 
         cameraModeController.SetEffectiveFOV(newEffectiveFOV);
+        AugmentAimSensitivity(isRMBpressed);
     }
     /*
     The FOV is determined by the current camera mode, specifically by
