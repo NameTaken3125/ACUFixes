@@ -25,7 +25,6 @@ public:
 
 namespace {
     using TEST_SmallArray = SmallArray<float>;
-    const auto x = sizeof(TEST_SmallArray);
     assert_sizeof(TEST_SmallArray, 0xC);
     assert_offsetof(TEST_SmallArray, capacityAndFlags, 8);
     assert_offsetof(TEST_SmallArray, size, 0xA);

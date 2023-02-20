@@ -182,6 +182,35 @@ floatlike simple_interp_using_game_time(floatlike mn, floatlike mx)
     interp = (interp + 1) / 2;
     return mn + (mx - mn) * interp;
 }
+namespace Interpolations
+{
+
+float clamp01(float x) {
+    if (x < 0) return 0;
+    if (x >= 1) return 1;
+    return x;
+}
+float inverse_smoothstep(float y) {
+    y = clamp01(y);
+    return (float)(0.5 - sin(asin(1.0 - 2.0 * y) / 3.0));
+}
+float smoothstep(float x) {
+    if (x < 0) return 0;
+    if (x >= 1) return 1;
+    return x * x * (3 - 2 * x);
+}
+float smoothstep_arbitrary(float from, float to, float xinRange01) {
+    float y = smoothstep(xinRange01);
+    return y * to + (1 - y) * from;
+}
+float smoothstep_reverse_arbitrary(float fromY, float toY, float currentY)
+{
+    // Scale/bias into [0..1] range
+    float yInRange01 = (currentY - fromY) / (toY - fromY);
+    float xInRange01 = inverse_smoothstep(yInRange01);
+    return xInRange01;
+}
+} // namespace Interpolations
 #include "ACU/ACUPlayerCameraComponent.h"
 bool IsInBombAimMode(ACUPlayerCameraComponent* cameraCpnt)
 {
@@ -205,6 +234,25 @@ public:
         const float targetFOV = isRMBpressed ? m_goalFOVWhileAimingAndPressingRMB : m_goalFOVWhileAimingWithoutRMB;
         const float currentEffectiveFOV = cameraModeController.GetCurrentEffectiveFOV();
         float newEffectiveFOV = CalculateNewEffectiveFOVForTarget(targetFOV, currentEffectiveFOV);
+        cameraModeController.SetEffectiveFOV(newEffectiveFOV);
+    }
+    void AugmentZoomDependingOnRMB_smoothstep(FOVCurvesDatabase& fovCurves)
+    {
+        FOVCurveAccessor& cameraModeController = *fovCurves.curve_BombAim;
+        const bool isRMBpressed = GetAsyncKeyState(VK_RBUTTON);
+        const auto [interpTo, interpFrom] =
+            isRMBpressed
+            ? std::pair{ m_goalFOVWhileAimingAndPressingRMB, m_goalFOVWhileAimingWithoutRMB }
+            : std::pair{ m_goalFOVWhileAimingWithoutRMB, m_goalFOVWhileAimingAndPressingRMB };
+        const float currentEffectiveFOV = cameraModeController.GetCurrentEffectiveFOV();
+
+        constexpr float reasonableTimeForInterpolation = 0.3f;
+        float currentInterpTee = Interpolations::smoothstep_reverse_arbitrary(interpFrom, interpTo, currentEffectiveFOV);
+        float howLongHasPassedSinceStartedInterpolating = currentInterpTee * reasonableTimeForInterpolation;
+        const float deltaT = ACU::GetCurrentDeltaTime_UnpausedGame();
+        float newInterpTee = (howLongHasPassedSinceStartedInterpolating + deltaT) / reasonableTimeForInterpolation;
+        float newEffectiveFOV = Interpolations::smoothstep_arbitrary(interpFrom, interpTo, newInterpTee);
+
         cameraModeController.SetEffectiveFOV(newEffectiveFOV);
     }
 private:
@@ -237,7 +285,7 @@ void UpdateConditionalFOVCurves(ACUPlayerCameraComponent* cameraCpnt)
     {
         if (fovCurves.curve_BombAim)
         {
-            FOVWhileAimingManager_AugmentedZoomOnRightClick::GetSingleton().AugmentZoomDependingOnRMB(fovCurves);
+            FOVWhileAimingManager_AugmentedZoomOnRightClick::GetSingleton().AugmentZoomDependingOnRMB_smoothstep(fovCurves);
         }
     }
     else if (IsInBombAimFromBehindCoverMode(cameraCpnt))
