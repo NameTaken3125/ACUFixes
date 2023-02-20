@@ -210,6 +210,21 @@ float smoothstep_reverse_arbitrary(float fromY, float toY, float currentY)
     float xInRange01 = inverse_smoothstep(yInRange01);
     return xInRange01;
 }
+struct MethodSmoothstep
+{
+    static inline float Forward(float fromY, float toY, float xInRange01) { return smoothstep_arbitrary(fromY, toY, xInRange01); }
+    static inline float Inverse(float fromY, float toY, float currentY) { return smoothstep_reverse_arbitrary(fromY, toY, currentY); }
+};
+struct MethodLinear
+{
+    static inline float Forward(float fromY, float toY, float xInRange01) {
+        xInRange01 = clamp01(xInRange01);
+        return xInRange01 * toY + (1 - xInRange01) * fromY;
+    }
+    static inline float Inverse(float fromY, float toY, float currentY) {
+        return (currentY - fromY) / (toY - fromY);
+    }
+};
 } // namespace Interpolations
 #include "ACU/ACUPlayerCameraComponent.h"
 bool IsInBombAimMode(ACUPlayerCameraComponent* cameraCpnt)
@@ -225,17 +240,6 @@ class FOVWhileAimingManager_AugmentedZoomOnRightClick
     const float m_goalFOVWhileAimingWithoutRMB = g_newFOVwhileAimingBomb;
     const float m_goalFOVWhileAimingAndPressingRMB = 0.60f;
 public:
-    void AugmentZoomDependingOnRMB(FOVCurvesDatabase& fovCurves)
-    {
-        FOVCurveAccessor& cameraModeController = *fovCurves.curve_BombAim;
-        //cameraModeController.SetEffectiveFOV(g_newFOVwhileAimingBomb);
-        //return;
-        const bool isRMBpressed = GetAsyncKeyState(VK_RBUTTON);
-        const float targetFOV = isRMBpressed ? m_goalFOVWhileAimingAndPressingRMB : m_goalFOVWhileAimingWithoutRMB;
-        const float currentEffectiveFOV = cameraModeController.GetCurrentEffectiveFOV();
-        float newEffectiveFOV = CalculateNewEffectiveFOVForTarget(targetFOV, currentEffectiveFOV);
-        cameraModeController.SetEffectiveFOV(newEffectiveFOV);
-    }
     void AugmentZoomDependingOnRMB_smoothstep(FOVCurvesDatabase& fovCurves)
     {
         FOVCurveAccessor& cameraModeController = *fovCurves.curve_BombAim;
@@ -247,31 +251,15 @@ public:
         const float currentEffectiveFOV = cameraModeController.GetCurrentEffectiveFOV();
 
         constexpr float reasonableTimeForInterpolation = 0.3f;
-        float currentInterpTee = Interpolations::smoothstep_reverse_arbitrary(interpFrom, interpTo, currentEffectiveFOV);
+
+        using InterpMethod = Interpolations::MethodSmoothstep;
+        float currentInterpTee = InterpMethod::Inverse(interpFrom, interpTo, currentEffectiveFOV);
         float howLongHasPassedSinceStartedInterpolating = currentInterpTee * reasonableTimeForInterpolation;
         const float deltaT = ACU::GetCurrentDeltaTime_UnpausedGame();
         float newInterpTee = (howLongHasPassedSinceStartedInterpolating + deltaT) / reasonableTimeForInterpolation;
-        float newEffectiveFOV = Interpolations::smoothstep_arbitrary(interpFrom, interpTo, newInterpTee);
+        float newEffectiveFOV = InterpMethod::Forward(interpFrom, interpTo, newInterpTee);
 
         cameraModeController.SetEffectiveFOV(newEffectiveFOV);
-    }
-private:
-    float CalculateNewEffectiveFOVForTarget(float targetValue, float currentValue)
-    {
-        constexpr float eps = 0.01f;
-        float d = targetValue - currentValue;
-        if (abs(d) < eps) { return targetValue; }
-        constexpr float reasonableTimeForInterpolation = 0.5f;
-        constexpr float reasonablePresumedMaxDistanceBetweenTargetAndCurrentValues = 1.0f;
-        constexpr float linearInterpolationSpeed = reasonablePresumedMaxDistanceBetweenTargetAndCurrentValues / reasonableTimeForInterpolation;
-        float step = linearInterpolationSpeed * ACU::GetCurrentDeltaTime_UnpausedGame();
-        float stepSigned = targetValue > currentValue ? step: -step;
-        float newD = targetValue - (currentValue + stepSigned);
-        bool dSignChanged = (d > 0 && newD < 0) || (d < 0 && newD > 0);
-        if (dSignChanged) { return targetValue; }
-        return currentValue + stepSigned;
-        // This needs some nice looking interpolation, sigmoid or smth? Preferably stateless.
-        return targetValue;
     }
 public:
     NON_MOVABLE(FOVWhileAimingManager_AugmentedZoomOnRightClick);
