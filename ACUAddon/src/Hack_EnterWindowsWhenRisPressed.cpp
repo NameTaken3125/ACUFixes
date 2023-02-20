@@ -3,7 +3,16 @@
 #include "AutoAssemblerKinda.h"
 #include "Hack_EnterWindowsWhenRisPressed.h"
 
+#include "ACU/Parkour_PotentialWindowEntry.h"
+#include "ACU/SmallArray.h"
+#include "ACU/InputContainer.h"
 
+namespace ACU::Input {
+bool IsPressed_Reload()
+{
+    return InputContainer::GetMainSingleton().keyStates_thisFrame.isPressed_reload;
+}
+}
 
 uint32_t float_bytes(float f) { return (uint32_t&)f; }
 void Patch_RunWindowEntryTesterIfRequested_asmonly(SymbolWithAnAddress& isRequestedToEnterWindow, AssemblerContext* m_ctx);
@@ -131,8 +140,6 @@ void Patch_RememberRbuttonState(AllocatedWriteableSymbol& isRequestedToEnterWind
 using FuncName##_t = returnType(callingConvention*)allParamsInParentheses;\
 FuncName##_t FuncName = (FuncName##_t)relativeOffset;
 
-#include "ACU/Parkour_PotentialWindowEntry.h"
-#include "ACU/SmallArray.h"
 class WindowEntryTester;
 DEFINE_GAME_FUNCTION(WindowEntryTester__InitializeForFrame_mb, 0x1401858D0, int, __fastcall, (WindowEntryTester* a1, Vector4f* p_handsPosition, Vector4f* p_movementDirInGroundPlane, float p_WASDmagnitude, int p_eq6fullLean, __int64 p_currentLedge_mb));
 DEFINE_GAME_FUNCTION(FindMatchingParkourActionsForCurrentMovement_P, 0x140185630, __int64, __fastcall, (WindowEntryTester* a1, Vector4f* p_handsPosition, Vector4f* p_towardWallCoplanarWithPlayerEntity, Vector4f* p_movementDirInGroundPlane, float p_WASDmagnitude, int p_eq6_fullLean, unsigned __int8 a7, __int64 p_currentLedge_mb, SmallArray<PotentialWindowEntry*>* p_arrayPotentialMovesOut));
@@ -148,8 +155,7 @@ void RunWindowEntryEntryTesterInitAndScan(
     , SmallArray<PotentialWindowEntry*>* p_arrayPotentialMovesOut
 )
 {
-    constexpr int VKEY_R = 0x52;
-    const bool isRequestedEnterWindow = GetAsyncKeyState(VKEY_R);
+    const bool isRequestedEnterWindow = ACU::Input::IsPressed_Reload();
     if (!isRequestedEnterWindow)
     {
         // Standard execution
