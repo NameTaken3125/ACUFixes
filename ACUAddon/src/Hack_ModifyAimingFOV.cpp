@@ -113,10 +113,18 @@ public:
     static FOVCurvesDatabase& GetSingleton() { static FOVCurvesDatabase inst; return inst; }
 };
 
+namespace ACU::Input
+{
+bool IsPressedRMB() { return GetAsyncKeyState(VK_RBUTTON); }
+} // namespace ACU::Input
+
+
 constexpr uint64 objHash_BombAimRegular = 0x12F9251F30;
 constexpr uint64 objHash_BombAimFromCover = 0x34CE205063;
 constexpr float g_newFOVwhileAimingBomb = 1.0f; // = 1.5f;
 constexpr float g_newFOVwhileAimingBombFromBehindCover = 1.0f;
+constexpr float g_GoalFOVWhileAimingWithoutRMB = g_newFOVwhileAimingBomb;
+constexpr float g_GoalFOVWhileAimingAndPressingRMB = 0.60f;
 /*
 When player is aiming a bomb throw, the camera "tries to" follow the predicted landing position
 (actually, it seems to gradually follow a tracker that gradually follows the predicted landing position).
@@ -160,7 +168,7 @@ void WhenCameraBlendingModeChanged_HijackConditionalFOVs(AllRegisters* params)
         if (!fovCurves.curve_BombAim)
         {
             fovCurves.curve_BombAim = FOVCurveAccessor(newCameraMode);
-            fovCurves.curve_BombAim->SetEffectiveFOV(g_newFOVwhileAimingBomb);
+            fovCurves.curve_BombAim->SetEffectiveFOV(ACU::Input::IsPressedRMB() ? g_GoalFOVWhileAimingAndPressingRMB : g_GoalFOVWhileAimingWithoutRMB);
         }
     }
     else if (newCameraMode->hash_mb == objHash_BombAimFromCover)
@@ -237,20 +245,18 @@ bool IsInBombAimFromBehindCoverMode(ACUPlayerCameraComponent* cameraCpnt)
 }
 class FOVWhileAimingManager_AugmentedZoomOnRightClick
 {
-    const float m_goalFOVWhileAimingWithoutRMB = g_newFOVwhileAimingBomb;
-    const float m_goalFOVWhileAimingAndPressingRMB = 0.60f;
 public:
     void AugmentZoomDependingOnRMB_smoothstep(FOVCurvesDatabase& fovCurves)
     {
         FOVCurveAccessor& cameraModeController = *fovCurves.curve_BombAim;
-        const bool isRMBpressed = GetAsyncKeyState(VK_RBUTTON);
+        const bool isRMBpressed = ACU::Input::IsPressedRMB();
         const auto [interpTo, interpFrom] =
             isRMBpressed
-            ? std::pair{ m_goalFOVWhileAimingAndPressingRMB, m_goalFOVWhileAimingWithoutRMB }
-            : std::pair{ m_goalFOVWhileAimingWithoutRMB, m_goalFOVWhileAimingAndPressingRMB };
+            ? std::pair{ g_GoalFOVWhileAimingAndPressingRMB, g_GoalFOVWhileAimingWithoutRMB }
+            : std::pair{ g_GoalFOVWhileAimingWithoutRMB, g_GoalFOVWhileAimingAndPressingRMB };
         const float currentEffectiveFOV = cameraModeController.GetCurrentEffectiveFOV();
 
-        constexpr float reasonableTimeForInterpolation = 0.3f;
+        constexpr float reasonableTimeForInterpolation = 0.50f;
 
         using InterpMethod = Interpolations::MethodSmoothstep;
         float currentInterpTee = InterpMethod::Inverse(interpFrom, interpTo, currentEffectiveFOV);
