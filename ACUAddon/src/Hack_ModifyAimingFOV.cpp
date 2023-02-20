@@ -128,9 +128,15 @@ public:
     static FOVCurvesDatabase& GetSingleton() { static FOVCurvesDatabase inst; return inst; }
 };
 
+#include "ACU/HasInputContainers.h"
+#include "ACU/InputContainer.h"
+
+
+
 namespace ACU::Input
 {
-bool IsPressedRMB() { return GetAsyncKeyState(VK_RBUTTON); }
+//bool IsPressedRMB() { return GetAsyncKeyState(VK_RBUTTON); }
+bool IsPressedRMB() { return InputContainer::GetMainSingleton().keyStates_thisFrame.isPressed_RMB; }
 } // namespace ACU::Input
 
 
