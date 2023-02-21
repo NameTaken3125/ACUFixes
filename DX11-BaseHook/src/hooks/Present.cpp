@@ -74,3 +74,34 @@ void Base::Hooks::GrabGraphicsDevicesInitializeImGuiAndDraw(IDXGISwapChain* this
 
     return;
 }
+
+void DrawVariableDebug(const char* varName, uintptr_t integerVar)
+{
+    ImGui::Text("%s: 0x%llx", varName, integerVar);
+    if (ImGui::IsItemHovered())
+        ImGui::SetTooltip("Click to copy address to clipboard");
+    if (ImGui::IsItemClicked(0)) {
+        ImGui::LogToClipboard();
+        ImGui::LogText("0x%llx", integerVar);
+        ImGui::LogFinish();
+    }
+}
+#define TOSTRINGMACRO(var) #var
+#define DUMPHEX(integerVar)\
+    DrawVariableDebug(#integerVar, (uintptr_t)integerVar);
+#define DUMPBOOL(boolVar)\
+    ImGui::Text(boolVar ? #boolVar ": true" : #boolVar ": false");
+void Base::ImGuiDrawBasehookDebug()
+{
+    ImGui::BeginChild("basehookVariables", ImVec2(0, ImGui::GetFontSize() * 20.0f), true);
+    DUMPHEX(Base::Data::thisDLLModule);
+    DUMPHEX(Base::Data::hWindow);
+    DUMPHEX(Base::Data::pSwapChain);
+    DUMPHEX(Base::Data::pPresent);
+    DUMPHEX(Base::Data::pDxDevice11);
+    DUMPHEX(Base::Data::pContext);
+    DUMPHEX(Base::Data::oWndProc);
+    DUMPBOOL(Base::Data::IsImGuiInitialized);
+    DUMPBOOL(Base::Data::IsUsingPresentInnerHook);
+    ImGui::EndChild();
+}

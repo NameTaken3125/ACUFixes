@@ -25,8 +25,6 @@ void ImGuiPrintMatrix(const Matrix4f& mat)
         );
     }
 }
-#define IMGUI_DUMPHEX(integerVar)\
-ImGui::Text(#integerVar ": %llx", (uintptr_t)integerVar);
 Vector3f g_VisualizedDebugDirection;
 void VisualizeLocationFromClipboard()
 {
@@ -60,15 +58,14 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
             if (ImGuiCTX::Tab _mainTab{ "Main Tab" })
             {
                 DrawHacksControls();
-                IMGUI_DUMPHEX(Data::pSwapChain);
-                IMGUI_DUMPHEX(Data::pPresent);
-                IMGUI_DUMPHEX(Data::pDxDevice11);
-                IMGUI_DUMPHEX(Data::pContext);
-                ImGui::Text("Projection tuning:");
-                ImGui::Text("View:");
-                ImGuiPrintMatrix(gameMatView);
-                ImGui::Text("Proj:");
-                ImGuiPrintMatrix(gameMatProj);
+                if (ImGui::CollapsingHeader("View-projection matrices debugging"))
+                {
+                    ImGui::Text("Projection tuning:");
+                    ImGui::Text("View:");
+                    ImGuiPrintMatrix(gameMatView);
+                    ImGui::Text("Proj:");
+                    ImGuiPrintMatrix(gameMatProj);
+                }
             }
             if (ImGuiCTX::Tab _3dMarkersTab{ "3D Markers" })
             {
@@ -89,6 +86,10 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
             if (ImGuiCTX::Tab _typeInfosTab{ "TypeInfos" })
             {
                 TypeInfoSystemTests();
+            }
+            if (ImGuiCTX::Tab _typeInfosTab{ "DX11-BaseHook veriables" })
+            {
+                Base::ImGuiDrawBasehookDebug();
             }
             if (ImGuiCTX::Tab _typeInfosTab{ "ImGui demo" })
             {

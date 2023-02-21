@@ -38,6 +38,9 @@ namespace Base
     void ImGuiLayer_WhenMenuIsOpen();
     void ImGuiLayer_EvenWhenMenuIsClosed();
     void OnBeforeDetach();
+    // Information like Swapchain address, original WndProc address
+    // helps to transition to outer hooks.
+    void ImGuiDrawBasehookDebug();
 
     using voidptr_t = void*;
     using size_t = ::size_t;
