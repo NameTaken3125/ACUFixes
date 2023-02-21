@@ -2,7 +2,7 @@
 #include <base.h>
 
 //Data
-HMODULE                 Base::Data::hModule     = (HMODULE)NULL;
+HMODULE                 Base::Data::thisDLLModule = (HMODULE)NULL;
 void*                   Base::Data::pDeviceTable   [D3D11DEV_LEN];
 void*                   Base::Data::pSwapChainTable[D3D11SC_LEN];
 void*                   Base::Data::pContextTable  [D3D11CTX_LEN];

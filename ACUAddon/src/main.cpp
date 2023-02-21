@@ -171,22 +171,26 @@ void Base::ImGuiLayer_EvenWhenMenuIsClosed()
 #include "ConsoleForOutput.h"
 
 void DisableMainIntegrityCheck();
-DWORD WINAPI MainThread(LPVOID lpThreadParameter)
+static void MainThread(HMODULE thisDLLModule)
 {
-    {
     ConsoleForOutput _console;
     RedirectSTDOUTToConsole _stdout;
     std::cout << "Opened console." << std::endl;
     DisableMainIntegrityCheck();
-	Base::Data::hModule = (HMODULE)lpThreadParameter;
-	Base::Init();
+    Base::Data::thisDLLModule = thisDLLModule;
+    Base::Init();
     Base::Data::ShowMenu = false;
     while (!Base::Data::Detached)
     {
         Sleep(100);
     }
-    }
-    FreeLibraryAndExitThread(Base::Data::hModule, TRUE);
+}
+DWORD WINAPI MainThreadRAIIWrapper(LPVOID lpThreadParameter)
+{
+    // `FreeLibraryAndExitThread()` will prevent destructors of objects at this scope
+    // from being called, that's why all work is instead done in a separate function.
+    MainThread((HMODULE)lpThreadParameter);
+    FreeLibraryAndExitThread((HMODULE)lpThreadParameter, TRUE);
 	return TRUE;
 }
 
@@ -196,7 +200,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
 	{
 	case DLL_PROCESS_ATTACH:
         DisableThreadLibraryCalls(hModule);
-		CreateThread(nullptr, 0, MainThread, hModule, 0, nullptr);
+		CreateThread(nullptr, 0, MainThreadRAIIWrapper, hModule, 0, nullptr);
 		break;
 	case DLL_PROCESS_DETACH:
 		break;

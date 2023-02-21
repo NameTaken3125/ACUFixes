@@ -42,7 +42,7 @@ namespace Base
     using size_t = ::size_t;
 	namespace Data
 	{
-		extern HMODULE                 hModule;
+		extern HMODULE                 thisDLLModule;
 		extern ID3D11Device*           pDxDevice11;
 		extern IDXGISwapChain*         pSwapChain;
 		extern ID3D11DeviceContext*    pContext;
