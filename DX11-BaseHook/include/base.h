@@ -73,6 +73,10 @@ namespace Base
 		bool Shutdown();
 		HRESULT PRESENT_CALL Present(IDXGISwapChain* thisptr, UINT SyncInterval, UINT Flags);
 		LRESULT CALLBACK  WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+        // This is called in Hooks::Present() if the "inner" hook is activated.
+        // If you want to use an "outer" hook (at the call site), just call this function from there.
+        void GrabGraphicsDevicesInitializeImGuiAndDraw(IDXGISwapChain* thisptr);
 	}
 }
 
