@@ -193,6 +193,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="src\PresentHookOuter.cpp" />
     <ClCompile Include="src\TypeInfoSystemDump.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -208,6 +209,7 @@
     <ClInclude Include="src\ImGuiTextWindows.h" />
     <ClInclude Include="src\MovabilityUtils.h" />
     <ClInclude Include="src\pch.h" />
+    <ClInclude Include="src\PresentHookOuter.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="assets\readme.txt" />

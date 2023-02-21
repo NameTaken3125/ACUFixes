@@ -169,6 +169,16 @@ void Base::ImGuiLayer_EvenWhenMenuIsClosed()
     DrawSuccessfulInjectionIndicatorOverlay();
 }
 #include "ConsoleForOutput.h"
+#include "PresentHookOuter.h"
+
+#define PRESENT_HOOK_METHOD_INNER 1
+#define PRESENT_HOOK_METHOD_OUTER 2
+
+#define PRESENT_HOOK_METHOD PRESENT_HOOK_METHOD_OUTER
+#ifndef PRESENT_HOOK_METHOD
+static_assert(false, "PRESENT_HOOK_METHOD macro needs to be defined. See `main.cpp` for options.");
+#endif // !PRESENT_HOOK_METHOD
+
 
 void DisableMainIntegrityCheck();
 static void MainThread(HMODULE thisDLLModule)
@@ -178,7 +188,12 @@ static void MainThread(HMODULE thisDLLModule)
     std::cout << "Opened console." << std::endl;
     DisableMainIntegrityCheck();
     Base::Data::thisDLLModule = thisDLLModule;
-    Base::Init();
+#if PRESENT_HOOK_METHOD == PRESENT_HOOK_METHOD_OUTER
+    Base::Init(false);
+    PresentHookOuter::Activate();
+#elif PRESENT_HOOK_METHOD == PRESENT_HOOK_METHOD_INNER
+    Base::Init(true);
+#endif
     Base::Data::ShowMenu = false;
     while (!Base::Data::Detached)
     {

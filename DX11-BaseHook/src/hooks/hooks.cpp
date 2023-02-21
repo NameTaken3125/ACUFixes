@@ -9,8 +9,13 @@ bool GetD3D11Data(void** pSwapchainTable, size_t Size_Swapchain, void** pDeviceT
 
 //Functions
 
-bool Base::Hooks::Init()
+bool Base::Hooks::Init(bool usePresentInnerHook)
 {
+    Data::IsUsingPresentInnerHook = usePresentInnerHook;
+    if (!usePresentInnerHook)
+    {
+        return true;
+    }
 	if (GetD3D11Data(Data::pSwapChainTable, sizeof(Data::pSwapChainTable), Data::pDeviceTable, sizeof(Data::pDeviceTable), Data::pContextTable, sizeof(Data::pContextTable)))
 	{
 #		if defined(MEM_86)
@@ -36,10 +41,12 @@ bool Base::Hooks::Shutdown()
 		ImGui_ImplDX11_Shutdown();
 		ImGui_ImplWin32_Shutdown();
 		ImGui::DestroyContext();
+		SetWindowLongPtr(Data::hWindow, WNDPROC_INDEX, (LONG_PTR)Data::oWndProc);
 	}
-
-	mem::in::detour_restore(Data::pPresent, (mem::byte_t*)Data::oPresent, Data::szPresent);
-	SetWindowLongPtr(Data::hWindow, WNDPROC_INDEX, (LONG_PTR)Data::oWndProc);
+    if (Data::IsUsingPresentInnerHook)
+    {
+        mem::in::detour_restore(Data::pPresent, (mem::byte_t*)Data::oPresent, Data::szPresent);
+    }
 
 	return true;
 }

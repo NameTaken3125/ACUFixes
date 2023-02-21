@@ -30,13 +30,14 @@ DWORD WINAPI ExitThread(LPVOID lpThreadParameter);
 
 namespace Base
 {
-	bool Init();
+	bool Init(bool usePresentInnerHook);
 	bool Shutdown();
 	bool Detach();
 
     // To be implemented by user.
     void ImGuiLayer_WhenMenuIsOpen();
     void ImGuiLayer_EvenWhenMenuIsClosed();
+    void OnBeforeDetach();
 
     using voidptr_t = void*;
     using size_t = ::size_t;
@@ -59,6 +60,7 @@ namespace Base
 		extern bool                    Detached;
 		extern bool                    IsImGuiInitialized;
 		extern bool                    ShowMenu;
+		extern bool                    IsUsingPresentInnerHook;
 
 		namespace Keys
 		{
@@ -69,7 +71,7 @@ namespace Base
 
 	namespace Hooks
 	{
-		bool Init();
+		bool Init(bool usePresentInnerHook);
 		bool Shutdown();
 		HRESULT PRESENT_CALL Present(IDXGISwapChain* thisptr, UINT SyncInterval, UINT Flags);
 		LRESULT CALLBACK  WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);

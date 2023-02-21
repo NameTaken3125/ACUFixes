@@ -23,13 +23,13 @@ UINT                    Base::Data::WmKeys[0xFF];
 bool                    Base::Data::Detached   = false;
 bool                    Base::Data::ShowMenu   = true;
 bool                    Base::Data::IsImGuiInitialized  = false;
-
+bool                    Base::Data::IsUsingPresentInnerHook = false;
 
 //Functions
 
-bool Base::Init()
+bool Base::Init(bool usePresentInnerHook)
 {
-	Hooks::Init();
+	Hooks::Init(usePresentInnerHook);
 	return true;
 }
 
@@ -42,6 +42,7 @@ bool Base::Shutdown()
 bool Base::Detach()
 {
 	Base::Shutdown();
+    Base::OnBeforeDetach();
     Base::Data::Detached = true;
 	//CreateThread(nullptr, 0, ExitThread, Data::hModule, 0, nullptr);
 	return true;
