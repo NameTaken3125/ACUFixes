@@ -2,7 +2,7 @@
 #include <base.h>
 
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-LRESULT CALLBACK Base::Hooks::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK Base::Hooks::WndProc_BasehookControlsThenForwardToImGuiAndThenToOriginal(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	if(uMsg == WM_KEYDOWN || uMsg == WM_KEYUP)
 		Data::WmKeys[wParam] = uMsg;

@@ -25,7 +25,7 @@ void Base::Hooks::GrabGraphicsDevicesInitializeImGui(IDXGISwapChain* thisptr)
         Data::pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer);
         Data::pDxDevice11->CreateRenderTargetView(pBackBuffer, NULL, &Data::pMainRenderTargetView);
         pBackBuffer->Release();
-        Data::oWndProc = (WNDPROC)SetWindowLongPtr(Data::hWindow, GWLP_WNDPROC, (LONG_PTR)Hooks::WndProc);
+        Data::oWndProc = (WNDPROC)SetWindowLongPtr(Data::hWindow, GWLP_WNDPROC, (LONG_PTR)g_Settings->m_WndProc);
 
         ImGui::CreateContext();
         ImGuiIO& io = ImGui::GetIO();

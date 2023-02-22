@@ -180,64 +180,36 @@ void Base::ImGuiLayer_EvenWhenMenuIsClosed()
 static_assert(false, "PRESENT_HOOK_METHOD macro needs to be defined. See `main.cpp` for options.");
 #endif // !PRESENT_HOOK_METHOD
 
-class BasehookSettings_PresentHookInner : public Base::Settings
-{
-public:
-    virtual void OnBeforeActivate() override {
-        Base::Init(true);
-        Base::Data::ShowMenu = false;
-    }
-    virtual void OnBeforeDetach() override {
-    }
-    virtual WNDPROC GetWNDPROC() override {
-        return Base::Hooks::WndProc;
-    }
-};
 class BasehookSettings_PresentHookOuter : public Base::Settings
 {
 public:
+    BasehookSettings_PresentHookOuter() : Settings(false, Base::Hooks::WndProc_BasehookControlsThenForwardToImGuiAndThenToOriginal) {}
     virtual void OnBeforeActivate() override {
-        Base::Init(false);
         PresentHookOuter::Activate();
         Base::Data::ShowMenu = false;
     }
     virtual void OnBeforeDetach() override {
         PresentHookOuter::Deactivate();
     }
-    virtual WNDPROC GetWNDPROC() override {
-        return Base::Hooks::WndProc;
-    }
 };
-class BasehookSettings_OnlyWNDPROC : public Base::Settings
+namespace NoPresentHook {
+static LRESULT CALLBACK WndProc_NoImGui(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-public:
-    virtual void OnBeforeActivate() override {
-        Base::Data::hWindow = (HWND)ACU::GetWindowHandle();
-        Base::Data::oWndProc = (WNDPROC)SetWindowLongPtr(Base::Data::hWindow, GWLP_WNDPROC, (LONG_PTR)BasehookSettings_OnlyWNDPROC::WndProc);
-    }
-    virtual void OnBeforeDetach() override {
-    }
-    virtual WNDPROC GetWNDPROC() override {
-        return nullptr; // This function won't be used.
-    }
-    static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+    if (uMsg == WM_KEYDOWN || uMsg == WM_KEYUP)
+        Base::Data::WmKeys[wParam] = uMsg;
+
+    if (uMsg == WM_KEYDOWN)
     {
-        if (uMsg == WM_KEYDOWN || uMsg == WM_KEYUP)
-            Base::Data::WmKeys[wParam] = uMsg;
-
-        if (uMsg == WM_KEYDOWN)
+        switch (wParam)
         {
-            switch (wParam)
-            {
-            case Base::Data::Keys::DetachDll:
-                Base::Detach();
-                break;
-            }
+        case Base::Data::Keys::DetachDll:
+            Base::Detach();
+            break;
         }
-        return CallWindowProc(Base::Data::oWndProc, hWnd, uMsg, wParam, lParam);
     }
-};
-
+    return CallWindowProc(Base::Data::oWndProc, hWnd, uMsg, wParam, lParam);
+}
+}
 void DisableMainIntegrityCheck();
 static void MainThread(HMODULE thisDLLModule)
 {
@@ -246,21 +218,24 @@ static void MainThread(HMODULE thisDLLModule)
     std::cout << "Opened console." << std::endl;
     DisableMainIntegrityCheck();
     Base::Data::thisDLLModule = thisDLLModule;
-    std::unique_ptr<Base::Settings> basehook;
 #if PRESENT_HOOK_METHOD == PRESENT_HOOK_METHOD_OUTER
-    using BasehookSettings = BasehookSettings_PresentHookOuter;
+    auto basehook = BasehookSettings_PresentHookOuter();
 #elif PRESENT_HOOK_METHOD == PRESENT_HOOK_METHOD_INNER
-    using BasehookSettings = BasehookSettings_PresentHookInner;
+    auto basehook = Base::BasehookSettings_PresentHookInner(false);
 #elif PRESENT_HOOK_METHOD == PRESENT_HOOK_METHOD_NONE
-    using BasehookSettings = BasehookSettings_OnlyWNDPROC;
+    auto basehook = Base::BasehookSettings_OnlyWNDPROC((HWND)ACU::GetWindowHandle(), NoPresentHook::WndProc_NoImGui);
 #endif
-    basehook = std::make_unique<BasehookSettings>();
-    Base::g_Settings = basehook.get();
-    Base::g_Settings->OnBeforeActivate();
+    Base::Start(basehook);
     while (!Base::Data::Detached)
     {
         Sleep(100);
     }
+
+    // Helps to prevent the crash due to Present() trampoline deallocation
+    // (happens _sometimes_ with PresentHookOuter when pressing Detach in the ImGui menu)
+    // The best solution would be to not deallocate the Present() trampoline at all, like
+    // what I believe Cheat Engine's `globalalloc` does.
+    Sleep(500);
 }
 DWORD WINAPI MainThreadRAIIWrapper(LPVOID lpThreadParameter)
 {

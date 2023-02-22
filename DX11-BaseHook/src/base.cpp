@@ -29,7 +29,14 @@ Base::Settings*         Base::g_Settings = nullptr;
 
 //Functions
 
-bool Base::Init(bool usePresentInnerHook)
+void Base::Start(Base::Settings& settings)
+{
+    Base::g_Settings = &settings;
+    settings.OnBeforeActivate();
+    Base::OldInit(settings.m_ShouldUsePresentInnerHook);
+}
+
+bool Base::OldInit(bool usePresentInnerHook)
 {
 	Hooks::Init(usePresentInnerHook);
 	return true;

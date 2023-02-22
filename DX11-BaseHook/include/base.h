@@ -30,19 +30,12 @@ DWORD WINAPI ExitThread(LPVOID lpThreadParameter);
 
 namespace Base
 {
-class Settings
-{
-public:
-    virtual void OnBeforeDetach() = 0;
-    virtual WNDPROC GetWNDPROC() = 0;
-    virtual void OnBeforeActivate() = 0;
-};
-}
-namespace Base
-{
-	bool Init(bool usePresentInnerHook);
-	bool Shutdown();
+	class Settings;
+	void Start(Base::Settings& settings);
 	bool Detach();
+
+	bool OldInit(bool usePresentInnerHook);
+	bool Shutdown();
 
     // To be implemented by user.
     void ImGuiLayer_WhenMenuIsOpen();
@@ -74,6 +67,7 @@ namespace Base
 		extern bool                    IsImGuiInitialized;
 		extern bool                    ShowMenu;
 		extern bool                    IsUsingPresentInnerHook;
+		extern Base::Settings*         g_Settings;
 
 		namespace Keys
 		{
@@ -87,12 +81,50 @@ namespace Base
 		bool Init(bool usePresentInnerHook);
 		bool Shutdown();
 		HRESULT PRESENT_CALL Present(IDXGISwapChain* thisptr, UINT SyncInterval, UINT Flags);
-		LRESULT CALLBACK  WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+		LRESULT CALLBACK  WndProc_BasehookControlsThenForwardToImGuiAndThenToOriginal(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
         // This is called in Hooks::Present() if the "inner" hook is activated.
         // If you want to use an "outer" hook (at the call site), just call this function from there.
         void GrabGraphicsDevicesInitializeImGuiAndDraw(IDXGISwapChain* thisptr);
 	}
+}
+
+namespace Base
+{
+class Settings
+{
+public:
+    const bool m_ShouldUsePresentInnerHook;
+    const WNDPROC m_WndProc;
+public:
+    Settings(bool shouldUsePresentInnerHook, WNDPROC wndProc = Base::Hooks::WndProc_BasehookControlsThenForwardToImGuiAndThenToOriginal)
+        : m_ShouldUsePresentInnerHook(shouldUsePresentInnerHook)
+        , m_WndProc(wndProc)
+    {}
+
+    virtual void OnBeforeActivate() = 0;
+    virtual void OnBeforeDetach() = 0;
+
+    virtual ~Settings() {}
+};
+class BasehookSettings_PresentHookInner : public Base::Settings
+{
+    const bool m_ShowMenuByDefault;
+public:
+    BasehookSettings_PresentHookInner(bool showMenuByDefault) : Settings(true, Base::Hooks::WndProc_BasehookControlsThenForwardToImGuiAndThenToOriginal), m_ShowMenuByDefault(showMenuByDefault) {}
+    virtual void OnBeforeActivate() override { Base::Data::ShowMenu = m_ShowMenuByDefault; }
+    virtual void OnBeforeDetach() override {}
+}; class BasehookSettings_OnlyWNDPROC : public Base::Settings
+{
+    const HWND hWindow;
+public:
+    BasehookSettings_OnlyWNDPROC(HWND hWindow, WNDPROC wndProc) : Settings(false, wndProc), hWindow(hWindow) {}
+    virtual void OnBeforeActivate() override {
+        Base::Data::hWindow = hWindow;
+        Base::Data::oWndProc = (WNDPROC)SetWindowLongPtr(Base::Data::hWindow, GWLP_WNDPROC, (LONG_PTR)m_WndProc);
+    }
+    virtual void OnBeforeDetach() override {}
+};
 }
 
 #endif
