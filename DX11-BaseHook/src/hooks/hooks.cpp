@@ -36,12 +36,12 @@ bool Base::Hooks::Init(bool usePresentInnerHook)
 
 bool Base::Hooks::Shutdown()
 {
+	SetWindowLongPtr(Data::hWindow, WNDPROC_INDEX, (LONG_PTR)Data::oWndProc);
 	if (Data::IsImGuiInitialized)
 	{
 		ImGui_ImplDX11_Shutdown();
 		ImGui_ImplWin32_Shutdown();
 		ImGui::DestroyContext();
-		SetWindowLongPtr(Data::hWindow, WNDPROC_INDEX, (LONG_PTR)Data::oWndProc);
 	}
     if (Data::IsUsingPresentInnerHook)
     {

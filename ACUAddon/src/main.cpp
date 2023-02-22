@@ -147,13 +147,12 @@ void ImGui3D::WhatIsActuallyDrawnForFrame()
     ImGui3D::DrawMarkers();
     // On a pile of junk next to the artiste.
     static Vector3f testPosition{ 127.82f, 704.28f, 1.06f };
-    static Matrix4f transformGrid = MakeSimpleDebugTransform(testPosition) * Matrix4f::createRotationAroundAxis(-90, 0, 0);
+    ImGui3D::DrawWireModel(ImGui3D::GetArrowModel(), testPosition);
 
     Entity* player = ACU::GetPlayer();
 
     static ImGui3D::ImGuiWireModel grid5_model = ImGui3D::GenerateGrid(5, 2);
 
-    ImGui3D::DrawWireModel(ImGui3D::GetArrowModel(), testPosition);
     if (player)
     {
         Matrix4f debugDirectionTransform;
@@ -174,12 +173,80 @@ void Base::ImGuiLayer_EvenWhenMenuIsClosed()
 
 #define PRESENT_HOOK_METHOD_INNER 1
 #define PRESENT_HOOK_METHOD_OUTER 2
+#define PRESENT_HOOK_METHOD_NONE 3
 
 #define PRESENT_HOOK_METHOD PRESENT_HOOK_METHOD_OUTER
 #ifndef PRESENT_HOOK_METHOD
 static_assert(false, "PRESENT_HOOK_METHOD macro needs to be defined. See `main.cpp` for options.");
 #endif // !PRESENT_HOOK_METHOD
 
+namespace Base
+{
+class Settings
+{
+public:
+    virtual void OnBeforeDetach() = 0;
+    virtual WNDPROC GetWNDPROC() = 0;
+    virtual void Activate() = 0;
+};
+}
+class BasehookSettings_PresentHookInner : public Base::Settings
+{
+public:
+    virtual void Activate() override {
+        Base::Init(true);
+        Base::Data::ShowMenu = false;
+    }
+    virtual void OnBeforeDetach() override {
+    }
+    virtual WNDPROC GetWNDPROC() override {
+        return Base::Hooks::WndProc;
+    }
+};
+class BasehookSettings_PresentHookOuter : public Base::Settings
+{
+public:
+    virtual void Activate() override {
+        Base::Init(false);
+        PresentHookOuter::Activate();
+        Base::Data::ShowMenu = false;
+    }
+    virtual void OnBeforeDetach() override {
+        PresentHookOuter::Deactivate();
+    }
+    virtual WNDPROC GetWNDPROC() override {
+        return Base::Hooks::WndProc;
+    }
+};
+class BasehookSettings_OnlyWNDPROC : public Base::Settings
+{
+public:
+    virtual void Activate() override {
+        Base::Data::hWindow = (HWND)ACU::GetWindowHandle();
+        Base::Data::oWndProc = (WNDPROC)SetWindowLongPtr(Base::Data::hWindow, GWLP_WNDPROC, (LONG_PTR)BasehookSettings_OnlyWNDPROC::WndProc);
+    }
+    virtual void OnBeforeDetach() override {
+    }
+    virtual WNDPROC GetWNDPROC() override {
+        return nullptr; // This function won't be used.
+    }
+    static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+    {
+        if (uMsg == WM_KEYDOWN || uMsg == WM_KEYUP)
+            Base::Data::WmKeys[wParam] = uMsg;
+
+        if (uMsg == WM_KEYDOWN)
+        {
+            switch (wParam)
+            {
+            case Base::Data::Keys::DetachDll:
+                Base::Detach();
+                break;
+            }
+        }
+        return CallWindowProc(Base::Data::oWndProc, hWnd, uMsg, wParam, lParam);
+    }
+};
 
 void DisableMainIntegrityCheck();
 static void MainThread(HMODULE thisDLLModule)
@@ -190,12 +257,14 @@ static void MainThread(HMODULE thisDLLModule)
     DisableMainIntegrityCheck();
     Base::Data::thisDLLModule = thisDLLModule;
 #if PRESENT_HOOK_METHOD == PRESENT_HOOK_METHOD_OUTER
-    Base::Init(false);
-    PresentHookOuter::Activate();
+    using BasehookSettings = BasehookSettings_PresentHookOuter;
 #elif PRESENT_HOOK_METHOD == PRESENT_HOOK_METHOD_INNER
-    Base::Init(true);
+    using BasehookSettings = BasehookSettings_PresentHookInner;
+#elif PRESENT_HOOK_METHOD == PRESENT_HOOK_METHOD_NONE
+    using BasehookSettings = BasehookSettings_OnlyWNDPROC;
 #endif
-    Base::Data::ShowMenu = false;
+    BasehookSettings basehook;
+    basehook.Activate();
     while (!Base::Data::Detached)
     {
         Sleep(100);
