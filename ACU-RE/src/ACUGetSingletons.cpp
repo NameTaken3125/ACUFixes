@@ -8,6 +8,8 @@
 #include "ACU/CharacterAI.h"
 #include "ACU/Statechart.h"
 
+#include "ACU/HasSwapchain.h"
+
 namespace ACU {
 
     ACUPlayerCameraComponent* GetPlayerCameraComponent() { return ACUPlayerCameraComponent::GetSingleton(); }
@@ -35,6 +37,24 @@ namespace ACU {
         auto& childStatecharts = charAI->childStatecharts_mb_toHealth_60; if (!childStatecharts.arr) { return nullptr; }
         CSrvPlayerHealth* health = ((PlayerCharacterAI_ChildStatecharts*)childStatecharts.arr)->health;
         return health;
+    }
+    uint64 GetWindowHandle()
+    {
+        /*
+        Also:
+        145136FD0, 14523AA38, 14525BED8
+        [HasSwapchain+6f0]
+        [[HasSwapchain+6f8]+8]
+        [[HasSwapchain+6f8]+70]
+        */
+        return *(uint64*)0x145136FD0;
+    }
+    IDXGISwapchain* GetSwapchain()
+    {
+        HasSwapchain* hsc = HasSwapchain::GetSingleton();
+        if (!hsc) return nullptr;
+        if (!hsc->toSwapchain) return nullptr;
+        return hsc->toSwapchain->swapchain;
     }
 
 }

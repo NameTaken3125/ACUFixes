@@ -179,6 +179,7 @@
     <ClInclude Include="inc\ACU\GamePlaySettings.h" />
     <ClInclude Include="inc\ACU\GameStatsManager.h" />
     <ClInclude Include="inc\ACU\HasInputContainers.h" />
+    <ClInclude Include="inc\ACU\HasSwapchain.h" />
     <ClInclude Include="inc\ACU\InputContainer.h" />
     <ClInclude Include="inc\ACU\ManagedObject.h" />
     <ClInclude Include="inc\ACU\MandatoryUniverseComponent.h" />
