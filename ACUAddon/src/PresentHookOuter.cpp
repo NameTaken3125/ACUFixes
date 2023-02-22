@@ -57,7 +57,3 @@ void PresentHookOuter::Activate()
     g_PresentOuterPatch.emplace();
     g_PresentOuterPatch->Activate();
 }
-void Base::OnBeforeDetach()
-{
-    PresentHookOuter::Deactivate();
-}

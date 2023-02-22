@@ -25,6 +25,8 @@ bool                    Base::Data::ShowMenu   = true;
 bool                    Base::Data::IsImGuiInitialized  = false;
 bool                    Base::Data::IsUsingPresentInnerHook = false;
 
+Base::Settings*         Base::g_Settings = nullptr;
+
 //Functions
 
 bool Base::Init(bool usePresentInnerHook)
@@ -42,8 +44,8 @@ bool Base::Shutdown()
 bool Base::Detach()
 {
 	Base::Shutdown();
-    Base::OnBeforeDetach();
-    Base::Data::Detached = true;
+	Base::g_Settings->OnBeforeDetach();
+	Base::Data::Detached = true;
 	//CreateThread(nullptr, 0, ExitThread, Data::hModule, 0, nullptr);
 	return true;
 }

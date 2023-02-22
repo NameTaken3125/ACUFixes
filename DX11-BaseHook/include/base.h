@@ -30,6 +30,16 @@ DWORD WINAPI ExitThread(LPVOID lpThreadParameter);
 
 namespace Base
 {
+class Settings
+{
+public:
+    virtual void OnBeforeDetach() = 0;
+    virtual WNDPROC GetWNDPROC() = 0;
+    virtual void OnBeforeActivate() = 0;
+};
+}
+namespace Base
+{
 	bool Init(bool usePresentInnerHook);
 	bool Shutdown();
 	bool Detach();
@@ -37,7 +47,7 @@ namespace Base
     // To be implemented by user.
     void ImGuiLayer_WhenMenuIsOpen();
     void ImGuiLayer_EvenWhenMenuIsClosed();
-    void OnBeforeDetach();
+    extern Settings* g_Settings;
     // Information like Swapchain address, original WndProc address
     // helps to transition to outer hooks.
     void ImGuiDrawBasehookDebug();

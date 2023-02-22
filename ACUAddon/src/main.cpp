@@ -180,20 +180,10 @@ void Base::ImGuiLayer_EvenWhenMenuIsClosed()
 static_assert(false, "PRESENT_HOOK_METHOD macro needs to be defined. See `main.cpp` for options.");
 #endif // !PRESENT_HOOK_METHOD
 
-namespace Base
-{
-class Settings
-{
-public:
-    virtual void OnBeforeDetach() = 0;
-    virtual WNDPROC GetWNDPROC() = 0;
-    virtual void Activate() = 0;
-};
-}
 class BasehookSettings_PresentHookInner : public Base::Settings
 {
 public:
-    virtual void Activate() override {
+    virtual void OnBeforeActivate() override {
         Base::Init(true);
         Base::Data::ShowMenu = false;
     }
@@ -206,7 +196,7 @@ public:
 class BasehookSettings_PresentHookOuter : public Base::Settings
 {
 public:
-    virtual void Activate() override {
+    virtual void OnBeforeActivate() override {
         Base::Init(false);
         PresentHookOuter::Activate();
         Base::Data::ShowMenu = false;
@@ -221,7 +211,7 @@ public:
 class BasehookSettings_OnlyWNDPROC : public Base::Settings
 {
 public:
-    virtual void Activate() override {
+    virtual void OnBeforeActivate() override {
         Base::Data::hWindow = (HWND)ACU::GetWindowHandle();
         Base::Data::oWndProc = (WNDPROC)SetWindowLongPtr(Base::Data::hWindow, GWLP_WNDPROC, (LONG_PTR)BasehookSettings_OnlyWNDPROC::WndProc);
     }
@@ -256,6 +246,7 @@ static void MainThread(HMODULE thisDLLModule)
     std::cout << "Opened console." << std::endl;
     DisableMainIntegrityCheck();
     Base::Data::thisDLLModule = thisDLLModule;
+    std::unique_ptr<Base::Settings> basehook;
 #if PRESENT_HOOK_METHOD == PRESENT_HOOK_METHOD_OUTER
     using BasehookSettings = BasehookSettings_PresentHookOuter;
 #elif PRESENT_HOOK_METHOD == PRESENT_HOOK_METHOD_INNER
@@ -263,8 +254,9 @@ static void MainThread(HMODULE thisDLLModule)
 #elif PRESENT_HOOK_METHOD == PRESENT_HOOK_METHOD_NONE
     using BasehookSettings = BasehookSettings_OnlyWNDPROC;
 #endif
-    BasehookSettings basehook;
-    basehook.Activate();
+    basehook = std::make_unique<BasehookSettings>();
+    Base::g_Settings = basehook.get();
+    Base::g_Settings->OnBeforeActivate();
     while (!Base::Data::Detached)
     {
         Sleep(100);
