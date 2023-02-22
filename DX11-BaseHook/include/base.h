@@ -111,7 +111,7 @@ class BasehookSettings_PresentHookInner : public Base::Settings
 {
     const bool m_ShowMenuByDefault;
 public:
-    BasehookSettings_PresentHookInner(bool showMenuByDefault) : Settings(true, Base::Hooks::WndProc_BasehookControlsThenForwardToImGuiAndThenToOriginal), m_ShowMenuByDefault(showMenuByDefault) {}
+    BasehookSettings_PresentHookInner(bool showMenuByDefault, WNDPROC wndProc = Base::Hooks::WndProc_BasehookControlsThenForwardToImGuiAndThenToOriginal) : Settings(true, wndProc), m_ShowMenuByDefault(showMenuByDefault) {}
     virtual void OnBeforeActivate() override { Base::Data::ShowMenu = m_ShowMenuByDefault; }
     virtual void OnBeforeDetach() override {}
 }; class BasehookSettings_OnlyWNDPROC : public Base::Settings

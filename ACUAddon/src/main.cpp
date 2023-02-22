@@ -180,10 +180,45 @@ void Base::ImGuiLayer_EvenWhenMenuIsClosed()
 static_assert(false, "PRESENT_HOOK_METHOD macro needs to be defined. See `main.cpp` for options.");
 #endif // !PRESENT_HOOK_METHOD
 
+#include "MyVariousHacks.h"
+
+extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+static LRESULT CALLBACK WndProc_HackControls(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    constexpr uint64 isPreviouslyPressedMask = 1 << 30;
+    if (uMsg == WM_KEYDOWN)
+    {
+        const bool isPreviouslyPressed = lParam & isPreviouslyPressedMask;
+        const bool isKeyJustPressed = !isPreviouslyPressed;
+        if (isKeyJustPressed)
+        {
+            printf("Just pressed: %lld\n", wParam);
+            switch (wParam)
+            {
+            case Base::Data::Keys::ToggleMenu:
+            {
+                if (Base::Data::IsImGuiInitialized)
+                {
+                    Base::Data::ShowMenu = !Base::Data::ShowMenu;
+                    ImGui::GetIO().MouseDrawCursor = Base::Data::ShowMenu;
+                    break;
+                }
+            }
+            case Base::Data::Keys::DetachDll:
+                Base::Detach();
+                break;
+            }
+            MyVariousHacks::MyHacks_OnKeyJustPressed(wParam);
+        }
+    }
+    if (Base::Data::IsImGuiInitialized)
+        ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam);
+    return CallWindowProc(Base::Data::oWndProc, hWnd, uMsg, wParam, lParam);
+}
 class BasehookSettings_PresentHookOuter : public Base::Settings
 {
 public:
-    BasehookSettings_PresentHookOuter() : Settings(false, Base::Hooks::WndProc_BasehookControlsThenForwardToImGuiAndThenToOriginal) {}
+    BasehookSettings_PresentHookOuter() : Settings(false, WndProc_HackControls) {}
     virtual void OnBeforeActivate() override {
         PresentHookOuter::Activate();
         Base::Data::ShowMenu = false;
@@ -192,24 +227,6 @@ public:
         PresentHookOuter::Deactivate();
     }
 };
-namespace NoPresentHook {
-static LRESULT CALLBACK WndProc_NoImGui(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-    if (uMsg == WM_KEYDOWN || uMsg == WM_KEYUP)
-        Base::Data::WmKeys[wParam] = uMsg;
-
-    if (uMsg == WM_KEYDOWN)
-    {
-        switch (wParam)
-        {
-        case Base::Data::Keys::DetachDll:
-            Base::Detach();
-            break;
-        }
-    }
-    return CallWindowProc(Base::Data::oWndProc, hWnd, uMsg, wParam, lParam);
-}
-}
 void DisableMainIntegrityCheck();
 static void MainThread(HMODULE thisDLLModule)
 {
@@ -221,11 +238,12 @@ static void MainThread(HMODULE thisDLLModule)
 #if PRESENT_HOOK_METHOD == PRESENT_HOOK_METHOD_OUTER
     auto basehook = BasehookSettings_PresentHookOuter();
 #elif PRESENT_HOOK_METHOD == PRESENT_HOOK_METHOD_INNER
-    auto basehook = Base::BasehookSettings_PresentHookInner(false);
+    auto basehook = Base::BasehookSettings_PresentHookInner(false, WndProc_HackControls);
 #elif PRESENT_HOOK_METHOD == PRESENT_HOOK_METHOD_NONE
-    auto basehook = Base::BasehookSettings_OnlyWNDPROC((HWND)ACU::GetWindowHandle(), NoPresentHook::WndProc_NoImGui);
+    auto basehook = Base::BasehookSettings_OnlyWNDPROC((HWND)ACU::GetWindowHandle(), WndProc_HackControls);
 #endif
     Base::Start(basehook);
+    MyVariousHacks::Start();
     while (!Base::Data::Detached)
     {
         Sleep(100);

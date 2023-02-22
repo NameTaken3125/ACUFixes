@@ -231,20 +231,33 @@ public:
         DrawCheckboxForHack(modifyConditionalFOVs, "Modify conditional FOVs");
     }
 };
+std::optional<MyHacks> g_MyHacks;
 void DrawHacksControls()
 {
-    // WARNING: running 2+ of these in async has been known to create a race in AssemblerContext::AllocateVariables()
-    //          (between `FindFreeBlockForRegion()` and `VirtualAlloc()`).
-    //          This has been only very slightly alleviated by adding 10 tries,
-    //          which is a simplified version of what Cheat Engine is doing and is fine for now.
-
-    static AsyncConstructed<MyHacks> myHacks;
-    if (auto* instance = myHacks.get())
+    if (g_MyHacks)
     {
-        instance->DrawControls();
+        g_MyHacks->DrawControls();
     }
-    else if (auto* exc = myHacks.GetException())
+}
+
+#include "MyVariousHacks.h"
+
+void ToggleDefaultHacks()
+{
+    printf("ToggleDefaultHacks()\n");
+}
+
+void MyVariousHacks::Start()
+{
+    g_MyHacks.emplace();
+}
+void MyVariousHacks::MyHacks_OnKeyJustPressed(int keyCode)
+{
+    switch (keyCode)
     {
-        int noop = 0;
+    case VK_NUMPAD6:
+        ToggleDefaultHacks();
+    default:
+        break;
     }
 }
