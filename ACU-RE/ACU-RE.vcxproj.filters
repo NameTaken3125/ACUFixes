@@ -30,6 +30,7 @@
     <ClInclude Include="inc\ACU\GamePlaySettings.h" />
     <ClInclude Include="inc\ACU\BallisticProjectileAimingControlsSettings.h" />
     <ClInclude Include="inc\ACU\HasSwapchain.h" />
+    <ClInclude Include="inc\ACU\KeymapScancodes.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />

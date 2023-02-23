@@ -33,5 +33,6 @@
 
 #include "ACU/HasInputContainers.h"
 #include "ACU/InputContainer.h"
+#include "ACU/KeymapScancodes.h"
 
 #include "ACU/BallisticProjectileAimingControlsSettings.h"
