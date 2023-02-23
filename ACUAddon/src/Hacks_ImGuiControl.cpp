@@ -208,6 +208,7 @@ public:
     AutoAssembleWrapper<PlayWithBombAimCameraTracker> bombAimExperiments;
     AutoAssembleWrapper<PlayWithBombAimCameraTracker2> bombAimExperiments2;
     AutoAssembleWrapper<ModifyConditionalFOVs> modifyConditionalFOVs;
+
     template<class Hack>
     void DrawCheckboxForHack(Hack& hack, const std::string_view& text)
     {
@@ -218,6 +219,32 @@ public:
             {
                 instance->Toggle();
             }
+        }
+    }
+    void ToggleDefaultHacks()
+    {
+        printf("Toggle.\n");
+        if (!enteringWindows.IsActive())
+        {
+            enteringWindows.Activate();
+            menacingWalk.Activate();
+            modifyConditionalFOVs.Activate();
+        }
+        else
+        {
+            enteringWindows.Deactivate();
+            menacingWalk.Deactivate();
+            modifyConditionalFOVs.Deactivate();
+        }
+    }
+    void OnKeyJustPressed(int keyCode)
+    {
+        switch (keyCode)
+        {
+        case VK_NUMPAD6:
+            ToggleDefaultHacks();
+        default:
+            break;
         }
     }
     void DrawControls()
@@ -242,22 +269,16 @@ void DrawHacksControls()
 
 #include "MyVariousHacks.h"
 
-void ToggleDefaultHacks()
-{
-    printf("ToggleDefaultHacks()\n");
-}
 
 void MyVariousHacks::Start()
 {
     g_MyHacks.emplace();
+    g_MyHacks->ToggleDefaultHacks();
 }
 void MyVariousHacks::MyHacks_OnKeyJustPressed(int keyCode)
 {
-    switch (keyCode)
+    if (g_MyHacks)
     {
-    case VK_NUMPAD6:
-        ToggleDefaultHacks();
-    default:
-        break;
+        g_MyHacks->OnKeyJustPressed(keyCode);
     }
 }

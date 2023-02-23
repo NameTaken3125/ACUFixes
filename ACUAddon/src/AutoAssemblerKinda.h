@@ -511,11 +511,13 @@ public:
     }
     void Activate()
     {
+        if (m_IsActive) { return; }
         m_CodeHolderInstantiation.m_ctx->WriteChanges();
         m_IsActive = true;
     }
     void Deactivate()
     {
+        if (!m_IsActive) { return; }
         m_CodeHolderInstantiation.m_ctx->Unwrite();
         m_IsActive = false;
     }
