@@ -187,6 +187,7 @@
     <ClCompile Include="src\ImGui3D.cpp" />
     <ClCompile Include="src\ImGui3DRenderer.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\My_WndProc_InputHandling.cpp" />
     <ClCompile Include="src\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -195,6 +196,7 @@
     </ClCompile>
     <ClCompile Include="src\PresentHookOuter.cpp" />
     <ClCompile Include="src\TypeInfoSystemDump.cpp" />
+    <ClCompile Include="src\WhatIsDrawnInImGui.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\vmath\vmath.h" />

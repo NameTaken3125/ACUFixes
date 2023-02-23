@@ -1,224 +1,39 @@
+/*
+main.cpp
+Brings the app's components together.
+*/
+
 #include "pch.h"
 
 #include "base.h"
-#include "vmath/vmath.h"
-#include <vmath/vmath_extra.h>
-#include "ImGuiCTX.h"
-#include "ImGui3D.h"
-#include "ImGui3DRenderer.h"
-
-#include "ACU/ACUGetSingletons.h"
-#include "ACU/Entity.h"
-#include "ACU/RenderValuesHolder.h"
-
-Matrix4f gameMatView;
-Matrix4f gameMatProj;
-void ImGuiPrintMatrix(const Matrix4f& mat)
-{
-    for (size_t i = 0; i < 4; i++)
-    {
-        ImGui::Text("%f %f %f %f:"
-            , mat.data[i * 4]
-            , mat.data[i * 4 + 1]
-            , mat.data[i * 4 + 2]
-            , mat.data[i * 4 + 3]
-        );
-    }
-}
-Vector3f g_VisualizedDebugDirection;
-void VisualizeLocationFromClipboard()
-{
-    Vector3f visualizedLoc = ParseVector3fFromClipboard().value_or(Vector3f());
-    ImGui3D::DrawLocationNamed(visualizedLoc, "Vizualized Loc");
-}
-
-
-void VisualizeCurrentPlayerLocation()
-{
-    Entity* player = ACU::GetPlayer();
-    Vector3f loc = player ? player->GetPosition() : Vector3f();
-    ImGui3D::DrawLocationNamed(loc, "Player");
-}
-void VisualizeDirectionFromClipboard()
-{
-    g_VisualizedDebugDirection = ParseVector3fFromClipboard().value_or(g_VisualizedDebugDirection);
-}
-void DrawHacksControls();
-void TypeInfoSystemTests();
-void Base::ImGuiLayer_WhenMenuIsOpen()
-{
-    static bool enableDemoWindow = false;
-    if (enableDemoWindow) {
-        ImGui::ShowDemoWindow();
-    }
-    if (ImGuiCTX::Window _mainWindow{ "Stuff" })
-    {
-        if (ImGuiCTX::TabBar _tabbar{ "MainWindowTabs" })
-        {
-            if (ImGuiCTX::Tab _mainTab{ "Main Tab" })
-            {
-                DrawHacksControls();
-                if (ImGui::CollapsingHeader("View-projection matrices debugging"))
-                {
-                    ImGui::Text("Projection tuning:");
-                    ImGui::Text("View:");
-                    ImGuiPrintMatrix(gameMatView);
-                    ImGui::Text("Proj:");
-                    ImGuiPrintMatrix(gameMatProj);
-                }
-            }
-            if (ImGuiCTX::Tab _3dMarkersTab{ "3D Markers" })
-            {
-                ImGui3D::DrawPersistent3DMarkersControls();
-                if (ImGui::Button("Visualize location from clipboard"))
-                {
-                    VisualizeLocationFromClipboard();
-                }
-                if (ImGui::Button("Visualize direction from clipboard"))
-                {
-                    VisualizeDirectionFromClipboard();
-                }
-                if (ImGui::Button("Visualize current Player Location"))
-                {
-                    VisualizeCurrentPlayerLocation();
-                }
-            }
-            if (ImGuiCTX::Tab _typeInfosTab{ "TypeInfos" })
-            {
-                TypeInfoSystemTests();
-            }
-            if (ImGuiCTX::Tab _typeInfosTab{ "DX11-BaseHook veriables" })
-            {
-                Base::ImGuiDrawBasehookDebug();
-            }
-            if (ImGuiCTX::Tab _typeInfosTab{ "ImGui demo" })
-            {
-                ImGui::Checkbox("Show ImGui demo window", &enableDemoWindow);
-            }
-        }
-    }
-}
-
-Matrix4f MakeSimpleDebugTransform(const Vector3f& position)
-{
-    return Matrix4f::createTranslation(position.x, position.y, position.z) * Matrix4f::createScale(0.1f, 0.1f, 0.1f);
-}
-
-
-
-void DrawSuccessfulInjectionIndicatorOverlay()
-{
-    ImGui::SetNextWindowBgAlpha(0.3f); // Transparent background
-    ImGui::SetNextWindowPos({ 0, 0 }, ImGuiCond_Always);
-    ImGuiWindowFlags window_flags = 0;
-    window_flags |= ImGuiWindowFlags_NoDecoration;
-    window_flags |= ImGuiWindowFlags_NoMove;
-    window_flags |= ImGuiWindowFlags_AlwaysAutoResize;
-    window_flags |= ImGuiWindowFlags_NoFocusOnAppearing;
-    window_flags |= ImGuiWindowFlags_NoNav;
-    window_flags |= ImGuiWindowFlags_NoInputs;
-
-    if (ImGui::Begin("Always enabled overlay", nullptr, window_flags))
-    {
-        ImGui::Text("Overlay on. Press INSERT to open ImGui menu.");
-    }
-    ImGui::End();
-}
-void SetProjMatrix(Matrix4f& matOut)
-{
-    matOut = RenderValuesHolder::GetSingleton()->matProjection_mb;
-}
-// The stupid game has the camera matrix all rotated around.
-// Why don't you stop rotating your matrices, game?
-void SetCorrectViewMatrix(Matrix4f& matOut)
-{
-    Matrix4f cameraMat = RenderValuesHolder::GetSingleton()->cameraTransform;
-    cameraMat = cameraMat * Matrix4f::createRotationAroundAxis(-90, 0, 0);
-    matOut = cameraMat.inverse();
-}
-void ImGui3D::CalculateViewProjectionForCurrentFrame(Matrix4f& viewProjOut)
-{
-    SetProjMatrix(gameMatProj);
-    SetCorrectViewMatrix(gameMatView);
-    viewProjOut = gameMatProj * gameMatView;
-}
-void ImGui3D::WhatIsActuallyDrawnForFrame()
-{
-    ImGui3D::DrawMarkers();
-    // On a pile of junk next to the artiste.
-    static Vector3f testPosition{ 127.82f, 704.28f, 1.06f };
-    ImGui3D::DrawWireModel(ImGui3D::GetArrowModel(), testPosition);
-
-    Entity* player = ACU::GetPlayer();
-
-    static ImGui3D::ImGuiWireModel grid5_model = ImGui3D::GenerateGrid(5, 2);
-
-    if (player)
-    {
-        Matrix4f debugDirectionTransform;
-        debugDirectionTransform.setRotation(MakeRotationAlignZWithVector(g_VisualizedDebugDirection));
-        debugDirectionTransform = Matrix4f::createTranslation(player->GetPosition()) * debugDirectionTransform;
-        ImGui3D::DrawWireModelTransform(ImGui3D::GetArrowModel(), debugDirectionTransform);
-        ImGui3D::DrawWireModelTransform(ImGui3D::GetArrowModel(), player->GetTransform());
-        ImGui3D::DrawWireModelTransform(grid5_model, player->GetTransform());
-    }
-}
-void Base::ImGuiLayer_EvenWhenMenuIsClosed()
-{
-    ImGui3D::DrawStuff();
-    DrawSuccessfulInjectionIndicatorOverlay();
-}
 #include "ConsoleForOutput.h"
 #include "PresentHookOuter.h"
+#include "MyVariousHacks.h"
+
+#include "ACU/ACUGetSingletons.h"
 
 #define PRESENT_HOOK_METHOD_INNER 1
 #define PRESENT_HOOK_METHOD_OUTER 2
-#define PRESENT_HOOK_METHOD_NONE 3
+#define PRESENT_HOOK_METHOD_ONLYWNDPROC 3
 
 #define PRESENT_HOOK_METHOD PRESENT_HOOK_METHOD_OUTER
 #ifndef PRESENT_HOOK_METHOD
 static_assert(false, "PRESENT_HOOK_METHOD macro needs to be defined. See `main.cpp` for options.");
 #endif // !PRESENT_HOOK_METHOD
 
-#include "MyVariousHacks.h"
+// Required so that the game doesn't crash on code modification.
+void DisableMainIntegrityCheck();
+// Respond to input: toggle hacks, etc.
+LRESULT CALLBACK WndProc_HackControls(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-static LRESULT CALLBACK WndProc_HackControls(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-    constexpr uint64 isPreviouslyPressedMask = 1 << 30;
-    if (uMsg == WM_KEYDOWN)
-    {
-        const bool isPreviouslyPressed = lParam & isPreviouslyPressedMask;
-        const bool isKeyJustPressed = !isPreviouslyPressed;
-        if (isKeyJustPressed)
-        {
-            printf("Just pressed: %lld\n", wParam);
-            switch (wParam)
-            {
-            case Base::Data::Keys::ToggleMenu:
-            {
-                if (Base::Data::IsImGuiInitialized)
-                {
-                    Base::Data::ShowMenu = !Base::Data::ShowMenu;
-                    ImGui::GetIO().MouseDrawCursor = Base::Data::ShowMenu;
-                    break;
-                }
-            }
-            case Base::Data::Keys::DetachDll:
-                Base::Detach();
-                break;
-            }
-            MyVariousHacks::MyHacks_OnKeyJustPressed(wParam);
-        }
-    }
-    if (Base::Data::IsImGuiInitialized)
-        ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam);
-    return CallWindowProc(Base::Data::oWndProc, hWnd, uMsg, wParam, lParam);
-}
-class BasehookSettings_PresentHookOuter : public Base::Settings
+// Just re-declaring these as a reminder that they're the user-defined parts
+// that are needed to make the BaseHook work.
+void Base::ImGuiLayer_EvenWhenMenuIsClosed();
+void Base::ImGuiLayer_WhenMenuIsOpen();
+class PresentHookOuter::BasehookSettings_PresentHookOuter : public Base::Settings
 {
 public:
-    BasehookSettings_PresentHookOuter() : Settings(false, WndProc_HackControls) {}
+    BasehookSettings_PresentHookOuter() : Base::Settings(false, WndProc_HackControls) {}
     virtual void OnBeforeActivate() override {
         PresentHookOuter::Activate();
         Base::Data::ShowMenu = false;
@@ -227,7 +42,7 @@ public:
         PresentHookOuter::Deactivate();
     }
 };
-void DisableMainIntegrityCheck();
+
 static void MainThread(HMODULE thisDLLModule)
 {
     ConsoleForOutput _console;
@@ -236,10 +51,10 @@ static void MainThread(HMODULE thisDLLModule)
     DisableMainIntegrityCheck();
     Base::Data::thisDLLModule = thisDLLModule;
 #if PRESENT_HOOK_METHOD == PRESENT_HOOK_METHOD_OUTER
-    auto basehook = BasehookSettings_PresentHookOuter();
+    auto basehook = PresentHookOuter::BasehookSettings_PresentHookOuter();
 #elif PRESENT_HOOK_METHOD == PRESENT_HOOK_METHOD_INNER
     auto basehook = Base::BasehookSettings_PresentHookInner(false, WndProc_HackControls);
-#elif PRESENT_HOOK_METHOD == PRESENT_HOOK_METHOD_NONE
+#elif PRESENT_HOOK_METHOD == PRESENT_HOOK_METHOD_ONLYWNDPROC
     auto basehook = Base::BasehookSettings_OnlyWNDPROC((HWND)ACU::GetWindowHandle(), WndProc_HackControls);
 #endif
     Base::Start(basehook);
