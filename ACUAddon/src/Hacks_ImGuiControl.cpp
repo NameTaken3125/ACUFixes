@@ -196,6 +196,34 @@ struct PlayWithBombAimCameraTracker2 : AutoAssemblerCodeHolder_Base
     }
 };
 
+#include "ACU/InputContainer.h"
+void InjectNumpad46WhenScrollingMouseWheel(AllRegisters* params)
+{
+    InputContainerBig* inpCont = (InputContainerBig*)params->rbx_;
+    uint8& isMarkedAsPressed_CycleLeftHand = inpCont->keyStates_thisFrame.isPressed_numpad4cycleLeftHand;
+    uint8& isMarkedAsPressed_CycleBombs = inpCont->keyStates_thisFrame.isPressed_numpad6cycleBombs;
+    if (!isMarkedAsPressed_CycleLeftHand)
+    {
+        isMarkedAsPressed_CycleLeftHand = inpCont->IsMouseWheelScrollingUp();
+    }
+    if (!isMarkedAsPressed_CycleBombs)
+    {
+        isMarkedAsPressed_CycleBombs = inpCont->IsMouseWheelScrollingDown();
+    }
+}
+struct InputInjection_CycleEquipmentWhenScrollingMousewheel : AutoAssemblerCodeHolder_Base
+{
+    InputInjection_CycleEquipmentWhenScrollingMousewheel()
+    {
+        constexpr uintptr_t whenCheckingKeymapForFrame = 0x14273BC75;
+        PresetScript_CCodeInTheMiddle(
+            whenCheckingKeymapForFrame, 6
+            , InjectNumpad46WhenScrollingMouseWheel
+            , RETURN_TO_RIGHT_AFTER_STOLEN_BYTES
+            , true);
+    }
+};
+
 
 #include "Hack_ModifyAimingFOV.h"
 class MyHacks
@@ -208,6 +236,7 @@ public:
     AutoAssembleWrapper<PlayWithBombAimCameraTracker> bombAimExperiments;
     AutoAssembleWrapper<PlayWithBombAimCameraTracker2> bombAimExperiments2;
     AutoAssembleWrapper<ModifyConditionalFOVs> modifyConditionalFOVs;
+    AutoAssembleWrapper<InputInjection_CycleEquipmentWhenScrollingMousewheel> cycleEquipmentOnMouseWheel;
 
     template<class Hack>
     void DrawCheckboxForHack(Hack& hack, const std::string_view& text)
@@ -249,6 +278,7 @@ public:
     }
     void DrawControls()
     {
+        DrawCheckboxForHack(cycleEquipmentOnMouseWheel, "Cycle through equipment using mouse wheel");
         DrawCheckboxForHack(enteringWindows, "Enter windows by pressing R");
         DrawCheckboxForHack(ccodeInTheMiddle, "Inspect all registers at 0x141A4C641");
         DrawCheckboxForHack(menacingWalk, "Allow Slow Menacing Walk");
