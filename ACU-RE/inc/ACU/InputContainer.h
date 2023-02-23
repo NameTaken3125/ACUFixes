@@ -13,9 +13,9 @@ public:
     unsigned char isPressed_eagleVision; //0x0002
     unsigned char isPressed_parkourDownInteract; //0x0003
     unsigned char isPressed_disguise; //0x0004
-    char pad_0005[1]; //0x0005
+    unsigned char isPressed_numpad4cycleLeftHand; //0x0005
     unsigned char isPressed_medicine; //0x0006
-    char pad_0007[1]; //0x0007
+    unsigned char isPressed_numpad6cycleBombs; //0x0007
     unsigned char isPressed_map; //0x0008
     unsigned char isPressed_escape; //0x0009
     unsigned char isPressed_crouch; //0x000A
@@ -34,6 +34,7 @@ public:
     unsigned char isPressed_moneyPouch; //0x0017
     unsigned char isPressed_9_booster; //0x0018
     char pad_0019[7]; //0x0019
+
 }; //Size: 0x0020
 assert_sizeof(KeyStates, 0x20);
 
