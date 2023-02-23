@@ -258,12 +258,14 @@ public:
             enteringWindows.Activate();
             menacingWalk.Activate();
             modifyConditionalFOVs.Activate();
+            cycleEquipmentOnMouseWheel.Activate();
         }
         else
         {
             enteringWindows.Deactivate();
             menacingWalk.Deactivate();
             modifyConditionalFOVs.Deactivate();
+            cycleEquipmentOnMouseWheel.Deactivate();
         }
     }
     void OnKeyJustPressed(int keyCode)
@@ -278,14 +280,14 @@ public:
     }
     void DrawControls()
     {
-        DrawCheckboxForHack(cycleEquipmentOnMouseWheel, "Cycle through equipment using mouse wheel");
         DrawCheckboxForHack(enteringWindows, "Enter windows by pressing R");
-        DrawCheckboxForHack(ccodeInTheMiddle, "Inspect all registers at 0x141A4C641");
         DrawCheckboxForHack(menacingWalk, "Allow Slow Menacing Walk");
+        DrawCheckboxForHack(modifyConditionalFOVs, "Modify conditional FOVs");
+        DrawCheckboxForHack(cycleEquipmentOnMouseWheel, "Cycle through equipment using mouse wheel");
+        DrawCheckboxForHack(ccodeInTheMiddle, "Inspect all registers at 0x141A4C641");
         DrawCheckboxForHack(fovGames, "Play with FOV");
         DrawCheckboxForHack(bombAimExperiments, "Bomb aim experiments");
         DrawCheckboxForHack(bombAimExperiments2, "Bomb aim experiments2");
-        DrawCheckboxForHack(modifyConditionalFOVs, "Modify conditional FOVs");
     }
 };
 std::optional<MyHacks> g_MyHacks;
