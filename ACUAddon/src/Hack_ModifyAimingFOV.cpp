@@ -27,9 +27,10 @@ public:
 public:
     NON_MOVABLE(AutoRestoredValue)
     AutoRestoredValue(float& valueRef) : valueRef(valueRef), initialValue(valueRef) {}
+    void Restore() { valueRef.get() = initialValue; }
     ~AutoRestoredValue()
     {
-        valueRef.get() = initialValue;
+        Restore();
     }
 };
 
@@ -122,6 +123,12 @@ class FOVCurvesDatabase
 public:
     std::optional<FOVCurveAccessor> curve_BombAim;
     std::optional<FOVCurveAccessor> curve_BombAimFromBehindCover;
+    void RestoreDefaults()
+    {
+        curve_BombAim.reset();
+        curve_BombAimFromBehindCover.reset();
+    }
+
 
     NON_MOVABLE(FOVCurvesDatabase);
     FOVCurvesDatabase() = default;
@@ -333,6 +340,11 @@ public:
             fovCurves.curve_BombAimFromBehindCover->SetEffectiveFOV(ACU::Input::IsPressedRMB() ? g_GoalFOVWhileAimingAndPressingRMB : g_GoalFOVWhileAimingWithoutRMB);
         }
     }
+    void RestoreDefaults()
+    {
+        m_AimSensitivity.GetSensitivitySettings().m_SensitivityHor.Restore();
+        m_AimSensitivity.GetSensitivitySettings().m_SensitivityVer.Restore();
+    }
 public:
     NON_MOVABLE(FOVWhileAimingManager_AugmentedZoomOnRightClick);
     FOVWhileAimingManager_AugmentedZoomOnRightClick() = default;
@@ -408,4 +420,9 @@ ModifyConditionalFOVs::ModifyConditionalFOVs()
         , WhenCameraUpdateStarts
         , RETURN_TO_RIGHT_AFTER_STOLEN_BYTES
         , true);
+}
+void ModifyConditionalFOVs::OnBeforeDeactivate()
+{
+    FOVWhileAimingManager_AugmentedZoomOnRightClick::GetSingleton().RestoreDefaults();
+    FOVCurvesDatabase::GetSingleton().RestoreDefaults();
 }

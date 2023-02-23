@@ -480,6 +480,10 @@ public:
     std::unique_ptr<AssemblerContext> m_ctx;
 public:
     AutoAssemblerCodeHolder_Base();
+    // Can optionally be overridden.
+    virtual void OnBeforeActivate() {}
+    virtual void OnBeforeDeactivate() {}
+
     using CCodeInTheMiddleFunctionPtr_t = void (*)(AllRegisters * parameters);
     static std::optional<uintptr_t> RETURN_TO_RIGHT_AFTER_STOLEN_BYTES;
     /*
@@ -499,6 +503,8 @@ public:
 template<class HasAutoAssemblerCodeInConstructor>
 class AutoAssembleWrapper
 {
+    static_assert(std::is_base_of_v<AutoAssemblerCodeHolder_Base, HasAutoAssemblerCodeInConstructor > ,
+        "AutoAssembleWrapper template parameter needs to be derived from `AutoAssemblerCodeHolder_Base`");
 private:
     HasAutoAssemblerCodeInConstructor m_CodeHolderInstantiation;
 public:
@@ -512,12 +518,14 @@ public:
     void Activate()
     {
         if (m_IsActive) { return; }
+        m_CodeHolderInstantiation.OnBeforeActivate();
         m_CodeHolderInstantiation.m_ctx->WriteChanges();
         m_IsActive = true;
     }
     void Deactivate()
     {
         if (!m_IsActive) { return; }
+        m_CodeHolderInstantiation.OnBeforeDeactivate();
         m_CodeHolderInstantiation.m_ctx->Unwrite();
         m_IsActive = false;
     }
