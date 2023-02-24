@@ -189,6 +189,7 @@
     <ClInclude Include="inc\ACU\RenderValuesHolder.h" />
     <ClInclude Include="inc\ACU\SmallArray.h" />
     <ClInclude Include="inc\ACU\Statechart.h" />
+    <ClInclude Include="inc\ACU\ThrowTargetPrecision.h" />
     <ClInclude Include="inc\ACU\TypeInfo.h" />
     <ClInclude Include="inc\ACU\World.h" />
     <ClInclude Include="src\framework.h" />

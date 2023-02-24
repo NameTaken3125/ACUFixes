@@ -36,3 +36,4 @@
 #include "ACU/KeymapScancodes.h"
 
 #include "ACU/BallisticProjectileAimingControlsSettings.h"
+#include "ACU/ThrowTargetPrecision.h"

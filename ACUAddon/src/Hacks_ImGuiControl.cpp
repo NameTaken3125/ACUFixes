@@ -3,27 +3,6 @@
 #include "AutoAssemblerKinda.h"
 #include "Hack_EnterWindowsWhenRisPressed.h"
 
-void DrawAssemblerContextDebug(AssemblerContext& ctx)
-{
-    debug_GET_AA_SYMBOL(ctx, isRequestedToEnterWindow);
-    debug_GET_AA_SYMBOL(ctx, setRbuttonState);
-    debug_GET_AA_SYMBOL(ctx, setRbuttonState_cave);
-    ImGui::Text("isRequestedToEnterWindow: %llx: %s", isRequestedToEnterWindow->m_ResolvedAddr.value(), static_cast<WriteableSymbol*>(isRequestedToEnterWindow)->GetResultBytesString().c_str());
-    ImGui::Text("setRbuttonState: %llx: %s", setRbuttonState->m_ResolvedAddr.value(), static_cast<WriteableSymbol*>(setRbuttonState)->GetResultBytesString().c_str());
-    ImGui::Text("setRbuttonState_cave: %llx: %s", setRbuttonState_cave->m_ResolvedAddr.value(), static_cast<WriteableSymbol*>(setRbuttonState_cave)->GetResultBytesString().c_str());
-}
-// Started using async version because this one produces noticeable stutter during AssemblerContext::AllocateVariables().
-void DrawHacksControls_notasync()
-{
-    static AutoAssembleWrapper<EnterWindowWhenRisPressed> instantiation;
-    bool isActive = instantiation.IsActive();
-    if (ImGui::Checkbox("Toggle AutoAssemble Test", &isActive))
-    {
-        instantiation.Toggle();
-    }
-    DrawAssemblerContextDebug(instantiation.debug_GetAssemblerContext());
-}
-
 // Async-constructing the AutoAssemblerWrapper<CodeHolderObject> is better, because all the VirtualAllocs
 // produce a noticeable stutter on creation otherwise.
 template<typename Ty>
@@ -55,27 +34,7 @@ public:
         return m_Exception ? &m_Exception.value() : nullptr;
     }
 };
-void InspectAllRegisters(AllRegisters* parameters)
-{
-    int noop = 0;
-}
 
-struct CCodeInTheMiddle_TEST : AutoAssemblerCodeHolder_Base
-{
-    CCodeInTheMiddle_TEST();
-};
-CCodeInTheMiddle_TEST::CCodeInTheMiddle_TEST()
-{
-    CCodeInTheMiddleFunctionPtr_t receiverFunc = &InspectAllRegisters;
-    uintptr_t whereToInject = 0x141A4C641;
-    constexpr size_t howManyBytesStolen = 5;
-    const bool isNeedToExecuteStolenBytesAfterwards = true;
-    PresetScript_CCodeInTheMiddle(
-        whereToInject, howManyBytesStolen
-        , receiverFunc
-        , RETURN_TO_RIGHT_AFTER_STOLEN_BYTES
-        , isNeedToExecuteStolenBytesAfterwards);
-}
 struct AllowSlowMenacingWalkAndAutowalk : AutoAssemblerCodeHolder_Base
 {
     AllowSlowMenacingWalkAndAutowalk();
@@ -224,49 +183,10 @@ struct PlayWithFOV : AutoAssemblerCodeHolder_Base
     }
 };
 
-#include "ACU/ManagedObject.h"
 #include "ACU/ACUGetSingletons.h"
 #include "ACU/Entity.h"
-class ITargetPrecision : public Object
-{
-public:
-    char pad_0008[32]; //0x0008
-}; //Size: 0x0028
-
-class ThrowTargetPrecision : public ITargetPrecision
-{
-public:
-    char pad_0028[8]; //0x0028
-    Vector4f cameraTrackerMovingTowardPredictionBeamEnd; //0x0030       // Crawls toward the target when aiming.
-    char pad_0040[36]; //0x0040
-    float angleZ; //0x0064
-    float distanceToBeamEnd; //0x0068
-    float heightWhereTheCameraAims; //0x006C
-    Vector4f predictionBeamOrigin; //0x0070
-    float flt_80; //0x0080
-    float flt_84; //0x0084
-    float flt_88; //0x0088
-    float flt_8C; //0x008C
-    float flt_90; //0x0090
-    char pad_0094[12]; //0x0094
-}; //Size: 0x00A0
-void MakeAimHeightOscillate(AllRegisters* params)
-{
-    float result = simple_interp(0.5f, 5.0f);
-    params->XMM0.f0 = result;
-}
-struct PlayWithBombAimCameraTracker : AutoAssemblerCodeHolder_Base
-{
-    PlayWithBombAimCameraTracker()
-    {
-        PresetScript_CCodeInTheMiddle(
-            0x14055B464, 5
-            , MakeAimHeightOscillate
-            , RETURN_TO_RIGHT_AFTER_STOLEN_BYTES
-            , true);
-    }
-};
 #include "ImGui3D.h"
+#include "ACU/ThrowTargetPrecision.h"
 void OverrideThrowPredictorBeamPosition(AllRegisters* params)
 {
     // At this injection point (0x14055B4BB) RBX == ThrowTargetPrecision* and takes two values:
@@ -276,8 +196,8 @@ void OverrideThrowPredictorBeamPosition(AllRegisters* params)
     static Vector4f farthestResult;
     ThrowTargetPrecision* thr = (ThrowTargetPrecision*)params->rbx_;
     ImGui3D::DrawLocationNamed((Vector3f&)thr->predictionBeamOrigin, "Prediction beam origin");
-    ImGui3D::DrawLocationNamed((Vector3f&)thr->cameraTrackerMovingTowardPredictionBeamEnd, "Prediction beam terminus");
-    thr->cameraTrackerMovingTowardPredictionBeamEnd.z = player->GetPosition().z + 1;
+    ImGui3D::DrawLocationNamed((Vector3f&)thr->trackerCrawlsTowardPredictorBeamEnd, "Prediction beam terminus");
+    thr->trackerCrawlsTowardPredictorBeamEnd.z = player->GetPosition().z + 1;
     //(Vector3f&)thr->cameraTrackerMovingTowardPredictionBeamEnd = player->GetPosition() + Vector3f{ 0, 3, 1 };
 }
 struct PlayWithBombAimCameraTracker2 : AutoAssemblerCodeHolder_Base
@@ -326,10 +246,8 @@ class MyHacks
 {
 public:
     AutoAssembleWrapper<EnterWindowWhenRisPressed> enteringWindows;
-    AutoAssembleWrapper<CCodeInTheMiddle_TEST> ccodeInTheMiddle;
     AutoAssembleWrapper<AllowSlowMenacingWalkAndAutowalk> menacingWalkAndAutowalk;
     AutoAssembleWrapper<PlayWithFOV> fovGames;
-    AutoAssembleWrapper<PlayWithBombAimCameraTracker> bombAimExperiments;
     AutoAssembleWrapper<PlayWithBombAimCameraTracker2> bombAimExperiments2;
     AutoAssembleWrapper<ModifyConditionalFOVs> modifyConditionalFOVs;
     AutoAssembleWrapper<InputInjection_CycleEquipmentWhenScrollingMousewheel> cycleEquipmentOnMouseWheel;
@@ -380,9 +298,7 @@ public:
         DrawCheckboxForHack(menacingWalkAndAutowalk, "Allow Autowalk and the Slow Menacing Walk");
         DrawCheckboxForHack(modifyConditionalFOVs, "Modify conditional FOVs");
         DrawCheckboxForHack(cycleEquipmentOnMouseWheel, "Cycle through equipment using mouse wheel");
-        DrawCheckboxForHack(ccodeInTheMiddle, "Inspect all registers at 0x141A4C641");
         DrawCheckboxForHack(fovGames, "Play with FOV");
-        DrawCheckboxForHack(bombAimExperiments, "Bomb aim experiments");
         DrawCheckboxForHack(bombAimExperiments2, "Bomb aim experiments2");
     }
 };
