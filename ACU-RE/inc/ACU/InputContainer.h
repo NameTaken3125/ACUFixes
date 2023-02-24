@@ -65,6 +65,7 @@ public:
 
     // Not sure if this really never fails.
     static InputContainer& GetMainSingleton() { return *HasInputContainers::GetSingleton()->p_10->inputContainer; }
+    InputContainerBig* GetInputContainerBig() { return pendingFrame_mb; }
 }; //Size: 0x0870
 assert_offsetof(InputContainer, keyStates_thisFrame, 0x30);
 assert_offsetof(InputContainer, wasdVector, 0x02F0);
@@ -86,8 +87,8 @@ public:
     char pad_221C0[256]; //0x221C0
     uint8 isNewInputAvailable_mb; //0x222C0
     char pad_222C1[15]; //0x222C1
-    uint32 screenSizeX; //0x222D0
-    uint32 screenSizeY; //0x222D4
+    uint32 displayWithoutLetterBoxWidth; //0x222D0
+    uint32 displayWithoutLetterBoxHeight; //0x222D4
     char pad_222D8[8]; //0x222D8
 
     // @members

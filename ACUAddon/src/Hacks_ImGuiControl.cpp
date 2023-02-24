@@ -76,22 +76,106 @@ CCodeInTheMiddle_TEST::CCodeInTheMiddle_TEST()
         , RETURN_TO_RIGHT_AFTER_STOLEN_BYTES
         , isNeedToExecuteStolenBytesAfterwards);
 }
-struct AllowSlowMenacingWalk : AutoAssemblerCodeHolder_Base
+struct AllowSlowMenacingWalkAndAutowalk : AutoAssemblerCodeHolder_Base
 {
-    AllowSlowMenacingWalk();
+    AllowSlowMenacingWalkAndAutowalk();
 };
 #include <vmath/vmath.h>
+#include "ACU/InputContainer.h"
+class InjectedAutowalkManager
+{
+    float FindCurrentTime() { return GetTickCount64() / 1000.0f; }
+    struct Mode_Clear {};
+    struct Mode_AutowalkRequested
+    {
+        float m_BeginAutowalkRequest_timestamp;
+        std::optional<Vector2f> m_LastSavedMovementVec;
+        bool IsExpectationExpired(float currentTime)
+        {
+            constexpr float requestedModeMaxExpectation = 0.5f;
+            return currentTime > m_BeginAutowalkRequest_timestamp + requestedModeMaxExpectation;
+        }
+    };
+    struct Mode_AutowalkActive
+    {
+        Vector2f m_LastSavedMovementVec;
+    };
+    std::variant<
+        Mode_Clear
+        , Mode_AutowalkRequested
+        , Mode_AutowalkActive
+    > m_CurrentMode;
+public:
+    void OnPressedB()
+    {
+        if (auto* activeAutowalk = std::get_if<Mode_AutowalkActive>(&m_CurrentMode))
+        {
+            m_CurrentMode = Mode_Clear();
+            return;
+        }
+        OnInitiateAutowalk();
+    }
+    void OnAdjustCurrentMovement(Vector2f& movementVecInOut)
+    {
+        if (auto* activeMode = std::get_if<Mode_AutowalkActive>(&m_CurrentMode))
+        {
+            if (movementVecInOut.lengthSq() != 0)
+            {
+                // Is manually overridden.
+                m_CurrentMode = Mode_Clear();
+                return;
+            }
+            movementVecInOut = activeMode->m_LastSavedMovementVec;
+            return;
+        }
+        else if (auto* requestedNotYetActive = std::get_if<Mode_AutowalkRequested>(&m_CurrentMode))
+        {
+            const bool isCurrentVecZero = movementVecInOut.lengthSq() == 0;
+            if (!isCurrentVecZero) { requestedNotYetActive->m_LastSavedMovementVec = movementVecInOut; }
+            if (isCurrentVecZero || requestedNotYetActive->IsExpectationExpired(FindCurrentTime()))
+            {
+                // End pending request. Whether or not autowalk becomes active depends on
+                // whether any input has been recorded.
+                if (!requestedNotYetActive->m_LastSavedMovementVec)
+                {
+                    m_CurrentMode = Mode_Clear();
+                    return;
+                }
+                m_CurrentMode = Mode_AutowalkActive{ *requestedNotYetActive->m_LastSavedMovementVec };
+                return;
+            }
+        }
+    }
+private:
+    void OnInitiateAutowalk()
+    {
+        m_CurrentMode = Mode_AutowalkRequested{ FindCurrentTime() };
+    }
+};
+void OnMovementVectorUpdate_ManageAutowalk(Vector2f& movementVecWithoutAdjustments, InputContainerBig* inpCont)
+{
+    static InjectedAutowalkManager autowalkManager;
+    constexpr int scancodeB = 48;
+    if (inpCont->isPressed_byScancode[scancodeB])
+    {
+        autowalkManager.OnPressedB();
+    }
+    autowalkManager.OnAdjustCurrentMovement(movementVecWithoutAdjustments);
+}
 void AttenuateMovementVector(AllRegisters* params)
 {
     Vector2f& movementVector = (Vector2f&)*params->rax_;
+    InputContainer* inpCont = (InputContainer*)params->rbx_;
+    OnMovementVectorUpdate_ManageAutowalk(movementVector, inpCont->GetInputContainerBig());
     const bool isCapsLockOn = (GetKeyState(VK_CAPITAL) & 0x0001) != 0;
     if (isCapsLockOn)
     {
-        movementVector *= 0.5f;
+        constexpr float slowWalkMode_SpeedMultiplier = 0.5f;
+        movementVector *= slowWalkMode_SpeedMultiplier;
         int noop = 0;
     }
 }
-AllowSlowMenacingWalk::AllowSlowMenacingWalk()
+AllowSlowMenacingWalkAndAutowalk::AllowSlowMenacingWalkAndAutowalk()
 {
     CCodeInTheMiddleFunctionPtr_t receiverFunc = &AttenuateMovementVector;
     uintptr_t whereToInject = 0x142739CBE;
@@ -231,7 +315,7 @@ class MyHacks
 public:
     AutoAssembleWrapper<EnterWindowWhenRisPressed> enteringWindows;
     AutoAssembleWrapper<CCodeInTheMiddle_TEST> ccodeInTheMiddle;
-    AutoAssembleWrapper<AllowSlowMenacingWalk> menacingWalk;
+    AutoAssembleWrapper<AllowSlowMenacingWalkAndAutowalk> menacingWalkAndAutowalk;
     AutoAssembleWrapper<PlayWithFOV> fovGames;
     AutoAssembleWrapper<PlayWithBombAimCameraTracker> bombAimExperiments;
     AutoAssembleWrapper<PlayWithBombAimCameraTracker2> bombAimExperiments2;
@@ -256,14 +340,14 @@ public:
         if (!enteringWindows.IsActive())
         {
             enteringWindows.Activate();
-            menacingWalk.Activate();
+            menacingWalkAndAutowalk.Activate();
             modifyConditionalFOVs.Activate();
             cycleEquipmentOnMouseWheel.Activate();
         }
         else
         {
             enteringWindows.Deactivate();
-            menacingWalk.Deactivate();
+            menacingWalkAndAutowalk.Deactivate();
             modifyConditionalFOVs.Deactivate();
             cycleEquipmentOnMouseWheel.Deactivate();
         }
@@ -281,7 +365,7 @@ public:
     void DrawControls()
     {
         DrawCheckboxForHack(enteringWindows, "Enter windows by pressing R");
-        DrawCheckboxForHack(menacingWalk, "Allow Slow Menacing Walk");
+        DrawCheckboxForHack(menacingWalkAndAutowalk, "Allow Autowalk and the Slow Menacing Walk");
         DrawCheckboxForHack(modifyConditionalFOVs, "Modify conditional FOVs");
         DrawCheckboxForHack(cycleEquipmentOnMouseWheel, "Cycle through equipment using mouse wheel");
         DrawCheckboxForHack(ccodeInTheMiddle, "Inspect all registers at 0x141A4C641");
