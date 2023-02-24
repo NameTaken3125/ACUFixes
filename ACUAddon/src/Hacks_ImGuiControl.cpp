@@ -132,7 +132,19 @@ public:
         {
             const bool isCurrentVecZero = movementVecInOut.lengthSq() == 0;
             if (!isCurrentVecZero) { requestedNotYetActive->m_LastSavedMovementVec = movementVecInOut; }
-            if (isCurrentVecZero || requestedNotYetActive->IsExpectationExpired(FindCurrentTime()))
+            bool shouldEndExpectationMode = false;
+            if (isCurrentVecZero)
+            {
+                if (requestedNotYetActive->m_LastSavedMovementVec)
+                    // If the player isn't moving AND hasn't been moving since autowalk was requested,
+                    // we DON'T stop the request mode.
+                    // Maybe the player has pressed the Autowalk button, and THEN immediately presses one of WASD.
+                    shouldEndExpectationMode = true;
+            }
+            if (!shouldEndExpectationMode) {
+                shouldEndExpectationMode = requestedNotYetActive->IsExpectationExpired(FindCurrentTime());
+            }
+            if (shouldEndExpectationMode)
             {
                 // End pending request. Whether or not autowalk becomes active depends on
                 // whether any input has been recorded.
