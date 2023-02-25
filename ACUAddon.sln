@@ -9,6 +9,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ACU-RE", "ACU-RE\ACU-RE.vcx
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DX11-BaseHook", "DX11-BaseHook\DX11-BaseHook.vcxproj", "{493E69B7-9966-4B96-94BA-158EA9FA50C8}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "vendor", "vendor", "{CA0E6124-13A2-499A-BA7F-F87735948964}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SimpleJSON", "SimpleJSON", "{99A3A1BC-7F97-4B25-89A9-420E14E44FCA}"
+	ProjectSection(SolutionItems) = preProject
+		vendor\SimpleJSON\json.hpp = vendor\SimpleJSON\json.hpp
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -44,6 +51,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{99A3A1BC-7F97-4B25-89A9-420E14E44FCA} = {CA0E6124-13A2-499A-BA7F-F87735948964}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {EF2D1A87-E352-493B-9E27-E74CF6F65FE4}

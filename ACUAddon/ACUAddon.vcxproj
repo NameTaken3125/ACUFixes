@@ -92,7 +92,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)include;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DX11-BaseHook\include;$(SolutionDir)DX11-BaseHook\deps;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)include;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DX11-BaseHook\include;$(SolutionDir)DX11-BaseHook\deps;$(SolutionDir)vendor;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -111,7 +111,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)include;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DX11-BaseHook\include;$(SolutionDir)DX11-BaseHook\deps;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)include;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DX11-BaseHook\include;$(SolutionDir)DX11-BaseHook\deps;$(SolutionDir)vendor;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -132,7 +132,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)include;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DX11-BaseHook\include;$(SolutionDir)DX11-BaseHook\deps;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)include;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DX11-BaseHook\include;$(SolutionDir)DX11-BaseHook\deps;$(SolutionDir)vendor;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -155,7 +155,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)include;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DX11-BaseHook\include;$(SolutionDir)DX11-BaseHook\deps;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)include;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DX11-BaseHook\include;$(SolutionDir)DX11-BaseHook\deps;$(SolutionDir)vendor;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -199,6 +199,11 @@
     <ClCompile Include="src\WhatIsDrawnInImGui.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\Serialization\BooleanAdapter.h" />
+    <ClInclude Include="include\Serialization\NumericAdapters.h" />
+    <ClInclude Include="include\Serialization\Path.h" />
+    <ClInclude Include="include\Serialization\Serialization.h" />
+    <ClInclude Include="include\Serialization\SerializationForwardDeclarations.h" />
     <ClInclude Include="include\vmath\vmath.h" />
     <ClInclude Include="include\vmath\vmath_extra.h" />
     <ClInclude Include="src\AutoAssemblerKinda.h" />
