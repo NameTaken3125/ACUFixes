@@ -193,6 +193,7 @@
     <ClCompile Include="src\ImGui3D.cpp" />
     <ClCompile Include="src\ImGui3DRenderer.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\MainConfig.cpp" />
     <ClCompile Include="src\My_WndProc_InputHandling.cpp" />
     <ClCompile Include="src\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -220,6 +221,7 @@
     <ClInclude Include="src\ImGui3DRenderer.h" />
     <ClInclude Include="src\ImGuiCTX.h" />
     <ClInclude Include="src\ImGuiTextWindows.h" />
+    <ClInclude Include="src\MainConfig.h" />
     <ClInclude Include="src\MovabilityUtils.h" />
     <ClInclude Include="src\MyVariousHacks.h" />
     <ClInclude Include="src\pch.h" />
