@@ -6,6 +6,10 @@ class BooleanAdapter : public JSONAdapter<bool, JSON::Class::Boolean>
 {
 public:
 	using BaseAdapter::BaseAdapter;
+    JSON ToJSON()
+    {
+        return this->source;
+    }
 	bool FromJSON(JSON& obj)
 	{
 		if (!IsCorrectJSONType(obj))

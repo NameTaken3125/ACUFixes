@@ -289,7 +289,26 @@ class JSON
 
         /// Functions for getting primitives from the JSON object.
         bool IsNull() const { return Type == Class::Null; }
+        bool IsBool() const { return Type == Class::Boolean; }
+        bool IsInteger() const { return Type == Class::Integral; }
+        bool IsFloat() const { return Type == Class::Floating; }
+        bool IsString() const { return Type == Class::String; }
+        bool IsObject() const { return Type == Class::Object; }
+        bool IsArray() const { return Type == Class::Array; }
+        JSON* FindByKey(const std::string& key)
+        {
+            if (!this->hasKey(key))
+            {
+                return nullptr;
+            }
+            return &this->at(key);
+        }
 
+        string ToStringNoEscape() const { bool b; return std::move(ToStringNoEscape( b ) ); }
+        string ToStringNoEscape(bool& ok) const {
+            ok = (Type == Class::String);
+            return ok ? *Internal.String : string("");
+        }
         string ToString() const { bool b; return std::move( ToString( b ) ); }
         string ToString( bool &ok ) const {
             ok = (Type == Class::String);
