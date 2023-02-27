@@ -1,5 +1,7 @@
 #include "pch.h"
 
+#include "MyLog.h"
+
 #include "MainConfig.h"
 #include "SimpleJSON/json.hpp"
 #include "Serialization/Serialization.h"
@@ -41,16 +43,18 @@ void DumpConfig(JSON& cfg)
     WRITE_JSON_VARIABLE(cfg, showSuccessfulInjectionIndicator, BooleanAdapter);
     WRITE_JSON_VARIABLE(cfg, showDebugOutputConsole, BooleanAdapter);
 }
-void dprintf(const std::string& s);
 void MainConfig::FindAndLoadConfigFileOrCreateDefault()
 {
     std::string configFileName = "acufixes-config.json";
-    JSONFileBridge configFile(AbsolutePathInMyDirectory(configFileName), true);
+    fs::path configFullPath = AbsolutePathInMyDirectory(configFileName);
+    JSONFileBridge configFile(configFullPath, true);
     JSON& cfg = configFile.m_jsonObject;
+    LOG_DEBUG("Read from config file \"%s\":\n%s\n", configFullPath.string().c_str(), cfg.dump().c_str());
     if (cfg.IsObject())
     {
         READ_JSON_VARIABLE(cfg, showSuccessfulInjectionIndicator, BooleanAdapter);
         READ_JSON_VARIABLE(cfg, showDebugOutputConsole, BooleanAdapter);
     }
     DumpConfig(cfg);
+    LOG_DEBUG("Writing to config file \"%s\":\n%s\n", configFullPath.string().c_str(), cfg.dump().c_str());
 }

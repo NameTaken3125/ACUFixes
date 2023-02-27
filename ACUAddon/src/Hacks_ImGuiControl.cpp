@@ -242,6 +242,7 @@ struct InputInjection_CycleEquipmentWhenScrollingMousewheel : AutoAssemblerCodeH
 
 
 #include "Hack_ModifyAimingFOV.h"
+#include "MyLog.h"
 class MyHacks
 {
 public:
@@ -266,7 +267,7 @@ public:
     }
     void ToggleDefaultHacks()
     {
-        printf("Toggle.\n");
+        LOG_DEBUG("ToggleDefaultHacks()\n");
         if (!enteringWindows.IsActive())
         {
             enteringWindows.Activate();
@@ -286,7 +287,7 @@ public:
     {
         switch (keyCode)
         {
-        case VK_NUMPAD6:
+        case VK_NUMPAD7:
             ToggleDefaultHacks();
         default:
             break;

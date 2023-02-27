@@ -4,6 +4,8 @@
 #include <winternl.h>
 #pragma comment(lib, "ntdll")
 
+#include "MyLog.h"
+
 uintptr_t g_mainIntegrityCheckThreadStartAddress = 0x14275DE50;
 
 using ProcessID_t = DWORD;
@@ -19,7 +21,7 @@ bool TerminateThreadIfRunsTheMainIntegrityCheck(ThreadID_t thread_id)
     NTSTATUS nt_status = NtQueryInformationThread(thread_handle, (THREADINFOCLASS)ThreadQuerySetWin32StartAddress, &dwStartAddress, 0x8, 0);
     if (nt_status == 0)
     {
-        std::cout << ", start address: " << std::hex << dwStartAddress << std::endl;
+        LOG_DEBUG(", start address: %llx\n", dwStartAddress);
         if (dwStartAddress == g_mainIntegrityCheckThreadStartAddress)
         {
             TerminateThread(thread_handle, 0);
@@ -47,10 +49,10 @@ void DisableMainIntegrityCheck()
                 {
                     if (te.th32OwnerProcessID == thisProcessID)
                     {
-                        std::cout << "Thread #" << std::dec << threadCounter++ << ", id: " << std::hex << te.th32ThreadID;
+                        LOG_DEBUG("Thread #%d, id: %x", threadCounter++, te.th32ThreadID);
                         if (bool mainCheckIsTerminated = TerminateThreadIfRunsTheMainIntegrityCheck(te.th32ThreadID))
                         {
-                            std::cout << "Thread 0x" << std::hex << te.th32ThreadID << " terminated." << std::endl;
+                            LOG_DEBUG("Thread 0x%x terminated.\n", te.th32ThreadID);
                             break;
                         }
                     }

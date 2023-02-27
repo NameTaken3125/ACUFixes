@@ -2,6 +2,7 @@
 
 #include "base.h"
 #include "MyVariousHacks.h"
+#include "MyLog.h"
 
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK WndProc_HackControls(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -14,7 +15,7 @@ LRESULT CALLBACK WndProc_HackControls(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
         const bool isKeyJustPressed = !isPreviouslyPressed;
         if (isKeyJustPressed)
         {
-            printf("Just pressed: %ld\n", keyCode);
+            LOG_DEBUG("Just pressed: %ld\n", keyCode);
             switch (keyCode)
             {
             case Base::Data::Keys::ToggleMenu:
