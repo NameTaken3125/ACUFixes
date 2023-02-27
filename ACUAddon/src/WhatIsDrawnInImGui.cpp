@@ -111,6 +111,8 @@ void ImGui3D::WhatIsActuallyDrawnForFrame()
         ImGui3D::DrawWireModelTransform(grid5_model, player->GetTransform());
     }
 }
+
+std::filesystem::path& GetThisDLLAbsolutePath();
 #include "MainConfig.h"
 static bool g_showDevExtraOptions = false;
 void Base::ImGuiLayer_WhenMenuIsOpen()
@@ -130,6 +132,10 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
             if (ImGuiCTX::Tab _extraoptions{ "Extra" })
             {
                 ImGui::Checkbox("Show the \"is injected\" indicator", &MainConfig::imgui_showSuccessfulInjectionIndicator);
+                if (ImGui::Button("Open DLL's folder in File Explorer (has config)"))
+                {
+                    system(("explorer \"" + GetThisDLLAbsolutePath().parent_path().string() + "\"").c_str());
+                }
                 ImGui::Separator();
                 ImGui::Checkbox("Show development experiments", &g_showDevExtraOptions);
                 if (ImGui::IsItemHovered(0))
