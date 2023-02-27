@@ -9,6 +9,8 @@ Brings the app's components together.
 #include "ConsoleForOutput.h"
 #include "PresentHookOuter.h"
 #include "MyVariousHacks.h"
+#include "MyLog.h"
+#include "MainConfig.h"
 
 #include "ACU/ACUGetSingletons.h"
 
@@ -42,14 +44,14 @@ public:
         PresentHookOuter::Deactivate();
     }
 };
+fs::path AbsolutePathInMyDirectory(const fs::path& filenameRel);
 
 static void MainThread(HMODULE thisDLLModule)
 {
-    ConsoleForOutput _console;
-    RedirectSTDOUTToConsole _stdout;
-    std::cout << "Opened console." << std::endl;
-    DisableMainIntegrityCheck();
     Base::Data::thisDLLModule = thisDLLModule;
+    MyLogFileLifetime _log{ AbsolutePathInMyDirectory("acufixes-log.log") };
+    MainConfig::FindAndLoadConfigFileOrCreateDefault();
+    DisableMainIntegrityCheck();
 #if PRESENT_HOOK_METHOD == PRESENT_HOOK_METHOD_OUTER
     auto basehook = PresentHookOuter::BasehookSettings_PresentHookOuter();
 #elif PRESENT_HOOK_METHOD == PRESENT_HOOK_METHOD_INNER
