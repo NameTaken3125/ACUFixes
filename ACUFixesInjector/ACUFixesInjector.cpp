@@ -1,6 +1,7 @@
 
 #include <Windows.h>
 #include <TlHelp32.h>
+#include <Psapi.h>
 #include <iostream>
 #include <optional>
 #include <filesystem>
@@ -54,6 +55,43 @@ std::optional<ProcessID_t> FindPID(const wchar_t* processName)
     return result;
 }
 
+// Thanks https://learn.microsoft.com/en-us/windows/win32/psapi/enumerating-all-modules-for-a-process
+bool IsDLLLoadedInProcess(DWORD processID, const fs::path& dllAbsolutePath)
+{
+    HMODULE hMods[1024];
+    HANDLE hProcess;
+    DWORD cbNeeded;
+    unsigned int i;
+
+    // Get a handle to the process.
+    hProcess = OpenProcess(PROCESS_QUERY_INFORMATION |
+        PROCESS_VM_READ,
+        FALSE, processID);
+    if (NULL == hProcess)
+        return false;
+
+    bool isDLLAlreadyLoaded = false;
+
+    // Get a list of all the modules in this process.
+    if (EnumProcessModules(hProcess, hMods, sizeof(hMods), &cbNeeded)) {
+        for (i = 0; i < (cbNeeded / sizeof(HMODULE)); i++) {
+            wchar_t szModName[MAX_PATH];
+            // Get the full path to the module's file.
+            if (GetModuleFileNameExW(hProcess, hMods[i], szModName, MAX_PATH))
+            {
+                if (dllAbsolutePath == szModName)
+                {
+                    isDLLAlreadyLoaded = true;
+                    break;
+                }
+            }
+        }
+    }
+    // Release the handle to the process.
+    CloseHandle(hProcess);
+    return isDLLAlreadyLoaded;
+}
+
 fs::path GetThisExecutablePath()
 {
     wchar_t pathBuf[MAX_PATH];
@@ -61,11 +99,14 @@ fs::path GetThisExecutablePath()
     return pathBuf;
 }
 
-void Inject(const fs::path& injectedDLLPath, ProcessID_t pid)
+// Thanks https://cocomelonc.github.io/tutorial/2021/09/20/malware-injection-2.html
+bool Inject(const fs::path& injectedDLLPath, ProcessID_t pid)
 {
     // handle to kernel32 and pass it to GetProcAddress
     HMODULE hKernel32 = GetModuleHandleA("Kernel32");
+    if (hKernel32 == NULL) { return false; }
     VOID* lb = GetProcAddress(hKernel32, "LoadLibraryA");
+    if (lb == NULL) { return false; }
 
     HANDLE processHandle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
     HANDLE remoteThread;
@@ -76,6 +117,7 @@ void Inject(const fs::path& injectedDLLPath, ProcessID_t pid)
 
     // allocate memory buffer for remote process
     remoteBuffer = VirtualAllocEx(processHandle, NULL, howManyBytesToAllocateInProcess, (MEM_RESERVE | MEM_COMMIT), PAGE_EXECUTE_READWRITE);
+    if (remoteBuffer == NULL) { return false; }
 
     // "copy" DLL path between processes
     WriteProcessMemory(processHandle, remoteBuffer, pathString.c_str(), howManyBytesToAllocateInProcess, NULL);
@@ -83,21 +125,38 @@ void Inject(const fs::path& injectedDLLPath, ProcessID_t pid)
     // Start new thread from the target process.
     remoteThread = CreateRemoteThread(processHandle, NULL, 0, (LPTHREAD_START_ROUTINE)lb, remoteBuffer, 0, NULL);
     CloseHandle(processHandle);
+
+    return true;
 }
 
 int main()
 {
     std::optional<ProcessID_t> pid = FindPID(g_targetProcessName);
-    if (!pid)
-    {
-        wprintf(L"Failed to find process for executable named \"%s\"", g_targetProcessName);
+    if (!pid) {
+        wprintf(L"[X] Failed to find process for executable named \"%s\"", g_targetProcessName);
         return -1;
     }
-    wprintf(L"%s PID: %x\n", g_targetProcessName, pid.value());
-
+    wprintf(L"[+] %s PID: %x\n", g_targetProcessName, pid.value());
     fs::path injectedDLLPath = GetThisExecutablePath().parent_path() / g_DLLPathRelativeToThisExecutable;
-    wprintf(L"Trying to find and inject DLL at \"%s\"\n", injectedDLLPath.wstring().c_str());
-    Inject(injectedDLLPath, pid.value());
+    // If the DLL is already injected, and I accidentally inject it again, the `DLL_PROCESS_ATTACH`
+    // signal will not be received again, but the DLL's refcount will be >= 2.
+    // If I then "quit" the injected DLL "from inside", the refcount will be left >= 1.
+    // This will prevent the DLL from receiving `DLL_PROCESS_ATTACH` on consequent injections,
+    // meaning that these consequent injections will have no result until the target process is restarted.
+    // Here I check whether or not the DLL is already loaded in the process,
+    // and don't reinject if it is.
+    bool isDLLAlreadyLoaded = IsDLLLoadedInProcess(*pid, injectedDLLPath);
+    if (isDLLAlreadyLoaded) {
+        wprintf(L"[X] \"%s\" is already loaded in the process. There is no use injecting it again.\n", injectedDLLPath.wstring().c_str());
+        return -1;
+    }
+    wprintf(L"[*] Trying to find and inject \"%s\"\n", injectedDLLPath.wstring().c_str());
+    bool seeminglySucceeded = Inject(injectedDLLPath, pid.value());
+    if (seeminglySucceeded) {
+        wprintf(L"[X] Failed to inject.");
+        return -1;
+    }
+    wprintf(L"[+] The DLL should now be injected.");
 
     return 0;
 }
