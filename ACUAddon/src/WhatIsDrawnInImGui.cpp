@@ -112,6 +112,7 @@ void ImGui3D::WhatIsActuallyDrawnForFrame()
     }
 }
 #include "MainConfig.h"
+static bool g_showDevExtraOptions = false;
 void Base::ImGuiLayer_WhenMenuIsOpen()
 {
     static bool enableDemoWindow = false;
@@ -125,15 +126,19 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
             if (ImGuiCTX::Tab _mainTab{ "Main Tab" })
             {
                 DrawHacksControls();
-                if (ImGui::CollapsingHeader("View-projection matrices debugging"))
+            }
+            if (ImGuiCTX::Tab _extraoptions{ "Extra" })
+            {
+                ImGui::Checkbox("Show the \"is injected\" indicator", &MainConfig::imgui_showSuccessfulInjectionIndicator);
+                ImGui::Separator();
+                ImGui::Checkbox("Show development experiments", &g_showDevExtraOptions);
+                if (ImGui::IsItemHovered(0))
                 {
-                    ImGui::Text("Projection tuning:");
-                    ImGui::Text("View:");
-                    ImGuiPrintMatrix(gameMatView);
-                    ImGui::Text("Proj:");
-                    ImGuiPrintMatrix(gameMatProj);
+                    ImGui::SetTooltip("These contain my experiments and nothing that improves the gameplay.");
                 }
             }
+            if (g_showDevExtraOptions)
+            {
             if (ImGuiCTX::Tab _3dMarkersTab{ "3D Markers" })
             {
                 ImGui3D::DrawPersistent3DMarkersControls();
@@ -149,6 +154,13 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
                 {
                     VisualizeCurrentPlayerLocation();
                 }
+                if (ImGui::CollapsingHeader("View-projection matrices debugging"))
+                {
+                    ImGui::Text("View matrix:");
+                    ImGuiPrintMatrix(gameMatView);
+                    ImGui::Text("Projection matrix:");
+                    ImGuiPrintMatrix(gameMatProj);
+                }
             }
             if (ImGuiCTX::Tab _typeInfosTab{ "TypeInfos" })
             {
@@ -162,12 +174,15 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
             {
                 ImGui::Checkbox("Show ImGui demo window", &enableDemoWindow);
             }
+            }
         }
     }
 }
 void Base::ImGuiLayer_EvenWhenMenuIsClosed()
 {
-    ImGui3D::DrawStuff();
+    bool drawImGui3D = g_showDevExtraOptions;
+    if (drawImGui3D)
+        ImGui3D::DrawStuff();
     if (MainConfig::imgui_showSuccessfulInjectionIndicator)
         DrawSuccessfulInjectionIndicatorOverlay();
 }
