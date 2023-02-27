@@ -52,6 +52,16 @@ static void MainThread(HMODULE thisDLLModule)
     MyLogFileLifetime _log{ AbsolutePathInMyDirectory("acufixes-log.log") };
     MainConfig::FindAndLoadConfigFileOrCreateDefault();
     DisableMainIntegrityCheck();
+    std::unique_ptr<Base::Settings> basehook;
+    if (MainConfig::imgui_useImGui)
+    {
+        basehook = std::make_unique<PresentHookOuter::BasehookSettings_PresentHookOuter>();
+    }
+    else
+    {
+        basehook = std::make_unique<Base::BasehookSettings_OnlyWNDPROC>((HWND)ACU::GetWindowHandle(), WndProc_HackControls);
+    }
+/*
 #if PRESENT_HOOK_METHOD == PRESENT_HOOK_METHOD_OUTER
     auto basehook = PresentHookOuter::BasehookSettings_PresentHookOuter();
 #elif PRESENT_HOOK_METHOD == PRESENT_HOOK_METHOD_INNER
@@ -59,7 +69,8 @@ static void MainThread(HMODULE thisDLLModule)
 #elif PRESENT_HOOK_METHOD == PRESENT_HOOK_METHOD_ONLYWNDPROC
     auto basehook = Base::BasehookSettings_OnlyWNDPROC((HWND)ACU::GetWindowHandle(), WndProc_HackControls);
 #endif
-    Base::Start(basehook);
+*/
+    Base::Start(*basehook);
     MyVariousHacks::Start();
     while (!Base::Data::Detached)
     {

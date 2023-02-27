@@ -2,8 +2,8 @@
 
 namespace MainConfig {
 
-extern bool showSuccessfulInjectionIndicator;
-extern bool showDebugOutputConsole;
+extern bool imgui_useImGui;
+extern bool imgui_showSuccessfulInjectionIndicator;
 
 void FindAndLoadConfigFileOrCreateDefault();
 

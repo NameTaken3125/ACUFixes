@@ -111,6 +111,7 @@ void ImGui3D::WhatIsActuallyDrawnForFrame()
         ImGui3D::DrawWireModelTransform(grid5_model, player->GetTransform());
     }
 }
+#include "MainConfig.h"
 void Base::ImGuiLayer_WhenMenuIsOpen()
 {
     static bool enableDemoWindow = false;
@@ -167,5 +168,6 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
 void Base::ImGuiLayer_EvenWhenMenuIsClosed()
 {
     ImGui3D::DrawStuff();
-    DrawSuccessfulInjectionIndicatorOverlay();
+    if (MainConfig::imgui_showSuccessfulInjectionIndicator)
+        DrawSuccessfulInjectionIndicatorOverlay();
 }

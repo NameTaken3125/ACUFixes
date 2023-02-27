@@ -13,8 +13,8 @@
 
 namespace MainConfig {
 
-bool showSuccessfulInjectionIndicator = false;
-bool showDebugOutputConsole = false;
+bool imgui_useImGui = true;
+bool imgui_showSuccessfulInjectionIndicator = true;
 
 } // namespace MainConfig
 
@@ -40,8 +40,8 @@ fs::path AbsolutePathInMyDirectory(const fs::path& filenameRel)
 void DumpConfig(JSON& cfg)
 {
     using namespace MainConfig;
-    WRITE_JSON_VARIABLE(cfg, showSuccessfulInjectionIndicator, BooleanAdapter);
-    WRITE_JSON_VARIABLE(cfg, showDebugOutputConsole, BooleanAdapter);
+    WRITE_JSON_VARIABLE(cfg, imgui_showSuccessfulInjectionIndicator, BooleanAdapter);
+    WRITE_JSON_VARIABLE(cfg, imgui_useImGui, BooleanAdapter);
 }
 void MainConfig::FindAndLoadConfigFileOrCreateDefault()
 {
@@ -52,8 +52,8 @@ void MainConfig::FindAndLoadConfigFileOrCreateDefault()
     LOG_DEBUG("Read from config file \"%s\":\n%s\n", configFullPath.string().c_str(), cfg.dump().c_str());
     if (cfg.IsObject())
     {
-        READ_JSON_VARIABLE(cfg, showSuccessfulInjectionIndicator, BooleanAdapter);
-        READ_JSON_VARIABLE(cfg, showDebugOutputConsole, BooleanAdapter);
+        READ_JSON_VARIABLE(cfg, imgui_showSuccessfulInjectionIndicator, BooleanAdapter);
+        READ_JSON_VARIABLE(cfg, imgui_useImGui, BooleanAdapter);
     }
     DumpConfig(cfg);
     LOG_DEBUG("Writing to config file \"%s\":\n%s\n", configFullPath.string().c_str(), cfg.dump().c_str());
