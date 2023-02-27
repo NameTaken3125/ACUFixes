@@ -3,4 +3,7 @@ build/
 # Visual Studio 2015/2017 cache/options directory
 .vs/
 
+# Icon resource cache
+*.aps
+
 commit-msg.txt

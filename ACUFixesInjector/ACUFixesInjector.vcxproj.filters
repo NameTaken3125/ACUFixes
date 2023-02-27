@@ -3,4 +3,13 @@
   <ItemGroup>
     <ClCompile Include="ACUFixesInjector.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="ACUFixesInjector.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\acufixes-injector.ico" />
+  </ItemGroup>
 </Project>
