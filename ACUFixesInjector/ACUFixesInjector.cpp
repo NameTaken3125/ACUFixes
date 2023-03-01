@@ -98,6 +98,16 @@ fs::path GetThisExecutablePath()
     GetModuleFileName(NULL, pathBuf, MAX_PATH);
     return pathBuf;
 }
+void StartAnExecutable(const fs::path& absPath)
+{
+    ShellExecuteW(NULL
+        , L"open"
+        , absPath.wstring().c_str()
+        , L""
+        , absPath.parent_path().wstring().c_str()
+        , SW_SHOW
+    );
+}
 
 // Thanks https://cocomelonc.github.io/tutorial/2021/09/20/malware-injection-2.html
 bool Inject(const fs::path& injectedDLLPath, ProcessID_t pid)
@@ -128,16 +138,29 @@ bool Inject(const fs::path& injectedDLLPath, ProcessID_t pid)
 
     return true;
 }
-
-int main()
+fs::path TryToFindGameExecutable(const fs::path& executableName)
+{
+    return "C:\\Assassin's Creed Unity\\ACU.exe";
+}
+int main_procedure()
 {
     std::optional<ProcessID_t> pid = FindPID(g_targetProcessName);
+    fs::path thisExecutablePath = GetThisExecutablePath();
     if (!pid) {
-        wprintf(L"[X] Failed to find process for executable named \"%s\"", g_targetProcessName);
-        return -1;
+        wprintf(L"[x] Failed to find process for executable named \"%s\"\n", g_targetProcessName);
+        fs::path exeToStart = TryToFindGameExecutable(g_targetProcessName);
+        StartAnExecutable(exeToStart);
+        wprintf(L"[*] Trying to start \"%s\"\n", exeToStart.wstring().c_str());
+
+        pid = FindPID(g_targetProcessName);
+        if (!pid) {
+            wprintf(L"[X] Failed again to find process for \"%s\"\n", g_targetProcessName);
+            return -1;
+        }
+        wprintf(L"[+] Process started.\n");
     }
     wprintf(L"[+] %s PID: %x\n", g_targetProcessName, pid.value());
-    fs::path injectedDLLPath = GetThisExecutablePath().parent_path() / g_DLLPathRelativeToThisExecutable;
+    fs::path injectedDLLPath = thisExecutablePath.parent_path() / g_DLLPathRelativeToThisExecutable;
     // If the DLL is already injected, and I accidentally inject it again, the `DLL_PROCESS_ATTACH`
     // signal will not be received again, but the DLL's refcount will be >= 2.
     // If I then "quit" the injected DLL "from inside", the refcount will be left >= 1.
@@ -159,4 +182,9 @@ int main()
     wprintf(L"[+] The DLL should now be injected.");
 
     return 0;
+}
+int main()
+{
+    int result = main_procedure();
+    getchar();
 }
