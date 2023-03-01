@@ -265,6 +265,31 @@ bool IsInBombAimFromBehindCoverMode(ACUPlayerCameraComponent* cameraCpnt)
 {
     return IsBombAimFromBehindCoverMode(cameraCpnt->currentCameraSelectorBlenderNode);
 }
+
+#include "ACU/AtomAnimComponent.h"
+#include "ACU/Human.h"
+#include "ACU/Entity.h"
+#include "ACU/HasBallisticAimingEquipmentType.h"
+#include "ACU/ACUGetSingletons.h"
+AtomAnimComponent* GetPlayerAtomAnimComponent()
+{
+    constexpr int cpntIdx_atomAnimCpnt = 0x22; // player->cpntIndices_157.atomAnimCpnt
+    Entity* player = ACU::GetPlayer();
+    if (!player) { return nullptr; }
+    return static_cast<AtomAnimComponent*>(player->cpnts_mb[cpntIdx_atomAnimCpnt]);
+}
+EquipmentType* GetBallisticAimingCurrentEquipmentType()
+{
+    AtomAnimComponent* atomAnimCpnt = GetPlayerAtomAnimComponent();
+    if (!atomAnimCpnt) { return nullptr; }
+    return &atomAnimCpnt->human_c58->hasBallisticAimingEquipmentType_710->ballisticAimingCurrentEquipmentType;
+}
+bool IsAimingGuillotineGun()
+{
+    EquipmentType* ballisticAimingCurrentEquipmentType = GetBallisticAimingCurrentEquipmentType();
+    if (!ballisticAimingCurrentEquipmentType) { return false; }
+    return *ballisticAimingCurrentEquipmentType == EquipmentType::GuillotineGun;
+}
 class FOVWhileAimingManager_AugmentedZoomOnRightClick
 {
     BombAimSensitivityManager m_AimSensitivity;
@@ -278,6 +303,15 @@ class FOVWhileAimingManager_AugmentedZoomOnRightClick
 public:
     void AugmentZoomDependingOnRMB(FOVCurveAccessor& cameraModeController)
     {
+        if (IsAimingGuillotineGun())
+        {
+            // Guillotine Gun aiming uses the same camera mode, and requires RMB pressed.
+            // This means that without the following special processing the aiming is always zoomed in,
+            // but sensitivity is also lower than it would normally be; aiming becomes bothersome.
+            cameraModeController.SetEffectiveFOV(g_GoalFOVWhileAimingWithoutRMB);
+            AugmentAimSensitivity(false);
+            return;
+        }
         const bool isRMBpressed = ACU::Input::IsPressedRMB();
         const auto [interpTo, interpFrom] =
             isRMBpressed
