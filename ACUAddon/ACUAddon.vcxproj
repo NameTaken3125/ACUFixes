@@ -171,6 +171,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Hack_CycleEquipmentWhenScrollingMousewheel.cpp" />
     <ClCompile Include="include\Serialization\File\JSONFileBridge.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -190,6 +191,7 @@
     <ClCompile Include="src\Hacks_ImGuiControl.cpp" />
     <ClCompile Include="src\Hack_EnterWindowsWhenRisPressed.cpp" />
     <ClCompile Include="src\Hack_ModifyAimingFOV.cpp" />
+    <ClCompile Include="src\Hack_SlowMenacingWalkAndAutowalk.cpp" />
     <ClCompile Include="src\ImGui3D.cpp" />
     <ClCompile Include="src\ImGui3DRenderer.cpp" />
     <ClCompile Include="src\main.cpp" />
@@ -207,6 +209,7 @@
     <ClCompile Include="src\WhatIsDrawnInImGui.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Hack_CycleEquipmentWhenScrollingMousewheel.h" />
     <ClInclude Include="include\Serialization\BooleanAdapter.h" />
     <ClInclude Include="include\Serialization\File\JSONFileBridge.h" />
     <ClInclude Include="include\Serialization\NumericAdapters.h" />
@@ -218,6 +221,7 @@
     <ClInclude Include="src\ConsoleForOutput.h" />
     <ClInclude Include="src\Hack_EnterWindowsWhenRisPressed.h" />
     <ClInclude Include="src\Hack_ModifyAimingFOV.h" />
+    <ClInclude Include="src\Hack_SlowMenacingWalkAndAutowalk.h" />
     <ClInclude Include="src\ImGui3D.h" />
     <ClInclude Include="src\ImGui3DRenderer.h" />
     <ClInclude Include="src\ImGuiCTX.h" />

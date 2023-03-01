@@ -2,6 +2,8 @@
 
 #include "AutoAssemblerKinda.h"
 #include "Hack_EnterWindowsWhenRisPressed.h"
+#include "Hack_SlowMenacingWalkAndAutowalk.h"
+#include "Hack_CycleEquipmentWhenScrollingMousewheel.h"
 
 // Async-constructing the AutoAssemblerWrapper<CodeHolderObject> is better, because all the VirtualAllocs
 // produce a noticeable stutter on creation otherwise.
@@ -35,129 +37,6 @@ public:
     }
 };
 
-struct AllowSlowMenacingWalkAndAutowalk : AutoAssemblerCodeHolder_Base
-{
-    AllowSlowMenacingWalkAndAutowalk();
-};
-#include <vmath/vmath.h>
-#include "ACU/InputContainer.h"
-class InjectedAutowalkManager
-{
-    float FindCurrentTime() { return GetTickCount64() / 1000.0f; }
-    struct Mode_Clear {};
-    struct Mode_AutowalkRequested
-    {
-        float m_BeginAutowalkRequest_timestamp;
-        std::optional<Vector2f> m_LastSavedMovementVec;
-        bool IsExpectationExpired(float currentTime)
-        {
-            constexpr float requestedModeMaxExpectation = 1.0f;
-            return currentTime > m_BeginAutowalkRequest_timestamp + requestedModeMaxExpectation;
-        }
-    };
-    struct Mode_AutowalkActive
-    {
-        Vector2f m_LastSavedMovementVec;
-    };
-    std::variant<
-        Mode_Clear
-        , Mode_AutowalkRequested
-        , Mode_AutowalkActive
-    > m_CurrentMode;
-public:
-    void OnPressedB()
-    {
-        if (auto* activeAutowalk = std::get_if<Mode_AutowalkActive>(&m_CurrentMode))
-        {
-            m_CurrentMode = Mode_Clear();
-            return;
-        }
-        OnInitiateAutowalk();
-    }
-    void OnAdjustCurrentMovement(Vector2f& movementVecInOut)
-    {
-        if (auto* activeMode = std::get_if<Mode_AutowalkActive>(&m_CurrentMode))
-        {
-            if (movementVecInOut.lengthSq() != 0)
-            {
-                // Is manually overridden.
-                m_CurrentMode = Mode_Clear();
-                return;
-            }
-            movementVecInOut = activeMode->m_LastSavedMovementVec;
-            return;
-        }
-        else if (auto* requestedNotYetActive = std::get_if<Mode_AutowalkRequested>(&m_CurrentMode))
-        {
-            const bool isCurrentVecZero = movementVecInOut.lengthSq() == 0;
-            if (!isCurrentVecZero) { requestedNotYetActive->m_LastSavedMovementVec = movementVecInOut; }
-            bool shouldEndExpectationMode = false;
-            if (isCurrentVecZero)
-            {
-                if (requestedNotYetActive->m_LastSavedMovementVec)
-                    // If the player isn't moving AND hasn't been moving since autowalk was requested,
-                    // we DON'T stop the request mode.
-                    // Maybe the player has pressed the Autowalk button, and THEN immediately presses one of WASD.
-                    shouldEndExpectationMode = true;
-            }
-            if (!shouldEndExpectationMode) {
-                shouldEndExpectationMode = requestedNotYetActive->IsExpectationExpired(FindCurrentTime());
-            }
-            if (shouldEndExpectationMode)
-            {
-                // End pending request. Whether or not autowalk becomes active depends on
-                // whether any input has been recorded.
-                if (!requestedNotYetActive->m_LastSavedMovementVec)
-                {
-                    m_CurrentMode = Mode_Clear();
-                    return;
-                }
-                m_CurrentMode = Mode_AutowalkActive{ *requestedNotYetActive->m_LastSavedMovementVec };
-                return;
-            }
-        }
-    }
-private:
-    void OnInitiateAutowalk()
-    {
-        m_CurrentMode = Mode_AutowalkRequested{ FindCurrentTime() };
-    }
-};
-void OnMovementVectorUpdate_ManageAutowalk(Vector2f& movementVecWithoutAdjustments, InputContainerBig* inpCont)
-{
-    static InjectedAutowalkManager autowalkManager;
-    constexpr int scancodeB = 48;
-    if (inpCont->isPressed_byScancode[scancodeB])
-    {
-        autowalkManager.OnPressedB();
-    }
-    autowalkManager.OnAdjustCurrentMovement(movementVecWithoutAdjustments);
-}
-void AttenuateMovementVector(AllRegisters* params)
-{
-    Vector2f& movementVector = (Vector2f&)*params->rax_;
-    InputContainer* inpCont = (InputContainer*)params->rbx_;
-    OnMovementVectorUpdate_ManageAutowalk(movementVector, inpCont->GetInputContainerBig());
-    const bool isCapsLockOn = (GetKeyState(VK_CAPITAL) & 0x0001) != 0;
-    if (isCapsLockOn)
-    {
-        constexpr float slowWalkMode_SpeedMultiplier = 0.5f;
-        movementVector *= slowWalkMode_SpeedMultiplier;
-        int noop = 0;
-    }
-}
-AllowSlowMenacingWalkAndAutowalk::AllowSlowMenacingWalkAndAutowalk()
-{
-    CCodeInTheMiddleFunctionPtr_t receiverFunc = &AttenuateMovementVector;
-    uintptr_t whereToInject = 0x142739CBE;
-    constexpr size_t howManyBytesStolen = 7;
-    const bool isNeedToExecuteStolenBytesAfterwards = true;
-    PresetScript_CCodeInTheMiddle(
-        whereToInject, howManyBytesStolen
-        , receiverFunc
-        , RETURN_TO_RIGHT_AFTER_STOLEN_BYTES
-        , isNeedToExecuteStolenBytesAfterwards);
-}
 template<typename floatlike>
 floatlike simple_interp(floatlike mn, floatlike mx)
 {
@@ -207,34 +86,6 @@ struct PlayWithBombAimCameraTracker2 : AutoAssemblerCodeHolder_Base
         PresetScript_CCodeInTheMiddle(
             0x14055B4BB, 8
             , OverrideThrowPredictorBeamPosition
-            , RETURN_TO_RIGHT_AFTER_STOLEN_BYTES
-            , true);
-    }
-};
-
-#include "ACU/InputContainer.h"
-void InjectNumpad46WhenScrollingMouseWheel(AllRegisters* params)
-{
-    InputContainerBig* inpCont = (InputContainerBig*)params->rbx_;
-    uint8& isMarkedAsPressed_CycleLeftHand = inpCont->keyStates_thisFrame.isPressed_numpad4cycleLeftHand;
-    uint8& isMarkedAsPressed_CycleBombs = inpCont->keyStates_thisFrame.isPressed_numpad6cycleBombs;
-    if (!isMarkedAsPressed_CycleLeftHand)
-    {
-        isMarkedAsPressed_CycleLeftHand = inpCont->IsMouseWheelScrollingUp();
-    }
-    if (!isMarkedAsPressed_CycleBombs)
-    {
-        isMarkedAsPressed_CycleBombs = inpCont->IsMouseWheelScrollingDown();
-    }
-}
-struct InputInjection_CycleEquipmentWhenScrollingMousewheel : AutoAssemblerCodeHolder_Base
-{
-    InputInjection_CycleEquipmentWhenScrollingMousewheel()
-    {
-        constexpr uintptr_t whenCheckingKeymapForFrame = 0x14273BC75;
-        PresetScript_CCodeInTheMiddle(
-            whenCheckingKeymapForFrame, 6
-            , InjectNumpad46WhenScrollingMouseWheel
             , RETURN_TO_RIGHT_AFTER_STOLEN_BYTES
             , true);
     }
