@@ -45,11 +45,24 @@ public:
     }
 };
 fs::path AbsolutePathInMyDirectory(const fs::path& filenameRel);
-
+#include "ACU/ACUPlayerCameraComponent.h"
+void WaitUntilGameIsInitializedEnoughSoThatTheMainIntegrityCheckCanBeDisabled()
+{
+    while (true)
+    {
+        if (!ACUPlayerCameraComponent::GetSingleton())
+        {
+            Sleep(100);
+            continue;
+        }
+        break;
+    }
+}
 static void MainThread(HMODULE thisDLLModule)
 {
     Base::Data::thisDLLModule = thisDLLModule;
     MyLogFileLifetime _log{ AbsolutePathInMyDirectory("acufixes-log.log") };
+    WaitUntilGameIsInitializedEnoughSoThatTheMainIntegrityCheckCanBeDisabled();
     MainConfig::FindAndLoadConfigFileOrCreateDefault();
     DisableMainIntegrityCheck();
     std::unique_ptr<Base::Settings> basehook;

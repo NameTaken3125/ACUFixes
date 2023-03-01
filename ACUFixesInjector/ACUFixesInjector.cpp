@@ -152,7 +152,7 @@ int main()
     }
     wprintf(L"[*] Trying to find and inject \"%s\"\n", injectedDLLPath.wstring().c_str());
     bool seeminglySucceeded = Inject(injectedDLLPath, pid.value());
-    if (seeminglySucceeded) {
+    if (!seeminglySucceeded) {
         wprintf(L"[X] Failed to inject.");
         return -1;
     }

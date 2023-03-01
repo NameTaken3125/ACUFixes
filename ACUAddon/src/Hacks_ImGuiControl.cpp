@@ -51,7 +51,7 @@ class InjectedAutowalkManager
         std::optional<Vector2f> m_LastSavedMovementVec;
         bool IsExpectationExpired(float currentTime)
         {
-            constexpr float requestedModeMaxExpectation = 0.5f;
+            constexpr float requestedModeMaxExpectation = 1.0f;
             return currentTime > m_BeginAutowalkRequest_timestamp + requestedModeMaxExpectation;
         }
     };
