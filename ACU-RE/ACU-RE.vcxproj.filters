@@ -32,6 +32,9 @@
     <ClInclude Include="inc\ACU\HasSwapchain.h" />
     <ClInclude Include="inc\ACU\KeymapScancodes.h" />
     <ClInclude Include="inc\ACU\ThrowTargetPrecision.h" />
+    <ClInclude Include="inc\ACU\AtomAnimComponent.h" />
+    <ClInclude Include="inc\ACU\Human.h" />
+    <ClInclude Include="inc\ACU\HasBallisticAimingEquipmentType.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />

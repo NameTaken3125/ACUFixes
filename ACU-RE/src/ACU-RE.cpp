@@ -37,3 +37,6 @@
 
 #include "ACU/BallisticProjectileAimingControlsSettings.h"
 #include "ACU/ThrowTargetPrecision.h"
+#include "ACU/HasBallisticAimingEquipmentType.h"
+#include "ACU/AtomAnimComponent.h"
+#include "ACU/Human.h"

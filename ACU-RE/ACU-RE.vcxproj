@@ -165,6 +165,7 @@
   <ItemGroup>
     <ClInclude Include="inc\ACU\ACUGetSingletons.h" />
     <ClInclude Include="inc\ACU\ACUPlayerCameraComponent.h" />
+    <ClInclude Include="inc\ACU\AtomAnimComponent.h" />
     <ClInclude Include="inc\ACU\BallisticProjectileAimingControlsSettings.h" />
     <ClInclude Include="inc\ACU\BaseEntity.h" />
     <ClInclude Include="inc\ACU\basic_types.h" />
@@ -178,8 +179,10 @@
     <ClInclude Include="inc\ACU\Entity.h" />
     <ClInclude Include="inc\ACU\GamePlaySettings.h" />
     <ClInclude Include="inc\ACU\GameStatsManager.h" />
+    <ClInclude Include="inc\ACU\HasBallisticAimingEquipmentType.h" />
     <ClInclude Include="inc\ACU\HasInputContainers.h" />
     <ClInclude Include="inc\ACU\HasSwapchain.h" />
+    <ClInclude Include="inc\ACU\Human.h" />
     <ClInclude Include="inc\ACU\InputContainer.h" />
     <ClInclude Include="inc\ACU\KeymapScancodes.h" />
     <ClInclude Include="inc\ACU\ManagedObject.h" />
