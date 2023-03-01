@@ -8,7 +8,8 @@
 
 namespace fs = std::filesystem;
 const wchar_t* g_targetProcessName = L"ACU.exe";
-fs::path g_DLLPathRelativeToThisExecutable = "ACUAddon.dll";
+const char* g_DLLPathRelativeToThisExecutable = "ACUAddon.dll";
+const char* g_configFileName = "acufixesinjector-config.json";
 
 void EnableDebugPriv()
 {
@@ -138,20 +139,194 @@ bool Inject(const fs::path& injectedDLLPath, ProcessID_t pid)
 
     return true;
 }
-fs::path TryToFindGameExecutable(const fs::path& executableName)
+#include "SimpleJSON/json.hpp"
+#include "Serialization/Serialization.h"
+#include "Serialization/BooleanAdapter.h"
+using json::JSON;
+#include <fstream>
+#include <sstream>
+namespace json {
+JSON FromFile(const fs::path& path)
 {
-    return "C:\\Assassin's Creed Unity\\ACU.exe";
+    std::ifstream ifs(path);
+    std::stringstream ss;
+    ss << ifs.rdbuf();
+    std::string loadedString = ss.str();
+    return JSON::Load(loadedString);
 }
+void ToFile(const JSON& obj, const fs::path& path)
+{
+    std::ofstream ofs(path);
+    ofs << obj.dump();
+}
+}
+namespace ACUInjectorConfig
+{
+std::string gameExeFilepath;
+}
+#include <shobjidl.h>
+/*
+Thanks
+https://learn.microsoft.com/en-us/windows/win32/learnwin32/example--the-open-dialog-box
+https://cplusplus.com/forum/windows/275617/
+*/
+std::optional<fs::path> OpenDialog_FindSingleFile(const fs::path& executableName)
+{
+    std::optional<fs::path> result;
+    HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED |
+        COINIT_DISABLE_OLE1DDE);
+    if (SUCCEEDED(hr))
+    {
+        IFileOpenDialog* pFileOpen;
+
+        // Create the FileOpenDialog object.
+        hr = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_ALL,
+            IID_IFileOpenDialog, reinterpret_cast<void**>(&pFileOpen));
+
+        if (SUCCEEDED(hr))
+        {
+            std::wstring filetypeSpec = executableName.wstring();
+            COMDLG_FILTERSPEC ComDlgFS[1] = { {L"Game Executable", filetypeSpec.c_str()}};
+            hr = pFileOpen->SetFileTypes((UINT)std::size(ComDlgFS), ComDlgFS);
+            if (SUCCEEDED(hr))
+            {
+                std::wstring windowTitle = L"Please find the game executable (" + executableName.wstring() + L')';
+                hr = pFileOpen->SetTitle(windowTitle.c_str());
+                if (SUCCEEDED(hr)) {
+                    // Show the Open dialog box.
+                    hr = pFileOpen->Show(NULL);
+
+                    // Get the file name from the dialog box.
+                    if (SUCCEEDED(hr))
+                    {
+                        IShellItem* pItem;
+                        hr = pFileOpen->GetResult(&pItem);
+                        if (SUCCEEDED(hr))
+                        {
+                            PWSTR pszFilePath;
+                            hr = pItem->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
+
+                            // Display the file name to the user.
+                            if (SUCCEEDED(hr))
+                            {
+                                //MessageBoxW(NULL, pszFilePath, L"File Path", MB_OK);
+                                result = pszFilePath;
+                                CoTaskMemFree(pszFilePath);
+                            }
+                            pItem->Release();
+                        }
+                    }
+                }
+            }
+            pFileOpen->Release();
+        }
+        CoUninitialize();
+    }
+    return result;
+}
+class FindExeFilepathAndUpdateConfig
+{
+public:
+    std::optional<fs::path> DoAndReturnFilepath(const fs::path& executableName)
+    {
+        Do(executableName);
+        return std::move(m_foundFilepath);
+
+    }
+private:
+    void Do(const fs::path& executableName)
+    {
+        ReadFromConfig();
+        if (m_foundFilepath)
+        {
+            printf("[+] Found EXE filepath in config: '%s'\n", m_foundFilepath->string().c_str());
+            return;
+        }
+        else
+        {
+            printf("[x] EXE filepath not found in config.\n");
+        }
+        LookInThisExecutablesDirectory(executableName);
+        if (m_foundFilepath)
+        {
+            printf("[+] Found a matching EXE in this executable's directory (%s)\n", m_foundFilepath->string().c_str());
+            return;
+        }
+        else
+        {
+            printf("[x] Also didn't find a matching EXE in this executable's directory (%s)\n", GetThisExecutablePath().parent_path().string().c_str());
+        }
+        AskUserToProvideEXEFilepath(executableName);
+        if (m_foundFilepath)
+        {
+            printf("[+] Provided new EXE filepath: '%s'\n", m_foundFilepath->string().c_str());
+        }
+        UpdateConfig();
+    }
+    void ReadFromConfig()
+    {
+        fs::path configPath = GetConfigFilepath();
+        printf("[*] Trying to read saved executable path from config file '%s'\n", configPath.string().c_str());
+        JSON cfg = json::FromFile(GetConfigFilepath());
+        printf("[*] Read from config:\n%s\n", cfg.dump().c_str());
+        std::string gameExeFilepath;
+        READ_JSON_VARIABLE(cfg, gameExeFilepath, StringAdapterNoEscape);
+        if (!gameExeFilepath.empty())
+        {
+            this->m_foundFilepath = std::move(gameExeFilepath);
+        }
+    }
+    void LookInThisExecutablesDirectory(const fs::path& executableName)
+    {
+        fs::path pathToTest = GetThisExecutablePath().parent_path() / executableName;
+        if (fs::exists(pathToTest))
+        {
+            m_foundFilepath = std::move(pathToTest);
+        }
+    }
+    void AskUserToProvideEXEFilepath(const fs::path& executableName)
+    {
+        m_foundFilepath = OpenDialog_FindSingleFile(executableName);
+    }
+    void UpdateConfig()
+    {
+        JSON obj;
+        std::string gameExeFilepath = m_foundFilepath ? m_foundFilepath->string() : "";
+        WRITE_JSON_VARIABLE(obj, gameExeFilepath, StringAdapterNoEscape);
+        fs::path configFilepath = GetConfigFilepath();
+        printf("[*] Updated config file at '%s':\n%s\n", configFilepath.string().c_str(), obj.dump().c_str());
+        json::ToFile(obj, configFilepath);
+    }
+private:
+    fs::path AbsolutePathInMyDirectory(const fs::path& pathRel) {
+        return GetThisExecutablePath().parent_path() / pathRel;
+    };
+    fs::path GetConfigFilepath()
+    {
+        fs::path configFullPath = AbsolutePathInMyDirectory(g_configFileName);
+        return configFullPath;
+    }
+    std::optional<fs::path> m_foundFilepath;
+};
+std::optional<fs::path> TryToFindGameExecutable(const fs::path& executableName)
+{
+    return FindExeFilepathAndUpdateConfig().DoAndReturnFilepath(executableName);
+}
+bool g_attemptedToLaunchGameProcess = false;
 int main_procedure()
 {
     std::optional<ProcessID_t> pid = FindPID(g_targetProcessName);
-    fs::path thisExecutablePath = GetThisExecutablePath();
     if (!pid) {
         wprintf(L"[x] Failed to find process for executable named \"%s\"\n", g_targetProcessName);
-        fs::path exeToStart = TryToFindGameExecutable(g_targetProcessName);
-        StartAnExecutable(exeToStart);
-        wprintf(L"[*] Trying to start \"%s\"\n", exeToStart.wstring().c_str());
-
+        std::optional<fs::path> exeToStart = TryToFindGameExecutable(g_targetProcessName);
+        if (!exeToStart)
+        {
+            wprintf(L"[X] Can't find an open process, and can't start a process. Quitting then.");
+            return -1;
+        }
+        StartAnExecutable(*exeToStart);
+        wprintf(L"[*] Trying to start \"%s\"\n", exeToStart->wstring().c_str());
+        g_attemptedToLaunchGameProcess = true;
         pid = FindPID(g_targetProcessName);
         if (!pid) {
             wprintf(L"[X] Failed again to find process for \"%s\"\n", g_targetProcessName);
@@ -160,6 +335,7 @@ int main_procedure()
         wprintf(L"[+] Process started.\n");
     }
     wprintf(L"[+] %s PID: %x\n", g_targetProcessName, pid.value());
+    fs::path thisExecutablePath = GetThisExecutablePath();
     fs::path injectedDLLPath = thisExecutablePath.parent_path() / g_DLLPathRelativeToThisExecutable;
     // If the DLL is already injected, and I accidentally inject it again, the `DLL_PROCESS_ATTACH`
     // signal will not be received again, but the DLL's refcount will be >= 2.
@@ -174,17 +350,39 @@ int main_procedure()
         return -1;
     }
     wprintf(L"[*] Trying to find and inject \"%s\"\n", injectedDLLPath.wstring().c_str());
+    if (!fs::exists(injectedDLLPath))
+    {
+        wprintf(L"[x] Warning: '%s' doesn't seem to exist, but I'll try to inject anyways.\n", injectedDLLPath.wstring().c_str());
+    }
     bool seeminglySucceeded = Inject(injectedDLLPath, pid.value());
     if (!seeminglySucceeded) {
         wprintf(L"[X] Failed to inject.");
         return -1;
     }
-    wprintf(L"[+] The DLL should now be injected.");
+    wprintf(L"[+] Did my best to inject the DLL.\n");
 
     return 0;
+}
+#include <conio.h>
+void WaitForAnyKeypress() {
+    while (_kbhit() == 0) {
+        Sleep(200);
+    }
 }
 int main()
 {
     int result = main_procedure();
-    getchar();
+    if (g_attemptedToLaunchGameProcess) {
+        printf(
+            "\n\nIf the game process fails to start, you can try to delete the config file\n"
+            "(%s)\n"
+            "in this executable's directory. It will be regenerated\n"
+            "automatically. If that doesn't help, try to start this program\n"
+            "with the game already running.\n"
+            , g_configFileName
+        );
+    }
+    printf("Press any key to quit...");
+    WaitForAnyKeypress();
+    return result;
 }
