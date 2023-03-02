@@ -273,9 +273,9 @@ bool IsInBombAimFromBehindCoverMode(ACUPlayerCameraComponent* cameraCpnt)
 #include "ACU/ACUGetSingletons.h"
 AtomAnimComponent* GetPlayerAtomAnimComponent()
 {
-    constexpr int cpntIdx_atomAnimCpnt = 0x22; // player->cpntIndices_157.atomAnimCpnt
     Entity* player = ACU::GetPlayer();
     if (!player) { return nullptr; }
+    int cpntIdx_atomAnimCpnt = player->cpntIndices_157.atomAnimCpnt;
     return static_cast<AtomAnimComponent*>(player->cpnts_mb[cpntIdx_atomAnimCpnt]);
 }
 EquipmentType* GetBallisticAimingCurrentEquipmentType()
