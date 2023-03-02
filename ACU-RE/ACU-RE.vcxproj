@@ -163,6 +163,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="inc\ACU\ActionKeyStates.h" />
     <ClInclude Include="inc\ACU\ACUGetSingletons.h" />
     <ClInclude Include="inc\ACU\ACUPlayerCameraComponent.h" />
     <ClInclude Include="inc\ACU\AtomAnimComponent.h" />
@@ -178,6 +179,7 @@
     <ClInclude Include="inc\ACU\CSrvPlayerWeaponSwitch.h" />
     <ClInclude Include="inc\ACU\CurvePoints.h" />
     <ClInclude Include="inc\ACU\Entity.h" />
+    <ClInclude Include="inc\ACU\Enum_ActionKeyCode.h" />
     <ClInclude Include="inc\ACU\Enum_EquipmentType.h" />
     <ClInclude Include="inc\ACU\EventListener.h" />
     <ClInclude Include="inc\ACU\GamePlaySettings.h" />

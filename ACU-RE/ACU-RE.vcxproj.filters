@@ -42,6 +42,8 @@
     <ClInclude Include="inc\ACU\UIWorldComponent.h" />
     <ClInclude Include="inc\ACU\Enum_EquipmentType.h" />
     <ClInclude Include="inc\ACU\CSrvPlayerWeaponSwitch.h" />
+    <ClInclude Include="inc\ACU\Enum_ActionKeyCode.h" />
+    <ClInclude Include="inc\ACU\ActionKeyStates.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />
