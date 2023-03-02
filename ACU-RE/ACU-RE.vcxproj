@@ -177,11 +177,14 @@
     <ClInclude Include="inc\ACU\Component.h" />
     <ClInclude Include="inc\ACU\CurvePoints.h" />
     <ClInclude Include="inc\ACU\Entity.h" />
+    <ClInclude Include="inc\ACU\EventListener.h" />
     <ClInclude Include="inc\ACU\GamePlaySettings.h" />
     <ClInclude Include="inc\ACU\GameStatsManager.h" />
     <ClInclude Include="inc\ACU\HasBallisticAimingEquipmentType.h" />
     <ClInclude Include="inc\ACU\HasInputContainers.h" />
     <ClInclude Include="inc\ACU\HasSwapchain.h" />
+    <ClInclude Include="inc\ACU\HUDLetterReaderModule.h" />
+    <ClInclude Include="inc\ACU\HUDModule.h" />
     <ClInclude Include="inc\ACU\Human.h" />
     <ClInclude Include="inc\ACU\InputContainer.h" />
     <ClInclude Include="inc\ACU\KeymapScancodes.h" />
@@ -194,7 +197,9 @@
     <ClInclude Include="inc\ACU\Statechart.h" />
     <ClInclude Include="inc\ACU\ThrowTargetPrecision.h" />
     <ClInclude Include="inc\ACU\TypeInfo.h" />
+    <ClInclude Include="inc\ACU\UIWorldComponent.h" />
     <ClInclude Include="inc\ACU\World.h" />
+    <ClInclude Include="inc\ACU\WorldComponent.h" />
     <ClInclude Include="src\framework.h" />
     <ClInclude Include="src\pch.h" />
   </ItemGroup>

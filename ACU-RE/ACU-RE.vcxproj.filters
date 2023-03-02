@@ -35,6 +35,11 @@
     <ClInclude Include="inc\ACU\AtomAnimComponent.h" />
     <ClInclude Include="inc\ACU\Human.h" />
     <ClInclude Include="inc\ACU\HasBallisticAimingEquipmentType.h" />
+    <ClInclude Include="inc\ACU\EventListener.h" />
+    <ClInclude Include="inc\ACU\HUDModule.h" />
+    <ClInclude Include="inc\ACU\HUDLetterReaderModule.h" />
+    <ClInclude Include="inc\ACU\WorldComponent.h" />
+    <ClInclude Include="inc\ACU\UIWorldComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />

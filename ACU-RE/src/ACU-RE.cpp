@@ -12,6 +12,7 @@
 #include "ACU/Entity.h"
 #include "ACU/Component.h"
 #include "ACU/World.h"
+#include "ACU/WorldComponent.h"
 #include "ACU/BhvAssassin.h"
 #include "ACU/CharacterAI.h"
 #include "ACU/Statechart.h"
@@ -40,3 +41,7 @@
 #include "ACU/HasBallisticAimingEquipmentType.h"
 #include "ACU/AtomAnimComponent.h"
 #include "ACU/Human.h"
+
+#include "ACU/UIWorldComponent.h"
+#include "ACU/HUDModule.h"
+#include "ACU/HUDLetterReaderModule.h"

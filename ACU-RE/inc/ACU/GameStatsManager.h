@@ -2,12 +2,7 @@
 
 #include "MandatoryUniverseComponent.h"
 #include "SmallArray.h"
-
-class EventListener : public ManagedObject
-{
-public:
-    char pad_0010[24]; //0x0010
-}; //Size: 0x0028
+#include "EventListener.h"
 
 // Game code does it like this.
 inline float ConvertRawIntTimestampToFloat(int64 rawIntTS) { return rawIntTS / 30000.0f; }
