@@ -165,11 +165,17 @@ void RunWindowEntryEntryTesterInitAndScan(
     }
     [&]() {
         // Requested to enter window if one is nearby.
-        std::array<Vector4f, 4> directionsToScan = {
+        std::array<Vector4f, 8> directionsToScan = {
             Vector4f{1, 0, 0, 0},
             Vector4f{-1, 0, 0, 0},
             Vector4f{0, 1, 0, 0},
             Vector4f{0, -1, 0, 0},
+            // See 2nd story window in Franciade at [64.77, 71.73, 4.76]:
+            // The four cardinal directions sadly aren't enough.
+            Vector4f{1, 1, 0, 0},
+            Vector4f{1, -1, 0, 0},
+            Vector4f{-1, 1, 0, 0},
+            Vector4f{-1, -1, 0, 0},
         };
         float fakeMovementMagnitude = 1;
         for (Vector4f& direction : directionsToScan)
