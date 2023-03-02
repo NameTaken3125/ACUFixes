@@ -112,6 +112,22 @@ constexpr int GetEquipmentTypeIndexInCycle_Bombs(EquipmentType equipmentType)
     }
     return 0;
 }
+constexpr bool IsBomb(EquipmentType equipType)
+{
+    switch (equipType)
+    {
+    case SmokeBomb:
+    case StunBomb:
+    case CherryBomb:
+    case PoisonBomb:
+    case MoneyPouch:
+    case Slot9Booster:
+        return true;
+    default:
+        break;
+    }
+    return false;
+}
 
 #include "ACU/BhvAssassin.h"
 #include "ACU/CharacterAI.h"
@@ -136,11 +152,22 @@ CSrvPlayerWeaponSwitch* FindPlayerWeaponSwitch()
     }
     return nullptr;
 }
+// Gets specifically what is equipped, and so ignores locked quick-select slots
+// like poison gas that unlocks later in game.
 EquipmentType GetCurrentEquipmentType_Bombs()
 {
     CSrvPlayerWeaponSwitch* weaponSwitcher = FindPlayerWeaponSwitch();
     if (!weaponSwitcher) { return EquipmentType::SmokeBomb; }
     return weaponSwitcher->equipType_bombs;
+}
+EquipmentType g_LastQuickSelectedEquipment = EquipmentType::SmokeBomb;
+EquipmentType GetCurrentEquipmentSelection_Bombs()
+{
+    if (IsBomb(g_LastQuickSelectedEquipment))
+    {
+        return g_LastQuickSelectedEquipment;
+    }
+    return GetCurrentEquipmentType_Bombs();
 }
 int ProgressIndexInCycle(int currentIdx, int stepHowManyFromCurrent, size_t cycleSize)
 {
@@ -150,7 +177,7 @@ int ProgressIndexInCycle(int currentIdx, int stepHowManyFromCurrent, size_t cycl
 }
 EquipmentType ProgressEquipmentCycle_Bombs(int stepHowManyFromCurrentEquipment)
 {
-    EquipmentType currentBomb = GetCurrentEquipmentType_Bombs();
+    EquipmentType currentBomb = GetCurrentEquipmentSelection_Bombs();
     int currentBombSlotIdx = GetEquipmentTypeIndexInCycle_Bombs(currentBomb);
     int newBombSlotIdx = ProgressIndexInCycle(currentBombSlotIdx, stepHowManyFromCurrentEquipment, g_BombTypes.size());
     return g_BombTypes[newBombSlotIdx];
@@ -189,6 +216,12 @@ void CycleEquipmentByScrollingMousewheel_BombsOnly(AllRegisters* params)
     if (isMWScrollDown)
         InjectEquipmentSelection_NextFromCurrent(inpCont->keyStates_thisFrame);
 }
+void WhenAttemptedToQuickSelectEquipment_SaveSelection(AllRegisters* params)
+{
+    // The equipment might be locked, that's why it's "attempted".
+    EquipmentType attemptedSelection = (EquipmentType&)*params->rax_;
+    g_LastQuickSelectedEquipment = attemptedSelection;
+}
 InputInjection_CycleEquipmentWhenScrollingMousewheel::InputInjection_CycleEquipmentWhenScrollingMousewheel()
 {
     constexpr uintptr_t whenCheckingKeymapForFrame = 0x14273BC75;
@@ -197,4 +230,7 @@ InputInjection_CycleEquipmentWhenScrollingMousewheel::InputInjection_CycleEquipm
         , CycleEquipmentByScrollingMousewheel_BombsOnly
         , RETURN_TO_RIGHT_AFTER_STOLEN_BYTES
         , true);
+    constexpr uintptr_t whenAttemptedToQuickSelectEquipment = 0x14082EB9A;
+    PresetScript_CCodeInTheMiddle(whenAttemptedToQuickSelectEquipment, 5
+        , WhenAttemptedToQuickSelectEquipment_SaveSelection, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
 }
