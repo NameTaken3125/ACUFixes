@@ -175,8 +175,10 @@
     <ClInclude Include="inc\ACU\CameraSelectorBlenderNode.h" />
     <ClInclude Include="inc\ACU\CharacterAI.h" />
     <ClInclude Include="inc\ACU\Component.h" />
+    <ClInclude Include="inc\ACU\CSrvPlayerWeaponSwitch.h" />
     <ClInclude Include="inc\ACU\CurvePoints.h" />
     <ClInclude Include="inc\ACU\Entity.h" />
+    <ClInclude Include="inc\ACU\Enum_EquipmentType.h" />
     <ClInclude Include="inc\ACU\EventListener.h" />
     <ClInclude Include="inc\ACU\GamePlaySettings.h" />
     <ClInclude Include="inc\ACU\GameStatsManager.h" />

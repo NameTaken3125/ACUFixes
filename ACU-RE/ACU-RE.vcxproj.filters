@@ -40,6 +40,8 @@
     <ClInclude Include="inc\ACU\HUDLetterReaderModule.h" />
     <ClInclude Include="inc\ACU\WorldComponent.h" />
     <ClInclude Include="inc\ACU\UIWorldComponent.h" />
+    <ClInclude Include="inc\ACU\Enum_EquipmentType.h" />
+    <ClInclude Include="inc\ACU\CSrvPlayerWeaponSwitch.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />

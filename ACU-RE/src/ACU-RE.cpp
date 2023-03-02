@@ -16,6 +16,7 @@
 #include "ACU/BhvAssassin.h"
 #include "ACU/CharacterAI.h"
 #include "ACU/Statechart.h"
+#include "ACU/CSrvPlayerWeaponSwitch.h"
 
 #include "ACU/Parkour_PotentialWindowEntry.h"
 #include "ACU/Parkour_WhileOnWallSystem.h"
