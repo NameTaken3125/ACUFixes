@@ -5,11 +5,24 @@
 #include <iostream>
 #include <optional>
 #include <filesystem>
-
 namespace fs = std::filesystem;
+
 const wchar_t* g_targetProcessName = L"ACU.exe";
 const char* g_DLLPathRelativeToThisExecutable = "ACUAddon.dll";
 const char* g_configFileName = "acufixesinjector-config.json";
+
+struct LoaderConfig
+{
+    std::string gameExeFilepath;
+    bool automaticallyCloseConsoleWindow = false;
+
+public:
+    void ReadFile();
+    void UpdateFile();
+private:
+    fs::path GetConfigFilepath();
+};
+LoaderConfig g_Config;
 
 void EnableDebugPriv()
 {
@@ -99,6 +112,9 @@ fs::path GetThisExecutablePath()
     GetModuleFileName(NULL, pathBuf, MAX_PATH);
     return pathBuf;
 }
+fs::path AbsolutePathInMyDirectory(const fs::path& pathRel) {
+    return GetThisExecutablePath().parent_path() / pathRel;
+};
 void StartAnExecutable(const fs::path& absPath)
 {
     ShellExecuteW(NULL
@@ -160,6 +176,29 @@ void ToFile(const JSON& obj, const fs::path& path)
     ofs << obj.dump();
 }
 }
+void LoaderConfig::ReadFile()
+{
+    fs::path configPath = GetConfigFilepath();
+    printf("[*] Trying to read saved executable path from config file '%s'\n", configPath.string().c_str());
+    JSON cfg = json::FromFile(GetConfigFilepath());
+    printf("[*] Read from config:\n%s\n", cfg.dump().c_str());
+    READ_JSON_VARIABLE(cfg, gameExeFilepath, StringAdapterNoEscape);
+    READ_JSON_VARIABLE(cfg, automaticallyCloseConsoleWindow, BooleanAdapter);
+}
+void LoaderConfig::UpdateFile()
+{
+    JSON obj;
+    WRITE_JSON_VARIABLE(obj, gameExeFilepath, StringAdapterNoEscape);
+    WRITE_JSON_VARIABLE(obj, automaticallyCloseConsoleWindow, BooleanAdapter);
+    fs::path configFilepath = GetConfigFilepath();
+    printf("[*] Updated config file at '%s':\n%s\n", configFilepath.string().c_str(), obj.dump().c_str());
+    json::ToFile(obj, configFilepath);
+}
+fs::path LoaderConfig::GetConfigFilepath()
+{
+    fs::path configFullPath = AbsolutePathInMyDirectory(g_configFileName);
+    return configFullPath;
+}
 #include <shobjidl.h>
 /*
 Thanks
@@ -220,7 +259,7 @@ std::optional<fs::path> OpenDialog_FindSingleFile(const fs::path& executableName
     }
     return result;
 }
-class FindExeFilepathAndUpdateConfig
+class FindExeFilepath
 {
 public:
     std::optional<fs::path> DoAndReturnFilepath(const fs::path& executableName)
@@ -256,19 +295,12 @@ private:
         {
             printf("[+] Provided new EXE filepath: '%s'\n", m_foundFilepath->string().c_str());
         }
-        UpdateConfig();
     }
     void ReadFromConfig()
     {
-        fs::path configPath = GetConfigFilepath();
-        printf("[*] Trying to read saved executable path from config file '%s'\n", configPath.string().c_str());
-        JSON cfg = json::FromFile(GetConfigFilepath());
-        printf("[*] Read from config:\n%s\n", cfg.dump().c_str());
-        std::string gameExeFilepath;
-        READ_JSON_VARIABLE(cfg, gameExeFilepath, StringAdapterNoEscape);
-        if (!gameExeFilepath.empty())
+        if (!g_Config.gameExeFilepath.empty())
         {
-            this->m_foundFilepath = std::move(gameExeFilepath);
+            this->m_foundFilepath = g_Config.gameExeFilepath;
         }
     }
     void LookInThisExecutablesDirectory(const fs::path& executableName)
@@ -283,15 +315,6 @@ private:
     {
         m_foundFilepath = OpenDialog_FindSingleFile(executableName);
     }
-    void UpdateConfig()
-    {
-        JSON obj;
-        std::string gameExeFilepath = m_foundFilepath ? m_foundFilepath->string() : "";
-        WRITE_JSON_VARIABLE(obj, gameExeFilepath, StringAdapterNoEscape);
-        fs::path configFilepath = GetConfigFilepath();
-        printf("[*] Updated config file at '%s':\n%s\n", configFilepath.string().c_str(), obj.dump().c_str());
-        json::ToFile(obj, configFilepath);
-    }
 private:
     fs::path AbsolutePathInMyDirectory(const fs::path& pathRel) {
         return GetThisExecutablePath().parent_path() / pathRel;
@@ -305,7 +328,7 @@ private:
 };
 std::optional<fs::path> TryToFindGameExecutable(const fs::path& executableName)
 {
-    return FindExeFilepathAndUpdateConfig().DoAndReturnFilepath(executableName);
+    return FindExeFilepath().DoAndReturnFilepath(executableName);
 }
 bool g_attemptedToLaunchGameProcess = false;
 int main_procedure()
@@ -319,6 +342,7 @@ int main_procedure()
             wprintf(L"[X] Can't find an open process, and can't start a process. Quitting then.");
             return -1;
         }
+        g_Config.gameExeFilepath = exeToStart->string();
         StartAnExecutable(*exeToStart);
         wprintf(L"[*] Trying to start \"%s\"\n", exeToStart->wstring().c_str());
         g_attemptedToLaunchGameProcess = true;
@@ -366,7 +390,9 @@ void WaitForAnyKeypress() {
 }
 int main()
 {
+    g_Config.ReadFile();
     int result = main_procedure();
+    g_Config.UpdateFile();
     if (g_attemptedToLaunchGameProcess) {
         printf(
             "\n\nIf the game process fails to start, you can try to delete the config file\n"
@@ -378,6 +404,8 @@ int main()
         );
     }
     printf("Press any key to quit...");
-    WaitForAnyKeypress();
+    if (!g_Config.automaticallyCloseConsoleWindow) {
+        WaitForAnyKeypress();
+    }
     return result;
 }
