@@ -83,8 +83,8 @@ static void MainThread(HMODULE thisDLLModule)
     auto basehook = Base::BasehookSettings_OnlyWNDPROC((HWND)ACU::GetWindowHandle(), WndProc_HackControls);
 #endif
 */
-    Base::Start(*basehook);
     MyVariousHacks::Start();
+    Base::Start(*basehook);
     while (!Base::Data::Detached)
     {
         Sleep(100);

@@ -15,7 +15,6 @@ LRESULT CALLBACK WndProc_HackControls(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
         const bool isKeyJustPressed = !isPreviouslyPressed;
         if (isKeyJustPressed)
         {
-            LOG_DEBUG("Just pressed: %ld\n", keyCode);
             switch (keyCode)
             {
             case Base::Data::Keys::ToggleMenu:

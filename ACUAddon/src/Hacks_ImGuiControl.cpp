@@ -118,7 +118,6 @@ public:
     }
     void ToggleDefaultHacks()
     {
-        LOG_DEBUG("ToggleDefaultHacks()\n");
         if (!enteringWindows.IsActive())
         {
             enteringWindows.Activate();

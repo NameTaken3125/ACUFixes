@@ -6,8 +6,6 @@ SYSTEM_INFO& GetCachedSystemInfo()
     static SYSTEM_INFO sysinfo = []() {SYSTEM_INFO sysinfo; GetSystemInfo(&sysinfo); return sysinfo; }();
     return sysinfo;
 }
-//#define dprintf(...) g_memoryQueryLog.Append(string_printf(__VA_ARGS__) + '\n');
-// warning: logging to global buffer like above is unsafe with std::async.
 #define dprintf(...)
 // From `<Cheat Engine source>/Cheat Engine/memoryquery.pas`, Windows version.
 void* FindFreeBlockForRegion(uintptr_t base, unsigned int size)

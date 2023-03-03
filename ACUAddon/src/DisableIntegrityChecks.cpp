@@ -32,6 +32,7 @@ bool TerminateThreadIfRunsTheMainIntegrityCheck(ThreadID_t thread_id)
     return result;
 }
 
+// Thanks to Sunbeam at https://fearlessrevolution.com/viewtopic.php?t=9605#post-92942.
 void DisableMainIntegrityCheck()
 {
     auto thisProcessID = GetCurrentProcessId();

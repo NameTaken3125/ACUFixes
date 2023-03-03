@@ -68,7 +68,7 @@ void DrawSuccessfulInjectionIndicatorOverlay()
 
     if (ImGui::Begin("Always enabled overlay", nullptr, window_flags))
     {
-        ImGui::Text("Overlay on. Press INSERT to open ImGui menu.");
+        ImGui::Text("Overlay on. Press INSERT to open ImGui menu, press END to unload the mod.");
     }
     ImGui::End();
 }

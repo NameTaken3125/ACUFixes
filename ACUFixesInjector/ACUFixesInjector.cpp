@@ -160,10 +160,6 @@ void ToFile(const JSON& obj, const fs::path& path)
     ofs << obj.dump();
 }
 }
-namespace ACUInjectorConfig
-{
-std::string gameExeFilepath;
-}
 #include <shobjidl.h>
 /*
 Thanks
@@ -231,7 +227,6 @@ public:
     {
         Do(executableName);
         return std::move(m_foundFilepath);
-
     }
 private:
     void Do(const fs::path& executableName)
