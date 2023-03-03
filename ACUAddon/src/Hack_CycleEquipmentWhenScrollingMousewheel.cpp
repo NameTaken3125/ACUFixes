@@ -170,12 +170,6 @@ EquipmentType GetCurrentEquipmentSelection_Bombs()
     }
     return GetCurrentEquipmentType_Bombs();
 }
-int ProgressIndexInCycle(int currentIdx, int stepHowManyFromCurrent, size_t cycleSize)
-{
-    int result = (currentIdx + stepHowManyFromCurrent) % (int)cycleSize;
-    if (result < 0) { result += (int)cycleSize; }
-    return result;
-}
 #include "ACU/HUDQuickSelectComponent.h"
 #include "ACU/QuickSelectButtonComponent.h"
 #include "ACU/SharedPtr.h"
@@ -217,6 +211,28 @@ static int GetCurrentEquipmentSlot_Bombs()
     std::optional<int> correspondingBombSlot = GetEquipmentTypeIndexInCycle_Bombs(currentBombType);
     return correspondingBombSlot ? *correspondingBombSlot : 0;
 }
+
+
+struct MethodOfCyclingBombs_Wraparound
+{
+    static int ProgressIndexInCycle(int currentIdx, int stepHowManyFromCurrent, size_t cycleSize)
+    {
+        int result = (currentIdx + stepHowManyFromCurrent) % (int)cycleSize;
+        if (result < 0) { result += (int)cycleSize; }
+        return result;
+    }
+};
+struct MethodOfCyclingBombs_ClippedQueue
+{
+    static int ProgressIndexInCycle(int currentIdx, int stepHowManyFromCurrent, size_t cycleSize)
+    {
+        int result = (currentIdx + stepHowManyFromCurrent);
+        if (result < 0) { return 0; }
+        if (result >= cycleSize) { return (int)(cycleSize - 1); }
+        return result;
+    }
+};
+using ChosenMethodOfCyclingBombs = MethodOfCyclingBombs_ClippedQueue;
 // If the weapon selector is closed or if the currently highlighted item isn't a bomb,
 // select the currently equipped bomb type.
 // Otherwise, cycle bombs forward or backward.
@@ -232,7 +248,7 @@ static void InjectEquipmentSelection_CycleBombs(KeyStates& keyStatesThisFrame, b
     else
     {
         const int howManySlotsFromCurrent = isDirectionForward ? 1 : -1;
-        slotToInject = ProgressIndexInCycle(*currentHighlightedSlot, howManySlotsFromCurrent, g_BombTypes.size());
+        slotToInject = ChosenMethodOfCyclingBombs::ProgressIndexInCycle(*currentHighlightedSlot, howManySlotsFromCurrent, g_BombTypes.size());
     }
     ActionKeyCode actionToInject = GetActionKeyCodeForEquipmentType(g_BombTypes[slotToInject]).value();
     uint8& isNewSlotMarkedAsPressed = ((std::array<uint8, (size_t)ActionKeyCode::ACTION_SET_SIZE>&)keyStatesThisFrame)[(size_t)actionToInject];
