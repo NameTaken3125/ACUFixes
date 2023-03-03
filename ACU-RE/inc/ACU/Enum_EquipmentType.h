@@ -1,6 +1,6 @@
 #pragma once
 
-enum EquipmentType : uint32
+enum class EquipmentType : uint32
 {
     unk_1 = 0x1,
     Pistol = 0x2,

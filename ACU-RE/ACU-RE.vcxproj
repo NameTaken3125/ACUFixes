@@ -189,6 +189,8 @@
     <ClInclude Include="inc\ACU\HasSwapchain.h" />
     <ClInclude Include="inc\ACU\HUDLetterReaderModule.h" />
     <ClInclude Include="inc\ACU\HUDModule.h" />
+    <ClInclude Include="inc\ACU\HUDQuickSelectComponent.h" />
+    <ClInclude Include="inc\ACU\HUDQuickSelectModule.h" />
     <ClInclude Include="inc\ACU\Human.h" />
     <ClInclude Include="inc\ACU\InputContainer.h" />
     <ClInclude Include="inc\ACU\KeymapScancodes.h" />
@@ -197,6 +199,7 @@
     <ClInclude Include="inc\ACU\Parkour_PotentialWindowEntry.h" />
     <ClInclude Include="inc\ACU\Parkour_WhileOnWallSystem.h" />
     <ClInclude Include="inc\ACU\RenderValuesHolder.h" />
+    <ClInclude Include="inc\ACU\SharedPtr.h" />
     <ClInclude Include="inc\ACU\SmallArray.h" />
     <ClInclude Include="inc\ACU\Statechart.h" />
     <ClInclude Include="inc\ACU\ThrowTargetPrecision.h" />

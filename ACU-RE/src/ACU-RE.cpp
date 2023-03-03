@@ -10,6 +10,7 @@
 #include "ACU/ACUPlayerCameraComponent.h"
 #include "ACU/BaseEntity.h"
 #include "ACU/Entity.h"
+#include "ACU/SharedPtr.h"
 #include "ACU/Component.h"
 #include "ACU/World.h"
 #include "ACU/WorldComponent.h"
@@ -46,3 +47,6 @@
 #include "ACU/UIWorldComponent.h"
 #include "ACU/HUDModule.h"
 #include "ACU/HUDLetterReaderModule.h"
+#include "ACU/HUDQuickSelectModule.h"
+
+#include "ACU/HUDQuickSelectComponent.h"

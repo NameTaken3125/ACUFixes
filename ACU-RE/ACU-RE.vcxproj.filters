@@ -44,6 +44,9 @@
     <ClInclude Include="inc\ACU\CSrvPlayerWeaponSwitch.h" />
     <ClInclude Include="inc\ACU\Enum_ActionKeyCode.h" />
     <ClInclude Include="inc\ACU\ActionKeyStates.h" />
+    <ClInclude Include="inc\ACU\HUDQuickSelectComponent.h" />
+    <ClInclude Include="inc\ACU\HUDQuickSelectModule.h" />
+    <ClInclude Include="inc\ACU\SharedPtr.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />
