@@ -20,7 +20,7 @@ void InjectNumpad46WhenScrollingMouseWheel_old(AllRegisters* params)
 #include "ACU/World.h"
 #include "ACU/UIWorldComponent.h"
 #include "ACU/HUDLetterReaderModule.h"
-
+#include "ACU/HUDQuickSelectModule.h"
 HUDLetterReaderModule* FindHUDLetterReaderModule(UIWorldComponent& uiWorldCpnt)
 {
     using vtbl_t = uint64;
@@ -28,10 +28,25 @@ HUDLetterReaderModule* FindHUDLetterReaderModule(UIWorldComponent& uiWorldCpnt)
     for (HUDModule* hudModule : uiWorldCpnt.hudModules)
     {
         vtbl_t hudModuleVtbl = *(vtbl_t*)hudModule;
-        bool isLetterReader = hudModuleVtbl == 0x142ED07C0;
+        bool isLetterReader = hudModuleVtbl == hudLetterReaderModuleVTBL;
         if (isLetterReader)
         {
             return static_cast<HUDLetterReaderModule*>(hudModule);
+        }
+    }
+    return nullptr;
+}
+HUDQuickSelectModule* FindHUDQuickSelectModule(UIWorldComponent& uiWorldCpnt)
+{
+    using vtbl_t = uint64;
+    constexpr vtbl_t hudQuickSelectModuleVTBL = 0x142ED8B70;
+    for (HUDModule* hudModule : uiWorldCpnt.hudModules)
+    {
+        vtbl_t hudModuleVtbl = *(vtbl_t*)hudModule;
+        bool isLetterReader = hudModuleVtbl == hudQuickSelectModuleVTBL;
+        if (isLetterReader)
+        {
+            return static_cast<HUDQuickSelectModule*>(hudModule);
         }
     }
     return nullptr;
@@ -85,26 +100,53 @@ constexpr inline std::array<EquipmentType, 6> g_BombTypes = {
     EquipmentType::MoneyPouch,
     EquipmentType::Slot9Booster,
 };
+constexpr std::optional<int> GetEquipmentTypeIndexInCycle_Bombs_opt(EquipmentType equipmentType)
+{
+    switch (equipmentType)
+    {
+    case EquipmentType::SmokeBomb:
+        return 0;
+        break;
+    case EquipmentType::StunBomb:
+        return 1;
+        break;
+    case EquipmentType::CherryBomb:
+        return 2;
+        break;
+    case EquipmentType::PoisonBomb:
+        return 3;
+        break;
+    case EquipmentType::MoneyPouch:
+        return 4;
+        break;
+    case EquipmentType::Slot9Booster:
+        return 5;
+        break;
+    default:
+        break;
+    }
+    return {};
+}
 constexpr int GetEquipmentTypeIndexInCycle_Bombs(EquipmentType equipmentType)
 {
     switch (equipmentType)
     {
-    case SmokeBomb:
+    case EquipmentType::SmokeBomb:
         return 0;
         break;
-    case StunBomb:
+    case EquipmentType::StunBomb:
         return 1;
         break;
-    case CherryBomb:
+    case EquipmentType::CherryBomb:
         return 2;
         break;
-    case PoisonBomb:
+    case EquipmentType::PoisonBomb:
         return 3;
         break;
-    case MoneyPouch:
+    case EquipmentType::MoneyPouch:
         return 4;
         break;
-    case Slot9Booster:
+    case EquipmentType::Slot9Booster:
         return 5;
         break;
     default:
@@ -116,12 +158,12 @@ constexpr bool IsBomb(EquipmentType equipType)
 {
     switch (equipType)
     {
-    case SmokeBomb:
-    case StunBomb:
-    case CherryBomb:
-    case PoisonBomb:
-    case MoneyPouch:
-    case Slot9Booster:
+    case EquipmentType::SmokeBomb:
+    case EquipmentType::StunBomb:
+    case EquipmentType::CherryBomb:
+    case EquipmentType::PoisonBomb:
+    case EquipmentType::MoneyPouch:
+    case EquipmentType::Slot9Booster:
         return true;
     default:
         break;
@@ -194,9 +236,67 @@ void InjectEquipmentSelection_PreviousFromCurrent(KeyStates& keyStatesThisFrame)
 {
     InjectEquipmentSelection_ProgressFromCurrent(keyStatesThisFrame, -1);
 }
-void InjectEquipmentSelection_NextFromCurrent(KeyStates& keyStatesThisFrame)
+void InjectEquipmentSelection_NextFromCurrent_old(KeyStates& keyStatesThisFrame)
 {
     InjectEquipmentSelection_ProgressFromCurrent(keyStatesThisFrame, 1);
+}
+#include "ACU/HUDQuickSelectComponent.h"
+#include "ACU/QuickSelectButtonComponent.h"
+#include "ACU/SharedPtr.h"
+#include "ACU/Entity.h"
+HUDQuickSelectComponent* FindHUDQuickSelectComponent(HUDQuickSelectModule& qsModule)
+{
+    if (qsModule.p_84.size <= 0) { return nullptr; }
+    Entity* qsCpntHolder = qsModule.p_84[0]->GetPtr();
+    if (!qsCpntHolder) { return nullptr; }
+    constexpr uint64 qsCpntVTBL = 0x142ED86D0;
+    Component* qsCpnt = qsCpntHolder->FindComponentByVTBL(qsCpntVTBL);
+    if (!qsCpnt) { return nullptr; }
+    return static_cast<HUDQuickSelectComponent*>(qsCpnt);
+}
+// Return the slot index for _currently_highlighted_ Bomb-type equipment.
+// Checks if Weapon Selector is opened, and whether the last selected item is of
+// Bomb type.
+std::optional<int> GetCurrentHighlightedSlot_Bombs()
+{
+    World* world = World::GetSingleton();
+    if (!world) { return {}; }
+    HUDQuickSelectModule* hudQuickSelect = FindHUDQuickSelectModule(*world->uiWorldComponent);
+    if (!hudQuickSelect) { return {}; }
+
+    HUDQuickSelectComponent* qsCpnt = FindHUDQuickSelectComponent(*hudQuickSelect);
+    if (!qsCpnt) { return {}; }
+    if (!qsCpnt->isVisible_d3) { return {}; }
+    //QuickSelectButtonComponent* lastHighlightedQSButton = qsCpnt->quickSelectButtonComponent_188_pendingSelection;
+    //if (!lastHighlightedQSButton) { return {}; }
+    //EquipmentType lastHighlightedEquipment = lastHighlightedQSButton->equipmentType;
+
+    EquipmentType lastHighlightedEquipment = g_LastQuickSelectedEquipment;
+    std::optional<int> bombSlot = GetEquipmentTypeIndexInCycle_Bombs_opt(lastHighlightedEquipment);
+    return bombSlot;
+}
+int GetCurrentEquipmentSlot_Bombs()
+{
+    EquipmentType currentBombType = GetCurrentEquipmentSelection_Bombs();
+    std::optional<int> correspondingBombSlot = GetEquipmentTypeIndexInCycle_Bombs_opt(currentBombType);
+    return correspondingBombSlot ? *correspondingBombSlot : 0;
+}
+void InjectEquipmentSelection_NextFromCurrent(KeyStates& keyStatesThisFrame)
+{
+    int slotToInject;
+    std::optional<int> currentHighlightedSlot = GetCurrentHighlightedSlot_Bombs();
+    if (!currentHighlightedSlot)
+    {
+        int currentEquippedSlot = GetCurrentEquipmentSlot_Bombs();
+        slotToInject = currentEquippedSlot;
+    }
+    else
+    {
+        slotToInject = ProgressIndexInCycle(*currentHighlightedSlot, 1, g_BombTypes.size());
+    }
+    ActionKeyCode actionToInject = GetActionKeyCodeForEquipmentType(g_BombTypes[slotToInject]).value();
+    uint8& isNewSlotMarkedAsPressed = ((std::array<uint8, (size_t)ActionKeyCode::ACTION_SET_SIZE>&)keyStatesThisFrame)[(size_t)actionToInject];
+    isNewSlotMarkedAsPressed = true;
 }
 void CycleEquipmentByScrollingMousewheel_BombsOnly(AllRegisters* params)
 {
