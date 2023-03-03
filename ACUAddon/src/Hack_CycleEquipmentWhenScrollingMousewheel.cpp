@@ -3,20 +3,6 @@
 #include "Hack_CycleEquipmentWhenScrollingMousewheel.h"
 
 #include "ACU/InputContainer.h"
-void InjectNumpad46WhenScrollingMouseWheel_old(AllRegisters* params)
-{
-    InputContainerBig* inpCont = (InputContainerBig*)params->rbx_;
-    uint8& isMarkedAsPressed_CycleLeftHand = inpCont->keyStates_thisFrame.isPressed_numpad4cycleLeftHand;
-    uint8& isMarkedAsPressed_CycleBombs = inpCont->keyStates_thisFrame.isPressed_numpad6cycleBombs;
-    if (!isMarkedAsPressed_CycleLeftHand)
-    {
-        isMarkedAsPressed_CycleLeftHand = inpCont->IsMouseWheelScrollingUp();
-    }
-    if (!isMarkedAsPressed_CycleBombs)
-    {
-        isMarkedAsPressed_CycleBombs = inpCont->IsMouseWheelScrollingDown();
-    }
-}
 #include "ACU/World.h"
 #include "ACU/UIWorldComponent.h"
 #include "ACU/HUDLetterReaderModule.h"
@@ -100,7 +86,7 @@ constexpr inline std::array<EquipmentType, 6> g_BombTypes = {
     EquipmentType::MoneyPouch,
     EquipmentType::Slot9Booster,
 };
-constexpr std::optional<int> GetEquipmentTypeIndexInCycle_Bombs_opt(EquipmentType equipmentType)
+constexpr std::optional<int> GetEquipmentTypeIndexInCycle_Bombs(EquipmentType equipmentType)
 {
     switch (equipmentType)
     {
@@ -126,33 +112,6 @@ constexpr std::optional<int> GetEquipmentTypeIndexInCycle_Bombs_opt(EquipmentTyp
         break;
     }
     return {};
-}
-constexpr int GetEquipmentTypeIndexInCycle_Bombs(EquipmentType equipmentType)
-{
-    switch (equipmentType)
-    {
-    case EquipmentType::SmokeBomb:
-        return 0;
-        break;
-    case EquipmentType::StunBomb:
-        return 1;
-        break;
-    case EquipmentType::CherryBomb:
-        return 2;
-        break;
-    case EquipmentType::PoisonBomb:
-        return 3;
-        break;
-    case EquipmentType::MoneyPouch:
-        return 4;
-        break;
-    case EquipmentType::Slot9Booster:
-        return 5;
-        break;
-    default:
-        break;
-    }
-    return 0;
 }
 constexpr bool IsBomb(EquipmentType equipType)
 {
@@ -217,29 +176,6 @@ int ProgressIndexInCycle(int currentIdx, int stepHowManyFromCurrent, size_t cycl
     if (result < 0) { result += (int)cycleSize; }
     return result;
 }
-EquipmentType ProgressEquipmentCycle_Bombs(int stepHowManyFromCurrentEquipment)
-{
-    EquipmentType currentBomb = GetCurrentEquipmentSelection_Bombs();
-    int currentBombSlotIdx = GetEquipmentTypeIndexInCycle_Bombs(currentBomb);
-    int newBombSlotIdx = ProgressIndexInCycle(currentBombSlotIdx, stepHowManyFromCurrentEquipment, g_BombTypes.size());
-    return g_BombTypes[newBombSlotIdx];
-}
-void InjectEquipmentSelection_ProgressFromCurrent(KeyStates& keyStatesThisFrame, int stepHowManyFromCurrentEquipment)
-{
-    EquipmentType progressedEquipmentCycle = ProgressEquipmentCycle_Bombs(stepHowManyFromCurrentEquipment);
-    std::optional<ActionKeyCode> progressedEquipmentSlot = GetActionKeyCodeForEquipmentType(progressedEquipmentCycle);
-    if (!progressedEquipmentSlot) { return; }
-    uint8& isNewSlotMarkedAsPressed = ((std::array<uint8, (size_t)ActionKeyCode::ACTION_SET_SIZE>&)keyStatesThisFrame)[(size_t)*progressedEquipmentSlot];
-    isNewSlotMarkedAsPressed = true;
-}
-void InjectEquipmentSelection_PreviousFromCurrent(KeyStates& keyStatesThisFrame)
-{
-    InjectEquipmentSelection_ProgressFromCurrent(keyStatesThisFrame, -1);
-}
-void InjectEquipmentSelection_NextFromCurrent_old(KeyStates& keyStatesThisFrame)
-{
-    InjectEquipmentSelection_ProgressFromCurrent(keyStatesThisFrame, 1);
-}
 #include "ACU/HUDQuickSelectComponent.h"
 #include "ACU/QuickSelectButtonComponent.h"
 #include "ACU/SharedPtr.h"
@@ -257,7 +193,7 @@ HUDQuickSelectComponent* FindHUDQuickSelectComponent(HUDQuickSelectModule& qsMod
 // Return the slot index for _currently_highlighted_ Bomb-type equipment.
 // Checks if Weapon Selector is opened, and whether the last selected item is of
 // Bomb type.
-std::optional<int> GetCurrentHighlightedSlot_Bombs()
+static std::optional<int> GetCurrentHighlightedSlot_Bombs()
 {
     World* world = World::GetSingleton();
     if (!world) { return {}; }
@@ -272,16 +208,19 @@ std::optional<int> GetCurrentHighlightedSlot_Bombs()
     //EquipmentType lastHighlightedEquipment = lastHighlightedQSButton->equipmentType;
 
     EquipmentType lastHighlightedEquipment = g_LastQuickSelectedEquipment;
-    std::optional<int> bombSlot = GetEquipmentTypeIndexInCycle_Bombs_opt(lastHighlightedEquipment);
+    std::optional<int> bombSlot = GetEquipmentTypeIndexInCycle_Bombs(lastHighlightedEquipment);
     return bombSlot;
 }
-int GetCurrentEquipmentSlot_Bombs()
+static int GetCurrentEquipmentSlot_Bombs()
 {
     EquipmentType currentBombType = GetCurrentEquipmentSelection_Bombs();
-    std::optional<int> correspondingBombSlot = GetEquipmentTypeIndexInCycle_Bombs_opt(currentBombType);
+    std::optional<int> correspondingBombSlot = GetEquipmentTypeIndexInCycle_Bombs(currentBombType);
     return correspondingBombSlot ? *correspondingBombSlot : 0;
 }
-void InjectEquipmentSelection_NextFromCurrent(KeyStates& keyStatesThisFrame)
+// If the weapon selector is closed or if the currently highlighted item isn't a bomb,
+// select the currently equipped bomb type.
+// Otherwise, cycle bombs forward or backward.
+static void InjectEquipmentSelection_CycleBombs(KeyStates& keyStatesThisFrame, bool isDirectionForward)
 {
     int slotToInject;
     std::optional<int> currentHighlightedSlot = GetCurrentHighlightedSlot_Bombs();
@@ -292,11 +231,20 @@ void InjectEquipmentSelection_NextFromCurrent(KeyStates& keyStatesThisFrame)
     }
     else
     {
-        slotToInject = ProgressIndexInCycle(*currentHighlightedSlot, 1, g_BombTypes.size());
+        const int howManySlotsFromCurrent = isDirectionForward ? 1 : -1;
+        slotToInject = ProgressIndexInCycle(*currentHighlightedSlot, howManySlotsFromCurrent, g_BombTypes.size());
     }
     ActionKeyCode actionToInject = GetActionKeyCodeForEquipmentType(g_BombTypes[slotToInject]).value();
     uint8& isNewSlotMarkedAsPressed = ((std::array<uint8, (size_t)ActionKeyCode::ACTION_SET_SIZE>&)keyStatesThisFrame)[(size_t)actionToInject];
     isNewSlotMarkedAsPressed = true;
+}
+static void InjectEquipmentSelection_CycleBombsForward(KeyStates& keyStatesThisFrame)
+{
+    InjectEquipmentSelection_CycleBombs(keyStatesThisFrame, true);
+}
+static void InjectEquipmentSelection_CycleBombsBack(KeyStates& keyStatesThisFrame)
+{
+    InjectEquipmentSelection_CycleBombs(keyStatesThisFrame, false);
 }
 void CycleEquipmentByScrollingMousewheel_BombsOnly(AllRegisters* params)
 {
@@ -312,9 +260,9 @@ void CycleEquipmentByScrollingMousewheel_BombsOnly(AllRegisters* params)
     const bool isMWScrollDown = inpCont->IsMouseWheelScrollingDown();
 
     if (isMWScrollUp)
-        InjectEquipmentSelection_PreviousFromCurrent(inpCont->keyStates_thisFrame);
+        InjectEquipmentSelection_CycleBombsBack(inpCont->keyStates_thisFrame);
     if (isMWScrollDown)
-        InjectEquipmentSelection_NextFromCurrent(inpCont->keyStates_thisFrame);
+        InjectEquipmentSelection_CycleBombsForward(inpCont->keyStates_thisFrame);
 }
 void WhenAttemptedToQuickSelectEquipment_SaveSelection(AllRegisters* params)
 {
