@@ -23,8 +23,8 @@ LRESULT CALLBACK WndProc_HackControls(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
                 {
                     Base::Data::ShowMenu = !Base::Data::ShowMenu;
                     ImGui::GetIO().MouseDrawCursor = Base::Data::ShowMenu;
-                    break;
                 }
+                break;
             }
             case Base::Data::Keys::DetachDll:
                 Base::Detach();

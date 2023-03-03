@@ -74,15 +74,8 @@ static void MainThread(HMODULE thisDLLModule)
     {
         basehook = std::make_unique<Base::BasehookSettings_OnlyWNDPROC>((HWND)ACU::GetWindowHandle(), WndProc_HackControls);
     }
-/*
-#if PRESENT_HOOK_METHOD == PRESENT_HOOK_METHOD_OUTER
-    auto basehook = PresentHookOuter::BasehookSettings_PresentHookOuter();
-#elif PRESENT_HOOK_METHOD == PRESENT_HOOK_METHOD_INNER
-    auto basehook = Base::BasehookSettings_PresentHookInner(false, WndProc_HackControls);
-#elif PRESENT_HOOK_METHOD == PRESENT_HOOK_METHOD_ONLYWNDPROC
-    auto basehook = Base::BasehookSettings_OnlyWNDPROC((HWND)ACU::GetWindowHandle(), WndProc_HackControls);
-#endif
-*/
+    // I've put MyVariousHacks::Start() _before_ Base::Start() because the opposite order
+    // for some reason produces a small but noticeable stutter on injection.
     MyVariousHacks::Start();
     Base::Start(*basehook);
     while (!Base::Data::Detached)

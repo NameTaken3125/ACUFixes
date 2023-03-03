@@ -25,22 +25,17 @@ struct ID3D11RenderTargetView;
 typedef HRESULT(PRESENT_CALL* Present_t)(IDXGISwapChain*, UINT, UINT);
 typedef LRESULT(CALLBACK*  WndProc_t) (HWND, UINT, WPARAM, LPARAM);
 
-DWORD WINAPI MainThread(LPVOID lpThreadParameter);
-DWORD WINAPI ExitThread(LPVOID lpThreadParameter);
-
 namespace Base
 {
 	class Settings;
 	void Start(Base::Settings& settings);
 	bool Detach();
 
-	bool OldInit(bool usePresentInnerHook);
-	bool Shutdown();
-
     // To be implemented by user.
     void ImGuiLayer_WhenMenuIsOpen();
     void ImGuiLayer_EvenWhenMenuIsClosed();
     extern Settings* g_Settings;
+
     // Information like Swapchain address, original WndProc address
     // helps to transition to outer hooks.
     void ImGuiDrawBasehookDebug();

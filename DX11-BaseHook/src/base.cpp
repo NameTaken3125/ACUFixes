@@ -33,24 +33,12 @@ void Base::Start(Base::Settings& settings)
 {
     Base::g_Settings = &settings;
     settings.OnBeforeActivate();
-    Base::OldInit(settings.m_ShouldUsePresentInnerHook);
-}
-
-bool Base::OldInit(bool usePresentInnerHook)
-{
-	Hooks::Init(usePresentInnerHook);
-	return true;
-}
-
-bool Base::Shutdown()
-{
-	Hooks::Shutdown();
-	return true;
+    Base::Hooks::Init(settings.m_ShouldUsePresentInnerHook);
 }
 
 bool Base::Detach()
 {
-	Base::Shutdown();
+	Base::Hooks::Shutdown();
 	Base::g_Settings->OnBeforeDetach();
 	Base::Data::Detached = true;
 	//CreateThread(nullptr, 0, ExitThread, Data::hModule, 0, nullptr);
