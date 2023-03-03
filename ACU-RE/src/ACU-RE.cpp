@@ -49,4 +49,6 @@
 #include "ACU/HUDLetterReaderModule.h"
 #include "ACU/HUDQuickSelectModule.h"
 
+#include "ACU/DataBindingComponent.h"
 #include "ACU/HUDQuickSelectComponent.h"
+#include "ACU/QuickSelectButtonComponent.h"

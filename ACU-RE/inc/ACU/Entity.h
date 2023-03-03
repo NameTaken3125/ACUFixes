@@ -25,11 +25,15 @@ assert_sizeof(Entity_CpntIndices_15F, 5);
 class Entity : public BaseEntity
 {
 public:
+	// @members
     SmallArray<Component*> cpnts_mb; //0x0078
     char pad_0084[211]; //0x0080
     Entity_CpntIndices_157 cpntIndices_157; //0x0157
     Entity_CpntIndices_15F cpntIndices; //0x015F
     char pad_0164[12]; //0x0164
+
+	// @helper_functions
+	Component* FindComponentByVTBL(uint64 vtbl);
 }; //Size: 0x0170
 assert_offsetof(Entity, cpntIndices_157.atomAnimCpnt, 0x158);
 assert_sizeof(Entity, 0x0170);

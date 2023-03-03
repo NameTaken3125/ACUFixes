@@ -47,6 +47,8 @@
     <ClInclude Include="inc\ACU\HUDQuickSelectComponent.h" />
     <ClInclude Include="inc\ACU\HUDQuickSelectModule.h" />
     <ClInclude Include="inc\ACU\SharedPtr.h" />
+    <ClInclude Include="inc\ACU\QuickSelectButtonComponent.h" />
+    <ClInclude Include="inc\ACU\DataBindingComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />
@@ -56,5 +58,6 @@
     <ClCompile Include="src\BhvAssassin.cpp" />
     <ClCompile Include="src\ACUGetSingletons.cpp" />
     <ClCompile Include="src\BallisticProjectileAimingControlsSettings.cpp" />
+    <ClCompile Include="src\Entity.cpp" />
   </ItemGroup>
 </Project>

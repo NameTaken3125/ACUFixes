@@ -178,6 +178,7 @@
     <ClInclude Include="inc\ACU\Component.h" />
     <ClInclude Include="inc\ACU\CSrvPlayerWeaponSwitch.h" />
     <ClInclude Include="inc\ACU\CurvePoints.h" />
+    <ClInclude Include="inc\ACU\DataBindingComponent.h" />
     <ClInclude Include="inc\ACU\Entity.h" />
     <ClInclude Include="inc\ACU\Enum_ActionKeyCode.h" />
     <ClInclude Include="inc\ACU\Enum_EquipmentType.h" />
@@ -198,6 +199,7 @@
     <ClInclude Include="inc\ACU\MandatoryUniverseComponent.h" />
     <ClInclude Include="inc\ACU\Parkour_PotentialWindowEntry.h" />
     <ClInclude Include="inc\ACU\Parkour_WhileOnWallSystem.h" />
+    <ClInclude Include="inc\ACU\QuickSelectButtonComponent.h" />
     <ClInclude Include="inc\ACU\RenderValuesHolder.h" />
     <ClInclude Include="inc\ACU\SharedPtr.h" />
     <ClInclude Include="inc\ACU\SmallArray.h" />
@@ -216,6 +218,7 @@
     <ClCompile Include="src\ACUPlayerCameraComponent.cpp" />
     <ClCompile Include="src\BallisticProjectileAimingControlsSettings.cpp" />
     <ClCompile Include="src\BhvAssassin.cpp" />
+    <ClCompile Include="src\Entity.cpp" />
     <ClCompile Include="src\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
