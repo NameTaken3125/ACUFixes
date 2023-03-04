@@ -114,7 +114,7 @@ void ImGui3D::WhatIsActuallyDrawnForFrame()
 
 std::filesystem::path& GetThisDLLAbsolutePath();
 #include "MainConfig.h"
-static bool g_showDevExtraOptions = false;
+bool g_showDevExtraOptions = false;
 void Base::ImGuiLayer_WhenMenuIsOpen()
 {
     static bool enableDemoWindow = false;

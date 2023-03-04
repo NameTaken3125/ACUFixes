@@ -395,16 +395,24 @@ int main()
     g_Config.UpdateFile();
     if (g_attemptedToLaunchGameProcess) {
         printf(
-            "\n\nIf the game process fails to start, you can try to delete the config file\n"
-            "(%s)\n"
+            "\n\nIf the game process fails to start, you can try to delete the config file:\n"
+            "    %s\n"
             "in this executable's directory. It will be regenerated\n"
             "automatically. If that doesn't help, try to start this program\n"
             "with the game already running.\n"
             , g_configFileName
         );
     }
-    printf("Press any key to quit...");
+    printf("[+] Finished.\n");
     if (!g_Config.automaticallyCloseConsoleWindow) {
+        printf(
+            "Press any key to quit...\n"
+            "  By the way, you can close the console window automatically by setting\n"
+            "      \"automaticallyCloseConsoleWindow\" : true\n"
+            "  in the config file:\n"
+            "      %s\n"
+            , g_configFileName
+        );
         WaitForAnyKeypress();
     }
     return result;

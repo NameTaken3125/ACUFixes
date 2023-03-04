@@ -92,6 +92,7 @@ struct PlayWithBombAimCameraTracker2 : AutoAssemblerCodeHolder_Base
 };
 
 
+extern bool g_showDevExtraOptions;
 #include "Hack_ModifyAimingFOV.h"
 #include "MyLog.h"
 class MyHacks
@@ -149,8 +150,11 @@ public:
         DrawCheckboxForHack(menacingWalkAndAutowalk, "Allow Autowalk and the Slow Menacing Walk");
         DrawCheckboxForHack(modifyConditionalFOVs, "Modify conditional FOVs");
         DrawCheckboxForHack(cycleEquipmentOnMouseWheel, "Cycle through equipment using mouse wheel");
-        DrawCheckboxForHack(fovGames, "Play with FOV");
-        DrawCheckboxForHack(bombAimExperiments2, "Bomb aim experiments2");
+        if (g_showDevExtraOptions)
+        {
+            DrawCheckboxForHack(fovGames, "Play with FOV");
+            DrawCheckboxForHack(bombAimExperiments2, "Bomb aim experiments2");
+        }
     }
 };
 std::optional<MyHacks> g_MyHacks;

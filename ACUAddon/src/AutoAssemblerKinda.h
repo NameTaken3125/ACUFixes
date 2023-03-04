@@ -529,12 +529,16 @@ public:
         m_CodeHolderInstantiation.m_ctx->Unwrite();
         m_IsActive = false;
     }
+    void Toggle(bool activate)
+    {
+        if (activate)
+            Activate();
+        else
+            Deactivate();
+    }
     void Toggle()
     {
-        if (m_IsActive)
-            Deactivate();
-        else
-            Activate();
+        Toggle(!m_IsActive);
     }
     bool IsActive() { return m_IsActive; }
     ~AutoAssembleWrapper()
