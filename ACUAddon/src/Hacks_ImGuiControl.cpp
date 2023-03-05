@@ -98,7 +98,12 @@ extern bool g_showDevExtraOptions;
 #include "MainConfig.h"
 #include "Serialization/Serialization.h"
 #include "Serialization/BooleanAdapter.h"
+#include "Serialization/EnumAdapter.h"
 #define TO_STRING(x) #x
+#include "Enum_BindableKeyCode_Keyboard.h"
+BindableKeyCode_Keyboard enterWindowsButton = BindableKeyCode_Keyboard::K_R;
+BindableKeyCode_Keyboard autowalkButton = BindableKeyCode_Keyboard::K_B;
+
 class MyHacks
 {
 public:
@@ -188,15 +193,37 @@ public:
     }
     void ReadConfig(JSON& cfg)
     {
-        { bool isActive = true; json::TryToReadVariableFromJSONObjectUsingAdapter(cfg, TO_STRING(enterWindowsByPressingAButton), BooleanAdapter(isActive)); enterWindowsByPressingAButton.Toggle(isActive); }
-        { bool isActive = true; json::TryToReadVariableFromJSONObjectUsingAdapter(cfg, TO_STRING(menacingWalkAndAutowalk), BooleanAdapter(isActive)); menacingWalkAndAutowalk.Toggle(isActive); }
+        {
+            JSON& section = cfg[TO_STRING(enterWindowsByPressingAButton)];
+            bool isActive = true;
+            READ_JSON_VARIABLE(section, isActive, BooleanAdapter);
+            READ_JSON_VARIABLE(section, enterWindowsButton, EnumAdapter);
+            enterWindowsByPressingAButton.Toggle(isActive);
+        }
+        {
+            JSON& section = cfg[TO_STRING(menacingWalkAndAutowalk)];
+            bool isActive = true;
+            READ_JSON_VARIABLE(section, isActive, BooleanAdapter);
+            READ_JSON_VARIABLE(section, autowalkButton, EnumAdapter);
+            menacingWalkAndAutowalk.Toggle(isActive);
+        }
         { bool isActive = true; json::TryToReadVariableFromJSONObjectUsingAdapter(cfg, TO_STRING(changeZoomLevelsWhenAimingBombs), BooleanAdapter(isActive)); changeZoomLevelsWhenAimingBombs.Toggle(isActive); }
         { bool isActive = true; json::TryToReadVariableFromJSONObjectUsingAdapter(cfg, TO_STRING(cycleEquipmentUsingMouseWheel), BooleanAdapter(isActive)); cycleEquipmentUsingMouseWheel.Toggle(isActive); }
     }
     void WriteConfig(JSON& cfg)
     {
-        { bool isActive = enterWindowsByPressingAButton.IsActive(); json::WriteVariableAsJSONObjectMemberUsingAdapter(cfg, TO_STRING(enterWindowsByPressingAButton), BooleanAdapter(isActive)); }
-        { bool isActive = menacingWalkAndAutowalk.IsActive(); json::WriteVariableAsJSONObjectMemberUsingAdapter(cfg, TO_STRING(menacingWalkAndAutowalk), BooleanAdapter(isActive)); }
+        {
+            JSON& section = cfg[TO_STRING(enterWindowsByPressingAButton)];
+            bool isActive = enterWindowsByPressingAButton.IsActive();
+            WRITE_JSON_VARIABLE(section, isActive, BooleanAdapter);
+            WRITE_JSON_VARIABLE(section, enterWindowsButton, EnumAdapter);
+        }
+        {
+            JSON& section = cfg[TO_STRING(menacingWalkAndAutowalk)];
+            bool isActive = menacingWalkAndAutowalk.IsActive();
+            WRITE_JSON_VARIABLE(section, isActive, BooleanAdapter);
+            WRITE_JSON_VARIABLE(section, autowalkButton, EnumAdapter);
+        }
         { bool isActive = changeZoomLevelsWhenAimingBombs.IsActive(); json::WriteVariableAsJSONObjectMemberUsingAdapter(cfg, TO_STRING(changeZoomLevelsWhenAimingBombs), BooleanAdapter(isActive)); }
         { bool isActive = cycleEquipmentUsingMouseWheel.IsActive(); json::WriteVariableAsJSONObjectMemberUsingAdapter(cfg, TO_STRING(cycleEquipmentUsingMouseWheel), BooleanAdapter(isActive)); }
     }

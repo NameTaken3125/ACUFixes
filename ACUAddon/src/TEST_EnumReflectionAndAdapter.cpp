@@ -32,8 +32,6 @@ void f()
     constexpr SomeEnum val2 = enum_reflection<SomeEnum>::GetValue("K_2");
     constexpr SomeEnum val3_invalidFromString = enum_reflection<SomeEnum>::GetValue("K_5555");
 }
-template<typename EnumType>
-struct enum_reflection;
 
 #include "Serialization/Serialization.h"
 #include "Serialization/EnumAdapter.h"

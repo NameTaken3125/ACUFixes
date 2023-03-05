@@ -1,5 +1,9 @@
 #pragma once
 
+
+template<typename EnumType>
+struct enum_reflection;
+
 template<typename EnumType>
 class EnumAdapter_template : public JSONAdapter<EnumType, JSON::Class::String>
 {
