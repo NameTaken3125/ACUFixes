@@ -98,12 +98,12 @@ extern bool g_showDevExtraOptions;
 class MyHacks
 {
 public:
-    AutoAssembleWrapper<EnterWindowWhenRisPressed> enteringWindows;
+    AutoAssembleWrapper<EnterWindowWhenRisPressed> enterWindowsByPressingAButton;
     AutoAssembleWrapper<AllowSlowMenacingWalkAndAutowalk> menacingWalkAndAutowalk;
     AutoAssembleWrapper<PlayWithFOV> fovGames;
     AutoAssembleWrapper<PlayWithBombAimCameraTracker2> bombAimExperiments2;
-    AutoAssembleWrapper<ModifyConditionalFOVs> modifyConditionalFOVs;
-    AutoAssembleWrapper<InputInjection_CycleEquipmentWhenScrollingMousewheel> cycleEquipmentOnMouseWheel;
+    AutoAssembleWrapper<ModifyConditionalFOVs> changeZoomLevelsWhenAimingBombs;
+    AutoAssembleWrapper<InputInjection_CycleEquipmentWhenScrollingMousewheel> cycleEquipmentUsingMouseWheel;
 
     template<class Hack>
     void DrawCheckboxForHack(Hack& hack, const std::string_view& text)
@@ -119,19 +119,19 @@ public:
     }
     void ToggleDefaultHacks()
     {
-        if (!enteringWindows.IsActive())
+        if (!enterWindowsByPressingAButton.IsActive())
         {
-            enteringWindows.Activate();
+            enterWindowsByPressingAButton.Activate();
             menacingWalkAndAutowalk.Activate();
-            modifyConditionalFOVs.Activate();
-            cycleEquipmentOnMouseWheel.Activate();
+            changeZoomLevelsWhenAimingBombs.Activate();
+            cycleEquipmentUsingMouseWheel.Activate();
         }
         else
         {
-            enteringWindows.Deactivate();
+            enterWindowsByPressingAButton.Deactivate();
             menacingWalkAndAutowalk.Deactivate();
-            modifyConditionalFOVs.Deactivate();
-            cycleEquipmentOnMouseWheel.Deactivate();
+            changeZoomLevelsWhenAimingBombs.Deactivate();
+            cycleEquipmentUsingMouseWheel.Deactivate();
         }
     }
     void OnKeyJustPressed(int keyCode)
@@ -146,10 +146,36 @@ public:
     }
     void DrawControls()
     {
-        DrawCheckboxForHack(enteringWindows, "Enter windows by pressing R");
+        DrawCheckboxForHack(enterWindowsByPressingAButton, "Enter nearby windows by pressing a button");
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::SetTooltip(
+                "When climbing on a wall, press the specified key (default 'R' like in Syndicate)\n"
+                "to enter a nearby window."
+            );
+        }
         DrawCheckboxForHack(menacingWalkAndAutowalk, "Allow Autowalk and the Slow Menacing Walk");
-        DrawCheckboxForHack(modifyConditionalFOVs, "Modify conditional FOVs");
-        DrawCheckboxForHack(cycleEquipmentOnMouseWheel, "Cycle through equipment using mouse wheel");
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::SetTooltip(
+                "CapsLock toggles the slow and menacing walk;\n"
+                "When walking in any direction, tap the Autowalk key. Then let go\n"
+                "of directional keys, and Arno will keep walking in the same direction.\n"
+                "Alternatively:\n"
+                " - Stand still\n"
+                " - Press and release Autowalk key\n"
+                " - Within the next second or so, start walking and let go."
+            );
+        }
+        DrawCheckboxForHack(changeZoomLevelsWhenAimingBombs, "Change Zoom Levels when aiming Bombs");
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::SetTooltip(
+                "FOV is increased when aiming bombs and the Guillotine Gun.\n"
+                "Press Right Mouse Button when aiming a bomb to zoom in."
+            );
+        }
+        DrawCheckboxForHack(cycleEquipmentUsingMouseWheel, "Cycle through equipment using mouse wheel");
         if (g_showDevExtraOptions)
         {
             DrawCheckboxForHack(fovGames, "Play with FOV");
