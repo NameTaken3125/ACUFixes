@@ -194,7 +194,7 @@ public:
         if (enterWindowsByPressingAButton.IsActive())
         {
             ImGuiCTX::Indent _indent;
-            bool isHotkeyChanged = ImGui::DrawEnumPicker("Enter Window Button", enterWindowsButton, 0);
+            bool isHotkeyChanged = ImGui::DrawEnumPicker("Enter Window Button", enterWindowsButton, ImGuiComboFlags_HeightLarge);
         }
         DrawCheckboxForHack(menacingWalkAndAutowalk, "Allow Autowalk and the Slow Menacing Walk");
         if (ImGui::IsItemHovered())
@@ -212,7 +212,7 @@ public:
         if (menacingWalkAndAutowalk.IsActive())
         {
             ImGuiCTX::Indent _indent;
-            bool isHotkeyChanged = ImGui::DrawEnumPicker("Autowalk button", autowalkButton, 0);
+            bool isHotkeyChanged = ImGui::DrawEnumPicker("Autowalk button", autowalkButton, ImGuiComboFlags_HeightLarge);
         }
         DrawCheckboxForHack(changeZoomLevelsWhenAimingBombs, "Change Zoom Levels when aiming Bombs");
         if (ImGui::IsItemHovered())
