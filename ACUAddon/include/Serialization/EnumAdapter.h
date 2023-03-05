@@ -15,7 +15,11 @@ public:
         {
             return false;
         }
-        this->source = enum_reflection<EnumType>::GetValue(obj.ToString());
+        EnumType parsedValue = enum_reflection<EnumType>::GetValue(obj.ToString());
+        if (parsedValue == EnumType::INVALID_FROM_STRING) {
+            return false;
+        }
+        this->source = parsedValue;
         return true;
     }
     JSON ToJSON()

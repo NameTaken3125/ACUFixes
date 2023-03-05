@@ -100,7 +100,6 @@ extern bool g_showDevExtraOptions;
 #include "Serialization/BooleanAdapter.h"
 #include "Serialization/EnumAdapter.h"
 #define TO_STRING(x) #x
-#include "Enum_BindableKeyCode_Keyboard.h"
 BindableKeyCode_Keyboard enterWindowsButton = BindableKeyCode_Keyboard::K_R;
 BindableKeyCode_Keyboard autowalkButton = BindableKeyCode_Keyboard::K_B;
 
