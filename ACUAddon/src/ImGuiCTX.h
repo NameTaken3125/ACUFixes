@@ -112,4 +112,17 @@ public:
     }
     operator bool() { return m_opened; }
 };
+class Indent
+{
+    float m_indent;
+public:
+    Indent(float indent = 0.0f) : m_indent(indent)
+    {
+        ImGui::Indent(indent);
+    }
+    ~Indent()
+    {
+        ImGui::Unindent(m_indent);
+    }
+};
 }

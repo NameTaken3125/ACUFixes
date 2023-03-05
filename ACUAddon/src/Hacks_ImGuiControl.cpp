@@ -91,7 +91,7 @@ struct PlayWithBombAimCameraTracker2 : AutoAssemblerCodeHolder_Base
     }
 };
 
-
+#include "ImGuiCTX.h"
 extern bool g_showDevExtraOptions;
 #include "Hack_ModifyAimingFOV.h"
 #include "MyLog.h"
@@ -102,7 +102,31 @@ extern bool g_showDevExtraOptions;
 #define TO_STRING(x) #x
 BindableKeyCode_Keyboard enterWindowsButton = BindableKeyCode_Keyboard::K_R;
 BindableKeyCode_Keyboard autowalkButton = BindableKeyCode_Keyboard::K_B;
-
+namespace ImGui {
+template<typename EnumType>
+bool DrawEnumPicker(const char* label, EnumType& currentValueInOut, ImGuiComboFlags flags)
+{
+    bool isNewSelection = false;
+    auto itemsStrings = enum_reflection<EnumType>::GetAllStrings();
+    auto itemsValues = enum_reflection<EnumType>::GetAllValues();
+    auto it = std::find(itemsValues.begin(), itemsValues.end(), currentValueInOut);
+    int item_current_idx = it - itemsValues.begin();                    // Here our selection data is an index.
+    if (ImGui::BeginCombo(label, itemsStrings[item_current_idx], flags))
+    {
+        for (int n = 0; n < itemsStrings.size(); n++)
+        {
+            const bool is_selected = (item_current_idx == n);
+            if (ImGui::Selectable(itemsStrings[n], is_selected)) {
+                item_current_idx = n;
+                currentValueInOut = itemsValues[n];
+                isNewSelection = true;
+            }
+        }
+        ImGui::EndCombo();
+    }
+    return isNewSelection;
+}
+} // namespace ImGui
 class MyHacks
 {
 public:
@@ -161,6 +185,11 @@ public:
                 "When climbing on a wall, press the specified key (default 'R' like in Syndicate)\n"
                 "to enter a nearby window."
             );
+        }
+        if (enterWindowsByPressingAButton.IsActive())
+        {
+            ImGuiCTX::Indent _indent;
+            bool isHotkeyChanged = ImGui::DrawEnumPicker("Enter Window Button", enterWindowsButton, 0);
         }
         DrawCheckboxForHack(menacingWalkAndAutowalk, "Allow Autowalk and the Slow Menacing Walk");
         if (ImGui::IsItemHovered())

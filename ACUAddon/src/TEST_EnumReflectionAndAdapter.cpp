@@ -3,7 +3,6 @@
 
 
 #define SOME_ENUM(XX) \
-    XX(INVALID_FROM_STRING, = -1) \
     XX(K_NONE, = 0) \
     XX(K_ESCAPE, = 1) \
     XX(K_1, = 2) \
@@ -12,7 +11,6 @@
     XX(K_4, = 5)
 DECLARE_ENUM(SomeEnum, SOME_ENUM)
 #define SOME_OTHER_ENUM(XX) \
-    XX(INVALID_FROM_STRING, = -1) \
     XX(K_NONE, = 0) \
     XX(K_ESCAPE, = 1) \
     XX(K_1, = 2) \
@@ -31,6 +29,14 @@ void f()
     constexpr SomeEnum val1 = enum_reflection<SomeEnum>::GetValue("K_NONE");
     constexpr SomeEnum val2 = enum_reflection<SomeEnum>::GetValue("K_2");
     constexpr SomeEnum val3_invalidFromString = enum_reflection<SomeEnum>::GetValue("K_5555");
+
+    constexpr auto numItems = enum_reflection<BindableKeyCode_Keyboard>::GetNumItems();
+    constexpr auto allStrings = enum_reflection<BindableKeyCode_Keyboard>::GetAllStrings();
+    using allStringsType = decltype(allStrings);
+    constexpr auto allValues = enum_reflection<BindableKeyCode_Keyboard>::GetAllValues();
+    using allValuesType = decltype(allValues);
+    constexpr auto allPairs = enum_reflection<BindableKeyCode_Keyboard>::GetAllPairs();
+    using allPairsType = decltype(allPairs);
 }
 
 #include "Serialization/Serialization.h"
