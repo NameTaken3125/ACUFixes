@@ -86,10 +86,16 @@ private:
         m_CurrentMode = Mode_AutowalkRequested{ FindCurrentTime() };
     }
 };
+#include "MainConfig.h"
+#include "Enum_BindableKeyCode_Keyboard.h"
+inline uint8 ScancodeFromMyKeycode(BindableKeyCode_Keyboard keycode)
+{
+    return (uint8)keycode;
+}
 void OnMovementVectorUpdate_ManageAutowalk(Vector2f& movementVecWithoutAdjustments, InputContainerBig* inpCont)
 {
     static InjectedAutowalkManager autowalkManager;
-    constexpr int scancodeB = 48;
+    const uint8 scancodeB = ScancodeFromMyKeycode(autowalkButton);
     if (inpCont->isPressed_byScancode[scancodeB])
     {
         autowalkManager.OnPressedB();

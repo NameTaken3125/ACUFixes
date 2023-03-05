@@ -7,16 +7,23 @@
 #include "ACU/SmallArray.h"
 #include "ACU/InputContainer.h"
 
+#include "MainConfig.h"
+
 namespace ACU::Input {
-bool IsPressed_Reload()
+InputContainerBig* Get_InputContainerBig()
 {
-    return InputContainer::GetMainSingleton().keyStates_thisFrame.isPressed_reload;
+    return HasInputContainers::GetSingleton()->p_10->inputContainerBig;
 }
+}
+#include "Enum_BindableKeyCode_Keyboard.h"
+bool IsPressed(BindableKeyCode_Keyboard keycode)
+{
+    return ACU::Input::Get_InputContainerBig()->isPressed_byScancode[(uint32)keycode];
 }
 
 uint32_t float_bytes(float f) { return (uint32_t&)f; }
 void Patch_RunWindowEntryTesterIfRequested_asmonly(SymbolWithAnAddress& isRequestedToEnterWindow, AssemblerContext* m_ctx);
-void Patch_RunWindowEntryTesterIfRequested_cppTrampoline(SymbolWithAnAddress& isRequestedToEnterWindow, AssemblerContext* m_ctx);
+void Patch_RunWindowEntryTesterIfRequested_cppTrampoline(AssemblerContext* m_ctx);
 void Patch_RememberRbuttonState(AllocatedWriteableSymbol& isRequestedToEnterWindow, AssemblerContext* m_ctx);
 void Patch_AlwaysRunWindowEntryTester(AssemblerContext* m_ctx);
 void Patch_FakeIsMovingFlag(AssemblerContext* m_ctx);
@@ -48,7 +55,7 @@ EnterWindowWhenRisPressed::EnterWindowWhenRisPressed()
     Patch_RememberRbuttonState(isRequestedToEnterWindow, m_ctx.get());
     Patch_AlwaysRunWindowEntryTester(m_ctx.get());
     Patch_FakeIsMovingFlag(m_ctx.get());
-    Patch_RunWindowEntryTesterIfRequested_cppTrampoline(isRequestedToEnterWindow, m_ctx.get());
+    Patch_RunWindowEntryTesterIfRequested_cppTrampoline(m_ctx.get());
     Patch_AllowEnteringWindowsWithoutLeaningIntoThem(isRequestedToEnterWindow, m_ctx.get());
 }
 void Patch_AllowEnteringWindowsWithoutLeaningIntoThem(AllocatedWriteableSymbol& isRequestedToEnterWindow, AssemblerContext* m_ctx)
@@ -155,7 +162,7 @@ void RunWindowEntryEntryTesterInitAndScan(
     , SmallArray<PotentialWindowEntry*>* p_arrayPotentialMovesOut
 )
 {
-    const bool isRequestedEnterWindow = ACU::Input::IsPressed_Reload();
+    const bool isRequestedEnterWindow = IsPressed(enterWindowsButton);
     if (!isRequestedEnterWindow)
     {
         // Standard execution
@@ -186,7 +193,7 @@ void RunWindowEntryEntryTesterInitAndScan(
         int noop = 0;
     }();
 }
-void Patch_RunWindowEntryTesterIfRequested_cppTrampoline(SymbolWithAnAddress& isRequestedToEnterWindow, AssemblerContext* m_ctx)
+void Patch_RunWindowEntryTesterIfRequested_cppTrampoline(AssemblerContext* m_ctx)
 {
     DEFINE_ADDR(runWindowEntrySearch, 0x141A4C618);
     DEFINE_ADDR(runWindowEntrySearch__return, 0x141A4C689);
