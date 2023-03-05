@@ -178,6 +178,11 @@ public:
     }
     void DrawControls()
     {
+        if (ImGui::Button("Save config file"))
+        {
+            this->WriteConfig(MainConfig::GetConfigJSON());
+            MainConfig::WriteToFile();
+        }
         DrawCheckboxForHack(enterWindowsByPressingAButton, "Enter nearby windows by pressing a button");
         if (ImGui::IsItemHovered())
         {
@@ -203,6 +208,11 @@ public:
                 " - Press and release Autowalk key\n"
                 " - Within the next second or so, start walking and let go."
             );
+        }
+        if (menacingWalkAndAutowalk.IsActive())
+        {
+            ImGuiCTX::Indent _indent;
+            bool isHotkeyChanged = ImGui::DrawEnumPicker("Autowalk button", autowalkButton, 0);
         }
         DrawCheckboxForHack(changeZoomLevelsWhenAimingBombs, "Change Zoom Levels when aiming Bombs");
         if (ImGui::IsItemHovered())
