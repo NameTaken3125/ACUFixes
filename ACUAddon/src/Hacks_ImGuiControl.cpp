@@ -95,6 +95,10 @@ struct PlayWithBombAimCameraTracker2 : AutoAssemblerCodeHolder_Base
 extern bool g_showDevExtraOptions;
 #include "Hack_ModifyAimingFOV.h"
 #include "MyLog.h"
+#include "MainConfig.h"
+#include "Serialization/Serialization.h"
+#include "Serialization/BooleanAdapter.h"
+#define TO_STRING(x) #x
 class MyHacks
 {
 public:
@@ -182,6 +186,20 @@ public:
             DrawCheckboxForHack(bombAimExperiments2, "Bomb aim experiments2");
         }
     }
+    void ReadConfig(JSON& cfg)
+    {
+        { bool isActive = true; json::TryToReadVariableFromJSONObjectUsingAdapter(cfg, TO_STRING(enterWindowsByPressingAButton), BooleanAdapter(isActive)); enterWindowsByPressingAButton.Toggle(isActive); }
+        { bool isActive = true; json::TryToReadVariableFromJSONObjectUsingAdapter(cfg, TO_STRING(menacingWalkAndAutowalk), BooleanAdapter(isActive)); menacingWalkAndAutowalk.Toggle(isActive); }
+        { bool isActive = true; json::TryToReadVariableFromJSONObjectUsingAdapter(cfg, TO_STRING(changeZoomLevelsWhenAimingBombs), BooleanAdapter(isActive)); changeZoomLevelsWhenAimingBombs.Toggle(isActive); }
+        { bool isActive = true; json::TryToReadVariableFromJSONObjectUsingAdapter(cfg, TO_STRING(cycleEquipmentUsingMouseWheel), BooleanAdapter(isActive)); cycleEquipmentUsingMouseWheel.Toggle(isActive); }
+    }
+    void WriteConfig(JSON& cfg)
+    {
+        { bool isActive = enterWindowsByPressingAButton.IsActive(); json::WriteVariableAsJSONObjectMemberUsingAdapter(cfg, TO_STRING(enterWindowsByPressingAButton), BooleanAdapter(isActive)); }
+        { bool isActive = menacingWalkAndAutowalk.IsActive(); json::WriteVariableAsJSONObjectMemberUsingAdapter(cfg, TO_STRING(menacingWalkAndAutowalk), BooleanAdapter(isActive)); }
+        { bool isActive = changeZoomLevelsWhenAimingBombs.IsActive(); json::WriteVariableAsJSONObjectMemberUsingAdapter(cfg, TO_STRING(changeZoomLevelsWhenAimingBombs), BooleanAdapter(isActive)); }
+        { bool isActive = cycleEquipmentUsingMouseWheel.IsActive(); json::WriteVariableAsJSONObjectMemberUsingAdapter(cfg, TO_STRING(cycleEquipmentUsingMouseWheel), BooleanAdapter(isActive)); }
+    }
 };
 std::optional<MyHacks> g_MyHacks;
 void DrawHacksControls()
@@ -198,7 +216,10 @@ void DrawHacksControls()
 void MyVariousHacks::Start()
 {
     g_MyHacks.emplace();
-    g_MyHacks->ToggleDefaultHacks();
+    JSON& cfg = MainConfig::GetConfigJSON();
+    g_MyHacks->ReadConfig(cfg);
+    g_MyHacks->WriteConfig(cfg);
+    MainConfig::WriteToFile();
 }
 void MyVariousHacks::MyHacks_OnKeyJustPressed(int keyCode)
 {

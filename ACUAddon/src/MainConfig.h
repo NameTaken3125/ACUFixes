@@ -9,6 +9,7 @@ extern bool imgui_useImGui;
 extern bool imgui_showSuccessfulInjectionIndicator;
 
 void FindAndLoadConfigFileOrCreateDefault();
-JSON& Get();
+void WriteToFile();
+JSON& GetConfigJSON();
 
 } // namespace MainConfig

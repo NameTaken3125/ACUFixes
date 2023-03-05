@@ -72,22 +72,27 @@ JSON ReadMainConfigFile()
     LOG_DEBUG("Read from config file \"%s\":\n%s\n", configFullPath.string().c_str(), cfg.dump().c_str());
     return cfg;
 }
-JSON& Get()
+JSON& GetConfigJSON()
 {
     static JSON configFileJSON = ReadMainConfigFile();
     return configFileJSON;
 }
+void WriteToFile()
+{
+    JSON& cfg = MainConfig::GetConfigJSON();
+    fs::path configFullPath = GetMainConfigFilepath();
+    LOG_DEBUG("Writing to config file \"%s\":\n%s\n", configFullPath.string().c_str(), cfg.dump().c_str());
+    json::ToFile(cfg, configFullPath);
+}
 } // namespace MainConfig
 void MainConfig::FindAndLoadConfigFileOrCreateDefault()
 {
-    JSON& cfg = MainConfig::Get();
+    JSON& cfg = MainConfig::GetConfigJSON();
     if (cfg.IsObject())
     {
         READ_JSON_VARIABLE(cfg, imgui_showSuccessfulInjectionIndicator, BooleanAdapter);
         READ_JSON_VARIABLE(cfg, imgui_useImGui, BooleanAdapter);
     }
     DumpConfig(cfg);
-    fs::path configFullPath = GetMainConfigFilepath();
-    LOG_DEBUG("Writing to config file \"%s\":\n%s\n", configFullPath.string().c_str(), cfg.dump().c_str());
-    json::ToFile(cfg, configFullPath);
+    MainConfig::WriteToFile();
 }
