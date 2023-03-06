@@ -4,38 +4,11 @@
 #include "Hack_EnterWindowsWhenRisPressed.h"
 #include "Hack_SlowMenacingWalkAndAutowalk.h"
 #include "Hack_CycleEquipmentWhenScrollingMousewheel.h"
-
-// Async-constructing the AutoAssemblerWrapper<CodeHolderObject> is better, because all the VirtualAllocs
-// produce a noticeable stutter on creation otherwise.
-template<typename Ty>
-class AsyncConstructed
-{
-public:
-    Ty* m_CachedPtr = nullptr;
-    std::optional<Ty> m_Instance;
-    std::future<void> m_Future;
-    std::optional<std::exception> m_Exception;
-public:
-    AsyncConstructed()
-    {
-        m_Future = std::async(std::launch::async, [&]() {
-            try
-            {
-                m_Instance.emplace();
-                m_CachedPtr = &m_Instance.value();
-            }
-            catch (const std::exception& e)
-            {
-                m_Exception = e;
-            }
-            });
-    }
-    Ty* get() { return m_CachedPtr; }
-    std::exception* GetException()
-    {
-        return m_Exception ? &m_Exception.value() : nullptr;
-    }
-};
+#include "Hack_ModifyAimingFOV.h"
+#include "MyLog.h"
+#include "MainConfig.h"
+#include "ImGuiCTX.h"
+#include "ImGui3D.h"
 
 template<typename floatlike>
 floatlike simple_interp(floatlike mn, floatlike mx)
@@ -64,7 +37,6 @@ struct PlayWithFOV : AutoAssemblerCodeHolder_Base
 
 #include "ACU/ACUGetSingletons.h"
 #include "ACU/Entity.h"
-#include "ImGui3D.h"
 #include "ACU/ThrowTargetPrecision.h"
 void OverrideThrowPredictorBeamPosition(AllRegisters* params)
 {
@@ -91,11 +63,7 @@ struct PlayWithBombAimCameraTracker2 : AutoAssemblerCodeHolder_Base
     }
 };
 
-#include "ImGuiCTX.h"
 extern bool g_showDevExtraOptions;
-#include "Hack_ModifyAimingFOV.h"
-#include "MyLog.h"
-#include "MainConfig.h"
 #include "Serialization/Serialization.h"
 #include "Serialization/BooleanAdapter.h"
 #include "Serialization/EnumAdapter.h"
@@ -132,10 +100,10 @@ class MyHacks
 public:
     AutoAssembleWrapper<EnterWindowWhenRisPressed> enterWindowsByPressingAButton;
     AutoAssembleWrapper<AllowSlowMenacingWalkAndAutowalk> menacingWalkAndAutowalk;
-    AutoAssembleWrapper<PlayWithFOV> fovGames;
-    AutoAssembleWrapper<PlayWithBombAimCameraTracker2> bombAimExperiments2;
     AutoAssembleWrapper<ModifyConditionalFOVs> changeZoomLevelsWhenAimingBombs;
     AutoAssembleWrapper<InputInjection_CycleEquipmentWhenScrollingMousewheel> cycleEquipmentUsingMouseWheel;
+    AutoAssembleWrapper<PlayWithFOV> fovGames;
+    AutoAssembleWrapper<PlayWithBombAimCameraTracker2> bombAimExperiments2;
 
     template<class Hack>
     void DrawCheckboxForHack(Hack& hack, const std::string_view& text)
@@ -225,7 +193,8 @@ public:
         DrawCheckboxForHack(cycleEquipmentUsingMouseWheel, "Cycle through equipment using mouse wheel");
         if (g_showDevExtraOptions)
         {
-            DrawCheckboxForHack(fovGames, "Play with FOV");
+            //// This is one of the useless experimental hacks, and has some stuttering I either didn't see or notice before.
+            //DrawCheckboxForHack(fovGames, "Play with FOV");
             DrawCheckboxForHack(bombAimExperiments2, "Bomb aim experiments2");
         }
     }

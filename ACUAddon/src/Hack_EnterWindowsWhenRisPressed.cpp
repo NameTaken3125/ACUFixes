@@ -22,7 +22,6 @@ bool IsPressed(BindableKeyCode_Keyboard keycode)
 }
 
 uint32_t float_bytes(float f) { return (uint32_t&)f; }
-void Patch_RunWindowEntryTesterIfRequested_asmonly(SymbolWithAnAddress& isRequestedToEnterWindow, AssemblerContext* m_ctx);
 void Patch_RunWindowEntryTesterIfRequested_cppTrampoline(AssemblerContext* m_ctx);
 void Patch_AlwaysRunWindowEntryTester(AssemblerContext* m_ctx);
 void Patch_FakeIsMovingFlag(AssemblerContext* m_ctx);
