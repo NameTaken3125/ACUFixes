@@ -13,7 +13,7 @@ const char* g_configFileName = "acufixesloader-config.json";
 
 struct LoaderConfig
 {
-    std::string gameExeFilepath;
+    fs::path gameExeFilepath;
     bool automaticallyCloseConsoleWindow = false;
 
 public:
@@ -132,15 +132,15 @@ bool Inject(const fs::path& injectedDLLPath, ProcessID_t pid)
     // handle to kernel32 and pass it to GetProcAddress
     HMODULE hKernel32 = GetModuleHandleA("Kernel32");
     if (hKernel32 == NULL) { return false; }
-    VOID* lb = GetProcAddress(hKernel32, "LoadLibraryA");
+    VOID* lb = GetProcAddress(hKernel32, "LoadLibraryW");
     if (lb == NULL) { return false; }
 
     HANDLE processHandle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
     HANDLE remoteThread;
     LPVOID remoteBuffer;
 
-    std::string pathString = injectedDLLPath.string();
-    size_t howManyBytesToAllocateInProcess = pathString.length() + 1;
+    std::wstring pathString = injectedDLLPath.native();
+    size_t howManyBytesToAllocateInProcess = (pathString.length() + 1) * sizeof(std::wstring::value_type);
 
     // allocate memory buffer for remote process
     remoteBuffer = VirtualAllocEx(processHandle, NULL, howManyBytesToAllocateInProcess, (MEM_RESERVE | MEM_COMMIT), PAGE_EXECUTE_READWRITE);
@@ -176,22 +176,67 @@ void ToFile(const JSON& obj, const fs::path& path)
     ofs << obj.dump();
 }
 }
+// Thanks, Jamerson https://codereview.stackexchange.com/questions/419/converting-between-stdwstring-and-stdstring/146738#146738
+namespace filepath_string_conversion {
+// Convert a wide Unicode string to an UTF8 string
+std::string utf8_encode(const std::wstring& wstr)
+{
+    if (wstr.empty()) return std::string();
+    int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), NULL, 0, NULL, NULL);
+    std::string strTo(size_needed, 0);
+    WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), &strTo[0], size_needed, NULL, NULL);
+    return strTo;
+}
+
+// Convert an UTF8 string to a wide Unicode String
+std::wstring utf8_decode(const std::string& str)
+{
+    if (str.empty()) return std::wstring();
+    int size_needed = MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), NULL, 0);
+    std::wstring wstrTo(size_needed, 0);
+    MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), &wstrTo[0], size_needed);
+    return wstrTo;
+}
+} // namespace filepath_string_conversion
+std::string printf_able_path(const fs::path& path)
+{
+    return filepath_string_conversion::utf8_encode(path.native());
+}
+struct FilepathAdapter : public JSONAdapter<fs::path, JSON::Class::String>
+{
+    using BaseAdapter::BaseAdapter;
+    // Serialize.
+    JSON ToJSON()
+    {
+        return filepath_string_conversion::utf8_encode(source.native());
+    }
+    // Deserialize.
+    bool FromJSON(const JSON& obj)
+    {
+        if (!this->IsCorrectJSONType(obj))
+        {
+            return false;
+        }
+        source = filepath_string_conversion::utf8_decode(obj.ToStringNoEscape());
+        return true;
+    }
+};
 void LoaderConfig::ReadFile()
 {
     fs::path configPath = GetConfigFilepath();
-    printf("[*] Trying to read saved executable path from config file '%s'\n", configPath.string().c_str());
+    printf("[*] Trying to read saved executable path from config file '%s'\n", printf_able_path(configPath).c_str());
     JSON cfg = json::FromFile(GetConfigFilepath());
     printf("[*] Read from config:\n%s\n", cfg.dump().c_str());
-    READ_JSON_VARIABLE(cfg, gameExeFilepath, StringAdapterNoEscape);
+    READ_JSON_VARIABLE(cfg, gameExeFilepath, FilepathAdapter);
     READ_JSON_VARIABLE(cfg, automaticallyCloseConsoleWindow, BooleanAdapter);
 }
 void LoaderConfig::UpdateFile()
 {
     JSON obj;
-    WRITE_JSON_VARIABLE(obj, gameExeFilepath, StringAdapterNoEscape);
+    WRITE_JSON_VARIABLE(obj, gameExeFilepath, FilepathAdapter);
     WRITE_JSON_VARIABLE(obj, automaticallyCloseConsoleWindow, BooleanAdapter);
     fs::path configFilepath = GetConfigFilepath();
-    printf("[*] Updated config file at '%s':\n%s\n", configFilepath.string().c_str(), obj.dump().c_str());
+    printf("[*] Updated config file at '%s':\n%s\n", printf_able_path(configFilepath).c_str(), obj.dump().c_str());
     json::ToFile(obj, configFilepath);
 }
 fs::path LoaderConfig::GetConfigFilepath()
@@ -273,7 +318,7 @@ private:
         ReadFromConfig();
         if (m_foundFilepath)
         {
-            printf("[+] Found EXE filepath in config: '%s'\n", m_foundFilepath->string().c_str());
+            printf("[+] Found EXE filepath in config: '%s'\n", printf_able_path(*m_foundFilepath).c_str());
             return;
         }
         else
@@ -283,17 +328,17 @@ private:
         LookInThisExecutablesDirectory(executableName);
         if (m_foundFilepath)
         {
-            printf("[+] Found a matching EXE in this executable's directory (%s)\n", m_foundFilepath->string().c_str());
+            printf("[+] Found a matching EXE in this executable's directory (%s)\n", printf_able_path(*m_foundFilepath).c_str());
             return;
         }
         else
         {
-            printf("[x] Also didn't find a matching EXE in this executable's directory (%s)\n", GetThisExecutablePath().parent_path().string().c_str());
+            printf("[x] Also didn't find a matching EXE in this executable's directory (%s)\n", printf_able_path(GetThisExecutablePath().parent_path()).c_str());
         }
         AskUserToProvideEXEFilepath(executableName);
         if (m_foundFilepath)
         {
-            printf("[+] Provided new EXE filepath: '%s'\n", m_foundFilepath->string().c_str());
+            printf("[+] Provided new EXE filepath: '%s'\n", printf_able_path(*m_foundFilepath).c_str());
         }
     }
     void ReadFromConfig()
@@ -339,12 +384,12 @@ int main_procedure()
         std::optional<fs::path> exeToStart = TryToFindGameExecutable(g_targetProcessName);
         if (!exeToStart)
         {
-            wprintf(L"[X] Can't find an open process, and can't start a process. Quitting then.");
+            wprintf(L"[X] Can't find an open process, and can't start a process. Quitting then.\n");
             return -1;
         }
-        g_Config.gameExeFilepath = exeToStart->string();
+        g_Config.gameExeFilepath = *exeToStart;
         StartAnExecutable(*exeToStart);
-        wprintf(L"[*] Trying to start \"%s\"\n", exeToStart->wstring().c_str());
+        printf("[*] Trying to start \"%s\"\n", printf_able_path(*exeToStart).c_str());
         g_attemptedToLaunchGameProcess = true;
         pid = FindPID(g_targetProcessName);
         if (!pid) {
@@ -365,13 +410,13 @@ int main_procedure()
     // and don't reinject if it is.
     bool isDLLAlreadyLoaded = IsDLLLoadedInProcess(*pid, injectedDLLPath);
     if (isDLLAlreadyLoaded) {
-        wprintf(L"[X] \"%s\" is already loaded in the process. There is no use injecting it again.\n", injectedDLLPath.wstring().c_str());
+        printf("[X] \"%s\" is already loaded in the process. There is no use injecting it again.\n", printf_able_path(injectedDLLPath).c_str());
         return -1;
     }
-    wprintf(L"[*] Trying to find and inject \"%s\"\n", injectedDLLPath.wstring().c_str());
+    printf("[*] Trying to find and inject \"%s\"\n", printf_able_path(injectedDLLPath).c_str());
     if (!fs::exists(injectedDLLPath))
     {
-        wprintf(L"[x] Warning: '%s' doesn't seem to exist, but I'll try to inject anyways.\n", injectedDLLPath.wstring().c_str());
+        printf("[x] Warning: '%s' doesn't seem to exist, but I'll try to inject anyways.\n", printf_able_path(injectedDLLPath).c_str());
     }
     bool seeminglySucceeded = Inject(injectedDLLPath, pid.value());
     if (!seeminglySucceeded) {
