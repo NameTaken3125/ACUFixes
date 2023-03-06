@@ -99,7 +99,7 @@
       <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(ProjectDir)inc\;$(SolutionDir)ACUAddon\include\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)inc\;$(SolutionDir)ACUFixes\include\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -115,7 +115,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(ProjectDir)inc\;$(SolutionDir)ACUAddon\include\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)inc\;$(SolutionDir)ACUFixes\include\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -133,7 +133,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(ProjectDir)inc\;$(SolutionDir)ACUAddon\include\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)inc\;$(SolutionDir)ACUFixes\include\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -153,7 +153,7 @@
       <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(ProjectDir)inc\;$(SolutionDir)ACUAddon\include\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)inc\;$(SolutionDir)ACUFixes\include\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

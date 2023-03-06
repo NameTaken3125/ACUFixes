@@ -3,6 +3,9 @@ build/
 # Visual Studio 2015/2017 cache/options directory
 .vs/
 
+# User-specific files
+*.user
+
 # Icon resource cache
 *.aps
 
