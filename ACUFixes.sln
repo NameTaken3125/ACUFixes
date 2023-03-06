@@ -16,7 +16,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SimpleJSON", "SimpleJSON", 
 		vendor\SimpleJSON\json.hpp = vendor\SimpleJSON\json.hpp
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ACUFixesInjector", "ACUFixesInjector\ACUFixesInjector.vcxproj", "{5348EA3C-3D47-489C-8D0F-737C891CCBF0}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ACUFixesLoader", "ACUFixesLoader\ACUFixesLoader.vcxproj", "{5348EA3C-3D47-489C-8D0F-737C891CCBF0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

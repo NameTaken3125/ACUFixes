@@ -14,15 +14,6 @@ Brings the app's components together.
 
 #include "ACU/ACUGetSingletons.h"
 
-#define PRESENT_HOOK_METHOD_INNER 1
-#define PRESENT_HOOK_METHOD_OUTER 2
-#define PRESENT_HOOK_METHOD_ONLYWNDPROC 3
-
-#define PRESENT_HOOK_METHOD PRESENT_HOOK_METHOD_OUTER
-#ifndef PRESENT_HOOK_METHOD
-static_assert(false, "PRESENT_HOOK_METHOD macro needs to be defined. See `main.cpp` for options.");
-#endif // !PRESENT_HOOK_METHOD
-
 // Required so that the game doesn't crash on code modification.
 void DisableMainIntegrityCheck();
 // Respond to input: toggle hacks, etc.

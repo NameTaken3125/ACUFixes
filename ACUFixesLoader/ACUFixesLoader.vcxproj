@@ -22,7 +22,7 @@
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{5348EA3C-3D47-489C-8D0F-737C891CCBF0}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>ACUInjector</RootNamespace>
+    <RootNamespace>ACUFixesLoader</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -167,16 +167,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="ACUFixesInjector.cpp" />
+    <ClCompile Include="ACUFixesLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="ACUFixesInjector.rc" />
+    <ResourceCompile Include="ACUFixesLoader.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="res\acufixes-injector.ico" />
+    <Image Include="res\acufixes-loader.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

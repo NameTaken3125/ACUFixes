@@ -1,15 +1,15 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="ACUFixesInjector.cpp" />
+    <ClCompile Include="ACUFixesLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="ACUFixesInjector.rc" />
+    <ResourceCompile Include="ACUFixesLoader.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="res\acufixes-injector.ico" />
+    <Image Include="res\acufixes-loader.ico" />
   </ItemGroup>
 </Project>
