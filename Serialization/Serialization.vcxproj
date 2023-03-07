@@ -119,6 +119,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(ProjectDir)include;$(SolutionDir)external\SimpleJSON;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -157,6 +158,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(ProjectDir)include;$(SolutionDir)external\SimpleJSON;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -170,9 +172,11 @@
     <ClInclude Include="include\Serialization\enumFactory.h" />
     <ClInclude Include="include\Serialization\BooleanAdapter.h" />
     <ClInclude Include="include\Serialization\EnumAdapter.h" />
+    <ClInclude Include="include\Serialization\FilepathAdapter.h" />
     <ClInclude Include="include\Serialization\NumericAdapters.h" />
     <ClInclude Include="include\Serialization\Serialization.h" />
     <ClInclude Include="include\Serialization\SerializationForwardDeclarations.h" />
+    <ClInclude Include="include\Serialization\ToFromFile\ToFromFile.h" />
     <ClInclude Include="src\framework.h" />
     <ClInclude Include="src\pch.h" />
   </ItemGroup>
@@ -185,6 +189,7 @@
     </ClCompile>
     <ClCompile Include="src\Serialization.cpp" />
     <ClCompile Include="src\TEST_EnumReflectionAndAdapter.cpp" />
+    <ClCompile Include="src\ToFromFile.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -180,6 +180,11 @@
   <ItemGroup>
     <Image Include="res\acufixes-loader.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Serialization\Serialization.vcxproj">
+      <Project>{7f95d10e-e7ea-42c6-8bfb-a01756337677}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

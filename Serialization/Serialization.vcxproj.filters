@@ -9,10 +9,13 @@
     <ClInclude Include="include\Serialization\Serialization.h" />
     <ClInclude Include="include\Serialization\SerializationForwardDeclarations.h" />
     <ClInclude Include="include\Serialization\enumFactory.h" />
+    <ClInclude Include="include\Serialization\ToFromFile\ToFromFile.h" />
+    <ClInclude Include="include\Serialization\FilepathAdapter.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />
     <ClCompile Include="src\Serialization.cpp" />
     <ClCompile Include="src\TEST_EnumReflectionAndAdapter.cpp" />
+    <ClCompile Include="src\ToFromFile.cpp" />
   </ItemGroup>
 </Project>
