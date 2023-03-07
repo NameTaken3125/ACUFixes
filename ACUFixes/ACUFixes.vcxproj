@@ -92,7 +92,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)include;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DX11-BaseHook\include;$(SolutionDir)DX11-BaseHook\deps;$(SolutionDir)external\SimpleJSON;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)include;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DX11-BaseHook\include;$(SolutionDir)DX11-BaseHook\deps;$(SolutionDir)external\SimpleJSON;$(SolutionDir)Serialization\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -111,7 +111,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)include;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DX11-BaseHook\include;$(SolutionDir)DX11-BaseHook\deps;$(SolutionDir)external\SimpleJSON;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)include;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DX11-BaseHook\include;$(SolutionDir)DX11-BaseHook\deps;$(SolutionDir)external\SimpleJSON;$(SolutionDir)Serialization\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -132,7 +132,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)include;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DX11-BaseHook\include;$(SolutionDir)DX11-BaseHook\deps;$(SolutionDir)external\SimpleJSON;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)include;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DX11-BaseHook\include;$(SolutionDir)DX11-BaseHook\deps;$(SolutionDir)external\SimpleJSON;$(SolutionDir)Serialization\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -156,7 +156,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)include;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DX11-BaseHook\include;$(SolutionDir)DX11-BaseHook\deps;$(SolutionDir)external\SimpleJSON;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)include;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DX11-BaseHook\include;$(SolutionDir)DX11-BaseHook\deps;$(SolutionDir)external\SimpleJSON;$(SolutionDir)Serialization\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -174,12 +174,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\Hack_CycleEquipmentWhenScrollingMousewheel.cpp" />
-    <ClCompile Include="include\Serialization\File\JSONFileBridge.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="include\vmath\vmath.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -206,25 +200,12 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="src\PresentHookOuter.cpp" />
-    <ClCompile Include="src\TEST_EnumReflectionAndAdapter.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="src\TypeInfoSystemDump.cpp" />
     <ClCompile Include="src\WhatIsDrawnInImGui.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\Serialization\EnumAdapter.h" />
-    <ClInclude Include="src\enumFactory.h" />
     <ClInclude Include="src\Enum_BindableKeyCode_Keyboard.h" />
     <ClInclude Include="src\Hack_CycleEquipmentWhenScrollingMousewheel.h" />
-    <ClInclude Include="include\Serialization\BooleanAdapter.h" />
-    <ClInclude Include="include\Serialization\File\JSONFileBridge.h" />
-    <ClInclude Include="include\Serialization\NumericAdapters.h" />
-    <ClInclude Include="include\Serialization\Serialization.h" />
-    <ClInclude Include="include\Serialization\SerializationForwardDeclarations.h" />
     <ClInclude Include="include\vmath\vmath.h" />
     <ClInclude Include="include\vmath\vmath_extra.h" />
     <ClInclude Include="src\AutoAssemblerKinda.h" />
@@ -251,6 +232,9 @@
     </ProjectReference>
     <ProjectReference Include="..\DX11-BaseHook\DX11-BaseHook.vcxproj">
       <Project>{493e69b7-9966-4b96-94ba-158ea9fa50c8}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\Serialization\Serialization.vcxproj">
+      <Project>{7f95d10e-e7ea-42c6-8bfb-a01756337677}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

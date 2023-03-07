@@ -20,6 +20,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SimpleJSON", "SimpleJSON", 
 		external\SimpleJSON\SimpleJSON\json.hpp = external\SimpleJSON\SimpleJSON\json.hpp
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Serialization", "Serialization\Serialization.vcxproj", "{7F95D10E-E7EA-42C6-8BFB-A01756337677}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -60,6 +62,14 @@ Global
 		{5348EA3C-3D47-489C-8D0F-737C891CCBF0}.Release|x64.Build.0 = Release|x64
 		{5348EA3C-3D47-489C-8D0F-737C891CCBF0}.Release|x86.ActiveCfg = Release|Win32
 		{5348EA3C-3D47-489C-8D0F-737C891CCBF0}.Release|x86.Build.0 = Release|Win32
+		{7F95D10E-E7EA-42C6-8BFB-A01756337677}.Debug|x64.ActiveCfg = Debug|x64
+		{7F95D10E-E7EA-42C6-8BFB-A01756337677}.Debug|x64.Build.0 = Debug|x64
+		{7F95D10E-E7EA-42C6-8BFB-A01756337677}.Debug|x86.ActiveCfg = Debug|Win32
+		{7F95D10E-E7EA-42C6-8BFB-A01756337677}.Debug|x86.Build.0 = Debug|Win32
+		{7F95D10E-E7EA-42C6-8BFB-A01756337677}.Release|x64.ActiveCfg = Release|x64
+		{7F95D10E-E7EA-42C6-8BFB-A01756337677}.Release|x64.Build.0 = Release|x64
+		{7F95D10E-E7EA-42C6-8BFB-A01756337677}.Release|x86.ActiveCfg = Release|Win32
+		{7F95D10E-E7EA-42C6-8BFB-A01756337677}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

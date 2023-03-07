@@ -6,7 +6,6 @@
 #include "SimpleJSON/json.hpp"
 #include "Serialization/Serialization.h"
 #include "Serialization/BooleanAdapter.h"
-#include "Serialization/File/JSONFileBridge.h"
 
 #include "base.h"
 

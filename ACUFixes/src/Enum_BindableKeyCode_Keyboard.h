@@ -1,6 +1,6 @@
 #pragma once
 
-#include "enumFactory.h"
+#include "Serialization/enumFactory.h"
 #define ENUM_AS_MACRO_BindableKeyCode_Keyboard(XX) \
     XX(K_A, = 30) \
     XX(K_B, = 48) \
