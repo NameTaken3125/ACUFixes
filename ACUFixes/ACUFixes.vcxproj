@@ -184,6 +184,7 @@
     <ClCompile Include="src\ConsoleForOutput.cpp" />
     <ClCompile Include="src\DisableIntegrityChecks.cpp" />
     <ClCompile Include="src\Hacks_ImGuiControl.cpp" />
+    <ClCompile Include="src\Hack_DontForceUnsheatheWhenInDisguise.cpp" />
     <ClCompile Include="src\Hack_EnterWindowsWhenRisPressed.cpp" />
     <ClCompile Include="src\Hack_ModifyAimingFOV.cpp" />
     <ClCompile Include="src\Hack_SlowMenacingWalkAndAutowalk.cpp" />
@@ -210,6 +211,7 @@
     <ClInclude Include="include\vmath\vmath_extra.h" />
     <ClInclude Include="src\AutoAssemblerKinda.h" />
     <ClInclude Include="src\ConsoleForOutput.h" />
+    <ClInclude Include="src\Hack_DontForceUnsheatheWhenInDisguise.h" />
     <ClInclude Include="src\Hack_EnterWindowsWhenRisPressed.h" />
     <ClInclude Include="src\Hack_ModifyAimingFOV.h" />
     <ClInclude Include="src\Hack_SlowMenacingWalkAndAutowalk.h" />

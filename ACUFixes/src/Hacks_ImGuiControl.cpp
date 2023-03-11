@@ -5,6 +5,7 @@
 #include "Hack_SlowMenacingWalkAndAutowalk.h"
 #include "Hack_CycleEquipmentWhenScrollingMousewheel.h"
 #include "Hack_ModifyAimingFOV.h"
+#include "Hack_DontForceUnsheatheWhenInDisguise.h"
 #include "MyLog.h"
 #include "MainConfig.h"
 #include "ImGuiCTX.h"
@@ -62,7 +63,6 @@ struct PlayWithBombAimCameraTracker2 : AutoAssemblerCodeHolder_Base
             , true);
     }
 };
-
 extern bool g_showDevExtraOptions;
 #include "Serialization/Serialization.h"
 #include "Serialization/BooleanAdapter.h"
@@ -104,6 +104,7 @@ public:
     AutoAssembleWrapper<InputInjection_CycleEquipmentWhenScrollingMousewheel> cycleEquipmentUsingMouseWheel;
     AutoAssembleWrapper<PlayWithFOV> fovGames;
     AutoAssembleWrapper<PlayWithBombAimCameraTracker2> bombAimExperiments2;
+    AutoAssembleWrapper<DontUnsheatheLikeAnIdiotWhileInDisguise> dontUnsheatheWhenInDisguise;
 
     template<class Hack>
     void DrawCheckboxForHack(Hack& hack, const std::string_view& text)
@@ -139,7 +140,8 @@ public:
         switch (keyCode)
         {
         case VK_NUMPAD7:
-            ToggleDefaultHacks();
+            //ToggleDefaultHacks();
+            break;
         default:
             break;
         }
@@ -191,6 +193,7 @@ public:
             );
         }
         DrawCheckboxForHack(cycleEquipmentUsingMouseWheel, "Cycle through equipment using mouse wheel");
+        DrawCheckboxForHack(dontUnsheatheWhenInDisguise, "Don't pull out your weapon while you're in Disguise");
         if (g_showDevExtraOptions)
         {
             //// This is one of the useless experimental hacks, and has some stuttering I either didn't see or notice before.
