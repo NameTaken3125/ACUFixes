@@ -34,7 +34,6 @@
     <ClInclude Include="inc\ACU\ThrowTargetPrecision.h" />
     <ClInclude Include="inc\ACU\AtomAnimComponent.h" />
     <ClInclude Include="inc\ACU\Human.h" />
-    <ClInclude Include="inc\ACU\HasBallisticAimingEquipmentType.h" />
     <ClInclude Include="inc\ACU\EventListener.h" />
     <ClInclude Include="inc\ACU\HUDModule.h" />
     <ClInclude Include="inc\ACU\HUDLetterReaderModule.h" />
@@ -49,6 +48,7 @@
     <ClInclude Include="inc\ACU\SharedPtr.h" />
     <ClInclude Include="inc\ACU\QuickSelectButtonComponent.h" />
     <ClInclude Include="inc\ACU\DataBindingComponent.h" />
+    <ClInclude Include="inc\ACU\HumanStatesHolder.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />
@@ -59,5 +59,6 @@
     <ClCompile Include="src\ACUGetSingletons.cpp" />
     <ClCompile Include="src\BallisticProjectileAimingControlsSettings.cpp" />
     <ClCompile Include="src\Entity.cpp" />
+    <ClCompile Include="src\HumanStatesHolder.cpp" />
   </ItemGroup>
 </Project>

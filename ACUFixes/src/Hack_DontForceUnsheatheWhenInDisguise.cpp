@@ -1,61 +1,16 @@
 #include "pch.h"
 
-#include "ACU/AtomAnimComponent.h"
-#include "ACU/Human.h"
 #include "ACU/Entity.h"
-#include "ACU/HasBallisticAimingEquipmentType.h"
-#include "ACU/ACUGetSingletons.h"
+#include "ACU/HumanStatesHolder.h"
 #include "ACU/SharedPtr.h"
 
 #include "Hack_DontForceUnsheatheWhenInDisguise.h"
 
 
 
-class UsedDuringDisguise
-{
-public:
-    char pad_0000[576]; //0x0000
-    SharedPtr_mb* disguiseTargetEntity; //0x0240
-    char pad_0248[48]; //0x0248
-    uint8 isInDisguise_mb; //0x0278
-    char pad_0279[15]; //0x0279
-};
-assert_offsetof(UsedDuringDisguise, disguiseTargetEntity, 0x240);
-class HumanStatesHolder_D0
-{
-public:
-    UsedDuringDisguise* usedDuringDisguise; //0x0000
-    char pad_0008[256]; //0x0008
-}; //Size: 0x0108
-class HumanStatesHolder_mb
-{
-public:
-    char pad_0000[208]; //0x0000
-    HumanStatesHolder_D0* humanStatesHolder_D0; //0x00D0
-    char pad_00D8[3164]; //0x00D8
-    uint32 ballisticAimingCurrentEquipmentType; //0x0D34
-    char pad_0D38[568]; //0x0D38
-    BallisticProjectileAimingProcess aimingMoney; //0x0F70
-    BallisticProjectileAimingProcess aiming_equipType0x12_1170; //0x1170
-    BallisticProjectileAimingProcess aimingPoison; //0x1370
-    BallisticProjectileAimingProcess aimingDefault; //0x1570
-    BallisticProjectileAimingProcess aiming_equip19_1770; //0x1770
-    BallisticProjectileAimingProcess aimingGuillotineGun; //0x1970
-    char pad_1B70[816]; //0x1B70
-}; //Size: 0x1EA0
-static AtomAnimComponent* GetPlayerAtomAnimComponent()
-{
-    Entity* player = ACU::GetPlayer();
-    if (!player) { return nullptr; }
-    int cpntIdx_atomAnimCpnt = player->cpntIndices_157.atomAnimCpnt;
-    return static_cast<AtomAnimComponent*>(player->cpnts_mb[cpntIdx_atomAnimCpnt]);
-}
 Entity* GetCurrentDisguiseTargetEntity()
 {
-    AtomAnimComponent* atomAnimCpnt = GetPlayerAtomAnimComponent();
-    if (!atomAnimCpnt) { return nullptr; }
-    auto* human = atomAnimCpnt->human_c58; if (!human) { return nullptr; }
-    auto* humanStates = (HumanStatesHolder_mb*)human->hasBallisticAimingEquipmentType_710; if (!humanStates) { return nullptr; }
+    auto* humanStates = HumanStatesHolder::GetForPlayer(); if (!humanStates) { return nullptr; }
     auto* _d0 = humanStates->humanStatesHolder_D0; if (!_d0) { return nullptr; }
     auto* usedDuringDisguise = _d0->usedDuringDisguise; if (!usedDuringDisguise) { return nullptr; }
     SharedPtr_mb* disguiseTargetShared = usedDuringDisguise->disguiseTargetEntity; if (!disguiseTargetShared) { return nullptr; }
@@ -64,10 +19,7 @@ Entity* GetCurrentDisguiseTargetEntity()
 }
 bool IsPlayerInDisguise()
 {
-    AtomAnimComponent* atomAnimCpnt = GetPlayerAtomAnimComponent();
-    if (!atomAnimCpnt) { return false; }
-    auto* human = atomAnimCpnt->human_c58; if (!human) { return false; }
-    auto* humanStates = (HumanStatesHolder_mb*)human->hasBallisticAimingEquipmentType_710; if (!humanStates) { return false; }
+    auto* humanStates = HumanStatesHolder::GetForPlayer(); if (!humanStates) { return false; }
     auto* _d0 = humanStates->humanStatesHolder_D0; if (!_d0) { return false; }
     auto* usedDuringDisguise = _d0->usedDuringDisguise; if (!usedDuringDisguise) { return false; }
     return usedDuringDisguise->isInDisguise_mb;

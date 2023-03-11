@@ -187,7 +187,6 @@
     <ClInclude Include="inc\ACU\EventListener.h" />
     <ClInclude Include="inc\ACU\GamePlaySettings.h" />
     <ClInclude Include="inc\ACU\GameStatsManager.h" />
-    <ClInclude Include="inc\ACU\HasBallisticAimingEquipmentType.h" />
     <ClInclude Include="inc\ACU\HasInputContainers.h" />
     <ClInclude Include="inc\ACU\HasSwapchain.h" />
     <ClInclude Include="inc\ACU\HUDLetterReaderModule.h" />
@@ -195,6 +194,7 @@
     <ClInclude Include="inc\ACU\HUDQuickSelectComponent.h" />
     <ClInclude Include="inc\ACU\HUDQuickSelectModule.h" />
     <ClInclude Include="inc\ACU\Human.h" />
+    <ClInclude Include="inc\ACU\HumanStatesHolder.h" />
     <ClInclude Include="inc\ACU\InputContainer.h" />
     <ClInclude Include="inc\ACU\KeymapScancodes.h" />
     <ClInclude Include="inc\ACU\ManagedObject.h" />
@@ -221,6 +221,7 @@
     <ClCompile Include="src\BallisticProjectileAimingControlsSettings.cpp" />
     <ClCompile Include="src\BhvAssassin.cpp" />
     <ClCompile Include="src\Entity.cpp" />
+    <ClCompile Include="src\HumanStatesHolder.cpp" />
     <ClCompile Include="src\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

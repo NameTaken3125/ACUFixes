@@ -36,12 +36,33 @@ public:
 }; //Size: 0x0200
 assert_sizeof(BallisticProjectileAimingProcess, 0x200);
 
+class SharedPtr_mb;
 
-// vtbl: 142FFD128
-class HasBallisticAimingEquipmentType
+class UsedDuringDisguise
 {
 public:
-    char pad_0000[3380]; //0x0000
+    char pad_0000[576]; //0x0000
+    SharedPtr_mb* disguiseTargetEntity; //0x0240
+    char pad_0248[48]; //0x0248
+    uint8 isInDisguise_mb; //0x0278
+    char pad_0279[15]; //0x0279
+};
+assert_offsetof(UsedDuringDisguise, disguiseTargetEntity, 0x240);
+class HumanStatesHolder_D0
+{
+public:
+    UsedDuringDisguise* usedDuringDisguise; //0x0000
+    char pad_0008[256]; //0x0008
+}; //Size: 0x0108
+
+// vtbl: 142FFD128
+class HumanStatesHolder
+{
+public:
+    // @members
+    char pad_0000[208]; //0x0000
+    HumanStatesHolder_D0* humanStatesHolder_D0; //0x00D0
+    char pad_00D8[3164]; //0x00D8
     EquipmentType ballisticAimingCurrentEquipmentType; //0x0D34
     char pad_0D38[568]; //0x0D38
     BallisticProjectileAimingProcess aimingMoney; //0x0F70
@@ -51,6 +72,9 @@ public:
     BallisticProjectileAimingProcess aiming_equip19_1770; //0x1770
     BallisticProjectileAimingProcess aimingGuillotineGun; //0x1970
     char pad_1B70[816]; //0x1B70
+
+    // @helper_functions
+    static HumanStatesHolder* GetForPlayer();
 }; //Size: 0x1EA0
-assert_offsetof(HasBallisticAimingEquipmentType, ballisticAimingCurrentEquipmentType, 0xD34);
-assert_offsetof(HasBallisticAimingEquipmentType, aimingGuillotineGun, 0x1970);
+assert_offsetof(HumanStatesHolder, ballisticAimingCurrentEquipmentType, 0xD34);
+assert_offsetof(HumanStatesHolder, aimingGuillotineGun, 0x1970);

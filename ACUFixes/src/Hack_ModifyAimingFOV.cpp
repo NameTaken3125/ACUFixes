@@ -266,24 +266,10 @@ bool IsInBombAimFromBehindCoverMode(ACUPlayerCameraComponent* cameraCpnt)
     return IsBombAimFromBehindCoverMode(cameraCpnt->currentCameraSelectorBlenderNode);
 }
 
-#include "ACU/AtomAnimComponent.h"
-#include "ACU/Human.h"
-#include "ACU/Entity.h"
-#include "ACU/HasBallisticAimingEquipmentType.h"
-#include "ACU/ACUGetSingletons.h"
-AtomAnimComponent* GetPlayerAtomAnimComponent()
-{
-    Entity* player = ACU::GetPlayer();
-    if (!player) { return nullptr; }
-    int cpntIdx_atomAnimCpnt = player->cpntIndices_157.atomAnimCpnt;
-    return static_cast<AtomAnimComponent*>(player->cpnts_mb[cpntIdx_atomAnimCpnt]);
-}
+#include "ACU/HumanStatesHolder.h"
 EquipmentType* GetBallisticAimingCurrentEquipmentType()
 {
-    AtomAnimComponent* atomAnimCpnt = GetPlayerAtomAnimComponent();
-    if (!atomAnimCpnt) { return nullptr; }
-    auto* human = atomAnimCpnt->human_c58; if (!human) { return nullptr; }
-    auto* hasBallisticAimingEquipmentType = human->hasBallisticAimingEquipmentType_710; if (!hasBallisticAimingEquipmentType) { return nullptr; }
+    auto* hasBallisticAimingEquipmentType = HumanStatesHolder::GetForPlayer(); if (!hasBallisticAimingEquipmentType) { return nullptr; }
     return &hasBallisticAimingEquipmentType->ballisticAimingCurrentEquipmentType;
 }
 bool IsAimingGuillotineGun()
