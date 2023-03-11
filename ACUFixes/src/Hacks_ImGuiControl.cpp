@@ -219,6 +219,7 @@ public:
         }
         { bool isActive = true; json::TryToReadVariableFromJSONObjectUsingAdapter(cfg, TO_STRING(changeZoomLevelsWhenAimingBombs), BooleanAdapter(isActive)); changeZoomLevelsWhenAimingBombs.Toggle(isActive); }
         { bool isActive = true; json::TryToReadVariableFromJSONObjectUsingAdapter(cfg, TO_STRING(cycleEquipmentUsingMouseWheel), BooleanAdapter(isActive)); cycleEquipmentUsingMouseWheel.Toggle(isActive); }
+        { bool isActive = true; json::TryToReadVariableFromJSONObjectUsingAdapter(cfg, TO_STRING(dontUnsheatheWhenInDisguise), BooleanAdapter(isActive)); dontUnsheatheWhenInDisguise.Toggle(isActive); }
     }
     void WriteConfig(JSON& cfg)
     {
@@ -236,6 +237,7 @@ public:
         }
         { bool isActive = changeZoomLevelsWhenAimingBombs.IsActive(); json::WriteVariableAsJSONObjectMemberUsingAdapter(cfg, TO_STRING(changeZoomLevelsWhenAimingBombs), BooleanAdapter(isActive)); }
         { bool isActive = cycleEquipmentUsingMouseWheel.IsActive(); json::WriteVariableAsJSONObjectMemberUsingAdapter(cfg, TO_STRING(cycleEquipmentUsingMouseWheel), BooleanAdapter(isActive)); }
+        { bool isActive = dontUnsheatheWhenInDisguise.IsActive(); json::WriteVariableAsJSONObjectMemberUsingAdapter(cfg, TO_STRING(dontUnsheatheWhenInDisguise), BooleanAdapter(isActive)); }
     }
 };
 std::optional<MyHacks> g_MyHacks;
