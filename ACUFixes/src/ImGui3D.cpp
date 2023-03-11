@@ -22,11 +22,12 @@ std::optional<Vector2f> World2Screen(const Vector3f& ptWorld)
     return ptScreenSpace;
 };
 const float g_WireModelDefaultThickness = 2;
+float g_WireModelGlobalSizeMultiplier = 1;
 void DrawWireModel(const ImGuiWireModel& model, const Vector3f& position, float thicknessMultiplier)
 {
     for (size_t i = 0; i < model.points.size(); i++)
     {
-        model.worldPoints[i] = position + model.points[i];
+        model.worldPoints[i] = position + model.points[i] * g_WireModelGlobalSizeMultiplier;
     }
     for (const ModelEdge& e : model.edges)
     {
@@ -199,6 +200,7 @@ void DrawMarkers()
     }
 }
 
+void OptionToDrawMultipleVector3fFromClipboard();
 void DrawPersistent3DMarkersControls()
 {
     ImGuiCTX::WindowChild _{ "PersistentMarkers", {0, 250}, true };
@@ -215,6 +217,13 @@ void DrawPersistent3DMarkersControls()
             DrawLocationAndPersist(*parsedVec);
         }
     }
+    ImGui::SameLine();
+    if (ImGui::Button("Clear all"))
+    {
+        m_LocationsWithID.clear();
+    }
+    ImGui::SliderFloat("g_WireModelGlobalSizeMultiplier", &g_WireModelGlobalSizeMultiplier, 0.1f, 3.0f);
+    OptionToDrawMultipleVector3fFromClipboard();
 
     static std::optional<MarkerID_t> lastSelectedMarkerIDforPopup;
     std::optional<MarkerID_t> selectedMarkerID;
@@ -241,6 +250,10 @@ void DrawPersistent3DMarkersControls()
         if (ImGui::Button("Delete"))
         {
             toDelete = id;
+        }
+        if (ImGui::IsItemHovered())
+        {
+            g_HoveredEditableMarkerID = id;
         }
         ImGui::NextColumn();
         ImGui::PopID();
@@ -277,10 +290,10 @@ void DrawPersistent3DMarkersControls()
 } // namespace ImGui3D
 
 
-std::optional<Vector3f> ParseVector3fFromClipboard()
+std::optional<Vector3f> ParseVector3f(const std::string_view& sv)
 {
     std::stringstream ss;
-    ss << ImGui::GetClipboardText();
+    ss << sv;
     std::istream_iterator<float> the_end;
     std::istream_iterator<float> inputFloatIterator{ ss };
     Vector3f result;
@@ -296,4 +309,45 @@ std::optional<Vector3f> ParseVector3fFromClipboard()
     }
     // Parsed all 3 floats.
     return result;
+}
+std::optional<Vector3f> ParseVector3fFromClipboard()
+{
+    return ParseVector3f(ImGui::GetClipboardText());
+}
+#include "ACU/ACUGetSingletons.h"
+#include "ACU/Entity.h"
+void ImGui3D::OptionToDrawMultipleVector3fFromClipboard()
+{
+    static bool filterCloseToPlayer = true;
+    static float filterRadiusSqr = 25;
+    static Vector3f filterCloseTo;
+    ImGui::Checkbox("Filter close to player", &filterCloseToPlayer);
+    ImGui::SliderFloat("Filter radiusSquare", &filterRadiusSqr, 1, 100);
+    if (!ImGui::Button("Visualize multiple locations from clipboard (separated by newlines)"))
+    {
+        return;
+    }
+    if (filterCloseToPlayer)
+    {
+        Entity* player = ACU::GetPlayer();
+        if (player)
+        {
+            filterCloseTo = player->GetPosition();
+        }
+    }
+    std::stringstream clipboardAllLines{ ImGui::GetClipboardText() };
+
+    std::string line;
+    while (std::getline(clipboardAllLines, line))
+    {
+        std::optional<Vector3f> parsedVec = ParseVector3f(line);
+        if (parsedVec)
+        {
+            if (filterCloseToPlayer)
+            {
+                if ((*parsedVec - filterCloseTo).lengthSq() > filterRadiusSqr) { continue; }
+            }
+            DrawLocationAndPersist(*parsedVec);
+        }
+    }
 }
