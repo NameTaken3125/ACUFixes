@@ -90,13 +90,18 @@ void ImGui3D::CalculateViewProjectionForCurrentFrame(Matrix4f& viewProjOut)
     SetCorrectViewMatrix(gameMatView);
     viewProjOut = gameMatProj * gameMatView;
 }
+
+std::optional<Vector3f> GetDisguiseTargetPosition();
 void ImGui3D::WhatIsActuallyDrawnForFrame()
 {
-    ImGui3D::DrawMarkers();
     // On a pile of junk next to the artiste.
     static Vector3f testPosition{ 127.82f, 704.28f, 1.06f };
     ImGui3D::DrawWireModel(ImGui3D::GetArrowModel(), testPosition);
-
+    std::optional<Vector3f> currentDisguiseTargetPos = GetDisguiseTargetPosition();
+    if (currentDisguiseTargetPos)
+    {
+        ImGui3D::DrawWireModel(ImGui3D::GetCrossModel(), *currentDisguiseTargetPos);
+    }
     Entity* player = ACU::GetPlayer();
 
     static ImGui3D::ImGuiWireModel grid5_model = ImGui3D::GenerateGrid(5, 2);
@@ -110,6 +115,7 @@ void ImGui3D::WhatIsActuallyDrawnForFrame()
         ImGui3D::DrawWireModelTransform(ImGui3D::GetArrowModel(), player->GetTransform());
         ImGui3D::DrawWireModelTransform(grid5_model, player->GetTransform());
     }
+    ImGui3D::DrawMarkers();
 }
 
 std::filesystem::path& GetThisDLLAbsolutePath();
