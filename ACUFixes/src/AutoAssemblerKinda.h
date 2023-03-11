@@ -470,6 +470,7 @@ struct AllRegisters
     unsigned long long r13_;
     unsigned long long r14_;
     unsigned long long r15_;
+    unsigned long long GetRSP() { return (unsigned long long)rax_ + 0x18; }
 };
 assert_offsetof(AllRegisters, XMM0, 0xA0);
 assert_offsetof(AllRegisters, XMM15, 0x190);

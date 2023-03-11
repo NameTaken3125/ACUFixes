@@ -282,7 +282,9 @@ EquipmentType* GetBallisticAimingCurrentEquipmentType()
 {
     AtomAnimComponent* atomAnimCpnt = GetPlayerAtomAnimComponent();
     if (!atomAnimCpnt) { return nullptr; }
-    return &atomAnimCpnt->human_c58->hasBallisticAimingEquipmentType_710->ballisticAimingCurrentEquipmentType;
+    auto* human = atomAnimCpnt->human_c58; if (!human) { return nullptr; }
+    auto* hasBallisticAimingEquipmentType = human->hasBallisticAimingEquipmentType_710; if (!hasBallisticAimingEquipmentType) { return nullptr; }
+    return &hasBallisticAimingEquipmentType->ballisticAimingCurrentEquipmentType;
 }
 bool IsAimingGuillotineGun()
 {
