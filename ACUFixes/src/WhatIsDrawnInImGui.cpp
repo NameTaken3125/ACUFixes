@@ -134,10 +134,11 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
             if (ImGuiCTX::Tab _mainTab{ "Main Tab" })
             {
                 DrawHacksControls();
+                ImGui::Separator();
+                ImGui::Checkbox("Show the \"is injected\" indicator", &MainConfig::imgui_showSuccessfulInjectionIndicator);
             }
             if (ImGuiCTX::Tab _extraoptions{ "Extra" })
             {
-                ImGui::Checkbox("Show the \"is injected\" indicator", &MainConfig::imgui_showSuccessfulInjectionIndicator);
                 if (ImGui::Button("Open DLL's folder in File Explorer (has config)"))
                 {
                     system(("explorer \"" + GetThisDLLAbsolutePath().parent_path().string() + "\"").c_str());

@@ -51,19 +51,19 @@ void Base::Hooks::GrabGraphicsDevicesInitializeImGuiAndDraw(IDXGISwapChain* this
 	if (Data::ShowMenu)
 	{
         Base::ImGuiLayer_WhenMenuIsOpen();
-		ImGui::Begin("ImGui Window");
-		ImGui::Text("Test ImGUI Window");
-		if (ImGui::Button("Detach"))
-		{
-			ImGui::End();
-			ImGui::EndFrame();
-			ImGui::Render();
-			Data::pContext->OMSetRenderTargets(1, &Data::pMainRenderTargetView, NULL);
-			ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-			Base::Detach();
-            return;
-		}
-		ImGui::End();
+        //ImGui::Begin("ImGui Window");
+        //ImGui::Text("Test ImGUI Window");
+        //if (ImGui::Button("Detach"))
+        //{
+        //    ImGui::End();
+        //    ImGui::EndFrame();
+        //    ImGui::Render();
+        //    Data::pContext->OMSetRenderTargets(1, &Data::pMainRenderTargetView, NULL);
+        //    ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+        //    Base::Detach();
+        //    return;
+        //}
+        //ImGui::End();
 	}
 
 	ImGui::EndFrame();
