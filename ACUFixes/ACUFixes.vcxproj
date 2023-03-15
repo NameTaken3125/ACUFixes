@@ -187,6 +187,7 @@
     <ClCompile Include="src\Hack_DontForceUnsheatheWhenInDisguise.cpp" />
     <ClCompile Include="src\Hack_EnterWindowsWhenRisPressed.cpp" />
     <ClCompile Include="src\Hack_ModifyAimingFOV.cpp" />
+    <ClCompile Include="src\Hack_ReworkedTakeCover.cpp" />
     <ClCompile Include="src\Hack_SlowMenacingWalkAndAutowalk.cpp" />
     <ClCompile Include="src\ImGui3D.cpp" />
     <ClCompile Include="src\ImGui3DRenderer.cpp" />
@@ -206,6 +207,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Enum_BindableKeyCode_Keyboard.h" />
+    <ClInclude Include="src\Hack_CrouchFix.h" />
     <ClInclude Include="src\Hack_CycleEquipmentWhenScrollingMousewheel.h" />
     <ClInclude Include="include\vmath\vmath.h" />
     <ClInclude Include="include\vmath\vmath_extra.h" />
@@ -214,6 +216,7 @@
     <ClInclude Include="src\Hack_DontForceUnsheatheWhenInDisguise.h" />
     <ClInclude Include="src\Hack_EnterWindowsWhenRisPressed.h" />
     <ClInclude Include="src\Hack_ModifyAimingFOV.h" />
+    <ClInclude Include="src\Hack_ReworkedTakeCover.h" />
     <ClInclude Include="src\Hack_SlowMenacingWalkAndAutowalk.h" />
     <ClInclude Include="src\ImGui3D.h" />
     <ClInclude Include="src\ImGui3DRenderer.h" />

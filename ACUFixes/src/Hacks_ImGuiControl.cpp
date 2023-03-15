@@ -6,6 +6,8 @@
 #include "Hack_CycleEquipmentWhenScrollingMousewheel.h"
 #include "Hack_ModifyAimingFOV.h"
 #include "Hack_DontForceUnsheatheWhenInDisguise.h"
+#include "Hack_CrouchFix.h"
+#include "Hack_ReworkedTakeCover.h"
 #include "MyLog.h"
 #include "MainConfig.h"
 #include "ImGuiCTX.h"
@@ -105,6 +107,8 @@ public:
     AutoAssembleWrapper<PlayWithFOV> fovGames;
     AutoAssembleWrapper<PlayWithBombAimCameraTracker2> bombAimExperiments2;
     AutoAssembleWrapper<DontUnsheatheLikeAnIdiotWhileInDisguise> dontUnsheatheWhenInDisguise;
+    AutoAssembleWrapper<CrouchFix> slightlyMoreResponsiveCrouch;
+    AutoAssembleWrapper<ReworkedTakeCover> takingCoverIsLessSticky;
 
     template<class Hack>
     void DrawCheckboxForHack(Hack& hack, const std::string_view& text)
@@ -158,7 +162,9 @@ public:
         {
             ImGui::SetTooltip(
                 "When climbing on a wall, press the specified key (default 'R' like in Syndicate)\n"
-                "to enter a nearby window."
+                "to enter a nearby window.\n"
+                "Additionally, if standing on the ground, enter the nearby Hide Spot\n"
+                "(closet with curtains)."
             );
         }
         if (enterWindowsByPressingAButton.IsActive())
@@ -194,6 +200,19 @@ public:
         }
         DrawCheckboxForHack(cycleEquipmentUsingMouseWheel, "Cycle through equipment using mouse wheel");
         DrawCheckboxForHack(dontUnsheatheWhenInDisguise, "Don't pull out your weapon while you're in Disguise");
+        DrawCheckboxForHack(slightlyMoreResponsiveCrouch, "Slightly more responsive Crouch button");
+        DrawCheckboxForHack(takingCoverIsLessSticky, "Less sticky Take Cover/Leave Cover");
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::SetTooltip(
+                "By default, Take Cover action is only attempted when _just_pressed_ the Take Cover button (Spacebar).\n"
+                "With this activated, Arno will attempt to take cover all the time\n"
+                "while Spacebar is pressed (and staying in low profile).\n"
+                "Also, it's a little easier to detach from cover by moving in the direction away from it.\n"
+                "Also, when behind cover and reached its edge, player leaves cover\n"
+                "instead of leaning around the corner."
+            );
+        }
         if (g_showDevExtraOptions)
         {
             //// This is one of the useless experimental hacks, and has some stuttering I either didn't see or notice before.
@@ -220,6 +239,8 @@ public:
         { bool isActive = true; json::TryToReadVariableFromJSONObjectUsingAdapter(cfg, TO_STRING(changeZoomLevelsWhenAimingBombs), BooleanAdapter(isActive)); changeZoomLevelsWhenAimingBombs.Toggle(isActive); }
         { bool isActive = true; json::TryToReadVariableFromJSONObjectUsingAdapter(cfg, TO_STRING(cycleEquipmentUsingMouseWheel), BooleanAdapter(isActive)); cycleEquipmentUsingMouseWheel.Toggle(isActive); }
         { bool isActive = true; json::TryToReadVariableFromJSONObjectUsingAdapter(cfg, TO_STRING(dontUnsheatheWhenInDisguise), BooleanAdapter(isActive)); dontUnsheatheWhenInDisguise.Toggle(isActive); }
+        { bool isActive = true; json::TryToReadVariableFromJSONObjectUsingAdapter(cfg, TO_STRING(slightlyMoreResponsiveCrouch), BooleanAdapter(isActive)); slightlyMoreResponsiveCrouch.Toggle(isActive); }
+        { bool isActive = true; json::TryToReadVariableFromJSONObjectUsingAdapter(cfg, TO_STRING(takingCoverIsLessSticky), BooleanAdapter(isActive)); takingCoverIsLessSticky.Toggle(isActive); }
     }
     void WriteConfig(JSON& cfg)
     {
@@ -238,6 +259,8 @@ public:
         { bool isActive = changeZoomLevelsWhenAimingBombs.IsActive(); json::WriteVariableAsJSONObjectMemberUsingAdapter(cfg, TO_STRING(changeZoomLevelsWhenAimingBombs), BooleanAdapter(isActive)); }
         { bool isActive = cycleEquipmentUsingMouseWheel.IsActive(); json::WriteVariableAsJSONObjectMemberUsingAdapter(cfg, TO_STRING(cycleEquipmentUsingMouseWheel), BooleanAdapter(isActive)); }
         { bool isActive = dontUnsheatheWhenInDisguise.IsActive(); json::WriteVariableAsJSONObjectMemberUsingAdapter(cfg, TO_STRING(dontUnsheatheWhenInDisguise), BooleanAdapter(isActive)); }
+        { bool isActive = slightlyMoreResponsiveCrouch.IsActive(); json::WriteVariableAsJSONObjectMemberUsingAdapter(cfg, TO_STRING(slightlyMoreResponsiveCrouch), BooleanAdapter(isActive)); }
+        { bool isActive = takingCoverIsLessSticky.IsActive(); json::WriteVariableAsJSONObjectMemberUsingAdapter(cfg, TO_STRING(takingCoverIsLessSticky), BooleanAdapter(isActive)); }
     }
 };
 std::optional<MyHacks> g_MyHacks;
