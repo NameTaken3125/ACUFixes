@@ -32,6 +32,20 @@ void WhenCheckingIfWindowIsToBeEnteredNow_ConfirmIfRequestedForThisFrame(AllRegi
         *(uint32*)(params->rcx_ + 0xDC) = 6;
     }
 }
+#define DEFINE_GAME_FUNCTION(FuncName, relativeOffset, returnType, callingConvention, allParamsInParentheses) \
+using FuncName##_t = returnType(callingConvention*)allParamsInParentheses;\
+FuncName##_t FuncName = (FuncName##_t)relativeOffset;
+
+DEFINE_GAME_FUNCTION(IsShouldEnterHideyClosetNow, 0x14265B350, char, __fastcall, (__int64 a1, __int64 a2));
+void WhenCheckingIfHideyClosetIsToBeEnteredNow_ConfirmIfRequestedForThisFrame(AllRegisters* params)
+{
+    if (IsPressed(enterWindowsButton))
+    {
+        *params->rax_ = 1;
+        return;
+    }
+    *params->rax_ = IsShouldEnterHideyClosetNow(params->rcx_, params->rdx_);
+}
 EnterWindowWhenRisPressed::EnterWindowWhenRisPressed()
 {
     /*
@@ -58,6 +72,9 @@ EnterWindowWhenRisPressed::EnterWindowWhenRisPressed()
     uintptr_t whenCheckingIfWindowIsToBeEnteredNow = 0x1401B0790;
     PresetScript_CCodeInTheMiddle(whenCheckingIfWindowIsToBeEnteredNow, 7,
         WhenCheckingIfWindowIsToBeEnteredNow_ConfirmIfRequestedForThisFrame, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
+    uintptr_t whenCheckingIfHideyClosetIsToBeEnteredNow = 0x14265A2DF;
+    PresetScript_CCodeInTheMiddle(whenCheckingIfHideyClosetIsToBeEnteredNow, 5,
+        WhenCheckingIfHideyClosetIsToBeEnteredNow_ConfirmIfRequestedForThisFrame, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, false);
 }
 
 void Patch_FakeIsMovingFlag(AssemblerContext* m_ctx)
@@ -87,9 +104,6 @@ void Patch_AlwaysRunWindowEntryTester(AssemblerContext* m_ctx)
         nop(6)
     };
 }
-#define DEFINE_GAME_FUNCTION(FuncName, relativeOffset, returnType, callingConvention, allParamsInParentheses) \
-using FuncName##_t = returnType(callingConvention*)allParamsInParentheses;\
-FuncName##_t FuncName = (FuncName##_t)relativeOffset;
 
 class WindowEntryTester;
 DEFINE_GAME_FUNCTION(WindowEntryTester__InitializeForFrame_mb, 0x1401858D0, int, __fastcall, (WindowEntryTester* a1, Vector4f* p_handsPosition, Vector4f* p_movementDirInGroundPlane, float p_WASDmagnitude, int p_eq6fullLean, __int64 p_currentLedge_mb));

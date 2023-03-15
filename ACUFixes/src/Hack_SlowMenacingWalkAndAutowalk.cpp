@@ -102,17 +102,31 @@ void OnMovementVectorUpdate_ManageAutowalk(Vector2f& movementVecWithoutAdjustmen
     }
     autowalkManager.OnAdjustCurrentMovement(movementVecWithoutAdjustments);
 }
+bool IsInSlowWalkMode()
+{
+    const bool isCapsLockOn = (GetKeyState(VK_CAPITAL) & 0x0001) != 0;
+    return isCapsLockOn;
+}
+constexpr float slowWalkMode_SpeedMultiplier = 0.5f;
 void AttenuateMovementVector(AllRegisters* params)
 {
     Vector2f& movementVector = (Vector2f&)*params->rax_;
     InputContainer* inpCont = (InputContainer*)params->rbx_;
     OnMovementVectorUpdate_ManageAutowalk(movementVector, inpCont->GetInputContainerBig());
-    const bool isCapsLockOn = (GetKeyState(VK_CAPITAL) & 0x0001) != 0;
-    if (isCapsLockOn)
+
+    if (IsInSlowWalkMode())
     {
-        constexpr float slowWalkMode_SpeedMultiplier = 0.5f;
         movementVector *= slowWalkMode_SpeedMultiplier;
         int noop = 0;
+    }
+}
+void WhenCheckingIfInputIsStrongEnoughToExitHaystack_IgnoreSlowWalk(AllRegisters* params)
+{
+    Vector2f& inputMovementVec = *(Vector2f*)params->r14_;
+    params->XMM0.f0 = inputMovementVec.length();
+    if (IsInSlowWalkMode())
+    {
+        params->XMM0.f0 /= (slowWalkMode_SpeedMultiplier * slowWalkMode_SpeedMultiplier);
     }
 }
 AllowSlowMenacingWalkAndAutowalk::AllowSlowMenacingWalkAndAutowalk()
@@ -126,4 +140,8 @@ AllowSlowMenacingWalkAndAutowalk::AllowSlowMenacingWalkAndAutowalk()
         , receiverFunc
         , RETURN_TO_RIGHT_AFTER_STOLEN_BYTES
         , isNeedToExecuteStolenBytesAfterwards);
+    uintptr_t whenCheckingIfInputIsStrongEnoughToExitHaystack = 0x14192A6D1;
+    uintptr_t whenCheckingIfInputIsStrongEnoughToExitHaystack_returnAfterCalculation = 0x14192A6EF;
+    PresetScript_CCodeInTheMiddle(whenCheckingIfInputIsStrongEnoughToExitHaystack, 7,
+        WhenCheckingIfInputIsStrongEnoughToExitHaystack_IgnoreSlowWalk, whenCheckingIfInputIsStrongEnoughToExitHaystack_returnAfterCalculation, false);
 }
