@@ -13,6 +13,8 @@
 #include "ImGuiCTX.h"
 #include "ImGui3D.h"
 
+#include "Cheat_BatlampOfFranciade.h"
+
 template<typename floatlike>
 floatlike simple_interp(floatlike mn, floatlike mx)
 {
@@ -219,6 +221,18 @@ public:
             //DrawCheckboxForHack(fovGames, "Play with FOV");
             DrawCheckboxForHack(bombAimExperiments2, "Bomb aim experiments2");
         }
+        ImGui::Separator();
+        if (ImGui::CollapsingHeader("Cheats"))
+        {
+            DrawCheckboxForHack(batlampOfFranciade, "Allow use the Head of Saint Denis outdoors in Franciade");
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::SetTooltip(
+                    "On the next level reload the regular lamp will be replaced by the Head of Saint Denis\n"
+                    "as it is used in the final mission of the Dead Kings DLC.\n"
+                );
+            }
+        }
     }
     void ReadConfig(JSON& cfg)
     {
@@ -262,6 +276,7 @@ public:
         { bool isActive = slightlyMoreResponsiveCrouch.IsActive(); json::WriteVariableAsJSONObjectMemberUsingAdapter(cfg, TO_STRING(slightlyMoreResponsiveCrouch), BooleanAdapter(isActive)); }
         { bool isActive = takingCoverIsLessSticky.IsActive(); json::WriteVariableAsJSONObjectMemberUsingAdapter(cfg, TO_STRING(takingCoverIsLessSticky), BooleanAdapter(isActive)); }
     }
+    AutoAssembleWrapper<BatlampOfFrancide> batlampOfFranciade;
 };
 std::optional<MyHacks> g_MyHacks;
 void DrawHacksControls()
