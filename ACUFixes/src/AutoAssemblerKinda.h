@@ -500,6 +500,8 @@ public:
         uintptr_t whereToInject , size_t howManyBytesStolen
         , CCodeInTheMiddleFunctionPtr_t receiverFunc
         , std::optional<uintptr_t> whereToReturn = RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, bool isNeedToExecuteStolenBytesAfterwards = true);
+    void PresetScript_NOP(
+        uintptr_t whereToInject , size_t howManyBytesToNOP);
 };
 template<class HasAutoAssemblerCodeInConstructor>
 class AutoAssembleWrapper

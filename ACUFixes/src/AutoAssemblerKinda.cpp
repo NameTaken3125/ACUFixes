@@ -505,3 +505,11 @@ void AutoAssemblerCodeHolder_Base::PresetScript_CCodeInTheMiddle(uintptr_t where
         0xE9, RIP(injection_return),        //  - jmp injection_return
     };
 }
+void AutoAssemblerCodeHolder_Base::PresetScript_NOP(uintptr_t whereToInject, size_t howManyBytesToNOP)
+{
+    std::stringstream ss;
+    ss << std::hex << whereToInject;
+    std::string symbolsBaseName = "injectAt_" + ss.str();
+    DEFINE_ADDR_NAMED(injectAt, symbolsBaseName, whereToInject);
+    injectAt = { nop(howManyBytesToNOP) };
+}
