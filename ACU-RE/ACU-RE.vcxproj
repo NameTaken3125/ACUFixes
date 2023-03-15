@@ -169,6 +169,7 @@
     <ClInclude Include="inc\ACU\ACUGetSingletons.h" />
     <ClInclude Include="inc\ACU\ACUPlayerCameraComponent.h" />
     <ClInclude Include="inc\ACU\AtomAnimComponent.h" />
+    <ClInclude Include="inc\ACU\AvatarGearManager.h" />
     <ClInclude Include="inc\ACU\BallisticProjectileAimingControlsSettings.h" />
     <ClInclude Include="inc\ACU\BaseEntity.h" />
     <ClInclude Include="inc\ACU\basic_types.h" />
@@ -196,6 +197,7 @@
     <ClInclude Include="inc\ACU\Human.h" />
     <ClInclude Include="inc\ACU\HumanStatesHolder.h" />
     <ClInclude Include="inc\ACU\InputContainer.h" />
+    <ClInclude Include="inc\ACU\InventoryItemSettings.h" />
     <ClInclude Include="inc\ACU\KeymapScancodes.h" />
     <ClInclude Include="inc\ACU\ManagedObject.h" />
     <ClInclude Include="inc\ACU\MandatoryUniverseComponent.h" />

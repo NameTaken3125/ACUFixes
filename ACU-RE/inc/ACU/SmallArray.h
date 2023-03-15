@@ -18,6 +18,8 @@ public:
     using iterator = T*;
     iterator begin() { return arr; }
     iterator end() { return arr + size; }
+    auto rbegin() { return std::reverse_iterator(arr + size); }
+    auto rend() { return std::reverse_iterator(arr); }
 
     T& operator[](int idx) { return arr[idx]; }
 }; // Size: 0xC

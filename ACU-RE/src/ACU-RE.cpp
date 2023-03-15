@@ -52,3 +52,6 @@
 #include "ACU/DataBindingComponent.h"
 #include "ACU/HUDQuickSelectComponent.h"
 #include "ACU/QuickSelectButtonComponent.h"
+
+#include "ACU/InventoryItemSettings.h"
+#include "ACU/AvatarGearManager.h"

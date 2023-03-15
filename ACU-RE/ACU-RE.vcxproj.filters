@@ -49,6 +49,8 @@
     <ClInclude Include="inc\ACU\QuickSelectButtonComponent.h" />
     <ClInclude Include="inc\ACU\DataBindingComponent.h" />
     <ClInclude Include="inc\ACU\HumanStatesHolder.h" />
+    <ClInclude Include="inc\ACU\InventoryItemSettings.h" />
+    <ClInclude Include="inc\ACU\AvatarGearManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />
