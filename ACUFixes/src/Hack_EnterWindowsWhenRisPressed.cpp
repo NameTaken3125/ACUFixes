@@ -5,21 +5,9 @@
 
 #include "ACU/Parkour_PotentialWindowEntry.h"
 #include "ACU/SmallArray.h"
-#include "ACU/InputContainer.h"
+#include "ACU_InputUtils.h"
 
 #include "MainConfig.h"
-
-namespace ACU::Input {
-InputContainerBig* Get_InputContainerBig()
-{
-    return HasInputContainers::GetSingleton()->p_10->inputContainerBig;
-}
-}
-#include "Enum_BindableKeyCode_Keyboard.h"
-bool IsPressed(BindableKeyCode_Keyboard keycode)
-{
-    return ACU::Input::Get_InputContainerBig()->isPressed_byScancode[(uint32)keycode];
-}
 
 uint32_t float_bytes(float f) { return (uint32_t&)f; }
 void Patch_RunWindowEntryTesterIfRequested_cppTrampoline(AssemblerContext* m_ctx);

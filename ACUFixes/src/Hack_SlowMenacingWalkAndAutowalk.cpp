@@ -88,15 +88,11 @@ private:
 };
 #include "MainConfig.h"
 #include "Enum_BindableKeyCode_Keyboard.h"
-inline uint8 ScancodeFromMyKeycode(BindableKeyCode_Keyboard keycode)
-{
-    return (uint8)keycode;
-}
+#include "ACU_InputUtils.h"
 void OnMovementVectorUpdate_ManageAutowalk(Vector2f& movementVecWithoutAdjustments, InputContainerBig* inpCont)
 {
     static InjectedAutowalkManager autowalkManager;
-    const uint8 scancodeB = ScancodeFromMyKeycode(autowalkButton);
-    if (inpCont->isPressed_byScancode[scancodeB])
+    if (IsPressed(autowalkButton))
     {
         autowalkManager.OnPressedB();
     }
