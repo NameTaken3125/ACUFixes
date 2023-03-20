@@ -4,14 +4,13 @@
 
 #include "ACU/InputContainer.h"
 
+#include "ACU_DefineNativeFunction.h"
+
 bool IsTakeCoverPressed()
 {
     InputContainer& inpCont = InputContainer::GetMainSingleton();
     return inpCont.keyStates_thisFrame.isPressed_parkourUp;
 }
-#define DEFINE_GAME_FUNCTION(FuncName, relativeOffset, returnType, callingConvention, allParamsInParentheses) \
-using FuncName##_t = returnType(callingConvention*)allParamsInParentheses;\
-FuncName##_t FuncName = (FuncName##_t)relativeOffset;
 
 DEFINE_GAME_FUNCTION(WhenTryToTakeCover_IsSpacePressed_mb, 0x1426689A0, char, __fastcall, (__int64 a1, int a2, char a3, char a4));
 void WhenCheckingIfNeedToTakeCover_ForceIfSpacebarIsPressed(AllRegisters* params)

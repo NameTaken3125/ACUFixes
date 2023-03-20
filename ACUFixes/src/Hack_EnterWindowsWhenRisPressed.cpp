@@ -20,9 +20,7 @@ void WhenCheckingIfWindowIsToBeEnteredNow_ConfirmIfRequestedForThisFrame(AllRegi
         *(uint32*)(params->rcx_ + 0xDC) = 6;
     }
 }
-#define DEFINE_GAME_FUNCTION(FuncName, relativeOffset, returnType, callingConvention, allParamsInParentheses) \
-using FuncName##_t = returnType(callingConvention*)allParamsInParentheses;\
-FuncName##_t FuncName = (FuncName##_t)relativeOffset;
+#include "ACU_DefineNativeFunction.h"
 
 DEFINE_GAME_FUNCTION(IsShouldEnterHideyClosetNow, 0x14265B350, char, __fastcall, (__int64 a1, __int64 a2));
 void WhenCheckingIfHideyClosetIsToBeEnteredNow_ConfirmIfRequestedForThisFrame(AllRegisters* params)

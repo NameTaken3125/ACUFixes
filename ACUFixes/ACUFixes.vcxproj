@@ -207,6 +207,7 @@
     <ClCompile Include="src\WhatIsDrawnInImGui.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\ACU_DefineNativeFunction.h" />
     <ClInclude Include="src\ACU_InputUtils.h" />
     <ClInclude Include="src\Cheat_BatlampOfFranciade.h" />
     <ClInclude Include="src\Enum_BindableKeyCode_Keyboard.h" />
