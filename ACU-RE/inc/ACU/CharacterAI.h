@@ -4,6 +4,7 @@
 
 class AbstractEntityAI_A8;
 class BhvAssassin;
+class ReactionHandler;
 
 
 class AbstractEntityAI : public Statechart
@@ -11,7 +12,7 @@ class AbstractEntityAI : public Statechart
 public:
     AbstractEntityAI_A8* toInventory_a8; //0x00A8
     char pad_00B0[40]; //0x00B0
-    void* reactionHandler; //0x00D8
+    ReactionHandler* reactionHandler; //0x00D8
     void* perceptionHandler; //0x00E0
     void* CLPlayerDeath_; //0x00E8
     char pad_00F0[40]; //0x00F0

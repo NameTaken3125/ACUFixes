@@ -167,7 +167,10 @@
   <ItemGroup>
     <ClInclude Include="inc\ACU\ActionKeyStates.h" />
     <ClInclude Include="inc\ACU\ACUGetSingletons.h" />
+    <ClInclude Include="inc\ACU\ACUGlobalSoundSet.h" />
     <ClInclude Include="inc\ACU\ACUPlayerCameraComponent.h" />
+    <ClInclude Include="inc\ACU\AlertedParams.h" />
+    <ClInclude Include="inc\ACU\AssassinSoundSettings.h" />
     <ClInclude Include="inc\ACU\AtomAnimComponent.h" />
     <ClInclude Include="inc\ACU\AvatarGearManager.h" />
     <ClInclude Include="inc\ACU\BallisticProjectileAimingControlsSettings.h" />
@@ -204,13 +207,19 @@
     <ClInclude Include="inc\ACU\Parkour_PotentialWindowEntry.h" />
     <ClInclude Include="inc\ACU\Parkour_WhileOnWallSystem.h" />
     <ClInclude Include="inc\ACU\QuickSelectButtonComponent.h" />
+    <ClInclude Include="inc\ACU\ReactionHandler.h" />
     <ClInclude Include="inc\ACU\RenderValuesHolder.h" />
     <ClInclude Include="inc\ACU\SharedPtr.h" />
     <ClInclude Include="inc\ACU\SmallArray.h" />
+    <ClInclude Include="inc\ACU\SoundEvent.h" />
+    <ClInclude Include="inc\ACU\SoundManager.h" />
+    <ClInclude Include="inc\ACU\SoundResource.h" />
     <ClInclude Include="inc\ACU\Statechart.h" />
     <ClInclude Include="inc\ACU\ThrowTargetPrecision.h" />
     <ClInclude Include="inc\ACU\TypeInfo.h" />
     <ClInclude Include="inc\ACU\UIWorldComponent.h" />
+    <ClInclude Include="inc\ACU\WhenHighlightedNPCChanges.h" />
+    <ClInclude Include="inc\ACU\WitnessEvent.h" />
     <ClInclude Include="inc\ACU\World.h" />
     <ClInclude Include="inc\ACU\WorldComponent.h" />
     <ClInclude Include="src\framework.h" />

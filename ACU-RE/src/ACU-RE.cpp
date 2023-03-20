@@ -55,3 +55,15 @@
 
 #include "ACU/InventoryItemSettings.h"
 #include "ACU/AvatarGearManager.h"
+
+#include "ACU/WhenHighlightedNPCChanges.h"
+#include "ACU/ReactionHandler.h"
+
+#include "ACU/WitnessEvent.h"
+#include "ACU/AlertedParams.h"
+
+#include "ACU/SoundManager.h"
+#include "ACU/SoundResource.h"
+#include "ACU/SoundEvent.h"
+#include "ACU/ACUGlobalSoundSet.h"
+#include "ACU/AssassinSoundSettings.h"

@@ -51,6 +51,15 @@
     <ClInclude Include="inc\ACU\HumanStatesHolder.h" />
     <ClInclude Include="inc\ACU\InventoryItemSettings.h" />
     <ClInclude Include="inc\ACU\AvatarGearManager.h" />
+    <ClInclude Include="inc\ACU\WhenHighlightedNPCChanges.h" />
+    <ClInclude Include="inc\ACU\ReactionHandler.h" />
+    <ClInclude Include="inc\ACU\WitnessEvent.h" />
+    <ClInclude Include="inc\ACU\AlertedParams.h" />
+    <ClInclude Include="inc\ACU\SoundManager.h" />
+    <ClInclude Include="inc\ACU\AssassinSoundSettings.h" />
+    <ClInclude Include="inc\ACU\SoundResource.h" />
+    <ClInclude Include="inc\ACU\SoundEvent.h" />
+    <ClInclude Include="inc\ACU\ACUGlobalSoundSet.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />
