@@ -170,6 +170,7 @@
     <ClInclude Include="inc\ACU\ACUGlobalSoundSet.h" />
     <ClInclude Include="inc\ACU\ACUPlayerCameraComponent.h" />
     <ClInclude Include="inc\ACU\AlertedParams.h" />
+    <ClInclude Include="inc\ACU\AssassinAbilitySet.h" />
     <ClInclude Include="inc\ACU\AssassinSoundSettings.h" />
     <ClInclude Include="inc\ACU\AtomAnimComponent.h" />
     <ClInclude Include="inc\ACU\AvatarGearManager.h" />
@@ -182,6 +183,8 @@
     <ClInclude Include="inc\ACU\CameraSelectorBlenderNode.h" />
     <ClInclude Include="inc\ACU\CharacterAI.h" />
     <ClInclude Include="inc\ACU\Component.h" />
+    <ClInclude Include="inc\ACU\CSrvAbstract.h" />
+    <ClInclude Include="inc\ACU\CSrvPlayerHealth.h" />
     <ClInclude Include="inc\ACU\CSrvPlayerWeaponSwitch.h" />
     <ClInclude Include="inc\ACU\CurvePoints.h" />
     <ClInclude Include="inc\ACU\DataBindingComponent.h" />
@@ -206,6 +209,7 @@
     <ClInclude Include="inc\ACU\MandatoryUniverseComponent.h" />
     <ClInclude Include="inc\ACU\Parkour_PotentialWindowEntry.h" />
     <ClInclude Include="inc\ACU\Parkour_WhileOnWallSystem.h" />
+    <ClInclude Include="inc\ACU\PlayerProgressionManager.h" />
     <ClInclude Include="inc\ACU\QuickSelectButtonComponent.h" />
     <ClInclude Include="inc\ACU\ReactionHandler.h" />
     <ClInclude Include="inc\ACU\RenderValuesHolder.h" />

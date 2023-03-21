@@ -17,7 +17,9 @@
 #include "ACU/BhvAssassin.h"
 #include "ACU/CharacterAI.h"
 #include "ACU/Statechart.h"
+#include "ACU/CSrvAbstract.h"
 #include "ACU/CSrvPlayerWeaponSwitch.h"
+#include "ACU/CSrvPlayerHealth.h"
 
 #include "ACU/Parkour_PotentialWindowEntry.h"
 #include "ACU/Parkour_WhileOnWallSystem.h"
@@ -69,3 +71,6 @@
 #include "ACU/ACUGlobalSoundSet.h"
 #include "ACU/UISounds.h"
 #include "ACU/AssassinSoundSettings.h"
+
+#include "ACU/PlayerProgressionManager.h"
+#include "ACU/AssassinAbilitySet.h"

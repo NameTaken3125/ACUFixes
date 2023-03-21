@@ -62,6 +62,10 @@
     <ClInclude Include="inc\ACU\ACUGlobalSoundSet.h" />
     <ClInclude Include="inc\ACU\UISounds.h" />
     <ClInclude Include="inc\ACU\SoundSet.h" />
+    <ClInclude Include="inc\ACU\CSrvPlayerHealth.h" />
+    <ClInclude Include="inc\ACU\CSrvAbstract.h" />
+    <ClInclude Include="inc\ACU\PlayerProgressionManager.h" />
+    <ClInclude Include="inc\ACU\AssassinAbilitySet.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />

@@ -44,7 +44,7 @@ public:
     };
 public:
     // @members
-    SoundEventWrapper arrSounds[UISoundsEnum::k_NUM_ITEMS];
+    SoundInstance arrSounds[UISoundsEnum::k_NUM_ITEMS];
 
     // @helper_functions
     static UISounds* GetSingleton();

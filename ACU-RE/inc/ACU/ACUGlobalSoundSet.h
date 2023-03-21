@@ -39,9 +39,9 @@ public:
     };
 public:
     // @members
-    SmallArray<SoundEventWrapper> arrSoundEvents_10;
+    SmallArray<SoundInstance> arrSoundEvents_10;
     char pad_1C[0x1C];
-    SoundEventWrapper arrSoundEvents_38[SoundsEnum::k_NUM_ITEMS];
+    SoundInstance arrSoundEvents_38[SoundsEnum::k_NUM_ITEMS];
     char pad_1508[8];
 
     // @helper_functions

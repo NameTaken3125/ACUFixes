@@ -9,11 +9,11 @@ public:
 }; //Size: 0x0020
 assert_sizeof(SoundEvent, 0x20);
 
-class SoundEventWrapper
+class SoundInstance
 {
 public:
     char pad_0000[8]; //0x0000
     SoundEvent soundEvn; //0x0008
     char pad_0028[8]; //0x0028
 }; //Size: 0x0030
-assert_sizeof(SoundEventWrapper, 0x30);
+assert_sizeof(SoundInstance, 0x30);
