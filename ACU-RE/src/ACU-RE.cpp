@@ -65,5 +65,7 @@
 #include "ACU/SoundManager.h"
 #include "ACU/SoundResource.h"
 #include "ACU/SoundEvent.h"
+#include "ACU/SoundSet.h"
 #include "ACU/ACUGlobalSoundSet.h"
+#include "ACU/UISounds.h"
 #include "ACU/AssassinSoundSettings.h"

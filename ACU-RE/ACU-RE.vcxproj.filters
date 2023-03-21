@@ -60,6 +60,8 @@
     <ClInclude Include="inc\ACU\SoundResource.h" />
     <ClInclude Include="inc\ACU\SoundEvent.h" />
     <ClInclude Include="inc\ACU\ACUGlobalSoundSet.h" />
+    <ClInclude Include="inc\ACU\UISounds.h" />
+    <ClInclude Include="inc\ACU\SoundSet.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />
@@ -71,5 +73,7 @@
     <ClCompile Include="src\BallisticProjectileAimingControlsSettings.cpp" />
     <ClCompile Include="src\Entity.cpp" />
     <ClCompile Include="src\HumanStatesHolder.cpp" />
+    <ClCompile Include="src\UISounds.cpp" />
+    <ClCompile Include="src\ACUGlobalSoundSet.cpp" />
   </ItemGroup>
 </Project>

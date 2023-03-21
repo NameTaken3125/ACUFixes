@@ -214,9 +214,11 @@
     <ClInclude Include="inc\ACU\SoundEvent.h" />
     <ClInclude Include="inc\ACU\SoundManager.h" />
     <ClInclude Include="inc\ACU\SoundResource.h" />
+    <ClInclude Include="inc\ACU\SoundSet.h" />
     <ClInclude Include="inc\ACU\Statechart.h" />
     <ClInclude Include="inc\ACU\ThrowTargetPrecision.h" />
     <ClInclude Include="inc\ACU\TypeInfo.h" />
+    <ClInclude Include="inc\ACU\UISounds.h" />
     <ClInclude Include="inc\ACU\UIWorldComponent.h" />
     <ClInclude Include="inc\ACU\WhenHighlightedNPCChanges.h" />
     <ClInclude Include="inc\ACU\WitnessEvent.h" />
@@ -228,6 +230,7 @@
   <ItemGroup>
     <ClCompile Include="src\ACU-RE.cpp" />
     <ClCompile Include="src\ACUGetSingletons.cpp" />
+    <ClCompile Include="src\ACUGlobalSoundSet.cpp" />
     <ClCompile Include="src\ACUPlayerCameraComponent.cpp" />
     <ClCompile Include="src\BallisticProjectileAimingControlsSettings.cpp" />
     <ClCompile Include="src\BhvAssassin.cpp" />
@@ -239,6 +242,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="src\UISounds.cpp" />
     <ClCompile Include="src\World.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
