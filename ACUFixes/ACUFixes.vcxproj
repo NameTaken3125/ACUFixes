@@ -190,6 +190,7 @@
     <ClCompile Include="src\Hack_ModifyAimingFOV.cpp" />
     <ClCompile Include="src\Hack_ReworkedTakeCover.cpp" />
     <ClCompile Include="src\Hack_SlowMenacingWalkAndAutowalk.cpp" />
+    <ClCompile Include="src\Hack_WhistleAbility.cpp" />
     <ClCompile Include="src\ImGui3D.cpp" />
     <ClCompile Include="src\ImGui3DRenderer.cpp" />
     <ClCompile Include="src\main.cpp" />
@@ -222,6 +223,7 @@
     <ClInclude Include="src\Hack_ModifyAimingFOV.h" />
     <ClInclude Include="src\Hack_ReworkedTakeCover.h" />
     <ClInclude Include="src\Hack_SlowMenacingWalkAndAutowalk.h" />
+    <ClInclude Include="src\Hack_WhistleAbility.h" />
     <ClInclude Include="src\ImGui3D.h" />
     <ClInclude Include="src\ImGui3DRenderer.h" />
     <ClInclude Include="src\ImGuiCTX.h" />

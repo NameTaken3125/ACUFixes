@@ -8,6 +8,9 @@
 #include "Hack_DontForceUnsheatheWhenInDisguise.h"
 #include "Hack_CrouchFix.h"
 #include "Hack_ReworkedTakeCover.h"
+
+#include "Hack_WhistleAbility.h"
+
 #include "MyLog.h"
 #include "MainConfig.h"
 #include "ImGuiCTX.h"
@@ -114,6 +117,8 @@ public:
     AutoAssembleWrapper<CrouchFix> slightlyMoreResponsiveCrouch;
     AutoAssembleWrapper<ReworkedTakeCover> takingCoverIsLessSticky;
 
+    AutoAssembleWrapper<WhistleAbility> whistleAbility;
+
     template<class Hack>
     void DrawCheckboxForHack(Hack& hack, const std::string_view& text)
     {
@@ -161,6 +166,12 @@ public:
             this->WriteConfig(MainConfig::GetConfigJSON());
             MainConfig::WriteToFile();
         }
+        //DrawCheckboxForHack(whistleAbility, "Whistle ability");
+        //if (ImGui::IsItemHovered())
+        //{
+        //    ImGui::SetTooltip("Press Y to _try_to_ attract nearby guards' attention. Very unfinished.");
+        //}
+        //WhistleAbilityAttempt_ImGuiControls(whistleAbility.IsActive());
         DrawCheckboxForHack(enterWindowsByPressingAButton, "Enter nearby windows by pressing a button");
         if (ImGui::IsItemHovered())
         {
@@ -219,9 +230,12 @@ public:
         }
         if (g_showDevExtraOptions)
         {
-            //// This is one of the useless experimental hacks, and has some stuttering I either didn't see or notice before.
-            //DrawCheckboxForHack(fovGames, "Play with FOV");
-            DrawCheckboxForHack(bombAimExperiments2, "Bomb aim experiments2");
+            if (ImGuiCTX::TreeNode _header{ "Unfinished and useless hacks" })
+            {
+                // This is one of the useless experimental hacks, and has some stuttering I either didn't see or notice before.
+                DrawCheckboxForHack(fovGames, "Play with FOV");
+                DrawCheckboxForHack(bombAimExperiments2, "Bomb aim experiments2");
+            }
         }
         ImGui::Separator();
         if (ImGui::CollapsingHeader("Cheats"))
