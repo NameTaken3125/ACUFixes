@@ -228,9 +228,12 @@ public:
             if (ImGui::IsItemHovered())
             {
                 ImGui::SetTooltip(
-                    "On the next level reload the regular lamp will be replaced by the Head of Saint Denis\n"
-                    "as it is used in the final mission of the Dead Kings DLC.\n"
+                    "Please read the options after activation."
                 );
+            }
+            if (batlampOfFranciade.IsActive())
+            {
+                DrawBatlampControls();
             }
         }
     }

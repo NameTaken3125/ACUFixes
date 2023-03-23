@@ -460,7 +460,7 @@ struct AllRegisters
     unsigned long long rdx_;
     unsigned long long rsi_;
     unsigned long long rdi_;
-    unsigned long long* rax_;
+    unsigned long long* rax_;   // Note that RAX is accessed differently from other registers: the _value_ of RAX register is `*this->rax_`, not `this->rax_`.
     unsigned long long rbp_;
     unsigned long long r8_;
     unsigned long long r9_;
