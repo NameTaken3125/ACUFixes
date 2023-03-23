@@ -3,6 +3,7 @@
 #include "Component.h"
 
 class CharacterAI;
+class Human;
 
 class AIComponentBase : public Component
 {
@@ -27,8 +28,9 @@ class AIComponent : public AIComponentBase
 public:
     char pad_0080[56]; //0x0080
     CharacterAI* characterAI_toHealthAndInventory; //0x00B8
-    char pad_00C0[16]; //0x00C0
-    unsigned char bInvisible; //0x00D0
+    char pad_00C0[8]; //0x00C0
+    Human* human; //0x00C8
+    uint8 bInvisible; //0x00D0
     char pad_00D1[71]; //0x00D1
     AbstractAIEntityGroup abstractAIEntityGroup; //0x0118
 }; //Size: 0x0B90

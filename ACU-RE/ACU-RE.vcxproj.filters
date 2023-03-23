@@ -66,6 +66,17 @@
     <ClInclude Include="inc\ACU\CSrvAbstract.h" />
     <ClInclude Include="inc\ACU\PlayerProgressionManager.h" />
     <ClInclude Include="inc\ACU\AssassinAbilitySet.h" />
+    <ClInclude Include="inc\ACU\DominoComponent.h" />
+    <ClInclude Include="inc\ACU\DominoScriptExecutionContext.h" />
+    <ClInclude Include="inc\ACU\DominoOperatorData.h" />
+    <ClInclude Include="inc\ACU\AIActionEntityOperatorData.h" />
+    <ClInclude Include="inc\ACU\ActionAbilitySet.h" />
+    <ClInclude Include="inc\ACU\AIAction.h" />
+    <ClInclude Include="inc\ACU\LanterndlcComponent.h" />
+    <ClInclude Include="inc\ACU\EntityGroup.h" />
+    <ClInclude Include="inc\ACU\CLAbstract.h" />
+    <ClInclude Include="inc\ACU\EntityAIProcess.h" />
+    <ClInclude Include="inc\ACU\CLAssassin.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />
@@ -79,5 +90,6 @@
     <ClCompile Include="src\HumanStatesHolder.cpp" />
     <ClCompile Include="src\UISounds.cpp" />
     <ClCompile Include="src\ACUGlobalSoundSet.cpp" />
+    <ClCompile Include="src\CLAssassin.cpp" />
   </ItemGroup>
 </Project>

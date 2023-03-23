@@ -165,10 +165,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="inc\ACU\ActionAbilitySet.h" />
     <ClInclude Include="inc\ACU\ActionKeyStates.h" />
     <ClInclude Include="inc\ACU\ACUGetSingletons.h" />
     <ClInclude Include="inc\ACU\ACUGlobalSoundSet.h" />
     <ClInclude Include="inc\ACU\ACUPlayerCameraComponent.h" />
+    <ClInclude Include="inc\ACU\AIAction.h" />
+    <ClInclude Include="inc\ACU\AIActionEntityOperatorData.h" />
     <ClInclude Include="inc\ACU\AlertedParams.h" />
     <ClInclude Include="inc\ACU\AssassinAbilitySet.h" />
     <ClInclude Include="inc\ACU\AssassinSoundSettings.h" />
@@ -182,13 +185,20 @@
     <ClInclude Include="inc\ACU\CameraManager.h" />
     <ClInclude Include="inc\ACU\CameraSelectorBlenderNode.h" />
     <ClInclude Include="inc\ACU\CharacterAI.h" />
+    <ClInclude Include="inc\ACU\CLAbstract.h" />
+    <ClInclude Include="inc\ACU\CLAssassin.h" />
     <ClInclude Include="inc\ACU\Component.h" />
     <ClInclude Include="inc\ACU\CSrvAbstract.h" />
     <ClInclude Include="inc\ACU\CSrvPlayerHealth.h" />
     <ClInclude Include="inc\ACU\CSrvPlayerWeaponSwitch.h" />
     <ClInclude Include="inc\ACU\CurvePoints.h" />
     <ClInclude Include="inc\ACU\DataBindingComponent.h" />
+    <ClInclude Include="inc\ACU\DominoComponent.h" />
+    <ClInclude Include="inc\ACU\DominoOperatorData.h" />
+    <ClInclude Include="inc\ACU\DominoScriptExecutionContext.h" />
     <ClInclude Include="inc\ACU\Entity.h" />
+    <ClInclude Include="inc\ACU\EntityAIProcess.h" />
+    <ClInclude Include="inc\ACU\EntityGroup.h" />
     <ClInclude Include="inc\ACU\Enum_ActionKeyCode.h" />
     <ClInclude Include="inc\ACU\Enum_EquipmentType.h" />
     <ClInclude Include="inc\ACU\EventListener.h" />
@@ -205,6 +215,7 @@
     <ClInclude Include="inc\ACU\InputContainer.h" />
     <ClInclude Include="inc\ACU\InventoryItemSettings.h" />
     <ClInclude Include="inc\ACU\KeymapScancodes.h" />
+    <ClInclude Include="inc\ACU\LanterndlcComponent.h" />
     <ClInclude Include="inc\ACU\ManagedObject.h" />
     <ClInclude Include="inc\ACU\MandatoryUniverseComponent.h" />
     <ClInclude Include="inc\ACU\Parkour_PotentialWindowEntry.h" />
@@ -238,6 +249,7 @@
     <ClCompile Include="src\ACUPlayerCameraComponent.cpp" />
     <ClCompile Include="src\BallisticProjectileAimingControlsSettings.cpp" />
     <ClCompile Include="src\BhvAssassin.cpp" />
+    <ClCompile Include="src\CLAssassin.cpp" />
     <ClCompile Include="src\Entity.cpp" />
     <ClCompile Include="src\HumanStatesHolder.cpp" />
     <ClCompile Include="src\pch.cpp">

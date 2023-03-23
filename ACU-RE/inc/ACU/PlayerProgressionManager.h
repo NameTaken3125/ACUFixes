@@ -3,6 +3,7 @@
 #include "MandatoryUniverseComponent.h"
 #include "SmallArray.h"
 #include "SharedPtr.h"
+#include "AIAction.h"
 
 class SinglePlayerOptions
 {
@@ -45,14 +46,6 @@ public:
 }; //Size: 0x0018
 assert_sizeof(InventoryItemDataRepository, 0x18);
 
-class AIAction : public ManagedObject
-{
-public:
-	char pad_0010[24]; //0x0010
-	char* str_targetEntity; //0x0028
-	char pad_0030[16]; //0x0030
-}; //Size: 0x0040
-assert_sizeof(AIAction, 0x40);
 
 class ActionNotoriety : public AIAction
 {
@@ -107,7 +100,7 @@ class AssassinAbilitySets
 {
 public:
 	AssassinAbilitySet* assassinAbilitySet; //0x0000
-	SmallArray<AssassinAbilitySet*> papAssassinAbilitySet; //0x0008
+	SmallArray<AssassinAbilitySet*> additionalAbilitySets; //0x0008
 	uint8 isUsingArray_mb; //0x0014
 	char pad_0015[43]; //0x0015
 
@@ -116,8 +109,8 @@ public:
 	AssassinAbilitySet* GetHighestPrioritySet()
 	{
 		// Implementation at e.g. 140B9C4D0
-		return papAssassinAbilitySet.size
-			? papAssassinAbilitySet[papAssassinAbilitySet.size - 1]
+		return additionalAbilitySets.size
+			? additionalAbilitySets[additionalAbilitySets.size - 1]
 			: assassinAbilitySet;
 	}
 }; //Size: 0x0040

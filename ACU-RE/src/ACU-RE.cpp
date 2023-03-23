@@ -17,9 +17,12 @@
 #include "ACU/BhvAssassin.h"
 #include "ACU/CharacterAI.h"
 #include "ACU/Statechart.h"
+#include "ACU/EntityAIProcess.h"
 #include "ACU/CSrvAbstract.h"
 #include "ACU/CSrvPlayerWeaponSwitch.h"
 #include "ACU/CSrvPlayerHealth.h"
+#include "ACU/CLAbstract.h"
+#include "ACU/CLAssassin.h"
 
 #include "ACU/Parkour_PotentialWindowEntry.h"
 #include "ACU/Parkour_WhileOnWallSystem.h"
@@ -72,5 +75,14 @@
 #include "ACU/UISounds.h"
 #include "ACU/AssassinSoundSettings.h"
 
+#include "ACU/AIAction.h"
 #include "ACU/PlayerProgressionManager.h"
 #include "ACU/AssassinAbilitySet.h"
+
+#include "ACU/DominoComponent.h"
+#include "ACU/DominoScriptExecutionContext.h"
+#include "ACU/DominoOperatorData.h"
+#include "ACU/AIActionEntityOperatorData.h"
+#include "ACU/ActionAbilitySet.h"
+
+#include "ACU/LanterndlcComponent.h"
