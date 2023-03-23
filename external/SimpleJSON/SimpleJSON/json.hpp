@@ -12,14 +12,102 @@ From https://github.com/nbsdx/SimpleJSON.
 #include <string>
 #include <deque>
 #include <map>
+#include <unordered_map>
 #include <type_traits>
 #include <initializer_list>
 #include <ostream>
 #include <iostream>
 
+// It's an `std::map<std::string, JSON>`, but it iterates in the order of element insertion.
+// Nicer config formatting this way.
+template<typename StringKey_t, typename Value_t>
+class ordered_map
+{
+    using Map_t = std::map<StringKey_t, Value_t>;
+    Map_t m_Map;
+
+    using Vec_t = std::vector<std::string_view>;
+    Vec_t m_ViewsOnKeysInTheOrderOfInsertion;
+    friend class InsertionOrderIterator;
+public:
+    class InsertionOrderIterator
+    {
+        using Underlying_t = Vec_t::iterator;
+        Underlying_t m_UnderlyingIterator;
+        ordered_map& m_MapRef;
+    public:
+
+        InsertionOrderIterator operator++() { return { ++m_UnderlyingIterator, m_MapRef }; }
+        bool operator!=(const InsertionOrderIterator& rhs) { return m_UnderlyingIterator != rhs.m_UnderlyingIterator; }
+        std::pair<const StringKey_t, Value_t>& operator*()
+        {
+            return *m_MapRef.m_Map.find(StringKey_t(*m_UnderlyingIterator));
+        }
+
+        InsertionOrderIterator(const InsertionOrderIterator& rhs)
+            : m_UnderlyingIterator(rhs.m_UnderlyingIterator)
+            , m_MapRef(rhs.m_MapRef)
+        {}
+        InsertionOrderIterator(const Underlying_t& it, ordered_map& mapRef)
+            : m_UnderlyingIterator(it)
+            , m_MapRef(mapRef)
+        {}
+    };
+    using iterator = InsertionOrderIterator;
+    using const_iterator = const InsertionOrderIterator;
+
+    iterator begin() { return iterator(m_ViewsOnKeysInTheOrderOfInsertion.begin(), *this); }
+    iterator end() { return iterator(m_ViewsOnKeysInTheOrderOfInsertion.end(), *this); }
+
+    ordered_map() {}
+    ordered_map(iterator first, iterator last)
+    {
+        while (first != last)
+        {
+            m_Map[(*first).first] = (*first).second;
+            auto [newIt, isSuccess] = m_Map.emplace((*first).first, (*first).second);
+            m_ViewsOnKeysInTheOrderOfInsertion.push_back(newIt->first);
+            ++first;
+        }
+    }
+
+    Value_t& operator[](const StringKey_t& key)
+    {
+        auto foundIt = m_Map.find(key);
+        if (foundIt != m_Map.end())
+        {
+            return foundIt->second;
+        }
+        auto [newIt, isSuccess] = m_Map.emplace(key, Value_t());
+        m_ViewsOnKeysInTheOrderOfInsertion.push_back(newIt->first);
+        return newIt->second;
+    }
+    const Value_t& at(const StringKey_t& key)
+    {
+        return (*this)[key];
+    }
+    iterator find(const StringKey_t& key)
+    {
+        std::map<std::string, int> m;
+        for (auto it = m_ViewsOnKeysInTheOrderOfInsertion.begin(), end = m_ViewsOnKeysInTheOrderOfInsertion.end(); it != end; ++it)
+        {
+            if (key == *it)
+            {
+                return { it, *this };
+            }
+        }
+        return end();
+    }
+    size_t size() const
+    {
+        return m_ViewsOnKeysInTheOrderOfInsertion.size();
+    }
+};
 namespace json {
 
-using std::map;
+template<typename StringKey_t, typename Value_t>
+using map = ordered_map<StringKey_t, Value_t>;
+//using std::map;
 using std::deque;
 using std::string;
 using std::enable_if;
