@@ -10,13 +10,7 @@
 
 #include "base.h"
 
-namespace MainConfig {
-
-bool imgui_useImGui = true;
-bool imgui_showSuccessfulInjectionIndicator = true;
-
-} // namespace MainConfig
-
+ConfigTop g_Config;
 
 fs::path& GetThisDLLAbsolutePath()
 {
@@ -35,12 +29,6 @@ fs::path AbsolutePathInMyDirectory(const fs::path& filenameRel)
     return fullPath;
 }
 
-void DumpConfig(JSON& cfg)
-{
-    using namespace MainConfig;
-    WRITE_JSON_VARIABLE(cfg, imgui_showSuccessfulInjectionIndicator, BooleanAdapter);
-    WRITE_JSON_VARIABLE(cfg, imgui_useImGui, BooleanAdapter);
-}
 namespace MainConfig {
 fs::path GetMainConfigFilepath()
 {
@@ -54,14 +42,10 @@ JSON ReadMainConfigFile()
     LOG_DEBUG("Read from config file \"%s\":\n%s\n", configFullPath.string().c_str(), cfg.dump().c_str());
     return cfg;
 }
-JSON& GetConfigJSON()
-{
-    static JSON configFileJSON = ReadMainConfigFile();
-    return configFileJSON;
-}
 void WriteToFile()
 {
-    JSON& cfg = MainConfig::GetConfigJSON();
+    JSON cfg;
+    g_Config.SectionToJSON(cfg);
     fs::path configFullPath = GetMainConfigFilepath();
     LOG_DEBUG("Writing to config file \"%s\":\n%s\n", configFullPath.string().c_str(), cfg.dump().c_str());
     json::ToFile(cfg, configFullPath);
@@ -69,12 +53,7 @@ void WriteToFile()
 } // namespace MainConfig
 void MainConfig::FindAndLoadConfigFileOrCreateDefault()
 {
-    JSON& cfg = MainConfig::GetConfigJSON();
-    if (cfg.IsObject())
-    {
-        READ_JSON_VARIABLE(cfg, imgui_showSuccessfulInjectionIndicator, BooleanAdapter);
-        READ_JSON_VARIABLE(cfg, imgui_useImGui, BooleanAdapter);
-    }
-    DumpConfig(cfg);
+    JSON cfg = ReadMainConfigFile();
+    g_Config.SectionFromJSON(cfg);
     MainConfig::WriteToFile();
 }

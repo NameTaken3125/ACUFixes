@@ -57,7 +57,7 @@ static void MainThread(HMODULE thisDLLModule)
     MainConfig::FindAndLoadConfigFileOrCreateDefault();
     DisableMainIntegrityCheck();
     std::unique_ptr<Base::Settings> basehook;
-    if (MainConfig::imgui_useImGui)
+    if (g_Config.imgui_useImGui)
     {
         basehook = std::make_unique<PresentHookOuter::BasehookSettings_PresentHookOuter>();
     }

@@ -135,7 +135,7 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
             {
                 DrawHacksControls();
                 ImGui::Separator();
-                ImGui::Checkbox("Show the \"is injected\" indicator", &MainConfig::imgui_showSuccessfulInjectionIndicator);
+                ImGui::Checkbox("Show the \"is injected\" indicator", &g_Config.imgui_showSuccessfulInjectionIndicator.get());
             }
             if (ImGuiCTX::Tab _extraoptions{ "Extra" })
             {
@@ -196,6 +196,6 @@ void Base::ImGuiLayer_EvenWhenMenuIsClosed()
     bool drawImGui3D = g_showDevExtraOptions;
     if (drawImGui3D)
         ImGui3D::DrawStuff();
-    if (MainConfig::imgui_showSuccessfulInjectionIndicator)
+    if (g_Config.imgui_showSuccessfulInjectionIndicator)
         DrawSuccessfulInjectionIndicatorOverlay();
 }

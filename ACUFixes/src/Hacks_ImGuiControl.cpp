@@ -26,8 +26,6 @@
 
 
 extern bool g_showDevExtraOptions;
-BindableKeyCode_Keyboard enterWindowsButton = BindableKeyCode_Keyboard::K_R;
-BindableKeyCode_Keyboard autowalkButton = BindableKeyCode_Keyboard::K_B;
 #include "Serialization/Serialization.h"
 #include "Serialization/BooleanAdapter.h"
 #include "Serialization/EnumAdapter.h"
@@ -69,7 +67,6 @@ void DrawCheckboxForHack(Hack& hack, const std::string_view& text)
     }
 }
 } // namespace ImGui
-void YAConfigTest();
 class MyHacks
 {
 public:
@@ -89,10 +86,9 @@ public:
 
     void DrawControls()
     {
-        YAConfigTest();
         if (ImGui::Button("Save config file"))
         {
-            this->WriteConfig(MainConfig::GetConfigJSON());
+            WriteConfig(g_Config);
             MainConfig::WriteToFile();
         }
         //ImGui::DrawCheckboxForHack(whistleAbility, "Whistle ability");
@@ -114,7 +110,10 @@ public:
         if (enterWindowsByPressingAButton.IsActive())
         {
             ImGuiCTX::Indent _indent;
-            bool isHotkeyChanged = ImGui::DrawEnumPicker("Enter Window Button", enterWindowsButton, ImGuiComboFlags_HeightLarge);
+            bool isHotkeyChanged = ImGui::DrawEnumPicker(
+                "Enter Window Button",
+                g_Config.hacks->enterWindowsByPressingAButton->enterWindowsButton.get(),
+                ImGuiComboFlags_HeightLarge);
         }
         ImGui::DrawCheckboxForHack(menacingWalkAndAutowalk, "Allow Autowalk and the Slow Menacing Walk");
         if (ImGui::IsItemHovered())
@@ -132,7 +131,10 @@ public:
         if (menacingWalkAndAutowalk.IsActive())
         {
             ImGuiCTX::Indent _indent;
-            bool isHotkeyChanged = ImGui::DrawEnumPicker("Autowalk button", autowalkButton, ImGuiComboFlags_HeightLarge);
+            bool isHotkeyChanged = ImGui::DrawEnumPicker(
+                "Autowalk button",
+                g_Config.hacks->menacingWalkAndAutowalk->autowalkButton.get(),
+                ImGuiComboFlags_HeightLarge);
         }
         ImGui::DrawCheckboxForHack(changeZoomLevelsWhenAimingBombs, "Change Zoom Levels when aiming Bombs");
         if (ImGui::IsItemHovered())
@@ -183,47 +185,27 @@ public:
             Cheat_Health_DrawImGui();
         }
     }
-    void ReadConfig(JSON& cfg)
+    void ReadConfig(ConfigTop& cfg)
     {
-        {
-            JSON& section = cfg[TO_STRING(enterWindowsByPressingAButton)];
-            bool isActive = true;
-            READ_JSON_VARIABLE(section, isActive, BooleanAdapter);
-            READ_JSON_VARIABLE(section, enterWindowsButton, EnumAdapter);
-            enterWindowsByPressingAButton.Toggle(isActive);
-        }
-        {
-            JSON& section = cfg[TO_STRING(menacingWalkAndAutowalk)];
-            bool isActive = true;
-            READ_JSON_VARIABLE(section, isActive, BooleanAdapter);
-            READ_JSON_VARIABLE(section, autowalkButton, EnumAdapter);
-            menacingWalkAndAutowalk.Toggle(isActive);
-        }
-        { bool isActive = true; json::TryToReadVariableFromJSONObjectUsingAdapter(cfg, TO_STRING(changeZoomLevelsWhenAimingBombs), BooleanAdapter(isActive)); changeZoomLevelsWhenAimingBombs.Toggle(isActive); }
-        { bool isActive = true; json::TryToReadVariableFromJSONObjectUsingAdapter(cfg, TO_STRING(cycleEquipmentUsingMouseWheel), BooleanAdapter(isActive)); cycleEquipmentUsingMouseWheel.Toggle(isActive); }
-        { bool isActive = true; json::TryToReadVariableFromJSONObjectUsingAdapter(cfg, TO_STRING(dontUnsheatheWhenInDisguise), BooleanAdapter(isActive)); dontUnsheatheWhenInDisguise.Toggle(isActive); }
-        { bool isActive = true; json::TryToReadVariableFromJSONObjectUsingAdapter(cfg, TO_STRING(slightlyMoreResponsiveCrouch), BooleanAdapter(isActive)); slightlyMoreResponsiveCrouch.Toggle(isActive); }
-        { bool isActive = true; json::TryToReadVariableFromJSONObjectUsingAdapter(cfg, TO_STRING(takingCoverIsLessSticky), BooleanAdapter(isActive)); takingCoverIsLessSticky.Toggle(isActive); }
+        auto& hacksSection = cfg.hacks;
+        enterWindowsByPressingAButton.Toggle(hacksSection->enterWindowsByPressingAButton->isActive);
+        menacingWalkAndAutowalk.Toggle(hacksSection->menacingWalkAndAutowalk->isActive);
+        changeZoomLevelsWhenAimingBombs.Toggle(hacksSection->changeZoomLevelsWhenAimingBombs);
+        cycleEquipmentUsingMouseWheel.Toggle(hacksSection->cycleEquipmentUsingMouseWheel);
+        dontUnsheatheWhenInDisguise.Toggle(hacksSection->dontUnsheatheWhenInDisguise);
+        slightlyMoreResponsiveCrouch.Toggle(hacksSection->slightlyMoreResponsiveCrouch);
+        takingCoverIsLessSticky.Toggle(hacksSection->takingCoverIsLessSticky);
     }
-    void WriteConfig(JSON& cfg)
+    void WriteConfig(ConfigTop& cfg)
     {
-        {
-            JSON& section = cfg[TO_STRING(enterWindowsByPressingAButton)];
-            bool isActive = enterWindowsByPressingAButton.IsActive();
-            WRITE_JSON_VARIABLE(section, isActive, BooleanAdapter);
-            WRITE_JSON_VARIABLE(section, enterWindowsButton, EnumAdapter);
-        }
-        {
-            JSON& section = cfg[TO_STRING(menacingWalkAndAutowalk)];
-            bool isActive = menacingWalkAndAutowalk.IsActive();
-            WRITE_JSON_VARIABLE(section, isActive, BooleanAdapter);
-            WRITE_JSON_VARIABLE(section, autowalkButton, EnumAdapter);
-        }
-        { bool isActive = changeZoomLevelsWhenAimingBombs.IsActive(); json::WriteVariableAsJSONObjectMemberUsingAdapter(cfg, TO_STRING(changeZoomLevelsWhenAimingBombs), BooleanAdapter(isActive)); }
-        { bool isActive = cycleEquipmentUsingMouseWheel.IsActive(); json::WriteVariableAsJSONObjectMemberUsingAdapter(cfg, TO_STRING(cycleEquipmentUsingMouseWheel), BooleanAdapter(isActive)); }
-        { bool isActive = dontUnsheatheWhenInDisguise.IsActive(); json::WriteVariableAsJSONObjectMemberUsingAdapter(cfg, TO_STRING(dontUnsheatheWhenInDisguise), BooleanAdapter(isActive)); }
-        { bool isActive = slightlyMoreResponsiveCrouch.IsActive(); json::WriteVariableAsJSONObjectMemberUsingAdapter(cfg, TO_STRING(slightlyMoreResponsiveCrouch), BooleanAdapter(isActive)); }
-        { bool isActive = takingCoverIsLessSticky.IsActive(); json::WriteVariableAsJSONObjectMemberUsingAdapter(cfg, TO_STRING(takingCoverIsLessSticky), BooleanAdapter(isActive)); }
+        auto& hacksSection = cfg.hacks;
+        hacksSection->enterWindowsByPressingAButton->isActive = enterWindowsByPressingAButton.IsActive();
+        hacksSection->menacingWalkAndAutowalk->isActive = menacingWalkAndAutowalk.IsActive();
+        hacksSection->changeZoomLevelsWhenAimingBombs = changeZoomLevelsWhenAimingBombs.IsActive();
+        hacksSection->cycleEquipmentUsingMouseWheel = cycleEquipmentUsingMouseWheel.IsActive();
+        hacksSection->dontUnsheatheWhenInDisguise = dontUnsheatheWhenInDisguise.IsActive();
+        hacksSection->slightlyMoreResponsiveCrouch = slightlyMoreResponsiveCrouch.IsActive();
+        hacksSection->takingCoverIsLessSticky = takingCoverIsLessSticky.IsActive();
     }
     AutoAssembleWrapper<BatlampOfFrancide> batlampOfFranciade;
 };
@@ -238,14 +220,12 @@ void DrawHacksControls()
 
 #include "MyVariousHacks.h"
 
-
 void MyVariousHacks::Start()
 {
     g_MyHacks.emplace();
     g_MyHacks->gameInputHooks.Activate();
-    JSON& cfg = MainConfig::GetConfigJSON();
-    g_MyHacks->ReadConfig(cfg);
-    g_MyHacks->WriteConfig(cfg);
+    g_MyHacks->ReadConfig(g_Config);
+    g_MyHacks->WriteConfig(g_Config);
     MainConfig::WriteToFile();
 }
 void MyVariousHacks::MyHacks_OnKeyJustPressed(int keyCode)

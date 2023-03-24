@@ -92,7 +92,7 @@ private:
 void OnMovementVectorUpdate_ManageAutowalk(Vector2f& movementVecWithoutAdjustments, InputContainerBig* inpCont)
 {
     static InjectedAutowalkManager autowalkManager;
-    if (ACU::Input::IsPressed(autowalkButton))
+    if (ACU::Input::IsPressed(g_Config.hacks->menacingWalkAndAutowalk->autowalkButton))
     {
         autowalkManager.OnPressedB();
     }

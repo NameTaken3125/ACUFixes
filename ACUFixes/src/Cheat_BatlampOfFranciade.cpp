@@ -1,5 +1,7 @@
 #include "pch.h"
 
+#include "MainConfig.h"
+
 #include "Cheat_BatlampOfFranciade.h"
 
 #include "ACU/InventoryItemSettings.h"
@@ -17,11 +19,9 @@ AvatarGear* FindMagicalLanternGear(AvatarGearManager& agm)
     }
     return nullptr;
 }
-bool g_DoReplaceNormalLampWithMagical = true;
-bool g_DoUnlockMovementWithTheBatlamp = true;
 void WhenOutOfMissionEquippingTheLantern_SubstituteNormalLanternWithTheMagicalOne(AllRegisters* params)
 {
-    if (!g_DoReplaceNormalLampWithMagical)
+    if (!g_Config.cheats->batlampOfFranciadeManipulations->doReplaceNormalLampWithMagical)
     {
         return;
     }
@@ -137,7 +137,6 @@ void UnlockMovementForTheBatlamp(LanterndlcComponent& lanternCpnt)
     ToggleMovementLock(*aas, true);
 }
 #include "ACU_InputUtils.h"
-BindableKeyCode_Keyboard batlampChargeModeButton = BindableKeyCode_Keyboard::K_N;
 
 void OnLanternComponentUpdate(LanterndlcComponent& lanternCpnt)
 {
@@ -162,13 +161,13 @@ void OnLanternComponentUpdate(LanterndlcComponent& lanternCpnt)
     }
     else
     {
-        const bool doToggleChargeMode = ACU::Input::IsJustPressed(batlampChargeModeButton);
+        const bool doToggleChargeMode = ACU::Input::IsJustPressed(g_Config.cheats->batlampOfFranciadeManipulations->batlampChargeModeButton);
         if (doToggleChargeMode)
         {
             lanternCpnt.isInModeAbleToCharge_300 = !lanternCpnt.isInModeAbleToCharge_300;
         }
     }
-    if (g_DoUnlockMovementWithTheBatlamp)
+    if (g_Config.cheats->batlampOfFranciadeManipulations->doUnlockMovementWithTheBatlamp)
     {
         UnlockMovementForTheBatlamp(lanternCpnt);
     }
@@ -202,7 +201,8 @@ LanterndlcComponent* GetLanternComponent()
 void DrawBatlampControls()
 {
     ImGuiCTX::Indent _ind;
-    ImGui::Checkbox("Replace the normal lantern with the magical one", &g_DoReplaceNormalLampWithMagical);
+    ImGui::Checkbox("Replace the normal lantern with the magical one",
+        &g_Config.cheats->batlampOfFranciadeManipulations->doReplaceNormalLampWithMagical.get());
     if (ImGui::IsItemHovered())
     {
         ImGui::SetTooltip(
@@ -210,7 +210,8 @@ void DrawBatlampControls()
             "as it is used in the final mission of the Dead Kings DLC."
         );
     }
-    ImGui::Checkbox("Unlock movement when using the magical lamp", &g_DoUnlockMovementWithTheBatlamp);
+    ImGui::Checkbox("Unlock movement when using the magical lamp",
+        &g_Config.cheats->batlampOfFranciadeManipulations->doUnlockMovementWithTheBatlamp.get());
     LanterndlcComponent* lanternCpnt = GetLanternComponent();
     if (!lanternCpnt)
     {
