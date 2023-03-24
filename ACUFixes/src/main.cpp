@@ -16,6 +16,7 @@ Brings the app's components together.
 
 // Required so that the game doesn't crash on code modification.
 void DisableMainIntegrityCheck();
+void WaitUntilGameIsInitializedEnoughSoThatTheMainIntegrityCheckCanBeDisabled();
 // Respond to input: toggle hacks, etc.
 LRESULT CALLBACK WndProc_HackControls(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -36,19 +37,6 @@ public:
     }
 };
 fs::path AbsolutePathInMyDirectory(const fs::path& filenameRel);
-#include "ACU/ACUPlayerCameraComponent.h"
-void WaitUntilGameIsInitializedEnoughSoThatTheMainIntegrityCheckCanBeDisabled()
-{
-    while (true)
-    {
-        if (!ACUPlayerCameraComponent::GetSingleton())
-        {
-            Sleep(100);
-            continue;
-        }
-        break;
-    }
-}
 static void MainThread(HMODULE thisDLLModule)
 {
     Base::Data::thisDLLModule = thisDLLModule;

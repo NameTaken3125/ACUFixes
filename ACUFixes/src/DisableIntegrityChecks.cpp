@@ -63,3 +63,16 @@ void DisableMainIntegrityCheck()
     }
     CloseHandle(snapshot);
 }
+#include "ACU/ACUPlayerCameraComponent.h"
+void WaitUntilGameIsInitializedEnoughSoThatTheMainIntegrityCheckCanBeDisabled()
+{
+    while (true)
+    {
+        if (!ACUPlayerCameraComponent::GetSingleton())
+        {
+            Sleep(100);
+            continue;
+        }
+        break;
+    }
+}
