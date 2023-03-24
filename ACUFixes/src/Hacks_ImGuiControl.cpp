@@ -69,6 +69,7 @@ void DrawCheckboxForHack(Hack& hack, const std::string_view& text)
     }
 }
 } // namespace ImGui
+void YAConfigTest();
 class MyHacks
 {
 public:
@@ -88,6 +89,7 @@ public:
 
     void DrawControls()
     {
+        YAConfigTest();
         if (ImGui::Button("Save config file"))
         {
             this->WriteConfig(MainConfig::GetConfigJSON());
