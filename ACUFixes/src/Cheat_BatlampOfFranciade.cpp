@@ -138,19 +138,35 @@ void UnlockMovementForTheBatlamp(LanterndlcComponent& lanternCpnt)
 }
 #include "ACU_InputUtils.h"
 BindableKeyCode_Keyboard batlampChargeModeButton = BindableKeyCode_Keyboard::K_N;
-bool IsBatlampChargeModeToggleButtonJustPressed()
-{
-    static bool m_PreviousIsPressed = false;
-    const bool isPressedPrevFrame = m_PreviousIsPressed;
-    const bool isPressedThisFrame = m_PreviousIsPressed = IsPressed(batlampChargeModeButton);
-    return isPressedThisFrame && !isPressedPrevFrame;
-}
+
 void OnLanternComponentUpdate(LanterndlcComponent& lanternCpnt)
 {
-    const bool doToggleChargeMode = IsBatlampChargeModeToggleButtonJustPressed();
-    if (doToggleChargeMode)
+    if (lanternCpnt.isInModeAbleToCharge_300)
     {
-        lanternCpnt.isInModeAbleToCharge_300 = !lanternCpnt.isInModeAbleToCharge_300;
+        constexpr float howLongItTakesToToggleLanternNormally = 0.5f;
+        if (ACU::Input::IsJustPressedLong(ActionKeyCode::Reload, howLongItTakesToToggleLanternNormally))
+        {
+            lanternCpnt.isInModeAbleToCharge_300 = false;
+            // Normally, when in can-charge mode, it's impossible to hide the lamp.
+            // I'd like for the long-press-Reload to do the following:
+            // - exit the can-charge mode (byte_300 = false)
+            // - snuff out the lamp (byte_470 = false)
+            // However, if I set `byte_470 = false` _here_, then, after returning from the hook,
+            // The game's code will test again for the long-press-Reload, will succeed (as it's done in the same frame),
+            // and flip `byte_470` back to `true`.
+            // But for the same reason, if I _don't_ set `byte_470 = false` here,
+            // then the game's code will do it on its own.
+
+            //lanternCpnt.isAlight_mb = false;
+        }
+    }
+    else
+    {
+        const bool doToggleChargeMode = ACU::Input::IsJustPressed(batlampChargeModeButton);
+        if (doToggleChargeMode)
+        {
+            lanternCpnt.isInModeAbleToCharge_300 = !lanternCpnt.isInModeAbleToCharge_300;
+        }
     }
     if (g_DoUnlockMovementWithTheBatlamp)
     {

@@ -1,6 +1,8 @@
 #include "pch.h"
 
 #include "AutoAssemblerKinda.h"
+#include "Hack_GameRawInputHook.h"
+
 #include "Hack_EnterWindowsWhenRisPressed.h"
 #include "Hack_SlowMenacingWalkAndAutowalk.h"
 #include "Hack_CycleEquipmentWhenScrollingMousewheel.h"
@@ -107,6 +109,8 @@ bool DrawEnumPicker(const char* label, EnumType& currentValueInOut, ImGuiComboFl
 class MyHacks
 {
 public:
+    AutoAssembleWrapper<GameRawInputHook> gameInputHooks;
+
     AutoAssembleWrapper<EnterWindowWhenRisPressed> enterWindowsByPressingAButton;
     AutoAssembleWrapper<AllowSlowMenacingWalkAndAutowalk> menacingWalkAndAutowalk;
     AutoAssembleWrapper<ModifyConditionalFOVs> changeZoomLevelsWhenAimingBombs;
@@ -328,6 +332,7 @@ void DrawHacksControls()
 void MyVariousHacks::Start()
 {
     g_MyHacks.emplace();
+    g_MyHacks->gameInputHooks.Activate();
     JSON& cfg = MainConfig::GetConfigJSON();
     g_MyHacks->ReadConfig(cfg);
     g_MyHacks->WriteConfig(cfg);

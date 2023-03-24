@@ -173,6 +173,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\ACU_InputUtils.cpp" />
     <ClCompile Include="src\Cheat_BatlampOfFranciade.cpp" />
     <ClCompile Include="src\Hack_CycleEquipmentWhenScrollingMousewheel.cpp" />
     <ClCompile Include="include\vmath\vmath.cpp">
@@ -220,6 +221,7 @@
     <ClInclude Include="src\ConsoleForOutput.h" />
     <ClInclude Include="src\Hack_DontForceUnsheatheWhenInDisguise.h" />
     <ClInclude Include="src\Hack_EnterWindowsWhenRisPressed.h" />
+    <ClInclude Include="src\Hack_GameRawInputHook.h" />
     <ClInclude Include="src\Hack_ModifyAimingFOV.h" />
     <ClInclude Include="src\Hack_ReworkedTakeCover.h" />
     <ClInclude Include="src\Hack_SlowMenacingWalkAndAutowalk.h" />

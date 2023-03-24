@@ -16,7 +16,10 @@ public:
     char pad_0000[16]; //0x0000
     KeyStates keyStates_prevFrame; //0x0010
     KeyStates keyStates_thisFrame; //0x0030
-    char pad_0050[548]; //0x0050
+    uint64 prevFrameTimestamp; //0x0050
+    uint64 thisFrameTimestamp; //0x0058
+    uint64 lastPressTimestampByActionCode[32]; //0x0060
+    char pad_0160[276]; //0x0160
     float fltIsPressed_LMB; //0x0274
     char pad_0278[36]; //0x0278
     float fltIsPressed_RMB; //0x029C
@@ -41,17 +44,33 @@ assert_offsetof(InputContainer, wasdVector, 0x02F0);
 assert_offsetof(InputContainer, pendingFrame_mb, 0x830);
 assert_sizeof(InputContainer, 0x0870);
 
+class MouseState
+{
+public:
+    int32 mouseDeltaIntForCamera_X; //0x0000
+    int32 mouseDeltaIntForCamera_Y; //0x0004
+    char pad_0008[4]; //0x0008
+    uint8 scanCodeLMB; //0x000C
+    uint8 scanCodeRMB; //0x000D
+    uint8 scanCodeMMB; //0x000E
+    uint8 scanCodeMouse4; //0x000F
+    uint8 scanCodeMouse5; //0x0010
+    char pad_0011[3]; //0x0011
+    int32 mouseDeltaInt_X; //0x0014
+    int32 mouseDeltaInt_Y; //0x0018
+    int32 mouseWheelDeltaInt; //0x001C
+    char pad_0020[8]; //0x0020
+}; //Size: 0x0028
+assert_sizeof(MouseState, 0x28);
+
 class InputContainerBig : public InputContainer
 {
 public:
     // @members
     char pad_0870[80]; //0x0870
     uint8 pad8C0_21ff0[137008]; //0x08C0
-    char pad_21FF0[188]; //0x21FF0
-    int32 mouseDeltaInt_X; //0x220AC
-    int32 mouseDeltaInt_Y; //0x220B0
-    int32 mouseWheelDeltaInt; //0x220B4
-    char pad_220B8[8]; //0x220B8
+    char pad_21FF0[168]; //0x21FF0
+    MouseState mouseState; //0x22098
     uint8 isPressed_byScancode[256]; //0x220C0
     char pad_221C0[256]; //0x221C0
     uint8 isNewInputAvailable_mb; //0x222C0
@@ -61,9 +80,9 @@ public:
     char pad_222D8[8]; //0x222D8
 
     // @members
-    bool IsMouseWheelScrollingUp() { return mouseWheelDeltaInt > 0; }
-    bool IsMouseWheelScrollingDown() { return mouseWheelDeltaInt < 0; }
+    bool IsMouseWheelScrollingUp() { return mouseState.mouseWheelDeltaInt > 0; }
+    bool IsMouseWheelScrollingDown() { return mouseState.mouseWheelDeltaInt < 0; }
 }; //Size: 0x222E0
 assert_offsetof(InputContainerBig, isPressed_byScancode, 0x220C0);
-assert_offsetof(InputContainerBig, mouseWheelDeltaInt, 0x220B4);
+assert_offsetof(InputContainerBig, mouseState.mouseWheelDeltaInt, 0x220B4);
 assert_sizeof(InputContainerBig, 0x222E0);
