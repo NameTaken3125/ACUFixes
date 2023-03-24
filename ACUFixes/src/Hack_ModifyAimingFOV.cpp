@@ -191,11 +191,7 @@ public:
     }
 };
 
-namespace ACU::Input
-{
-bool IsPressedRMB() { return InputContainer::GetMainSingleton().keyStates_thisFrame.isPressed_RMB; }
-} // namespace ACU::Input
-
+#include "ACU_InputUtils.h"
 
 constexpr uint64 objHash_BombAimRegular = 0x12F9251F30;
 constexpr uint64 objHash_BombAimFromCover = 0x34CE205063;

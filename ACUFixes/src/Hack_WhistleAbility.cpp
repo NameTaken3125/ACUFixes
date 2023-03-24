@@ -36,7 +36,7 @@ bool g_IsNoticeMeRequested = false;
 BindableKeyCode_Keyboard g_WhistleButton = BindableKeyCode_Keyboard::K_Y;
 bool IsWhistlePressed()
 {
-    return IsPressed(g_WhistleButton);
+    return ACU::Input::IsPressed(g_WhistleButton);
 }
 bool IsWhistleHeardNow()
 {

@@ -15,7 +15,7 @@ void Patch_AlwaysRunWindowEntryTester(AssemblerContext* m_ctx);
 void Patch_FakeIsMovingFlag(AssemblerContext* m_ctx);
 void WhenCheckingIfWindowIsToBeEnteredNow_ConfirmIfRequestedForThisFrame(AllRegisters* params)
 {
-    if (IsPressed(enterWindowsButton))
+    if (ACU::Input::IsPressed(enterWindowsButton))
     {
         *(uint32*)(params->rcx_ + 0xDC) = 6;
     }
@@ -25,7 +25,7 @@ void WhenCheckingIfWindowIsToBeEnteredNow_ConfirmIfRequestedForThisFrame(AllRegi
 DEFINE_GAME_FUNCTION(IsShouldEnterHideyClosetNow, 0x14265B350, char, __fastcall, (__int64 a1, __int64 a2));
 void WhenCheckingIfHideyClosetIsToBeEnteredNow_ConfirmIfRequestedForThisFrame(AllRegisters* params)
 {
-    if (IsPressed(enterWindowsButton))
+    if (ACU::Input::IsPressed(enterWindowsButton))
     {
         *params->rax_ = 1;
         return;
@@ -106,7 +106,7 @@ void RunWindowEntryEntryTesterInitAndScan(
     , SmallArray<PotentialWindowEntry*>* p_arrayPotentialMovesOut
 )
 {
-    const bool isRequestedEnterWindow = IsPressed(enterWindowsButton);
+    const bool isRequestedEnterWindow = ACU::Input::IsPressed(enterWindowsButton);
     if (!isRequestedEnterWindow)
     {
         // Standard execution

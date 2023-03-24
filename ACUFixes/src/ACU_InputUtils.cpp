@@ -1,5 +1,7 @@
 #include "pch.h"
 
+#include "ACU/InputContainer.h"
+
 #include "ACU_InputUtils.h"
 #include "ACU_DefineNativeFunction.h"
 
@@ -48,6 +50,15 @@ public:
         return singleton;
     }
 };
+
+InputContainerBig* Get_InputContainerBig()
+{
+    return HasInputContainers::GetSingleton()->p_10->inputContainerBig;
+}
+bool IsPressed(BindableKeyCode_Keyboard keycode)
+{
+    return ACU::Input::Get_InputContainerBig()->isPressed_byScancode[(uint32)keycode];
+}
 bool IsJustPressed(BindableKeyCode_Keyboard keycode)
 {
     return InputHooks::GetSingleton().IsJustPressed((uint8)keycode);
@@ -56,6 +67,9 @@ bool IsJustPressedLong(ActionKeyCode actionKey, float howLong)
 {
     return InputContainer__IsLongPressJustHappened(&InputContainer::GetMainSingleton(), actionKey, howLong, 0);
 }
+
+
+bool IsPressedRMB() { return InputContainer::GetMainSingleton().keyStates_thisFrame.isPressed_RMB; }
 
 } // namespace ACU::Input
 
