@@ -16,6 +16,13 @@ void GameRawInputHook_ImGuiLayer(InputContainerBig& inpCont)
     {
         std::memset(inpCont.isPressed_byScancode, 0, sizeof(inpCont.isPressed_byScancode));
         inpCont.mouseState.mouseDeltaIntForCamera_X = inpCont.mouseState.mouseDeltaIntForCamera_Y = 0;
+        inpCont.mouseState.mouseWheelDeltaInt = 0;
+        inpCont.mouseState.mbtnStateLMB
+            = inpCont.mouseState.mbtnStateRMB
+            = inpCont.mouseState.mbtnStateMMB
+            = inpCont.mouseState.mbtnStateMouse4
+            = inpCont.mouseState.mbtnStateMouse5
+            = 0;
     }
 }
 
