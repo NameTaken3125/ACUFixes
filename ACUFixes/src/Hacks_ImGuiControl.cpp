@@ -1,6 +1,13 @@
 #include "pch.h"
 
+
+#include "MyLog.h"
+#include "MainConfig.h"
+#include "ImGuiCTX.h"
+#include "ImGui3D.h"
+
 #include "AutoAssemblerKinda.h"
+
 #include "Hack_GameRawInputHook.h"
 
 #include "Hack_EnterWindowsWhenRisPressed.h"
@@ -12,75 +19,19 @@
 #include "Hack_ReworkedTakeCover.h"
 
 #include "Hack_WhistleAbility.h"
-
-#include "MyLog.h"
-#include "MainConfig.h"
-#include "ImGuiCTX.h"
-#include "ImGui3D.h"
+#include "Hacks_VariousExperiments.h"
 
 #include "Cheat_BatlampOfFranciade.h"
+#include "Cheat_Health.h"
 
-#include "ACU/CSrvPlayerHealth.h"
 
-template<typename floatlike>
-floatlike simple_interp(floatlike mn, floatlike mx)
-{
-    auto now = GetTickCount64();
-    float speed = 0.001f * 1.5f;
-    float interp = sin(now * speed);
-    interp = (interp + 1) / 2;
-    return mn + (mx - mn) * interp;
-}
-void FOVGames(AllRegisters* params)
-{
-    params->XMM1.f0 = simple_interp(0.5f, 1.0f);
-}
-struct PlayWithFOV : AutoAssemblerCodeHolder_Base
-{
-    PlayWithFOV()
-    {
-        PresetScript_CCodeInTheMiddle(
-            0x141F3FE3B, 6
-            , FOVGames
-            , RETURN_TO_RIGHT_AFTER_STOLEN_BYTES
-            , true);
-    }
-};
-
-#include "ACU/ACUGetSingletons.h"
-#include "ACU/Entity.h"
-#include "ACU/ThrowTargetPrecision.h"
-void OverrideThrowPredictorBeamPosition(AllRegisters* params)
-{
-    // At this injection point (0x14055B4BB) RBX == ThrowTargetPrecision* and takes two values:
-    // two systems that receive messages about the predictor beam's results.
-    // One regulates camera rotation around Z, the other one - rotation around camera's left-right axis.
-    Entity* player = ACU::GetPlayer();
-    static Vector4f farthestResult;
-    ThrowTargetPrecision* thr = (ThrowTargetPrecision*)params->rbx_;
-    ImGui3D::DrawLocationNamed((Vector3f&)thr->predictionBeamOrigin, "Prediction beam origin");
-    ImGui3D::DrawLocationNamed((Vector3f&)thr->trackerCrawlsTowardPredictorBeamEnd, "Prediction beam terminus");
-    thr->trackerCrawlsTowardPredictorBeamEnd.z = player->GetPosition().z + 1;
-    //(Vector3f&)thr->cameraTrackerMovingTowardPredictionBeamEnd = player->GetPosition() + Vector3f{ 0, 3, 1 };
-}
-struct PlayWithBombAimCameraTracker2 : AutoAssemblerCodeHolder_Base
-{
-    PlayWithBombAimCameraTracker2()
-    {
-        PresetScript_CCodeInTheMiddle(
-            0x14055B4BB, 8
-            , OverrideThrowPredictorBeamPosition
-            , RETURN_TO_RIGHT_AFTER_STOLEN_BYTES
-            , true);
-    }
-};
 extern bool g_showDevExtraOptions;
+BindableKeyCode_Keyboard enterWindowsButton = BindableKeyCode_Keyboard::K_R;
+BindableKeyCode_Keyboard autowalkButton = BindableKeyCode_Keyboard::K_B;
 #include "Serialization/Serialization.h"
 #include "Serialization/BooleanAdapter.h"
 #include "Serialization/EnumAdapter.h"
 #define TO_STRING(x) #x
-BindableKeyCode_Keyboard enterWindowsButton = BindableKeyCode_Keyboard::K_R;
-BindableKeyCode_Keyboard autowalkButton = BindableKeyCode_Keyboard::K_B;
 namespace ImGui {
 template<typename EnumType>
 bool DrawEnumPicker(const char* label, EnumType& currentValueInOut, ImGuiComboFlags flags)
@@ -105,6 +56,18 @@ bool DrawEnumPicker(const char* label, EnumType& currentValueInOut, ImGuiComboFl
     }
     return isNewSelection;
 }
+template<class Hack>
+void DrawCheckboxForHack(Hack& hack, const std::string_view& text)
+{
+    if (auto* instance = &hack)
+    {
+        bool isActive = instance->IsActive();
+        if (ImGui::Checkbox(text.data(), &isActive))
+        {
+            instance->Toggle();
+        }
+    }
+}
 } // namespace ImGui
 class MyHacks
 {
@@ -123,46 +86,6 @@ public:
 
     AutoAssembleWrapper<WhistleAbility> whistleAbility;
 
-    template<class Hack>
-    void DrawCheckboxForHack(Hack& hack, const std::string_view& text)
-    {
-        if (auto* instance = &hack)
-        {
-            bool isActive = instance->IsActive();
-            if (ImGui::Checkbox(text.data(), &isActive))
-            {
-                instance->Toggle();
-            }
-        }
-    }
-    void ToggleDefaultHacks()
-    {
-        if (!enterWindowsByPressingAButton.IsActive())
-        {
-            enterWindowsByPressingAButton.Activate();
-            menacingWalkAndAutowalk.Activate();
-            changeZoomLevelsWhenAimingBombs.Activate();
-            cycleEquipmentUsingMouseWheel.Activate();
-        }
-        else
-        {
-            enterWindowsByPressingAButton.Deactivate();
-            menacingWalkAndAutowalk.Deactivate();
-            changeZoomLevelsWhenAimingBombs.Deactivate();
-            cycleEquipmentUsingMouseWheel.Deactivate();
-        }
-    }
-    void OnKeyJustPressed(int keyCode)
-    {
-        switch (keyCode)
-        {
-        case VK_NUMPAD7:
-            //ToggleDefaultHacks();
-            break;
-        default:
-            break;
-        }
-    }
     void DrawControls()
     {
         if (ImGui::Button("Save config file"))
@@ -170,13 +93,13 @@ public:
             this->WriteConfig(MainConfig::GetConfigJSON());
             MainConfig::WriteToFile();
         }
-        //DrawCheckboxForHack(whistleAbility, "Whistle ability");
+        //ImGui::DrawCheckboxForHack(whistleAbility, "Whistle ability");
         //if (ImGui::IsItemHovered())
         //{
         //    ImGui::SetTooltip("Press Y to _try_to_ attract nearby guards' attention. Very unfinished.");
         //}
         //WhistleAbilityAttempt_ImGuiControls(whistleAbility.IsActive());
-        DrawCheckboxForHack(enterWindowsByPressingAButton, "Enter nearby windows by pressing a button");
+        ImGui::DrawCheckboxForHack(enterWindowsByPressingAButton, "Enter nearby windows by pressing a button");
         if (ImGui::IsItemHovered())
         {
             ImGui::SetTooltip(
@@ -191,7 +114,7 @@ public:
             ImGuiCTX::Indent _indent;
             bool isHotkeyChanged = ImGui::DrawEnumPicker("Enter Window Button", enterWindowsButton, ImGuiComboFlags_HeightLarge);
         }
-        DrawCheckboxForHack(menacingWalkAndAutowalk, "Allow Autowalk and the Slow Menacing Walk");
+        ImGui::DrawCheckboxForHack(menacingWalkAndAutowalk, "Allow Autowalk and the Slow Menacing Walk");
         if (ImGui::IsItemHovered())
         {
             ImGui::SetTooltip(
@@ -209,7 +132,7 @@ public:
             ImGuiCTX::Indent _indent;
             bool isHotkeyChanged = ImGui::DrawEnumPicker("Autowalk button", autowalkButton, ImGuiComboFlags_HeightLarge);
         }
-        DrawCheckboxForHack(changeZoomLevelsWhenAimingBombs, "Change Zoom Levels when aiming Bombs");
+        ImGui::DrawCheckboxForHack(changeZoomLevelsWhenAimingBombs, "Change Zoom Levels when aiming Bombs");
         if (ImGui::IsItemHovered())
         {
             ImGui::SetTooltip(
@@ -217,10 +140,10 @@ public:
                 "Press Right Mouse Button when aiming a bomb to zoom in."
             );
         }
-        DrawCheckboxForHack(cycleEquipmentUsingMouseWheel, "Cycle through equipment using mouse wheel");
-        DrawCheckboxForHack(dontUnsheatheWhenInDisguise, "Don't pull out your weapon while you're in Disguise");
-        DrawCheckboxForHack(slightlyMoreResponsiveCrouch, "Slightly more responsive Crouch button");
-        DrawCheckboxForHack(takingCoverIsLessSticky, "Less sticky Take Cover/Leave Cover");
+        ImGui::DrawCheckboxForHack(cycleEquipmentUsingMouseWheel, "Cycle through equipment using mouse wheel");
+        ImGui::DrawCheckboxForHack(dontUnsheatheWhenInDisguise, "Don't pull out your weapon while you're in Disguise");
+        ImGui::DrawCheckboxForHack(slightlyMoreResponsiveCrouch, "Slightly more responsive Crouch button");
+        ImGui::DrawCheckboxForHack(takingCoverIsLessSticky, "Less sticky Take Cover/Leave Cover");
         if (ImGui::IsItemHovered())
         {
             ImGui::SetTooltip(
@@ -237,14 +160,14 @@ public:
             if (ImGuiCTX::TreeNode _header{ "Unfinished and useless hacks" })
             {
                 // This is one of the useless experimental hacks, and has some stuttering I either didn't see or notice before.
-                DrawCheckboxForHack(fovGames, "Play with FOV");
-                DrawCheckboxForHack(bombAimExperiments2, "Bomb aim experiments2");
+                ImGui::DrawCheckboxForHack(fovGames, "Play with FOV");
+                ImGui::DrawCheckboxForHack(bombAimExperiments2, "Bomb aim experiments2");
             }
         }
         ImGui::Separator();
         if (ImGui::CollapsingHeader("Cheats"))
         {
-            DrawCheckboxForHack(batlampOfFranciade, "Allow use the Head of Saint Denis outdoors in Franciade");
+            ImGui::DrawCheckboxForHack(batlampOfFranciade, "Allow use the Head of Saint Denis outdoors in Franciade");
             if (ImGui::IsItemHovered())
             {
                 ImGui::SetTooltip(
@@ -255,22 +178,7 @@ public:
             {
                 DrawBatlampControls();
             }
-            CSrvPlayerHealth* health = ACU::GetPlayerHealth();
-            bool isDesyncNow = false;
-            bool isGodmode = false;
-            if (health)
-            {
-                isDesyncNow = health->isDesynchronizationNow & 1;
-                isGodmode = health->bGodmode & 1;
-                if (ImGui::Checkbox("Godmode", &isGodmode))
-                {
-                    health->bGodmode = isGodmode;
-                }
-                if (ImGui::Checkbox("Desynchronize now", &isDesyncNow))
-                {
-                    health->isDesynchronizationNow = isDesyncNow;
-                }
-            }
+            Cheat_Health_DrawImGui();
         }
     }
     void ReadConfig(JSON& cfg)
@@ -340,8 +248,4 @@ void MyVariousHacks::Start()
 }
 void MyVariousHacks::MyHacks_OnKeyJustPressed(int keyCode)
 {
-    if (g_MyHacks)
-    {
-        g_MyHacks->OnKeyJustPressed(keyCode);
-    }
 }
