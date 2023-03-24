@@ -243,6 +243,7 @@
     <ClInclude Include="src\Hack_WhistleAbility.h" />
     <ClInclude Include="src\ImGui3D.h" />
     <ClInclude Include="src\ImGui3DRenderer.h" />
+    <ClInclude Include="src\ImGuiConfigUtils.h" />
     <ClInclude Include="src\ImGuiCTX.h" />
     <ClInclude Include="src\MainConfig.h" />
     <ClInclude Include="src\MovabilityUtils.h" />

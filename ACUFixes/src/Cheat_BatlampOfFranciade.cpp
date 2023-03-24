@@ -198,6 +198,7 @@ LanterndlcComponent* GetLanternComponent()
     return hasLanternCpnt->lanternCpnt;
 }
 #include "ImGuiCTX.h"
+#include "ImGuiConfigUtils.h"
 void DrawBatlampControls()
 {
     ImGuiCTX::Indent _ind;
@@ -219,4 +220,7 @@ void DrawBatlampControls()
         return;
     }
     ImGui::Checkbox("Allow to charge now", (bool*)&lanternCpnt->isInModeAbleToCharge_300);
+    ImGui::DrawEnumPicker("Can-Charge mode toggle",
+        g_Config.cheats->batlampOfFranciadeManipulations->batlampChargeModeButton.get(),
+        ImGuiComboFlags_HeightLarge);
 }
