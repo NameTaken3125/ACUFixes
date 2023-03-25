@@ -1,5 +1,15 @@
-#include "pch.h"
-#include "AutoAssemblerKinda.h"
+
+#define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
+#define NOMINMAX
+// Windows Header Files
+#include <windows.h>
+
+#include <sstream>
+
+#include "AutoAssemblerKinda/AutoAssemblerKinda.h"
+
+using AutoAssemblerKinda::byte;
+
 
 SYSTEM_INFO& GetCachedSystemInfo()
 {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "AutoAssemblerKinda.h"
+#include "AutoAssemblerKinda/AutoAssemblerKinda.h"
 
 struct InputInjection_CycleEquipmentWhenScrollingMousewheel : AutoAssemblerCodeHolder_Base
 {

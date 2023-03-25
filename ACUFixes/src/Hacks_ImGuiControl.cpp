@@ -6,7 +6,7 @@
 #include "ImGuiCTX.h"
 #include "ImGui3D.h"
 
-#include "AutoAssemblerKinda.h"
+#include "AutoAssemblerKinda/AutoAssemblerKinda.h"
 
 #include "Hack_GameRawInputHook.h"
 

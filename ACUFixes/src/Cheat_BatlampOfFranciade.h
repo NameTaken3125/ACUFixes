@@ -1,6 +1,6 @@
 #pragma once
 
-#include "AutoAssemblerKinda.h"
+#include "AutoAssemblerKinda/AutoAssemblerKinda.h"
 
 // Thanks you Jinouga for the idea
 // https://www.youtube.com/@jinouga-assassinscreedmodd3155

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "AutoAssemblerKinda.h"
+#include "AutoAssemblerKinda/AutoAssemblerKinda.h"
 
 class ModifyConditionalFOVs : public AutoAssemblerCodeHolder_Base
 {

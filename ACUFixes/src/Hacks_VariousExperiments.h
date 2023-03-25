@@ -5,7 +5,7 @@
 * Only included in the `Hacks_ImGuiControl.cpp`
 */
 
-#include "AutoAssemblerKinda.h"
+#include "AutoAssemblerKinda/AutoAssemblerKinda.h"
 #include "ImGui3D.h"
 
 template<typename floatlike>

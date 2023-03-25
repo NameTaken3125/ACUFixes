@@ -92,7 +92,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)include;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DX11-BaseHook\include;$(SolutionDir)DX11-BaseHook\deps;$(SolutionDir)external\SimpleJSON;$(SolutionDir)Serialization\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)include;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DX11-BaseHook\include;$(SolutionDir)DX11-BaseHook\deps;$(SolutionDir)external\SimpleJSON;$(SolutionDir)Serialization\include;$(SolutionDir)AutoAssemblerKinda\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -111,7 +111,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)include;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DX11-BaseHook\include;$(SolutionDir)DX11-BaseHook\deps;$(SolutionDir)external\SimpleJSON;$(SolutionDir)Serialization\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)include;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DX11-BaseHook\include;$(SolutionDir)DX11-BaseHook\deps;$(SolutionDir)external\SimpleJSON;$(SolutionDir)Serialization\include;$(SolutionDir)AutoAssemblerKinda\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -132,7 +132,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)include;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DX11-BaseHook\include;$(SolutionDir)DX11-BaseHook\deps;$(SolutionDir)external\SimpleJSON;$(SolutionDir)Serialization\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)include;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DX11-BaseHook\include;$(SolutionDir)DX11-BaseHook\deps;$(SolutionDir)external\SimpleJSON;$(SolutionDir)Serialization\include;$(SolutionDir)AutoAssemblerKinda\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -156,7 +156,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)include;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DX11-BaseHook\include;$(SolutionDir)DX11-BaseHook\deps;$(SolutionDir)external\SimpleJSON;$(SolutionDir)Serialization\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)include;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DX11-BaseHook\include;$(SolutionDir)DX11-BaseHook\deps;$(SolutionDir)external\SimpleJSON;$(SolutionDir)Serialization\include;$(SolutionDir)AutoAssemblerKinda\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -183,7 +183,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="src\AutoAssemblerKinda.cpp" />
     <ClCompile Include="src\DisableIntegrityChecks.cpp" />
     <ClCompile Include="src\Hacks_ImGuiControl.cpp" />
     <ClCompile Include="src\Hack_DontForceUnsheatheWhenInDisguise.cpp" />
@@ -219,7 +218,6 @@
     <ClInclude Include="src\Hack_CycleEquipmentWhenScrollingMousewheel.h" />
     <ClInclude Include="include\vmath\vmath.h" />
     <ClInclude Include="include\vmath\vmath_extra.h" />
-    <ClInclude Include="src\AutoAssemblerKinda.h" />
     <ClInclude Include="src\Hack_DontForceUnsheatheWhenInDisguise.h" />
     <ClInclude Include="src\Hack_EnterWindowsWhenRisPressed.h" />
     <ClInclude Include="src\Hack_GameRawInputHook.h" />
@@ -244,6 +242,9 @@
   <ItemGroup>
     <ProjectReference Include="..\ACU-RE\ACU-RE.vcxproj">
       <Project>{3ce83ce0-69aa-4c6e-9476-2e9dc734b47f}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\AutoAssemblerKinda\AutoAssemblerKinda.vcxproj">
+      <Project>{545fd0f0-c203-4600-ad7f-4600f7907b89}</Project>
     </ProjectReference>
     <ProjectReference Include="..\DX11-BaseHook\DX11-BaseHook.vcxproj">
       <Project>{493e69b7-9966-4b96-94ba-158ea9fa50c8}</Project>

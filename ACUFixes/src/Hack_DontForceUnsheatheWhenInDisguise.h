@@ -1,6 +1,6 @@
 #pragma once
 
-#include "AutoAssemblerKinda.h"
+#include "AutoAssemblerKinda/AutoAssemblerKinda.h"
 
 struct DontUnsheatheLikeAnIdiotWhileInDisguise : AutoAssemblerCodeHolder_Base
 {

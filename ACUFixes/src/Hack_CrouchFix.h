@@ -1,6 +1,6 @@
 #pragma once
 
-#include "AutoAssemblerKinda.h"
+#include "AutoAssemblerKinda/AutoAssemblerKinda.h"
 
 /*
 - `UsedDuringCrouch` [[[[[[[[[[[[14521AAD0]+40]]+10]+60]+218]+0]+c8]+710]+2a8]+28]+0] has two bool flags for indicating

@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include "AutoAssemblerKinda.h"
+#include "AutoAssemblerKinda/AutoAssemblerKinda.h"
 #include "Hack_EnterWindowsWhenRisPressed.h"
 
 #include "ACU/Parkour_PotentialWindowEntry.h"

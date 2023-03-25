@@ -285,7 +285,6 @@ Example:
 
 */
 
-#include <vector>
 
 #define DEFINE_ADDR(symbol, addr) StaticSymbol& symbol = m_ctx->MakeNew_Define(addr, #symbol);
 #define DEFINE_ADDR_NAMED(symbol, name, addr) StaticSymbol& symbol = m_ctx->MakeNew_Define(addr, name);
@@ -293,6 +292,24 @@ Example:
 #define ALLOC_NAMED(symbol, name, size, preferredAddrOptional) AllocatedWriteableSymbol& symbol = m_ctx->MakeNew_Alloc(size, name, preferredAddrOptional);
 #define LABEL(symbol) Label& symbol = m_ctx->MakeNew_Label(#symbol);
 #define LABEL_NAMED(symbol, name) Label& symbol = m_ctx->MakeNew_Label(name);
+
+
+
+
+
+#include <vector>
+#include <memory>
+#include <optional>
+#include <variant>
+#include <string_view>
+
+namespace AutoAssemblerKinda {
+typedef unsigned char		byte;		// 8 bits
+} // namespace AutoAssemblerKinda
+
+
+
+
 
 class db
 {
@@ -355,7 +372,7 @@ inline LabelPlacement PutLabel(Label& label) { return LabelPlacement(label); }
 class WriteableSymbol;
 using CodeElement = std::variant <
     // Paste code byte by byte.
-    byte
+    AutoAssemblerKinda::byte
     , db
     , dw
     , dd
@@ -430,9 +447,9 @@ public:
 };
 struct ByteVector
 {
-    std::vector<byte> m_bytes;
+    std::vector<AutoAssemblerKinda::byte> m_bytes;
     ByteVector() {}
-    ByteVector(std::vector<byte>&& bytes) : m_bytes(std::move(bytes)) {}
+    ByteVector(std::vector<AutoAssemblerKinda::byte>&& bytes) : m_bytes(std::move(bytes)) {}
 };
 class SymbolWithAnAddress
 {
@@ -460,7 +477,7 @@ public:
 protected:
     void ProcessNewCodeElements(size_t idxToStartProcessingFrom);
     std::vector<CodeElement> m_codeElements;
-    std::vector<byte> m_resultantCode;
+    std::vector<AutoAssemblerKinda::byte> m_resultantCode;
     void Write();
 };
 class StaticSymbol : public WriteableSymbol
@@ -470,7 +487,7 @@ public:
     using WriteableSymbol::WriteableSymbol;
     using WriteableSymbol::operator=;
 private:
-    std::vector<byte> m_OriginalBytes;
+    std::vector<AutoAssemblerKinda::byte> m_OriginalBytes;
     void Write();
     void Unwrite();
 };
@@ -521,8 +538,6 @@ public:
     SymbolWithAnAddress* GetSymbol(const std::string_view& symbolName);
 };
 
-// Only included for the asserts.
-#include "ACU/basic_types.h"
 typedef struct {
     union {
         struct {
@@ -576,9 +591,9 @@ struct AllRegisters
     unsigned long long r15_;
     unsigned long long GetRSP() { return (unsigned long long)rax_ + 0x18; }
 };
-assert_offsetof(AllRegisters, XMM0, 0xA0);
-assert_offsetof(AllRegisters, XMM15, 0x190);
-assert_offsetof(AllRegisters, rbx_, 0x200);
+static_assert(offsetof(AllRegisters, XMM0) == 0xA0);
+static_assert(offsetof(AllRegisters, XMM15) == 0x190);
+static_assert(offsetof(AllRegisters, rbx_) == 0x200);
 class AutoAssemblerCodeHolder_Base
 {
 public:
@@ -589,7 +604,7 @@ public:
     virtual void OnBeforeActivate() {}
     virtual void OnBeforeDeactivate() {}
 
-    using CCodeInTheMiddleFunctionPtr_t = void (*)(AllRegisters * parameters);
+    using CCodeInTheMiddleFunctionPtr_t = void (*)(AllRegisters* parameters);
     static std::optional<uintptr_t> RETURN_TO_RIGHT_AFTER_STOLEN_BYTES;
     /*
     The freaking god-combo of AutoAssembler.
@@ -601,16 +616,16 @@ public:
     -> jmp return
     */
     void PresetScript_CCodeInTheMiddle(
-        uintptr_t whereToInject , size_t howManyBytesStolen
+        uintptr_t whereToInject, size_t howManyBytesStolen
         , CCodeInTheMiddleFunctionPtr_t receiverFunc
         , std::optional<uintptr_t> whereToReturn = RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, bool isNeedToExecuteStolenBytesAfterwards = true);
     void PresetScript_NOP(
-        uintptr_t whereToInject , size_t howManyBytesToNOP);
+        uintptr_t whereToInject, size_t howManyBytesToNOP);
 };
 template<class HasAutoAssemblerCodeInConstructor>
 class AutoAssembleWrapper
 {
-    static_assert(std::is_base_of_v<AutoAssemblerCodeHolder_Base, HasAutoAssemblerCodeInConstructor > ,
+    static_assert(std::is_base_of_v<AutoAssemblerCodeHolder_Base, HasAutoAssemblerCodeInConstructor >,
         "AutoAssembleWrapper template parameter needs to be derived from `AutoAssemblerCodeHolder_Base`");
 private:
     HasAutoAssemblerCodeInConstructor m_CodeHolderInstantiation;
