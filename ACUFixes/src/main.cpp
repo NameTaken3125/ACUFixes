@@ -6,7 +6,6 @@ Brings the app's components together.
 #include "pch.h"
 
 #include "base.h"
-#include "ConsoleForOutput.h"
 #include "PresentHookOuter.h"
 #include "MyVariousHacks.h"
 #include "MyLog.h"

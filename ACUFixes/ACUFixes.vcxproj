@@ -184,7 +184,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="src\AutoAssemblerKinda.cpp" />
-    <ClCompile Include="src\ConsoleForOutput.cpp" />
     <ClCompile Include="src\DisableIntegrityChecks.cpp" />
     <ClCompile Include="src\Hacks_ImGuiControl.cpp" />
     <ClCompile Include="src\Hack_DontForceUnsheatheWhenInDisguise.cpp" />
@@ -221,7 +220,6 @@
     <ClInclude Include="include\vmath\vmath.h" />
     <ClInclude Include="include\vmath\vmath_extra.h" />
     <ClInclude Include="src\AutoAssemblerKinda.h" />
-    <ClInclude Include="src\ConsoleForOutput.h" />
     <ClInclude Include="src\Hack_DontForceUnsheatheWhenInDisguise.h" />
     <ClInclude Include="src\Hack_EnterWindowsWhenRisPressed.h" />
     <ClInclude Include="src\Hack_GameRawInputHook.h" />
