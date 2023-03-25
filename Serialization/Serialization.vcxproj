@@ -169,6 +169,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="include\OLYAFSer\OLYAFSer.h" />
     <ClInclude Include="include\Serialization\enumFactory.h" />
     <ClInclude Include="include\Serialization\BooleanAdapter.h" />
     <ClInclude Include="include\Serialization\EnumAdapter.h" />
@@ -181,6 +182,7 @@
     <ClInclude Include="src\pch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\OLYAFSer.cpp" />
     <ClCompile Include="src\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -189,6 +191,12 @@
     </ClCompile>
     <ClCompile Include="src\Serialization.cpp" />
     <ClCompile Include="src\TEST_EnumReflectionAndAdapter.cpp" />
+    <ClCompile Include="src\TEST_OLYAFSer.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="src\ToFromFile.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

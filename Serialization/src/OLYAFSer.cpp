@@ -1,5 +1,6 @@
+#include "pch.h"
 
-#include "OLYAFSer.h"
+#include "OLYAFSer/OLYAFSer.h"
 
 
 ConfigMember_Base::ConfigMember_Base(const std::string& thisMemberName)
