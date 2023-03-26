@@ -140,6 +140,7 @@ void UnlockMovementForTheBatlamp(LanterndlcComponent& lanternCpnt)
 
 void OnLanternComponentUpdate(LanterndlcComponent& lanternCpnt)
 {
+    bool hasChangedModeAlready = false;
     if (lanternCpnt.isInModeAbleToCharge_300)
     {
         constexpr float howLongItTakesToToggleLanternNormally = 0.5f;
@@ -157,9 +158,10 @@ void OnLanternComponentUpdate(LanterndlcComponent& lanternCpnt)
             // then the game's code will do it on its own.
 
             //lanternCpnt.isAlight_mb = false;
+            hasChangedModeAlready = true;
         }
     }
-    else
+    if (!hasChangedModeAlready)
     {
         const bool doToggleChargeMode = ACU::Input::IsJustPressed(g_Config.cheats->batlampOfFranciadeManipulations->batlampChargeModeButton);
         if (doToggleChargeMode)
@@ -177,6 +179,42 @@ void WhenLanternCpntIsUpdated_ManageLanternModes(AllRegisters* params)
     LanterndlcComponent& lanternCpnt = *(LanterndlcComponent*)*params->rax_;
     OnLanternComponentUpdate(lanternCpnt);
 }
+#include "ACU_SoundUtils.h"
+void WhenUnsheatheLanternAndPlaySound_FixBatlampNoise(AllRegisters* params)
+{
+    LanterndlcComponent& lanternCpnt = *(LanterndlcComponent*)params->rcx_;
+    Entity& lanternEntity = *(Entity*)params->rdx_;
+
+    /*
+    All variations of lanterns play a sound loop whenever they are alight.
+    The magical lamp has a rather noisy chanting sound loop.
+    It's not that bad at first, but every time you "unsheathe" the lantern,
+    the noise loop is duplicated.
+    You end up with many of these loops overlapping, loud and distracting.
+    The normal lanterns don't have the duplication problem, because they have
+    an additional `SoundInstance` that is played when the lantern is "sheathed",
+    and it cancels the "alight" sound loop.
+    The magical lantern doesn't have the "when-sheathed" `SoundInstance`
+    (it does, but its hash is 0, and so it does nothing),
+    and its background noise is never cancelled.
+
+    Here, I change the sheathe/unsheathe sounds to be that of the regular lantern.
+    Ideally, I'd have the magical chanting noise if and only if I'm in the "can charge" mode,
+    but I just don't know how to quit playing that noise.
+    */
+
+    constexpr SoundID soundNormalLampUnsheathe = { 0x12E0D2D6 };
+    constexpr SoundID soundNormalLampSheathe = { 0x16BC652C };
+    constexpr SoundID soundMagicLampUnsheathe_noiseLoop = { 0x98351E8E };
+
+    if (lanternCpnt.soundOnUnsheathe.soundEvn.soundID.soundEvnHash == soundMagicLampUnsheathe_noiseLoop.soundEvnHash)
+    {
+        // I play the chanting noise loop this _once_, and then it's replaced with the normal lamp's "unsheathe sound"
+        ACU::Sound::PlaySoundFromEntity(lanternCpnt.soundOnUnsheathe, lanternEntity);
+        lanternCpnt.soundOnUnsheathe.soundEvn.soundID = soundNormalLampUnsheathe;
+        lanternCpnt.soundOnSheathe.soundEvn.soundID = soundNormalLampSheathe;
+    }
+}
 BatlampOfFrancide::BatlampOfFrancide()
 {
     uintptr_t whenOutOfMissionEquippingTheLantern = 0x140D2B330;
@@ -187,6 +225,10 @@ BatlampOfFrancide::BatlampOfFrancide()
     PresetScript_CCodeInTheMiddle(
         whenLanternCpntIsUpdated, 5,
         WhenLanternCpntIsUpdated_ManageLanternModes, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
+    uintptr_t whenUnsheatheLanternPlaySound = 0x140585372;
+    PresetScript_CCodeInTheMiddle(
+        whenUnsheatheLanternPlaySound, 7,
+        WhenUnsheatheLanternAndPlaySound_FixBatlampNoise, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
 }
 #include "ACU/CLAssassin.h"
 LanterndlcComponent* GetLanternComponent()

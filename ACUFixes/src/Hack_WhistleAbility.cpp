@@ -17,7 +17,7 @@
 #include "ACU_DefineNativeFunction.h"
 #include "ACU_InputUtils.h"
 
-DEFINE_GAME_FUNCTION(DispatchSoundEvent_mb, 0x1401859B0, void, __fastcall, (SoundInstance* p_hasSoundEvent, Entity* p_sourceEntity_mb));
+#include "ACU_SoundUtils.h"
 
 UISounds::UISoundsEnum g_WhistleChosenSoundIdx = UISounds::k_SomeInterestingSound_14;
 
@@ -28,7 +28,7 @@ void PlayWhistleSound_Placeholder()
     SoundInstance& sound = UISounds::GetSingleton()->arrSounds[g_WhistleChosenSoundIdx];
 
     Entity* player = ACU::GetPlayer(); if (!player) { return; }
-    DispatchSoundEvent_mb(&sound, player);
+    ACU::Sound::PlaySoundFromEntity(sound, *player);
 }
 
 bool g_IsNoticeMeRequested = false;
