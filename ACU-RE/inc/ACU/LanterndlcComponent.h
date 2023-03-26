@@ -5,13 +5,34 @@
 #include "SharedPtr.h"
 
 class FXInstance;
+class FX;
+class InventoryItemSettings;
 
 class LanterndlcComponent : public Component
 {
 public:
-    char pad_0020[184]; //0x0020
-    SoundEvent soundEvent_d8; //0x00D8
-    char pad_00F8[520]; //0x00F8
+    char pad_0020[16]; //0x0020
+    SharedPtrNew<FX>* fx_30; //0x0030
+    char pad_0038[96]; //0x0038
+    SharedPtrNew<Entity>* entityAtLanternPositionWithFXComponent_98; //0x0098
+    SharedPtrNew<Entity>* entityAtLanternPositionWithFXComponent_A0; //0x00A0
+    char pad_00A8[40]; //0x00A8
+    SoundInstance sound_d0; //0x00D0
+    SoundInstance sound_100; //0x0100
+    SoundInstance soundOnUnsheathe; //0x0130
+    SoundInstance soundOnSheathe; //0x0160
+    SoundInstance sound_190; //0x0190
+    SoundInstance sound_1C0; //0x01C0
+    SoundInstance sound_1F0; //0x01F0
+    SoundInstance sound_220; //0x0220
+    SoundInstance sound_250; //0x0250
+    SoundInstance sound_280; //0x0280
+    SoundInstance sound_2B0; //0x02B0
+    uint8 byte_2E0; //0x02E0
+    char pad_02E1[7]; //0x02E1
+    SharedPtrNew<InventoryItemSettings>* invItemSettings; //0x02E8
+    float flt_2f0; //0x02F0
+    char pad_02F4[12]; //0x02F4
     uint8 isInModeAbleToCharge_300; //0x0300
     char pad_0301[151]; //0x0301
     uint64 onExplosionSoundEventPrototype_mb; //0x0398
