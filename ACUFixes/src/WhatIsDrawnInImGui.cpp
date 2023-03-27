@@ -117,6 +117,7 @@ void ImGui3D::WhatIsActuallyDrawnForFrame()
     }
     ImGui3D::DrawMarkers();
 }
+void DrawBuiltinDebugCommands();
 
 std::filesystem::path& GetThisDLLAbsolutePath();
 #include "MainConfig.h"
@@ -133,9 +134,12 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
         {
             if (ImGuiCTX::Tab _mainTab{ "Main Tab" })
             {
-                DrawHacksControls();
-                ImGui::Separator();
-                ImGui::Checkbox("Show the \"is injected\" indicator", &g_Config.imgui_showSuccessfulInjectionIndicator.get());
+                if (ImGuiCTX::WindowChild _{ "MainTabChild" })
+                {
+                    DrawHacksControls();
+                    ImGui::Separator();
+                    ImGui::Checkbox("Show the \"is injected\" indicator", &g_Config.imgui_showSuccessfulInjectionIndicator.get());
+                }
             }
             if (ImGuiCTX::Tab _extraoptions{ "Extra" })
             {
@@ -178,6 +182,13 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
             if (ImGuiCTX::Tab _typeInfosTab{ "TypeInfos" })
             {
                 TypeInfoSystemTests();
+            }
+            if (ImGuiCTX::Tab _typeInfosTab{ "Builtin Commands" })
+            {
+                if (ImGuiCTX::WindowChild _{ "DebugCommands" })
+                {
+                    DrawBuiltinDebugCommands();
+                }
             }
             if (ImGuiCTX::Tab _typeInfosTab{ "DX11-BaseHook veriables" })
             {

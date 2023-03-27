@@ -175,6 +175,7 @@
   <ItemGroup>
     <ClCompile Include="src\ACU_InputUtils.cpp" />
     <ClCompile Include="src\ACU_SoundUtils.cpp" />
+    <ClCompile Include="src\BuiltinDebugCommands.cpp" />
     <ClCompile Include="src\Cheat_BatlampOfFranciade.cpp" />
     <ClCompile Include="src\Cheat_Health.cpp" />
     <ClCompile Include="src\Hack_CycleEquipmentWhenScrollingMousewheel.cpp" />
