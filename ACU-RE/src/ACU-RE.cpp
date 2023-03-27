@@ -86,3 +86,6 @@
 #include "ACU/ActionAbilitySet.h"
 
 #include "ACU/LanterndlcComponent.h"
+
+#include "ACU/AITask.h"
+#include "ACU/DebugCommandsHolder.h"

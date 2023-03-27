@@ -172,6 +172,7 @@
     <ClInclude Include="inc\ACU\ACUPlayerCameraComponent.h" />
     <ClInclude Include="inc\ACU\AIAction.h" />
     <ClInclude Include="inc\ACU\AIActionEntityOperatorData.h" />
+    <ClInclude Include="inc\ACU\AITask.h" />
     <ClInclude Include="inc\ACU\AlertedParams.h" />
     <ClInclude Include="inc\ACU\AssassinAbilitySet.h" />
     <ClInclude Include="inc\ACU\AssassinSoundSettings.h" />
@@ -193,6 +194,7 @@
     <ClInclude Include="inc\ACU\CSrvPlayerWeaponSwitch.h" />
     <ClInclude Include="inc\ACU\CurvePoints.h" />
     <ClInclude Include="inc\ACU\DataBindingComponent.h" />
+    <ClInclude Include="inc\ACU\DebugCommandsHolder.h" />
     <ClInclude Include="inc\ACU\DominoComponent.h" />
     <ClInclude Include="inc\ACU\DominoOperatorData.h" />
     <ClInclude Include="inc\ACU\DominoScriptExecutionContext.h" />
