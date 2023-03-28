@@ -250,7 +250,8 @@ void DrawBatlampControls()
     {
         ImGui::SetTooltip(
             "On the next level reload the regular lamp will be replaced by the Head of Saint Denis\n"
-            "as it is used in the final mission of the Dead Kings DLC."
+            "as it is used in the final mission of the Dead Kings DLC.\n"
+            "Please do consider backing up your save game."
         );
     }
     ImGui::Checkbox("Unlock movement when using the magical lamp",

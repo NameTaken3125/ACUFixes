@@ -57,6 +57,13 @@ void WhenCheckingIfLineOfSightIsNotToNPCsOcciput_AllowNPCsSeeingFromOutTheBackOf
 }
 constexpr uint32 witnessEventResponseHash_asIfYouUnsheathedMeleeWeapon = 0x8315F5D1;
 constexpr uint32 witnessEventResponseHash_triggersMostGuardsIntoCombat = 0xDDAEB4AF;
+constexpr uint32 witnessEventResponseHash_triggersEveryoneIntoCombat_mb = 0xC3FCE2A2;
+constexpr uint32 witnessEventResponseHash_turnsGuardsHeads = 0xF5D8F6B2;
+constexpr uint32 witnessEventResponseHash_seenSmokeBomb = 0xAFD9D1B6;
+constexpr uint32 witnessEventResponseHash_seenSomethingSpooky = 0xD420939B;
+constexpr uint32 witnessEventResponseHash_likeWhenYouSprintAtSomeoneAndTheyTurnAround = 0xFECD3BBD;
+constexpr uint32 witnessEventResponseHash_seenSomethingAmusing = 0x26DBE0D0;
+constexpr uint32 witnessEventResponseHash_seenSomeoneToScoldAndWaveArmsAt = 0x6167CCC9;
 
 void OnReactionHandlerRespondsToWitnessEvent_ChangeWitnessEventToAlertGuards(AllRegisters* params)
 {
@@ -116,12 +123,45 @@ ReactionHandler* GetReactionHandler(Entity& highlightedNPC)
 //DEFINE_GAME_FUNCTION(WitnessEvent__ctor, 0x140BBE160, WitnessEvent*, __fastcall, (WitnessEvent* placeAt));
 //DEFINE_GAME_FUNCTION(AlertedParams__createsCLAlertedBeforeYellowIconAppears, 0x1401AB7E0, char, __fastcall, (AlertedParams* p_alertParams, Entity* p_npc, WitnessEvent* p_witnessEvn));
 
+#include "ACU/SharedPtr.h"
+#include "ACU/Entity.h"
+#include "ACU/WitnessEvent.h"
+struct HasNPCEntity
+{
+    char pad0[0x28];
+    Entity* npc;
+};
+assert_offsetof(HasNPCEntity, npc, 0x28);
+DEFINE_GAME_FUNCTION(createsWitnessEventUnsheatheHash_d_whenUnsheatheBeforeGuard, 0x14122D420, char, __fastcall, (HasNPCEntity* a1, SharedPtrNew<Entity>** rdx0));
+DEFINE_GAME_FUNCTION(SharedPtr_copy_mb, 0x140152950, SharedPtrAndSmth*, __fastcall, (SharedPtrAndSmth* p_out, SharedPtrNew<Entity>* p_shared));
+
+// This can make the guard react as if you're having your melee weapon out,
+// but not if they can't see you. Even with the "see through walls" hack continuously active
+// no reaction is produced if they can't see you, no response hash of "0x8315F5D1"
+// reaches the ReactionHandler at 0x140ED2450.
+void TryDispatchWitnessEvent_UnsheathedMelee()
+{
+    BhvAssassin* bhv = ACU::GetPlayerBhvAssassin();
+    if (!bhv) { return; }
+    auto* toHiglightedNPC = bhv->toHighlightedNPC;
+    if (!toHiglightedNPC) { return; }
+    Entity* highlighted = toHiglightedNPC->highlightedNPC->GetPtr();
+    if (!highlighted) { return; }
+
+    HasNPCEntity hnpc;
+    hnpc.npc = highlighted;
+    createsWitnessEventUnsheatheHash_d_whenUnsheatheBeforeGuard(&hnpc, &ACU::GetPlayer()->selfSharedPtr);
+}
 #include "ImGuiCTX.h"
 void WhistleAbilityAttempt_ImGuiControls(bool isHackActive)
 {
     if (isHackActive)
     {
         ImGuiCTX::Indent _indent;
+        if (ImGui::Button("Try dispatch witness event"))
+        {
+            TryDispatchWitnessEvent_UnsheathedMelee();
+        }
         using TheEnum = decltype(g_WhistleChosenSoundIdx);
         if (ImGui::Button("-")) { g_WhistleChosenSoundIdx = (TheEnum)std::max(0, g_WhistleChosenSoundIdx - 1); }
         ImGui::SameLine();

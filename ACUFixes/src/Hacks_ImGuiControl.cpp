@@ -24,6 +24,30 @@
 #include "Cheat_BatlampOfFranciade.h"
 #include "Cheat_Health.h"
 
+struct AmmoCheat : AutoAssemblerCodeHolder_Base
+{
+    AmmoCheat();
+};
+AmmoCheat::AmmoCheat()
+{
+    uintptr_t whenDecreasingTheRemainingShotsUntilReload = 0x140C05814;
+    PresetScript_NOP(whenDecreasingTheRemainingShotsUntilReload, 2);
+    uintptr_t whenDecreasingRemainingAmmo = 0x140FDA3C4;
+    PresetScript_NOP(whenDecreasingRemainingAmmo, 3);
+}
+
+struct PretendYoureInFranciade : AutoAssemblerCodeHolder_Base
+{
+    PretendYoureInFranciade();
+};
+PretendYoureInFranciade::PretendYoureInFranciade()
+{
+    DEFINE_ADDR(whenCheckingIfPlayerIsInFranciade, 0x141D24660);
+    whenCheckingIfPlayerIsInFranciade = {
+        "B0 01"                // - mov al,01
+        "C3"                   // - ret
+    };
+}
 
 extern bool g_showDevExtraOptions;
 #include "ImGuiConfigUtils.h"
@@ -143,6 +167,16 @@ public:
                 DrawBatlampControls();
             }
             Cheat_Health_DrawImGui();
+            ImGui::DrawCheckboxForHack(dontDecreaseRemainingAmmo, "Infinite ammo");
+            ImGui::DrawCheckboxForHack(pretendYoureInFranciade, "Pretend you're in Franciade");
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::SetTooltip(
+                    "This allows, for example, to bring the Head of Saint Denis into Paris.\n"
+                    "The side effects are some missing sounds, at the minimum.\n"
+                    "Please consider backing up your savegame before activating."
+                );
+            }
         }
     }
     void ReadConfig(ConfigTop& cfg)
@@ -168,6 +202,8 @@ public:
         hacksSection->takingCoverIsLessSticky = takingCoverIsLessSticky.IsActive();
     }
     AutoAssembleWrapper<BatlampOfFrancide> batlampOfFranciade;
+    AutoAssembleWrapper<AmmoCheat> dontDecreaseRemainingAmmo;
+    AutoAssembleWrapper<PretendYoureInFranciade> pretendYoureInFranciade;
 };
 std::optional<MyHacks> g_MyHacks;
 void DrawHacksControls()
