@@ -215,6 +215,23 @@ void WhenUnsheatheLanternAndPlaySound_FixBatlampNoise(AllRegisters* params)
         lanternCpnt.soundOnSheathe.soundEvn.soundID = soundNormalLampSheathe;
     }
 }
+#include "ACU/PlayerProgressionManager.h"
+#include "ACU/GamePlaySettings.h"
+#include "ACU/AvatarGearManager.h"
+#include "ACU_DefineNativeFunction.h"
+DEFINE_GAME_FUNCTION(AddAvatarGear, 0x140D2B370, void, __fastcall, (PlayerProgressionCharacterData_190* a1, AvatarGear* p_avatarGear));
+void TryAddLanternManually()
+{
+    auto* ppm = PlayerProgressionManager::GetSingleton();
+    if (!ppm) { return; }
+    auto* gps = GamePlaySettings::GetSingleton();
+    if (!gps) { return; }
+    AvatarGearManager* agm = gps->sharedPtr_AvatarGearManager->GetPtr();
+    if (!agm) { return; }
+    AvatarGear* foundLanternGear = FindMagicalLanternGear(*agm);
+    if (!foundLanternGear) { return; }
+    AddAvatarGear(&ppm->papPlayerProgressionCharacterData_1C8[0]->stru_190, foundLanternGear);
+}
 BatlampOfFrancide::BatlampOfFrancide()
 {
     uintptr_t whenOutOfMissionEquippingTheLantern = 0x140D2B330;
@@ -244,6 +261,17 @@ LanterndlcComponent* GetLanternComponent()
 void DrawBatlampControls()
 {
     ImGuiCTX::Indent _ind;
+    if (ImGui::Button("Try add manually"))
+    {
+        TryAddLanternManually();
+    }
+    if (ImGui::IsItemHovered())
+    {
+        ImGui::SetTooltip(
+            "If you're not in Franciade, you will first need to enable the\n"
+            "\"Pretend you're in Franciade\" patch."
+        );
+    }
     ImGui::Checkbox("Replace the normal lantern with the magical one",
         &g_Config.cheats->batlampOfFranciadeManipulations->doReplaceNormalLampWithMagical.get());
     if (ImGui::IsItemHovered())

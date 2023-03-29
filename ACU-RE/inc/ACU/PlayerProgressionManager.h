@@ -117,8 +117,43 @@ public:
 assert_sizeof(AssassinAbilitySets, 0x40);
 
 
-class ProgressionCharacter;
-class PlayerProgressionCharacterData;
+class ProgressionCharacter : public ManagedObject
+{
+public:
+	char* str_Arno_MainCharacter; //0x0010
+}; //Size: 0x0018
+assert_sizeof(ProgressionCharacter, 0x18);
+
+
+class InventoryItemList : public Object
+{
+public:
+	char pad_0008[16]; //0x0008
+}; //Size: 0x0018
+
+class PlayerProgressionCharacterData_190
+{
+public:
+	char pad_0000[48]; //0x0000
+}; //Size: 0x0030
+
+class PlayerProgressionCharacterData
+{
+public:
+	char pad_0000[40]; //0x0000
+	InventoryItemList invItemList_28; //0x0028
+	InventoryItemList invItemList_40; //0x0040
+	InventoryItemList invItemList_58; //0x0058
+	InventoryItemList invItemList_70; //0x0070
+	char pad_0088[12]; //0x0088
+	SmallArray<SharedPtrNew<InventoryItemSettings>*> invItemSettings_94; //0x0094
+	SharedPtrNew<ProgressionCharacter>* shared_progressionCharacter; //0x00A0
+	char pad_00A8[232]; //0x00A8
+	PlayerProgressionCharacterData_190 stru_190; //0x0190
+	char pad_01C0[128]; //0x01C0
+}; //Size: 0x0240
+assert_offsetof(PlayerProgressionCharacterData, stru_190, 0x190);
+assert_sizeof(PlayerProgressionCharacterData, 0x240);
 
 class PlayerProgressionManager : public MandatoryUniverseComponent
 {

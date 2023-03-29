@@ -153,7 +153,8 @@ public:
             }
         }
         ImGui::Separator();
-        if (ImGui::CollapsingHeader("Cheats"))
+        ImGui::Text("Cheats");
+        ImGui::Separator();
         {
             ImGui::DrawCheckboxForHack(batlampOfFranciade, "Allow use the Head of Saint Denis outdoors in Franciade");
             if (ImGui::IsItemHovered())
