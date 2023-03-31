@@ -156,7 +156,7 @@ public:
         ImGui::Text("Cheats");
         ImGui::Separator();
         {
-            ImGui::DrawCheckboxForHack(batlampOfFranciade, "Allow use the Head of Saint Denis outdoors in Franciade");
+            ImGui::DrawCheckboxForHack(batlampOfFranciade, "Allow use the Head of Saint Denis outdoors");
             if (ImGui::IsItemHovered())
             {
                 ImGui::SetTooltip(
@@ -173,9 +173,10 @@ public:
             if (ImGui::IsItemHovered())
             {
                 ImGui::SetTooltip(
-                    "This allows, for example, to bring the Head of Saint Denis into Paris.\n"
-                    "The side effects are some missing sounds, at the minimum.\n"
-                    "Please consider backing up your savegame before activating."
+                    "This allows, for example, to bring the Lantern, including the magical\n"
+                    "Head of Saint Denis into Paris.\n"
+                    "Please consider backing up your savegame before activating.\n"
+                    "The side effects are some missing sounds, at the minimum."
                 );
             }
         }

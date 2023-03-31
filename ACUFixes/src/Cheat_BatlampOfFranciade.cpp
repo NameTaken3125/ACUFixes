@@ -261,15 +261,22 @@ LanterndlcComponent* GetLanternComponent()
 void DrawBatlampControls()
 {
     ImGuiCTX::Indent _ind;
-    if (ImGui::Button("Try add manually"))
-    {
-        TryAddLanternManually();
-    }
+    ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(0, 0.6f, 0.6f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(0, 0.7f, 0.7f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(0, 0.8f, 0.8f));
+    ImGui::Button("Hover over me for instructions");
+    ImGui::PopStyleColor(3);
     if (ImGui::IsItemHovered())
     {
         ImGui::SetTooltip(
-            "If you're not in Franciade, you will first need to enable the\n"
-            "\"Pretend you're in Franciade\" patch."
+            "You can use the Head of Saint Denis outside of the Dead Kings DLC's last mission.\n"
+            "You can choose to:\n"
+            "- Automatically replace the regular lantern with the magical one whenever level is reloaded;\n"
+            "- Try to manually add the magical lantern.\n"
+            "A new hotkey (\"N\" by default) can be used to enter and exit the \"can charge\" mode.\n"
+            "You can even use the lantern in Paris, if you also enable the \"Pretend you're in Franciade\" cheat.\n"
+            "The side effects of using the lantern in Paris are some missing sounds, at the minimum.\n"
+            "Please do consider making a backup of your savegame if you use this."
         );
     }
     ImGui::Checkbox("Replace the normal lantern with the magical one",
@@ -278,20 +285,29 @@ void DrawBatlampControls()
     {
         ImGui::SetTooltip(
             "On the next level reload the regular lamp will be replaced by the Head of Saint Denis\n"
-            "as it is used in the final mission of the Dead Kings DLC.\n"
-            "Please do consider backing up your save game."
+            "as it is used in the final mission of the Dead Kings DLC."
         );
     }
     ImGui::Checkbox("Unlock movement when using the magical lamp",
         &g_Config.cheats->batlampOfFranciadeManipulations->doUnlockMovementWithTheBatlamp.get());
     LanterndlcComponent* lanternCpnt = GetLanternComponent();
-    if (!lanternCpnt)
+    if (lanternCpnt)
     {
-        ImGui::BulletText("Couldn't find a `LanterndlcComponent`");
-        return;
+        ImGui::Checkbox("Allow to charge now", (bool*)&lanternCpnt->isInModeAbleToCharge_300);
+        ImGui::DrawEnumPicker("Can-Charge mode toggle",
+            g_Config.cheats->batlampOfFranciadeManipulations->batlampChargeModeButton.get(),
+            ImGuiComboFlags_HeightLarge);
     }
-    ImGui::Checkbox("Allow to charge now", (bool*)&lanternCpnt->isInModeAbleToCharge_300);
-    ImGui::DrawEnumPicker("Can-Charge mode toggle",
-        g_Config.cheats->batlampOfFranciadeManipulations->batlampChargeModeButton.get(),
-        ImGuiComboFlags_HeightLarge);
+    ImGui::BulletText("Couldn't find a `LanterndlcComponent`");
+    if (ImGui::Button("Try to manually add the Batlamp"))
+    {
+        TryAddLanternManually();
+    }
+    if (ImGui::IsItemHovered())
+    {
+        ImGui::SetTooltip(
+            "If you're not in Franciade, you will first need to enable the\n"
+            "\"Pretend you're in Franciade\" cheat."
+        );
+    }
 }
