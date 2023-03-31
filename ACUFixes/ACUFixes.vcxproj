@@ -177,6 +177,7 @@
     <ClCompile Include="src\ACU_SoundUtils.cpp" />
     <ClCompile Include="src\BuiltinDebugCommands.cpp" />
     <ClCompile Include="src\Cheat_BatlampOfFranciade.cpp" />
+    <ClCompile Include="src\Cheat_DisguiseUpgrades.cpp" />
     <ClCompile Include="src\Cheat_Health.cpp" />
     <ClCompile Include="src\Hack_CycleEquipmentWhenScrollingMousewheel.cpp" />
     <ClCompile Include="include\vmath\vmath.cpp">
@@ -213,8 +214,11 @@
     <ClInclude Include="src\ACU_DefineNativeFunction.h" />
     <ClInclude Include="src\ACU_InputUtils.h" />
     <ClInclude Include="src\ACU_SoundUtils.h" />
+    <ClInclude Include="src\Cheat_Ammo.h" />
     <ClInclude Include="src\Cheat_BatlampOfFranciade.h" />
+    <ClInclude Include="src\Cheat_DisguiseUpgrades.h" />
     <ClInclude Include="src\Cheat_Health.h" />
+    <ClInclude Include="src\Cheat_PretendYoureInFranciade.h" />
     <ClInclude Include="src\Enum_BindableKeyCode_Keyboard.h" />
     <ClInclude Include="src\Hacks_VariousExperiments.h" />
     <ClInclude Include="src\Hack_CrouchFix.h" />

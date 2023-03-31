@@ -22,32 +22,13 @@
 #include "Hacks_VariousExperiments.h"
 
 #include "Cheat_BatlampOfFranciade.h"
+#include "Cheat_PretendYoureInFranciade.h"
 #include "Cheat_Health.h"
+#include "Cheat_Ammo.h"
+#include "Cheat_DisguiseUpgrades.h"
 
-struct AmmoCheat : AutoAssemblerCodeHolder_Base
-{
-    AmmoCheat();
-};
-AmmoCheat::AmmoCheat()
-{
-    uintptr_t whenDecreasingTheRemainingShotsUntilReload = 0x140C05814;
-    PresetScript_NOP(whenDecreasingTheRemainingShotsUntilReload, 2);
-    uintptr_t whenDecreasingRemainingAmmo = 0x140FDA3C4;
-    PresetScript_NOP(whenDecreasingRemainingAmmo, 3);
-}
 
-struct PretendYoureInFranciade : AutoAssemblerCodeHolder_Base
-{
-    PretendYoureInFranciade();
-};
-PretendYoureInFranciade::PretendYoureInFranciade()
-{
-    DEFINE_ADDR(whenCheckingIfPlayerIsInFranciade, 0x141D24660);
-    whenCheckingIfPlayerIsInFranciade = {
-        "B0 01"                // - mov al,01
-        "C3"                   // - ret
-    };
-}
+
 
 extern bool g_showDevExtraOptions;
 #include "ImGuiConfigUtils.h"
@@ -169,6 +150,24 @@ public:
             }
             Cheat_Health_DrawImGui();
             ImGui::DrawCheckboxForHack(dontDecreaseRemainingAmmo, "Infinite ammo");
+            if (ImGuiCTX::TreeNode _disguiseUpgradesSection{ "Disguise upgrades" })
+            {
+                ImGui::DrawCheckboxForHack(disableDisguiseCooldown, "Disable Disguise cooldown");
+                ImGui::DrawCheckboxForHack(unbreakableDisguise, "Unbreakable Disguise");
+                if (ImGui::IsItemHovered())
+                {
+                    ImGui::SetTooltip(
+                        "Being in Disguise makes you \"invisible\" to enemies, and that makes the Unbreakable Disguise\n"
+                        "pretty boring for normal gameplay.\n"
+                        "If you simply want to use someone else's appearance, you can uncheck the\n"
+                        "\"Invisible to enemies\" cheat, and then the Disguise will not prevent detection.\n"
+                        "Also, if you'd like to _fight_ someone while wearing Disguise,\n"
+                        "you might also want to disable the \"Don't pull out your weapon while you're in Disguise\" fix."
+                    );
+                }
+                ImGui::DrawCheckboxForHack(disguiseDoesntMakeYouInvisible, "If enabled, Disguise will not make you invisible to enemies");
+            }
+            Cheat_Invisibility_DrawImGui();
             ImGui::DrawCheckboxForHack(pretendYoureInFranciade, "Pretend you're in Franciade");
             if (ImGui::IsItemHovered())
             {
@@ -206,6 +205,9 @@ public:
     AutoAssembleWrapper<BatlampOfFrancide> batlampOfFranciade;
     AutoAssembleWrapper<AmmoCheat> dontDecreaseRemainingAmmo;
     AutoAssembleWrapper<PretendYoureInFranciade> pretendYoureInFranciade;
+    AutoAssembleWrapper<DisableDisguiseCooldown> disableDisguiseCooldown;
+    AutoAssembleWrapper<UnbreakableDisguise> unbreakableDisguise;
+    AutoAssembleWrapper<DisguiseDoesntMakeYouInvisible> disguiseDoesntMakeYouInvisible;
 };
 std::optional<MyHacks> g_MyHacks;
 void DrawHacksControls()
