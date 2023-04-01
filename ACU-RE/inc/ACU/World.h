@@ -2,6 +2,7 @@
 
 #include "ManagedObject.h"
 #include "SmallArray.h"
+#include "Clock.h"
 
 class BhvAssassin;
 
@@ -14,6 +15,8 @@ assert_sizeof(BaseWorld, 0xD0);
 
 class WorldComponent;
 class UIWorldComponent;
+class ConflictLoopManager;
+class DeferredCastManager;
 class Entity;
 class World : public BaseWorld
 {
@@ -30,7 +33,15 @@ public:
     SmallArray<WorldComponent*> worldComponents; //0x0118
     char pad_0124[244]; //0x0120
     BhvAssassin** array_toBhvAssassin_218; //0x0218
-    char pad_0220[1960]; //0x0220
+    char pad_0220[1464]; //0x0220
+    Clock unpausedGameClock; //0x07D8
+    Clock clock_830; //0x0830
+    Clock clock_888; //0x0888
+    char pad_08E0[16]; //0x08E0
+    ConflictLoopManager* conflictLoopManager; //0x08F0
+    char pad_08F8[120]; //0x08F8
+    DeferredCastManager* deferredCastManager; //0x0970
+    char pad_0978[80]; //0x0978
     UIWorldComponent* uiWorldComponent; //0x09C8
     char pad_09D0[152]; //0x09D0
 
@@ -39,5 +50,7 @@ public:
 }; //Size: 0x0A68
 assert_offsetof(World, worldComponents, 0x0118);
 assert_offsetof(World, array_toBhvAssassin_218, 0x218);
+assert_offsetof(World, unpausedGameClock, 0x7D8);
+assert_offsetof(World, conflictLoopManager, 0x8F0);
 assert_offsetof(World, uiWorldComponent, 0x09C8);
 assert_sizeof(World, 0x0A68);

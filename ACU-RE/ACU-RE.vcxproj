@@ -188,6 +188,7 @@
     <ClInclude Include="inc\ACU\CharacterAI.h" />
     <ClInclude Include="inc\ACU\CLAbstract.h" />
     <ClInclude Include="inc\ACU\CLAssassin.h" />
+    <ClInclude Include="inc\ACU\Clock.h" />
     <ClInclude Include="inc\ACU\Component.h" />
     <ClInclude Include="inc\ACU\CSrvAbstract.h" />
     <ClInclude Include="inc\ACU\CSrvPlayerHealth.h" />
