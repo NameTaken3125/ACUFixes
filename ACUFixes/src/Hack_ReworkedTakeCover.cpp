@@ -9,7 +9,7 @@
 bool IsTakeCoverPressed()
 {
     InputContainer& inpCont = InputContainer::GetMainSingleton();
-    return inpCont.keyStates_thisFrame.isPressed_parkourUp;
+    return inpCont.keyStates_thisFrame.IsPressed(ActionKeyCode::ParkourUp);
 }
 
 DEFINE_GAME_FUNCTION(WhenTryToTakeCover_IsSpacePressed_mb, 0x1426689A0, char, __fastcall, (__int64 a1, int a2, char a3, char a4));
@@ -38,7 +38,7 @@ void WhenLeaningAroundTheCornerAndCheckingIfSprintingOutOfTheCover_ForceLeave(Al
 }
 void WhenLeavingTheCoverBySprintAndForcingSprintStart_DontSprintUnnecessarily(AllRegisters* params)
 {
-    const bool isReallySprinting = InputContainer::GetMainSingleton().keyStates_thisFrame.isPressed_sprint;
+    const bool isReallySprinting = InputContainer::GetMainSingleton().keyStates_thisFrame.IsPressed(ActionKeyCode::Sprint);
     (bool&)params->r9_ = isReallySprinting;
 }
 ReworkedTakeCover::ReworkedTakeCover()

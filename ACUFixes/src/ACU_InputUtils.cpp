@@ -91,7 +91,7 @@ bool IsJustPressedLong(ActionKeyCode actionKey, float howLong)
 }
 
 
-bool IsPressedRMB() { return InputContainer::GetMainSingleton().keyStates_thisFrame.isPressed_RMB; }
+bool IsPressedRMB() { return InputContainer::GetMainSingleton().keyStates_thisFrame.IsPressed(ActionKeyCode::RMB); }
 
 } // namespace ACU::Input
 
