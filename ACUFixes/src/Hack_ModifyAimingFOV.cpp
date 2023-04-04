@@ -5,17 +5,9 @@
 #include "ACU/CameraSelectorBlenderNode.h"
 #include "ACU/CameraData.h"
 #include "ACU/CurvePoints.h"
+#include "ACU/SharedPtr.h"
 
 #include "MovabilityUtils.h"
-
-class ObjectRegistry_Entry
-{
-public:
-    CameraSelectorBlenderNode* node;
-    uint64 qword_8;
-    uint64 hash_mb;
-};
-assert_sizeof(ObjectRegistry_Entry, 0x18);
 
 
 
@@ -71,10 +63,10 @@ Provides control over these values.
 class FOVCurveAccessor
 {
     std::vector<std::unique_ptr<AutoRestoredValue>> m_AutoRestoredValues;
-    void SaveAllCurvePointsForFutureAccessAndRestoration(ObjectRegistry_Entry* cameraMode)
+    void SaveAllCurvePointsForFutureAccessAndRestoration(SharedPtrNew<CameraSelectorBlenderNode>* cameraMode)
     {
         std::vector<std::unique_ptr<AutoRestoredValue>> savedValuesBackups;
-        auto& horizontalPts = cameraMode->node->cameraData->horizontalCurvePts;
+        auto& horizontalPts = cameraMode->manObj->cameraData->horizontalCurvePts;
         savedValuesBackups.reserve((size_t)horizontalPts.size * 3);
         for (auto& horPt : horizontalPts)
         {
@@ -87,7 +79,7 @@ class FOVCurveAccessor
         m_AutoRestoredValues = std::move(savedValuesBackups);
     }
 public:
-    FOVCurveAccessor(ObjectRegistry_Entry* cameraMode)
+    FOVCurveAccessor(SharedPtrNew<CameraSelectorBlenderNode>* cameraMode)
     {
         SaveAllCurvePointsForFutureAccessAndRestoration(cameraMode);
     }
@@ -245,13 +237,13 @@ struct MethodLinear
 };
 } // namespace Interpolations
 #include "ACU/ACUPlayerCameraComponent.h"
-bool IsBombAimMode(ObjectRegistry_Entry* cameraMode)
+bool IsBombAimMode(SharedPtrNew<CameraSelectorBlenderNode>* cameraMode)
 {
-    return cameraMode->hash_mb == objHash_BombAimRegular;
+    return cameraMode->handle == objHash_BombAimRegular;
 }
-bool IsBombAimFromBehindCoverMode(ObjectRegistry_Entry* cameraMode)
+bool IsBombAimFromBehindCoverMode(SharedPtrNew<CameraSelectorBlenderNode>* cameraMode)
 {
-    return cameraMode->hash_mb == objHash_BombAimFromCover;
+    return cameraMode->handle == objHash_BombAimFromCover;
 }
 bool IsInBombAimMode(ACUPlayerCameraComponent* cameraCpnt)
 {
@@ -337,7 +329,7 @@ public:
     - Hash == 0x34CE205063.
     - There are 4 HorizontalCurvePoints, which I think correspond to 4 cardinal directions relative to the cover direction.
     */
-    void OnCameraModeChanged(ObjectRegistry_Entry* newCameraMode)
+    void OnCameraModeChanged(SharedPtrNew<CameraSelectorBlenderNode>* newCameraMode)
     {
         if (IsBombAimMode(newCameraMode))
         {
@@ -395,7 +387,7 @@ void UpdateConditionalFOVCurves(ACUPlayerCameraComponent* cameraCpnt)
 
 void WhenCameraBlendingModeChanged_HijackConditionalFOVs(AllRegisters* params)
 {
-    ObjectRegistry_Entry* newCameraMode = (ObjectRegistry_Entry*)params->rbx_;
+    SharedPtrNew<CameraSelectorBlenderNode>* newCameraMode = (SharedPtrNew<CameraSelectorBlenderNode>*)params->rbx_;
     FOVWhileAimingManager_AugmentedZoomOnRightClick::GetSingleton().OnCameraModeChanged(newCameraMode);
 }
 void WhenCameraUpdateStarts(AllRegisters* params)

@@ -3,6 +3,7 @@
 #include "vmath/vmath.h"
 
 #include "Component.h"
+#include "SharedPtr.h"
 
 class PlayerCameraComponent : public Component
 {
@@ -16,7 +17,7 @@ public:
 assert_sizeof(PlayerCameraComponent, 0x120);
 
 class CameraData;
-class ObjectRegistry_Entry;
+class CameraSelectorBlenderNode;
 class ACUPlayerCameraComponent_9C0;
 
 class ACUPlayerCameraComponent : public PlayerCameraComponent
@@ -40,7 +41,7 @@ public:
     char pad_0960[84]; //0x0960
     uint8 disableCameraSmoothing; //0x09B4
     char pad_09B5[3]; //0x09B5
-    ObjectRegistry_Entry* currentCameraSelectorBlenderNode; //0x09B8
+    SharedPtrNew<CameraSelectorBlenderNode>* currentCameraSelectorBlenderNode; //0x09B8
     ACUPlayerCameraComponent_9C0* cameraCurrentBlending_mb_9c0; //0x09C0
     char pad_09C8[136]; //0x09C8
     Vector4f kindOfMovingAheadOfCameraLookat; //0x0A50
