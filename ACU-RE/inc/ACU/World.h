@@ -35,8 +35,8 @@ public:
     BhvAssassin** array_toBhvAssassin_218; //0x0218
     char pad_0220[1464]; //0x0220
     Clock unpausedGameClock; //0x07D8
-    Clock clock_830; //0x0830
-    Clock clock_888; //0x0888
+    Clock clockGameFocusedWithoutSlowmotion; //0x0830 // Still ticks if game is paused but doesn't tick while Alt+Tabbed out of game window.
+    Clock clockUnpausedWithoutSlowmotion; //0x0888 // Unaffected by slowmotion, but stops ticking while paused.
     char pad_08E0[16]; //0x08E0
     ConflictLoopManager* conflictLoopManager; //0x08F0
     char pad_08F8[120]; //0x08F8

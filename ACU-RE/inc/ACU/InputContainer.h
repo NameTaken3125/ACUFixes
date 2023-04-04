@@ -50,11 +50,7 @@ public:
     int32 mouseDeltaIntForCamera_X; //0x0000
     int32 mouseDeltaIntForCamera_Y; //0x0004
     char pad_0008[4]; //0x0008
-    uint8 mbtnStateLMB; //0x000C
-    uint8 mbtnStateRMB; //0x000D
-    uint8 mbtnStateMMB; //0x000E
-    uint8 mbtnStateMouse4; //0x000F
-    uint8 mbtnStateMouse5; //0x0010
+    uint8 mouseButtonStates[5]; //0x000C
     char pad_0011[3]; //0x0011
     int32 mouseDeltaInt_X; //0x0014
     int32 mouseDeltaInt_Y; //0x0018

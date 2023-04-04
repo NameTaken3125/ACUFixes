@@ -1,6 +1,7 @@
 #include "pch.h"
 
 #include "ACU/InputContainer.h"
+#include "ACU/Enum_MouseButtons.h"
 
 #include "ACU_InputUtils.h"
 #include "ACU_DefineNativeFunction.h"
@@ -17,12 +18,7 @@ void GameRawInputHook_ImGuiLayer(InputContainerBig& inpCont)
         std::memset(inpCont.isPressed_byScancode, 0, sizeof(inpCont.isPressed_byScancode));
         inpCont.mouseState.mouseDeltaIntForCamera_X = inpCont.mouseState.mouseDeltaIntForCamera_Y = 0;
         inpCont.mouseState.mouseWheelDeltaInt = 0;
-        inpCont.mouseState.mbtnStateLMB
-            = inpCont.mouseState.mbtnStateRMB
-            = inpCont.mouseState.mbtnStateMMB
-            = inpCont.mouseState.mbtnStateMouse4
-            = inpCont.mouseState.mbtnStateMouse5
-            = 0;
+        std::memset(inpCont.mouseState.mouseButtonStates, 0, sizeof(inpCont.mouseState.mouseButtonStates));
     }
 }
 
@@ -32,14 +28,21 @@ class InputHooks
 {
     std::array<uint8, 256> m_PrevFrameKeyStates;
     std::array<uint8, 256> m_ThisFrameKeyStates;
+    std::array<uint8, 5> m_PrevFrameMouseButtonStates;
+    std::array<uint8, 5> m_ThisFrameMouseButtonStates;
 
     void UpdateEvolvedKeyStates(InputContainerBig& inpCont)
     {
         constexpr size_t keyStatesArraySize = sizeof(m_PrevFrameKeyStates);
         static_assert(keyStatesArraySize == sizeof(m_ThisFrameKeyStates));
         static_assert(keyStatesArraySize == sizeof(InputContainerBig::isPressed_byScancode));
+        constexpr size_t mouseButtonStatesArraySize = sizeof(m_PrevFrameMouseButtonStates);
+        static_assert(mouseButtonStatesArraySize == sizeof(m_ThisFrameMouseButtonStates));
+        static_assert(mouseButtonStatesArraySize == sizeof(MouseState::mouseButtonStates));
         std::memcpy(&m_PrevFrameKeyStates, &m_ThisFrameKeyStates, keyStatesArraySize);
         std::memcpy(&m_ThisFrameKeyStates, &inpCont.isPressed_byScancode, keyStatesArraySize);
+        std::memcpy(&m_PrevFrameMouseButtonStates, &m_ThisFrameMouseButtonStates, mouseButtonStatesArraySize);
+        std::memcpy(&m_ThisFrameMouseButtonStates, &inpCont.mouseState.mouseButtonStates, mouseButtonStatesArraySize);
     }
 public:
     void OnRawInputUpdate(InputContainerBig& inpCont)
@@ -50,6 +53,10 @@ public:
     bool IsJustPressed(uint8 scancode)
     {
         return m_ThisFrameKeyStates[scancode] && !m_PrevFrameKeyStates[scancode];
+    }
+    bool IsJustPressed(MouseButton mouseButton)
+    {
+        return m_ThisFrameMouseButtonStates[(int)mouseButton] && !m_PrevFrameMouseButtonStates[(int)mouseButton];
     }
     static InputHooks& GetSingleton()
     {
@@ -66,9 +73,17 @@ bool IsPressed(BindableKeyCode_Keyboard keycode)
 {
     return ACU::Input::Get_InputContainerBig()->isPressed_byScancode[(uint32)keycode];
 }
+bool IsPressed(MouseButton mouseBtn)
+{
+    return ACU::Input::Get_InputContainerBig()->mouseState.mouseButtonStates[(uint32)mouseBtn];
+}
 bool IsJustPressed(BindableKeyCode_Keyboard keycode)
 {
     return InputHooks::GetSingleton().IsJustPressed((uint8)keycode);
+}
+bool IsJustPressed(MouseButton mouseButton)
+{
+    return InputHooks::GetSingleton().IsJustPressed(mouseButton);
 }
 bool IsJustPressedLong(ActionKeyCode actionKey, float howLong)
 {
