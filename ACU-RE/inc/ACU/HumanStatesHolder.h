@@ -9,7 +9,7 @@ class BallisticProjectileAimingProcess_190
 public:
     char pad_0000[28]; //0x0000
     float nearAndMidModeDistance; //0x001C
-    float angle_mb; //0x0020
+    float angleUpDown; //0x0020
     char pad_0024[4]; //0x0024
     Vector4f vecForward_sorta_1b8; //0x0028
     float flt_38; //0x0038
@@ -31,7 +31,7 @@ public:
     BallisticProjectileAimingProcess_118* stru_118; //0x0118
     char pad_0120[104]; //0x0120
     BallisticProjectileSettings** projectileSettings_complicatedPtr; //0x0188
-    BallisticProjectileAimingProcess_190 stru_190; //0x0190
+    BallisticProjectileAimingProcess_190 currentAimingState; //0x0190
     char pad_01F8[8]; //0x01F8
 }; //Size: 0x0200
 assert_sizeof(BallisticProjectileAimingProcess, 0x200);
@@ -64,9 +64,10 @@ public:
     HumanStatesHolder_D0* humanStatesHolder_D0; //0x00D0
     char pad_00D8[3164]; //0x00D8
     EquipmentType ballisticAimingCurrentEquipmentType; //0x0D34
-    char pad_0D38[568]; //0x0D38
-    BallisticProjectileAimingProcess aimingMoney; //0x0F70
-    BallisticProjectileAimingProcess aiming_equipType0x12_1170; //0x1170
+    char pad_0D38[56]; //0x0D38
+    BallisticProjectileAimingProcess aimingSmokeBomb; //0x0D70
+    BallisticProjectileAimingProcess aimingMoneyPouch; //0x0F70
+    BallisticProjectileAimingProcess aimingCherryBomb; //0x1170
     BallisticProjectileAimingProcess aimingPoison; //0x1370
     BallisticProjectileAimingProcess aimingDefault; //0x1570
     BallisticProjectileAimingProcess aiming_equip19_1770; //0x1770

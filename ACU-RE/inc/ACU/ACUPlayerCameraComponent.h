@@ -25,8 +25,8 @@ class ACUPlayerCameraComponent : public PlayerCameraComponent
 public:
     // @members
     char pad_0120[1936]; //0x0120
-    Vector4f cameraTopRight_mb; //0x08B0
-    char pad_08C0[16]; //0x08C0
+    Vector4f locationMovetoward_mb; //0x08B0
+    Vector4f quat_8C0; //0x08C0
     float fovPrecalc; //0x08D0
     char pad_08D4[12]; //0x08D4
     Vector4f location_8E0; //0x08E0
@@ -39,7 +39,7 @@ public:
     float virtualRotPitchTarget; //0x0958
     float distFromSpinaround_mb; //0x095C
     char pad_0960[84]; //0x0960
-    uint8 disableCameraSmoothing; //0x09B4
+    uint8 disableCameraSmoothingForThisFrame; //0x09B4
     char pad_09B5[3]; //0x09B5
     SharedPtrNew<CameraSelectorBlenderNode>* currentCameraSelectorBlenderNode; //0x09B8
     ACUPlayerCameraComponent_9C0* cameraCurrentBlending_mb_9c0; //0x09C0

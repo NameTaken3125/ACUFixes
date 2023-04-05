@@ -58,6 +58,14 @@ public:
     {
         return m_ThisFrameMouseButtonStates[(int)mouseButton] && !m_PrevFrameMouseButtonStates[(int)mouseButton];
     }
+    bool IsJustReleased(MouseButton mouseButton)
+    {
+        return !m_ThisFrameMouseButtonStates[(int)mouseButton] && m_PrevFrameMouseButtonStates[(int)mouseButton];
+    }
+    bool IsJustReleased(BindableKeyCode_Keyboard keycode)
+    {
+        return !m_ThisFrameKeyStates[(int)keycode] && m_PrevFrameKeyStates[(int)keycode];
+    }
     static InputHooks& GetSingleton()
     {
         static InputHooks singleton;
@@ -84,6 +92,14 @@ bool IsJustPressed(BindableKeyCode_Keyboard keycode)
 bool IsJustPressed(MouseButton mouseButton)
 {
     return InputHooks::GetSingleton().IsJustPressed(mouseButton);
+}
+bool IsJustReleased(MouseButton mouseButton)
+{
+    return InputHooks::GetSingleton().IsJustReleased(mouseButton);
+}
+bool IsJustReleased(BindableKeyCode_Keyboard keycode)
+{
+    return InputHooks::GetSingleton().IsJustReleased(keycode);
 }
 bool IsJustPressedLong(ActionKeyCode actionKey, float howLong)
 {

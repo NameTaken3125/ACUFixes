@@ -11,6 +11,7 @@ enum class EquipmentType : uint32
     StunBomb = 0x14,
     PhantomBlade = 0x16,
     BerserkBlade = 0x17,
+    unk_0x19 = 0x19,
     Rifle = 0x1C,
     Blunderbuss = 0x1D,
     GuillotineGun = 0x1E,

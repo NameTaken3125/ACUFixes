@@ -13,6 +13,8 @@ bool IsPressed(BindableKeyCode_Keyboard keycode);
 bool IsPressed(MouseButton mouseBtn);
 bool IsJustPressed(BindableKeyCode_Keyboard keycode);
 bool IsJustPressed(MouseButton mouseButton);
+bool IsJustReleased(BindableKeyCode_Keyboard keycode);
+bool IsJustReleased(MouseButton mouseButton);
 bool IsJustPressedLong(ActionKeyCode actionKey, float howLong);
 
 bool IsPressedRMB();
