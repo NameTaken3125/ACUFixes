@@ -17,6 +17,7 @@
 #include "Hack_DontForceUnsheatheWhenInDisguise.h"
 #include "Hack_CrouchFix.h"
 #include "Hack_ReworkedTakeCover.h"
+#include "Hack_LookbehindButton.h"
 
 #include "Hack_WhistleAbility.h"
 #include "Hacks_VariousExperiments.h"
@@ -26,7 +27,6 @@
 #include "Cheat_Health.h"
 #include "Cheat_Ammo.h"
 #include "Cheat_DisguiseUpgrades.h"
-
 
 
 
@@ -46,6 +46,7 @@ public:
     AutoAssembleWrapper<DontUnsheatheLikeAnIdiotWhileInDisguise> dontUnsheatheWhenInDisguise;
     AutoAssembleWrapper<CrouchFix> slightlyMoreResponsiveCrouch;
     AutoAssembleWrapper<ReworkedTakeCover> takingCoverIsLessSticky;
+    AutoAssembleWrapper<LookbehindButton> lookbehindButton;
 
     AutoAssembleWrapper<WhistleAbility> whistleAbility;
 
@@ -124,6 +125,14 @@ public:
                 "instead of leaning around the corner."
             );
         }
+        ImGui::DrawCheckboxForHack(lookbehindButton, "Lookbehind button");
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::SetTooltip(
+                "Flip camera around when Middle Mouse Button is pressed.\n"
+                "Warning: doesn't work when aiming Guillotine Gun."
+            );
+        }
         if (g_showDevExtraOptions)
         {
             if (ImGuiCTX::TreeNode _header{ "Unfinished and useless hacks" })
@@ -190,6 +199,7 @@ public:
         dontUnsheatheWhenInDisguise.Toggle(hacksSection->dontUnsheatheWhenInDisguise);
         slightlyMoreResponsiveCrouch.Toggle(hacksSection->slightlyMoreResponsiveCrouch);
         takingCoverIsLessSticky.Toggle(hacksSection->takingCoverIsLessSticky);
+        lookbehindButton.Toggle(hacksSection->lookbehindWhenPressingMiddleMouseButton);
     }
     void WriteConfig(ConfigTop& cfg)
     {
@@ -201,6 +211,7 @@ public:
         hacksSection->dontUnsheatheWhenInDisguise = dontUnsheatheWhenInDisguise.IsActive();
         hacksSection->slightlyMoreResponsiveCrouch = slightlyMoreResponsiveCrouch.IsActive();
         hacksSection->takingCoverIsLessSticky = takingCoverIsLessSticky.IsActive();
+        hacksSection->lookbehindWhenPressingMiddleMouseButton = lookbehindButton.IsActive();
     }
     AutoAssembleWrapper<BatlampOfFrancide> batlampOfFranciade;
     AutoAssembleWrapper<AmmoCheat> dontDecreaseRemainingAmmo;

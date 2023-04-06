@@ -33,10 +33,10 @@ public:
     char pad_08F0[8]; //0x08F0
     CameraData* cameraData; //0x08F8
     char pad_0900[76]; //0x0900
-    float virtualRotZcurrent; //0x094C
-    float virtualRotZtarget; //0x0950
-    float virtualRotPitchCurrent; //0x0954
-    float virtualRotPitchTarget; //0x0958
+    float spinaroundAngleZcurrent; //0x094C
+    float spinaroundAngleZtarget; //0x0950
+    float spinaroundAngleUpDownCurrent; //0x0954
+    float spinaroundAngleUpDownTarget; //0x0958
     float distFromSpinaround_mb; //0x095C
     char pad_0960[84]; //0x0960
     uint8 disableCameraSmoothingForThisFrame; //0x09B4

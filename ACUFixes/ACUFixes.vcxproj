@@ -190,6 +190,7 @@
     <ClCompile Include="src\Hacks_ImGuiControl.cpp" />
     <ClCompile Include="src\Hack_DontForceUnsheatheWhenInDisguise.cpp" />
     <ClCompile Include="src\Hack_EnterWindowsWhenRisPressed.cpp" />
+    <ClCompile Include="src\Hack_LookbehindButton.cpp" />
     <ClCompile Include="src\Hack_ModifyAimingFOV.cpp" />
     <ClCompile Include="src\Hack_ReworkedTakeCover.cpp" />
     <ClCompile Include="src\Hack_SlowMenacingWalkAndAutowalk.cpp" />
@@ -228,6 +229,7 @@
     <ClInclude Include="src\Hack_DontForceUnsheatheWhenInDisguise.h" />
     <ClInclude Include="src\Hack_EnterWindowsWhenRisPressed.h" />
     <ClInclude Include="src\Hack_GameRawInputHook.h" />
+    <ClInclude Include="src\Hack_LookbehindButton.h" />
     <ClInclude Include="src\Hack_ModifyAimingFOV.h" />
     <ClInclude Include="src\Hack_ReworkedTakeCover.h" />
     <ClInclude Include="src\Hack_SlowMenacingWalkAndAutowalk.h" />
