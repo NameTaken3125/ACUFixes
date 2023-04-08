@@ -202,8 +202,10 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
         }
     }
 }
+void DoSlowMotionTrick();
 void Base::ImGuiLayer_EvenWhenMenuIsClosed()
 {
+    DoSlowMotionTrick();
     bool drawImGui3D = g_showDevExtraOptions;
     if (drawImGui3D)
         ImGui3D::DrawStuff();

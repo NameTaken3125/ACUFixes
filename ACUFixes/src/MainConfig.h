@@ -38,6 +38,7 @@ struct ConfigTop : YAConfigSection {
         ACM(slightlyMoreResponsiveCrouch, bool, BooleanAdapter, true);
         ACM(takingCoverIsLessSticky, bool, BooleanAdapter, true);
         ACM(lookbehindWhenPressingMiddleMouseButton, bool, BooleanAdapter, false);
+        ACM(slowmotionTrick, bool, BooleanAdapter, false);
     };
     ACM(hacks, Hacks, YAConfigSectionAdapter, );
     struct Cheats : YAConfigSection {

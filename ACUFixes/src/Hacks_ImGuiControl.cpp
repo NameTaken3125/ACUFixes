@@ -30,6 +30,9 @@
 
 
 
+void DrawSlowMotionControls();
+void DrawSlowMotionTrickControls();
+
 extern bool g_showDevExtraOptions;
 #include "ImGuiConfigUtils.h"
 class MyHacks
@@ -133,6 +136,7 @@ public:
                 "Warning: doesn't work when aiming Guillotine Gun."
             );
         }
+        DrawSlowMotionTrickControls();
         if (g_showDevExtraOptions)
         {
             if (ImGuiCTX::TreeNode _header{ "Unfinished and useless hacks" })
@@ -145,6 +149,10 @@ public:
         ImGui::Separator();
         ImGui::Text("Cheats");
         ImGui::Separator();
+        DrawCheatsControls();
+    }
+    void DrawCheatsControls()
+    {
         {
             ImGui::DrawCheckboxForHack(batlampOfFranciade, "Allow use the Head of Saint Denis outdoors");
             if (ImGui::IsItemHovered())
@@ -187,6 +195,7 @@ public:
                     "The side effects are some missing sounds, at the minimum."
                 );
             }
+            DrawSlowMotionControls();
         }
     }
     void ReadConfig(ConfigTop& cfg)

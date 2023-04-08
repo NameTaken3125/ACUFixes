@@ -34,7 +34,7 @@ public:
     char pad_0124[244]; //0x0120
     BhvAssassin** array_toBhvAssassin_218; //0x0218
     char pad_0220[1464]; //0x0220
-    Clock unpausedGameClock; //0x07D8
+    Clock clockInWorldWithSlowmotion; //0x07D8 // Slowmotion effect is created by overriding the timescale here.
     Clock clockGameFocusedWithoutSlowmotion; //0x0830 // Still ticks if game is paused but doesn't tick while Alt+Tabbed out of game window.
     Clock clockUnpausedWithoutSlowmotion; //0x0888 // Unaffected by slowmotion, but stops ticking while paused.
     char pad_08E0[16]; //0x08E0
@@ -50,7 +50,7 @@ public:
 }; //Size: 0x0A68
 assert_offsetof(World, worldComponents, 0x0118);
 assert_offsetof(World, array_toBhvAssassin_218, 0x218);
-assert_offsetof(World, unpausedGameClock, 0x7D8);
+assert_offsetof(World, clockInWorldWithSlowmotion, 0x7D8);
 assert_offsetof(World, conflictLoopManager, 0x8F0);
 assert_offsetof(World, uiWorldComponent, 0x09C8);
 assert_sizeof(World, 0x0A68);
