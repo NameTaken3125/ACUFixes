@@ -15,24 +15,18 @@ void ACUSetTimescaleInGameClock(float newTimescale)
 float ACUGetTimescaleInGameClock()
 {
     World* world = World::GetSingleton();
-    if (!world) { return 0; }
+    if (!world) { return 1.0f; }
     return world->clockInWorldWithSlowmotion.overrideTimescale;
 }
+class SlowMotionRawControls
+{
+public:
+    void SetTimescale(float newTimescale) { ACUSetTimescaleInGameClock(newTimescale); }
+    float GetTimescale() { return ACUGetTimescaleInGameClock(); }
+};
+SlowMotionRawControls g_GameSlowmotionRawControls;
 namespace ACU
 {
-
-float GetCurrentTime_InGameWithSlowMotion()
-{
-    World* world = World::GetSingleton();
-    if (!world) { return 0; }
-    return World::GetSingleton()->clockInWorldWithSlowmotion.GetCurrentTimeFloat();
-}
-float GetCurrentTime_InGameWithoutSlowMotion()
-{
-    World* world = World::GetSingleton();
-    if (!world) { return 0; }
-    return World::GetSingleton()->clockUnpausedWithoutSlowmotion.GetCurrentTimeFloat();
-}
 Clock* GetClock_InGameWithoutSlowmotion()
 {
     World* world = World::GetSingleton();
@@ -54,6 +48,81 @@ float GetTimerCompletion(float startTime, float duration, float currentTime)
 {
     return (currentTime - startTime) / duration;
 }
+class SlowMotionManager
+{
+    struct TimecurveEvalResult
+    {
+        float newTimescale;
+        bool isFinished;
+    };
+    struct PlayedTimecurve_SmoothTransition
+    {
+        Clock* m_InGameClockWithoutSlowmotion;
+        float m_InitialTimestamp;
+        float m_Duration;
+        float m_InitialTimescale;
+        float m_TargetTimescale;
+        TimecurveEvalResult Evaluate(float currentTimestamp)
+        {
+            const float interpTee = GetTimerCompletion(m_InitialTimestamp, m_Duration, currentTimestamp);
+            if (interpTee >= 1.0f)
+            {
+                return { m_TargetTimescale, true };
+            }
+            const float currentSmoothedTimescale = Interpolations::smoothstep_arbitrary(
+                m_InitialTimescale,
+                m_TargetTimescale,
+                interpTee);
+            return { currentSmoothedTimescale, false };
+        }
+    };
+    std::optional<PlayedTimecurve_SmoothTransition> m_CurrentTimecurve;
+public:
+    void PlayTimecurve_SmoothTransition(float targetTimescale, float easeInDuration)
+    {
+        Clock* currentClock = ACU::GetClock_InGameWithoutSlowmotion();
+        if (!currentClock) { return; }
+        m_CurrentTimecurve = {
+            currentClock,
+            currentClock->GetCurrentTimeFloat(),
+            easeInDuration,
+            GetCurrentTimeFactor(),
+            targetTimescale
+        };
+    }
+    void ResetTimescale()
+    {
+        g_GameSlowmotionRawControls.SetTimescale(1.0f);
+        m_CurrentTimecurve.reset();
+    }
+private:
+    friend void DoSlowMotionTrick();
+    void Update()
+    {
+        if (!m_CurrentTimecurve)
+        {
+            return;
+        }
+        Clock* currentClock = ACU::GetClock_InGameWithoutSlowmotion();
+        if (!currentClock || currentClock != m_CurrentTimecurve->m_InGameClockWithoutSlowmotion)
+        {
+            m_CurrentTimecurve.reset();
+            return;
+        }
+        const float currentTimestamp = currentClock->GetCurrentTimeFloat();
+        TimecurveEvalResult evalResult = m_CurrentTimecurve->Evaluate(currentTimestamp);
+        g_GameSlowmotionRawControls.SetTimescale(evalResult.newTimescale);
+        if (evalResult.isFinished)
+        {
+            m_CurrentTimecurve.reset();
+        }
+    }
+    float GetCurrentTimeFactor()
+    {
+        return g_GameSlowmotionRawControls.GetTimescale();
+    }
+};
+SlowMotionManager g_SlowmotionManager;
 
 #include "ACU_InputUtils.h"
 #include "ACU_SoundUtils.h"
@@ -86,29 +155,17 @@ static bool IsSlowMotionTrickDisabled()
     return !g_Config.hacks->slowmotionTrick;
 }
 
+
 class SlowMotionTrick
 {
     struct State_Nothing {};
-    struct State_EaseIn
+    struct State_Activated
     {
         float m_TimestampStart;
-        float m_InitialTimescale;
-    };
-    struct State_InSlowMotion
-    {
-        float m_TimestampStart;
-        float m_InitialTimescale;
-    };
-    struct State_EaseOut
-    {
-        float m_TimestampStart;
-        float m_InitialTimescale;
     };
     using State_t = std::variant<
         State_Nothing
-        , State_EaseIn
-        , State_InSlowMotion
-        , State_EaseOut
+        , State_Activated
     >;
     State_t m_CurrentState;
 public:
@@ -119,7 +176,14 @@ public:
             m_CurrentState = State_Nothing{};
             return;
         }
+
+        constexpr float easeInDuration = 0.2f;
+        constexpr float slowmoPhaseTargetTimescale = 0.05f;
+        constexpr float slowmoDuration = 4.0f;
+        constexpr float easeOutDuration = 2.3f;
+
         const bool isSlowmotionTrickDisabled = IsSlowMotionTrickDisabled();
+
         if (auto* clearMode = std::get_if<State_Nothing>(&m_CurrentState))
         {
             if (isSlowmotionTrickDisabled)
@@ -129,58 +193,29 @@ public:
             if (ACU::Input::IsPressed(MouseButton::Mouse4))
             {
                 PlaySoundSlowmotionStart();
-                m_CurrentState = State_EaseIn{ GetCurrentTimestampIgnoreSlowmotion(), GetCurrentTimeFactor() };
+                g_SlowmotionManager.PlayTimecurve_SmoothTransition(slowmoPhaseTargetTimescale, easeInDuration);
+
+                m_CurrentState = State_Activated{ GetCurrentTimestampIgnoreSlowmotion() };
             }
             return;
         }
         if (isSlowmotionTrickDisabled)
         {
-            ACUSetTimescaleInGameClock(1.0f);
+            g_SlowmotionManager.ResetTimescale();
             m_CurrentState = State_Nothing{};
             return;
         }
-        if (auto* easeIn = std::get_if<State_EaseIn>(&m_CurrentState))
+        if (auto* slowMotionMode = std::get_if<State_Activated>(&m_CurrentState))
         {
-            const float slowmoPhaseTargetTimescale = 0.05f;
-            const float easeInDuration = 0.2f;
-            const float interpTee = GetTimerCompletion(easeIn->m_TimestampStart, easeInDuration, GetCurrentTimestampIgnoreSlowmotion());
-            if (interpTee >= 1.0f)
-            {
-                ACUSetTimescaleInGameClock(slowmoPhaseTargetTimescale);
-                m_CurrentState = State_InSlowMotion{ GetCurrentTimestampIgnoreSlowmotion(), GetCurrentTimeFactor() };
-                return;
-            }
-
-            const float currentSmoothedTimescale = Interpolations::smoothstep_arbitrary(easeIn->m_InitialTimescale, slowmoPhaseTargetTimescale, interpTee);
-            ACUSetTimescaleInGameClock(currentSmoothedTimescale);
-            return;
-        }
-        if (auto* slowMotionMode = std::get_if<State_InSlowMotion>(&m_CurrentState))
-        {
-            const float slowmoDuration = 4.0f;
-            const float interpTee = GetTimerCompletion(slowMotionMode->m_TimestampStart, slowmoDuration, GetCurrentTimestampIgnoreSlowmotion());
+            constexpr float howLongToWaitBeforeDeactivate = easeInDuration + slowmoDuration;
+            const float interpTee = GetTimerCompletion(slowMotionMode->m_TimestampStart, howLongToWaitBeforeDeactivate, GetCurrentTimestampIgnoreSlowmotion());
             if (interpTee >= 1.0f)
             {
                 PlaySoundSlowmotionEnd();
-                m_CurrentState = State_EaseOut{ GetCurrentTimestampIgnoreSlowmotion(), GetCurrentTimeFactor() };
+                g_SlowmotionManager.PlayTimecurve_SmoothTransition(1.0f, easeOutDuration);
+                m_CurrentState = State_Nothing();
                 return;
             }
-            return;
-        }
-        if (auto* exiting = std::get_if<State_EaseOut>(&m_CurrentState))
-        {
-            const float exitTargetTimescale = 1.0f;
-            const float easeOutDuration = 2.3f;
-            const float interpTee = GetTimerCompletion(exiting->m_TimestampStart, easeOutDuration, GetCurrentTimestampIgnoreSlowmotion());
-            if (interpTee >= 1.0f)
-            {
-                ACUSetTimescaleInGameClock(exitTargetTimescale);
-                m_CurrentState = State_Nothing{};
-                return;
-            }
-
-            const float currentSmoothedTimescale = Interpolations::smoothstep_arbitrary(exiting->m_InitialTimescale, exitTargetTimescale, interpTee);
-            ACUSetTimescaleInGameClock(currentSmoothedTimescale);
             return;
         }
     }
@@ -200,16 +235,13 @@ private:
     {
         return m_InGameClockWithoutSlowmotion->GetCurrentTimeFloat();
     }
-    float GetCurrentTimeFactor()
-    {
-        return World::GetSingleton()->clockInWorldWithSlowmotion.overrideTimescale;
-    }
 };
 void DoSlowMotionTrick()
 {
     static SlowMotionTrick
         smt;
     smt.Update();
+    g_SlowmotionManager.Update();
 }
 void DrawSlowMotionTrickControls()
 {
@@ -226,14 +258,14 @@ void DrawSlowMotionControls()
 {
     World* world = World::GetSingleton();
     if (!world) { return; }
-    float currentTimescale = world->clockInWorldWithSlowmotion.overrideTimescale;
+    float currentTimescale = g_GameSlowmotionRawControls.GetTimescale();
     if (ImGui::SliderFloat("Timescale", &currentTimescale, 0.00f, 2.0f))
     {
-        ACUSetTimescaleInGameClock(currentTimescale);
+        g_GameSlowmotionRawControls.SetTimescale(currentTimescale);
     }
     ImGui::SameLine();
     if (ImGui::Button("Reset"))
     {
-        ACUSetTimescaleInGameClock(1.0f);
+        g_GameSlowmotionRawControls.SetTimescale(1.0f);
     }
 }
