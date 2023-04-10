@@ -48,46 +48,64 @@ float GetTimerCompletion(float startTime, float duration, float currentTime)
 {
     return (currentTime - startTime) / duration;
 }
+float GetTimerCompletion(float duration, float timeSinceStart)
+{
+    return timeSinceStart / duration;
+}
+struct TimecurveEvalResult
+{
+    float newTimescale;
+    bool isFinished;
+};
+struct PlayedTimecurve_SmoothTransition
+{
+    float m_Duration;
+    float m_InitialTimescale;
+    float m_TargetTimescale;
+    TimecurveEvalResult Evaluate(float timeSinceStart)
+    {
+        const float interpTee = GetTimerCompletion(m_Duration, timeSinceStart);
+        if (interpTee >= 1.0f)
+        {
+            return { m_TargetTimescale, true };
+        }
+        const float currentSmoothedTimescale = Interpolations::smoothstep_arbitrary(
+            m_InitialTimescale,
+            m_TargetTimescale,
+            interpTee);
+        return { currentSmoothedTimescale, false };
+    }
+    PlayedTimecurve_SmoothTransition(
+        float duration,
+        float initialTimescale,
+        float targetTimescale)
+        : m_Duration(duration)
+        , m_InitialTimescale(initialTimescale)
+        , m_TargetTimescale(targetTimescale)
+    {}
+};
 class SlowMotionManager
 {
-    struct TimecurveEvalResult
+    struct TimecurvePlaybackData
     {
-        float newTimescale;
-        bool isFinished;
-    };
-    struct PlayedTimecurve_SmoothTransition
-    {
-        Clock* m_InGameClockWithoutSlowmotion;
+        PlayedTimecurve_SmoothTransition m_Timecurve;
+
+        std::reference_wrapper<Clock> m_ReferenceClock;
         float m_InitialTimestamp;
-        float m_Duration;
-        float m_InitialTimescale;
-        float m_TargetTimescale;
-        TimecurveEvalResult Evaluate(float currentTimestamp)
-        {
-            const float interpTee = GetTimerCompletion(m_InitialTimestamp, m_Duration, currentTimestamp);
-            if (interpTee >= 1.0f)
-            {
-                return { m_TargetTimescale, true };
-            }
-            const float currentSmoothedTimescale = Interpolations::smoothstep_arbitrary(
-                m_InitialTimescale,
-                m_TargetTimescale,
-                interpTee);
-            return { currentSmoothedTimescale, false };
-        }
     };
-    std::optional<PlayedTimecurve_SmoothTransition> m_CurrentTimecurve;
+    std::optional<TimecurvePlaybackData> m_CurrentTimecurve;
 public:
     void PlayTimecurve_SmoothTransition(float targetTimescale, float easeInDuration)
     {
         Clock* currentClock = ACU::GetClock_InGameWithoutSlowmotion();
         if (!currentClock) { return; }
         m_CurrentTimecurve = {
-            currentClock,
-            currentClock->GetCurrentTimeFloat(),
+            PlayedTimecurve_SmoothTransition(
             easeInDuration,
             GetCurrentTimeFactor(),
-            targetTimescale
+            targetTimescale),
+            *currentClock,
+            currentClock->GetCurrentTimeFloat(),
         };
     }
     void ResetTimescale()
@@ -104,13 +122,14 @@ private:
             return;
         }
         Clock* currentClock = ACU::GetClock_InGameWithoutSlowmotion();
-        if (!currentClock || currentClock != m_CurrentTimecurve->m_InGameClockWithoutSlowmotion)
+        if (!currentClock || currentClock != &m_CurrentTimecurve->m_ReferenceClock.get())
         {
             m_CurrentTimecurve.reset();
             return;
         }
         const float currentTimestamp = currentClock->GetCurrentTimeFloat();
-        TimecurveEvalResult evalResult = m_CurrentTimecurve->Evaluate(currentTimestamp);
+        const float timeSinceStart = currentTimestamp - m_CurrentTimecurve->m_InitialTimestamp;
+        TimecurveEvalResult evalResult = m_CurrentTimecurve->m_Timecurve.Evaluate(timeSinceStart);
         g_GameSlowmotionRawControls.SetTimescale(evalResult.newTimescale);
         if (evalResult.isFinished)
         {
