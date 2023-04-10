@@ -35,6 +35,7 @@ void DrawSlowMotionTrickControls();
 
 extern bool g_showDevExtraOptions;
 #include "ImGuiConfigUtils.h"
+#include "BlenderCurveEditor.h"
 class MyHacks
 {
 public:
@@ -55,6 +56,28 @@ public:
 
     void DrawControls()
     {
+        if (ImGuiCTX::TreeNode _curveTest{ "CurveTest" })
+        {
+            std::vector<ImVec2> initialControlPoints = {
+                { 0.000000f, 0.000000f },
+                { 0.177143f, 0.671429f },
+                { 0.628571f, 0.214286f },
+                { 1.000000f, 1.000000f },
+            };
+            static BlenderCurveEditor ce(initialControlPoints);
+            ce.Draw();
+            if (ImGui::Button("Copy control points to clipboard"))
+            {
+                std::vector<ImVec2> controlPoints;
+                ce.GetControlPointsCopy(controlPoints);
+                ImGui::LogToClipboard();
+                for (ImVec2& pt : controlPoints)
+                {
+                    ImGui::LogText("{ %ff, %ff },\n", pt.x, pt.y);
+                }
+                ImGui::LogFinish();
+            }
+        }
         if (ImGui::Button("Save config file"))
         {
             WriteConfig(g_Config);

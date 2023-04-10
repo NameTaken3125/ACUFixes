@@ -175,6 +175,7 @@
   <ItemGroup>
     <ClCompile Include="src\ACU_InputUtils.cpp" />
     <ClCompile Include="src\ACU_SoundUtils.cpp" />
+    <ClCompile Include="src\BlenderCurveEditor.cpp" />
     <ClCompile Include="src\BuiltinDebugCommands.cpp" />
     <ClCompile Include="src\Cheat_BatlampOfFranciade.cpp" />
     <ClCompile Include="src\Cheat_DisguiseUpgrades.cpp" />
@@ -216,6 +217,7 @@
     <ClInclude Include="src\ACU_DefineNativeFunction.h" />
     <ClInclude Include="src\ACU_InputUtils.h" />
     <ClInclude Include="src\ACU_SoundUtils.h" />
+    <ClInclude Include="src\BlenderCurveEditor.h" />
     <ClInclude Include="src\Cheat_Ammo.h" />
     <ClInclude Include="src\Cheat_BatlampOfFranciade.h" />
     <ClInclude Include="src\Cheat_DisguiseUpgrades.h" />
