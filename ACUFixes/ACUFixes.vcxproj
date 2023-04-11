@@ -175,7 +175,12 @@
   <ItemGroup>
     <ClCompile Include="src\ACU_InputUtils.cpp" />
     <ClCompile Include="src\ACU_SoundUtils.cpp" />
-    <ClCompile Include="src\BlenderCurveEditor.cpp" />
+    <ClCompile Include="src\BlenderCurveEditor.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="src\BuiltinDebugCommands.cpp" />
     <ClCompile Include="src\Cheat_BatlampOfFranciade.cpp" />
     <ClCompile Include="src\Cheat_DisguiseUpgrades.cpp" />

@@ -1,4 +1,6 @@
-#include <pch.h>
+
+#include <algorithm>
+#include "imgui/imgui.h"
 
 #include "BlenderCurveEditor.h"
 
@@ -485,10 +487,17 @@ namespace ThanksBlender
 		return (1.0f - fi) * cuma.equidistantSamples[i].y + fi * cuma.equidistantSamples[(size_t)i + 1].y;
 	}
 }
-CurveEvaluationHelper::CurveEvaluationHelper(const std::vector<ImVec2>& controlPoints)
-	: mintable(0.0f), maxtable(1.0f)
+CurveEvaluationHelper::CurveEvaluationHelper(const std::vector<ImVec2>& controlPoints, float extrapolationXMin, float extrapolationXMax)
+	: mintable(extrapolationXMin), maxtable(extrapolationXMax)
 	, range(0)
 {
+	for (const ImVec2& pt : controlPoints)
+	{
+		if (mintable > pt.x)
+			mintable = pt.x;
+		if (maxtable < pt.x)
+			maxtable = pt.x;
+	}
 	std::vector<BezTriple> withBeziers = ThanksBlender::CalculateAutomaticBezierHandles(controlPoints);
 	ThanksBlender::curvemap_make_table(withBeziers, *this);
 }
@@ -515,12 +524,25 @@ void EvaluateCurveSamples(const std::vector<ImVec2>& controlPoints, size_t numSa
 		resultOut[i] = cuma.Evaluate(x);
 	}
 }
-BlenderCurveEditor::BlenderCurveEditor()
-	: BlenderCurveEditor({ ImVec2{0, 0}, ImVec2{1, 1} })
-{}
 BlenderCurveEditor::BlenderCurveEditor(const std::vector<ImVec2>& controlPoints)
 	: m_controlPoints(controlPoints)
 {
+	if (m_controlPoints.size() < 2)
+	{
+		m_controlPoints = { ImVec2{0, 0}, ImVec2{1, 1} };
+		return;
+	}
+	for (const ImVec2& pt : controlPoints)
+	{
+		if (m_VisibleRangeLeftBottom.x > pt.x)
+			m_VisibleRangeLeftBottom.x = pt.x;
+		if (m_VisibleRangeLeftBottom.y > pt.y)
+			m_VisibleRangeLeftBottom.y = pt.y;
+		if (m_VisibleRangeRightTop.x < pt.x)
+			m_VisibleRangeRightTop.x = pt.x;
+		if (m_VisibleRangeRightTop.y < pt.y)
+			m_VisibleRangeRightTop.y = pt.y;
+	}
 	SortPointsByX(m_controlPoints);
 }
 float BlenderCurveEditor::Evaluate(float x)
@@ -550,12 +572,12 @@ namespace ImGui
 	};
 }
 
-bool BlenderCurveEditor::Draw()
+#include "imgui/imgui_internal.h"
+bool BlenderCurveEditor::Draw(ImVec2 editorSize)
 {
 
 	std::vector<ImVec2>& controlPoints = m_controlPoints;
 	std::optional<size_t>& selectedPoint = m_selectedPoint;
-	ImVec2 editorSize = { 350, 350 };
 
 	bool isModified = false;
 
@@ -577,6 +599,55 @@ bool BlenderCurveEditor::Draw()
 #endif
 
 
+	ImGui::PushID(this);
+	ImVec2 visibleRangeX = { m_VisibleRangeLeftBottom.x, m_VisibleRangeRightTop.x };
+	ImVec2 visibleRangeY = { m_VisibleRangeLeftBottom.y, m_VisibleRangeRightTop.y };
+	{
+		const float eps = 0;
+		{
+			ImGui::PushMultiItemsWidths(2, 250);
+			ImGui::DragFloat("##xmin", &visibleRangeX.x, 0.01f, -2, visibleRangeX.y - eps);
+			ImGui::SameLine();
+			ImGui::PopItemWidth();
+			ImGui::DragFloat("Visible Range X", &visibleRangeX.y, 0.01f, visibleRangeX.x + eps, 2);
+			ImGui::SameLine();
+			ImGui::PopItemWidth();
+			if (ImGui::Button("[0, 1]##X"))
+				visibleRangeX = { 0, 1 };
+			m_VisibleRangeLeftBottom.x = visibleRangeX.x;
+			m_VisibleRangeRightTop.x = visibleRangeX.y;
+		}
+		{
+			ImGui::PushMultiItemsWidths(2, 250);
+			ImGui::DragFloat("##ymin", &visibleRangeY.x, 0.01f, -2, visibleRangeY.y - eps);
+			ImGui::SameLine();
+			ImGui::PopItemWidth();
+			ImGui::DragFloat("Visible Range Y", &visibleRangeY.y, 0.01f, visibleRangeY.x + eps, 2);
+			ImGui::SameLine();
+			ImGui::PopItemWidth();
+			if (ImGui::Button("[0, 1]##Y"))
+				visibleRangeY = { 0, 1 };
+			m_VisibleRangeLeftBottom.y = visibleRangeY.x;
+			m_VisibleRangeRightTop.y = visibleRangeY.y;
+		}
+	}
+	if (ImGui::Button("Reset points"))
+	{
+		m_controlPoints = { {0, 0}, {1, 1} };
+		m_selectedPoint.reset();
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Zoom to all points"))
+	{
+		auto CompareX = [](const ImVec2& lhs, const ImVec2& rhs) { return lhs.x < rhs.x; };
+		auto CompareY = [](const ImVec2& lhs, const ImVec2& rhs) { return lhs.y < rhs.y; };
+		auto [hasMinX, hasMaxX] = std::minmax_element(m_controlPoints.begin(), m_controlPoints.end(), CompareX);
+		auto [hasMinY, hasMaxY] = std::minmax_element(m_controlPoints.begin(), m_controlPoints.end(), CompareY);
+
+		m_VisibleRangeLeftBottom = { hasMinX->x, hasMinY->y };
+		m_VisibleRangeRightTop = { hasMaxX->x, hasMaxY->y };
+	}
+	ImGui::PopID();
 	ImDrawList* draw_list = ImGui::GetWindowDrawList();
 	const ImVec2 topLeftScreenSpace = ImGui::GetCursorScreenPos();
 	draw_list->PushClipRect(topLeftScreenSpace, topLeftScreenSpace + editorSize, true);
@@ -592,11 +663,18 @@ bool BlenderCurveEditor::Draw()
 		}
 		return {};
 	};
-	auto PointToWidgetScreenCoords = [&](const ImVec2& point) { return ImVec2{ point.x, 1 - point.y } *editorSize + topLeftScreenSpace; };
+	ImVec2 visibleRangeSize = m_VisibleRangeRightTop - m_VisibleRangeLeftBottom;
+	auto PointToWidgetScreenCoords = [&](const ImVec2& point)
+	{
+		return ImVec2(
+			(point.x - m_VisibleRangeLeftBottom.x) / visibleRangeSize.x,
+			1 - ((point.y - m_VisibleRangeLeftBottom.y) / visibleRangeSize.y)
+		) * editorSize + topLeftScreenSpace;
+	};
 	auto PointFromWidgetScreenCoords = [&](const ImVec2& pointOnScreen) {
 		ImVec2 t = (pointOnScreen - topLeftScreenSpace) / editorSize;
 		t.y = 1 - t.y;
-		return t;
+		return t * visibleRangeSize + m_VisibleRangeLeftBottom;
 	};
 
 	// Draw background square.
@@ -607,23 +685,64 @@ bool BlenderCurveEditor::Draw()
 	}
 	// Draw background grid.
 	{
-		float quarters[] = { 0.25f, 0.5f, 0.75f };
-		for (float fx : quarters)
+		const ImU32 colorBackgroundGrid_integers = IM_COL32(0xCC, 0xCC, 0xCC, 0xFF);
+		const float backgroundGridThickness_integers = 1.3f;
+		const float backgroundGridThickness_quarters = 0.5f;
+		const float eps = 0.001f;
+		auto DrawVerticalLinesEveryStep = [&](float step, ImU32 color, float thickness)
+		{
+			float fx = m_VisibleRangeLeftBottom.x - fmod(m_VisibleRangeLeftBottom.x, step);
+			if (fx < m_VisibleRangeLeftBottom.x + eps)
+				fx += step;
+			while (fx < m_VisibleRangeRightTop.x)
+			{
+				draw_list->AddLine(
+					PointToWidgetScreenCoords({ fx, m_VisibleRangeLeftBottom.y }),
+					PointToWidgetScreenCoords({ fx, m_VisibleRangeRightTop.y }),
+					color
+					, thickness
+				);
+				fx += step;
+			}
+		};
+		auto DrawHorizontalLinesEveryStep = [&](float step, ImU32 color, float thickness)
+		{
+			float fy = m_VisibleRangeLeftBottom.y - fmod(m_VisibleRangeLeftBottom.y, step);
+			if (fy < m_VisibleRangeLeftBottom.y + eps)
+				fy += step;
+			while (fy < m_VisibleRangeRightTop.y)
+			{
+				draw_list->AddLine(
+					PointToWidgetScreenCoords({ m_VisibleRangeLeftBottom.x, fy }),
+					PointToWidgetScreenCoords({ m_VisibleRangeRightTop.x, fy }),
+					color
+					, thickness
+				);
+				fy += step;
+			}
+		};
+		DrawVerticalLinesEveryStep(0.25f, colorBackgroundGrid, backgroundGridThickness_quarters);
+		DrawVerticalLinesEveryStep(1.0f, colorBackgroundGrid_integers, backgroundGridThickness_integers);
+		DrawHorizontalLinesEveryStep(0.25f, colorBackgroundGrid, backgroundGridThickness_quarters);
+		DrawHorizontalLinesEveryStep(1.0f, colorBackgroundGrid_integers, backgroundGridThickness_integers);
+		const ImU32 colorBackgroundGrid_axes = IM_COL32(0xCC, 0x44, 0x44, 0xFF);;
+		const float backgroundGridThickness_axes = 1.3f;
+		if (m_VisibleRangeLeftBottom.x + eps < 0)
 		{
 			draw_list->AddLine(
-				PointToWidgetScreenCoords({ fx, 0 }),
-				PointToWidgetScreenCoords({ fx, 1 }),
-				colorBackgroundGrid
-				, 0.5f
+				PointToWidgetScreenCoords({ 0, m_VisibleRangeLeftBottom.y }),
+				PointToWidgetScreenCoords({ 0, m_VisibleRangeRightTop.y }),
+				colorBackgroundGrid_axes
+				, backgroundGridThickness_axes
 			);
 		}
-		for (float fy : quarters)
+		if (m_VisibleRangeLeftBottom.y + eps < 0)
 		{
 			draw_list->AddLine(
-				PointToWidgetScreenCoords({ 0, fy }),
-				PointToWidgetScreenCoords({ 1, fy }),
-				colorBackgroundGrid
-				, 0.5f
+				PointToWidgetScreenCoords({ m_VisibleRangeLeftBottom.x, 0 }),
+				PointToWidgetScreenCoords({ m_VisibleRangeRightTop.x, 0 }),
+				colorBackgroundGrid_axes
+				, backgroundGridThickness_axes
 			);
 		}
 	}
@@ -638,7 +757,7 @@ bool BlenderCurveEditor::Draw()
 	};
 
 	// Draw a smooth curve.
-	CurveEvaluationHelper smoothSamples{ controlPoints };
+	CurveEvaluationHelper smoothSamples{ controlPoints, m_VisibleRangeLeftBottom.x, m_VisibleRangeRightTop.x };
 	for (int i = 0; i < smoothSamples.equidistantSamples.size() - 1; ++i)
 	{
 		draw_list->AddLine(
@@ -746,7 +865,19 @@ bool BlenderCurveEditor::Draw()
 		if (selectedPoint)
 		{
 			ImVec2 movedPoint = PointFromWidgetScreenCoords(mousePos);
-			movedPoint = Clamp_01(movedPoint);
+			auto ClampPointToVisibleRange = [&](ImVec2& pt)
+			{
+				if (pt.x < m_VisibleRangeLeftBottom.x)
+					pt.x = m_VisibleRangeLeftBottom.x;
+				if (pt.x > m_VisibleRangeRightTop.x)
+					pt.x = m_VisibleRangeRightTop.x;
+				if (pt.y < m_VisibleRangeLeftBottom.y)
+					pt.y = m_VisibleRangeLeftBottom.y;
+				if (pt.y > m_VisibleRangeRightTop.y)
+					pt.y = m_VisibleRangeRightTop.y;
+			};
+			ClampPointToVisibleRange(movedPoint);
+			//movedPoint = Clamp_01(movedPoint);
 			controlPoints[selectedPoint.value()] = movedPoint;
 			isModified = true;
 
