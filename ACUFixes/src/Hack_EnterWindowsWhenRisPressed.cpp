@@ -92,6 +92,11 @@ void Patch_AlwaysRunWindowEntryTester(AssemblerContext* m_ctx)
 }
 
 class WindowEntryTester;
+Vector2f RotateVector45DegreesLeft(Vector2f vec)
+{
+    constexpr float cos45deg = 0.70710678118654f;
+    return Vector2f{ vec.x - vec.y, vec.x + vec.y } * cos45deg;
+}
 DEFINE_GAME_FUNCTION(WindowEntryTester__InitializeForFrame_mb, 0x1401858D0, int, __fastcall, (WindowEntryTester* a1, Vector4f* p_handsPosition, Vector4f* p_movementDirInGroundPlane, float p_WASDmagnitude, int p_eq6fullLean, __int64 p_currentLedge_mb));
 DEFINE_GAME_FUNCTION(FindMatchingParkourActionsForCurrentMovement_P, 0x140185630, __int64, __fastcall, (WindowEntryTester* a1, Vector4f* p_handsPosition, Vector4f* p_towardWallCoplanarWithPlayerEntity, Vector4f* p_movementDirInGroundPlane, float p_WASDmagnitude, int p_eq6_fullLean, unsigned __int8 a7, __int64 p_currentLedge_mb, SmallArray<PotentialWindowEntry*>* p_arrayPotentialMovesOut));
 void RunWindowEntryEntryTesterInitAndScan(
@@ -114,28 +119,73 @@ void RunWindowEntryEntryTesterInitAndScan(
         FindMatchingParkourActionsForCurrentMovement_P(windowEntryTester, p_handsPosition, p_towardWallCoplanarWithPlayerEntity, p_movementDirInGroundPlane, p_WASDmagnitude, p_eq6fullLean, a7, p_currentLedge_mb, p_arrayPotentialMovesOut);
         return;
     }
-    [&]() {
-        // Requested to enter window if one is nearby.
-        std::array<Vector4f, 8> directionsToScan = {
-            Vector4f{1, 0, 0, 0},
-            Vector4f{-1, 0, 0, 0},
-            Vector4f{0, 1, 0, 0},
-            Vector4f{0, -1, 0, 0},
-            // See 2nd story window in Franciade at [64.77, 71.73, 4.76]:
-            // The four cardinal directions sadly aren't enough.
-            Vector4f{1, 1, 0, 0},
-            Vector4f{1, -1, 0, 0},
-            Vector4f{-1, 1, 0, 0},
-            Vector4f{-1, -1, 0, 0},
-        };
-        float fakeMovementMagnitude = 1;
-        for (Vector4f& direction : directionsToScan)
+    // Requested to enter window if one is nearby.
+    using AlignedVec4 = __declspec(align(16)) Vector4f;
+
+    Vector2f playerForward = *(Vector2f*)p_towardWallCoplanarWithPlayerEntity;
+    playerForward.normalize();
+    Vector2f diagonalForwardLeft = RotateVector45DegreesLeft(playerForward);
+    // The sensor often prioritizes windows that are located below player, sometimes _way_ below,
+    // even though there may be a different window very close nearby (e.g. Arno is holding
+    // onto a window corner above and to the left, but the sensor would choose to enter a different window
+    // 3 meters below).
+    // Here, I attempt to stifle this hypersensitivity by first scanning all directions except below,
+    // and only then, if nothing's found, scanning the directions below.
+    std::array<AlignedVec4, 5> directionsToScanExceptBelow = {
+        Vector4f{playerForward.x, playerForward.y, 0, 0},                   // Forward
+        Vector4f{playerForward.y, -playerForward.x, 0, 0},                  // Right
+        Vector4f{-playerForward.y, playerForward.x, 0, 0},                  // Left
+        // See 2nd story window in Franciade at [78.65 87.84 4.77] and at [64.77 71.73 4.76]:
+        // The four cardinal directions sadly aren't enough.
+        Vector4f{diagonalForwardLeft.x, diagonalForwardLeft.y, 0, 0},       // Forward-left
+        Vector4f{diagonalForwardLeft.y, -diagonalForwardLeft.x, 0, 0},      // Forward-right
+    };
+    std::array<AlignedVec4, 3> directionsBelow = {
+        Vector4f{-playerForward.x, -playerForward.y, 0, 0},                 // Below
+        Vector4f{-diagonalForwardLeft.x, -diagonalForwardLeft.y, 0, 0},     // Below-right
+        Vector4f{-diagonalForwardLeft.y, diagonalForwardLeft.x, 0, 0},      // Below-left
+    };
+    float fakeMovementMagnitude = 1;
+    for (Vector4f& direction : directionsToScanExceptBelow)
+    {
+        WindowEntryTester__InitializeForFrame_mb(windowEntryTester, p_handsPosition,
+            &direction, fakeMovementMagnitude, p_eq6fullLean, p_currentLedge_mb);
+        FindMatchingParkourActionsForCurrentMovement_P(windowEntryTester, p_handsPosition, p_towardWallCoplanarWithPlayerEntity,
+            &direction, fakeMovementMagnitude, p_eq6fullLean, a7, p_currentLedge_mb, p_arrayPotentialMovesOut);
+    }
+    if (!p_arrayPotentialMovesOut->size)
+    {
+        for (Vector4f& direction : directionsBelow)
         {
-            WindowEntryTester__InitializeForFrame_mb(windowEntryTester, p_handsPosition, &direction, fakeMovementMagnitude, p_eq6fullLean, p_currentLedge_mb);
-            FindMatchingParkourActionsForCurrentMovement_P(windowEntryTester, p_handsPosition, p_towardWallCoplanarWithPlayerEntity, &direction, fakeMovementMagnitude, p_eq6fullLean, a7, p_currentLedge_mb, p_arrayPotentialMovesOut);
+            WindowEntryTester__InitializeForFrame_mb(windowEntryTester, p_handsPosition,
+                &direction, fakeMovementMagnitude, p_eq6fullLean, p_currentLedge_mb);
+            FindMatchingParkourActionsForCurrentMovement_P(windowEntryTester, p_handsPosition, p_towardWallCoplanarWithPlayerEntity,
+                &direction, fakeMovementMagnitude, p_eq6fullLean, a7, p_currentLedge_mb, p_arrayPotentialMovesOut);
         }
-        int noop = 0;
-    }();
+    }
+
+    //[&]() {
+    //    // Requested to enter window if one is nearby.
+    //    std::array<Vector4f, 8> directionsToScan = {
+    //        Vector4f{1, 0, 0, 0},
+    //        Vector4f{-1, 0, 0, 0},
+    //        Vector4f{0, 1, 0, 0},
+    //        Vector4f{0, -1, 0, 0},
+    //        // See 2nd story window in Franciade at [64.77, 71.73, 4.76]:
+    //        // The four cardinal directions sadly aren't enough.
+    //        Vector4f{1, 1, 0, 0},
+    //        Vector4f{1, -1, 0, 0},
+    //        Vector4f{-1, 1, 0, 0},
+    //        Vector4f{-1, -1, 0, 0},
+    //    };
+    //    float fakeMovementMagnitude = 1;
+    //    for (Vector4f& direction : directionsToScan)
+    //    {
+    //        WindowEntryTester__InitializeForFrame_mb(windowEntryTester, p_handsPosition, &direction, fakeMovementMagnitude, p_eq6fullLean, p_currentLedge_mb);
+    //        FindMatchingParkourActionsForCurrentMovement_P(windowEntryTester, p_handsPosition, p_towardWallCoplanarWithPlayerEntity, &direction, fakeMovementMagnitude, p_eq6fullLean, a7, p_currentLedge_mb, p_arrayPotentialMovesOut);
+    //    }
+    //    int noop = 0;
+    //}();
 }
 void Patch_RunWindowEntryTesterIfRequested_cppTrampoline(AssemblerContext* m_ctx)
 {
