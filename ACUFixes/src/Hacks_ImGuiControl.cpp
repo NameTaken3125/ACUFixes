@@ -35,7 +35,6 @@ void DrawSlowMotionTrickControls();
 
 extern bool g_showDevExtraOptions;
 #include "ImGuiConfigUtils.h"
-#include "BlenderCurveEditor.h"
 class MyHacks
 {
 public:
@@ -56,49 +55,6 @@ public:
 
     void DrawControls()
     {
-        if (ImGuiCTX::TreeNode _curveTest{ "CurveTest" })
-        {
-            std::vector<ImVec2> initialControlPoints = {
-                { 0.000000f, 0.000000f },
-                { 0.177143f, 0.671429f },
-                { 0.231429f, 1.203878f },
-                { 0.302857f, 1.144898f },
-                { 0.388571f, 0.124898f },
-                { 0.628571f, 1.214286f },
-                { 1.000000f, 1.000000f },
-            };
-            std::vector<ImVec2> initialControlPoints2 = {
-                { -0.675771f, -0.184580f },
-                { -0.557829f, -0.166588f },
-                { -0.346514f, 0.301200f },
-                { 0.000000f, 0.000000f },
-                { 0.177143f, 0.671429f },
-                { 0.231429f, 1.203878f },
-                { 0.302857f, 1.144898f },
-                { 0.388571f, 0.124898f },
-                { 0.628571f, 1.214286f },
-                { 1.000000f, 1.000000f },
-            };
-            static BlenderCurveEditor ce(initialControlPoints);
-            static BlenderCurveEditor ce2(initialControlPoints2);
-            static int x = [&]() {
-                ce.m_VisibleRangeLeftBottom = { -0.55f, -0.55f };
-                ce.m_VisibleRangeRightTop = { 1.55f, 1.65f };
-                return 1;
-            }();
-            ce.Draw();
-            if (ImGui::Button("Copy control points to clipboard"))
-            {
-                const std::vector<ImVec2>& controlPoints = ce.GetControlPoints();
-                ImGui::LogToClipboard();
-                for (const ImVec2& pt : controlPoints)
-                {
-                    ImGui::LogText("{ %ff, %ff },\n", pt.x, pt.y);
-                }
-                ImGui::LogFinish();
-            }
-            ce2.Draw();
-        }
         if (ImGui::Button("Save config file"))
         {
             WriteConfig(g_Config);
@@ -186,7 +142,7 @@ public:
             if (ImGuiCTX::TreeNode _header{ "Unfinished and useless hacks" })
             {
                 // This is one of the useless experimental hacks, and has some stuttering I either didn't see or notice before.
-                ImGui::DrawCheckboxForHack(fovGames, "Play with FOV");
+                //ImGui::DrawCheckboxForHack(fovGames, "Play with FOV");
                 ImGui::DrawCheckboxForHack(bombAimExperiments2, "Bomb aim experiments2");
             }
         }
