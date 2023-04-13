@@ -89,10 +89,9 @@ public:
             ce.Draw();
             if (ImGui::Button("Copy control points to clipboard"))
             {
-                std::vector<ImVec2> controlPoints;
-                ce.GetControlPointsCopy(controlPoints);
+                const std::vector<ImVec2>& controlPoints = ce.GetControlPoints();
                 ImGui::LogToClipboard();
-                for (ImVec2& pt : controlPoints)
+                for (const ImVec2& pt : controlPoints)
                 {
                     ImGui::LogText("{ %ff, %ff },\n", pt.x, pt.y);
                 }

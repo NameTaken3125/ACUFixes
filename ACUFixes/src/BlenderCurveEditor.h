@@ -14,7 +14,7 @@ public:
 	std::vector<float> Samples(size_t numSamples);
 	void Samples(size_t numSamples, std::vector<float>& resultOut);
 
-	void GetControlPointsCopy(std::vector<ImVec2>& resultOut);
+	const std::vector<ImVec2>& GetControlPoints();
 
 private:
 	std::vector<ImVec2> m_controlPoints;

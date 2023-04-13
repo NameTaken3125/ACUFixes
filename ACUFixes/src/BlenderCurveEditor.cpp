@@ -606,10 +606,12 @@ bool BlenderCurveEditor::Draw(ImVec2 editorSize)
 		const float eps = 0;
 		{
 			ImGui::PushMultiItemsWidths(2, 250);
-			ImGui::DragFloat("##xmin", &visibleRangeX.x, 0.01f, -2, visibleRangeX.y - eps);
+			isModified = ImGui::DragFloat("##xmin", &visibleRangeX.x, 0.01f, -2, visibleRangeX.y - eps)
+				|| isModified;
 			ImGui::SameLine();
 			ImGui::PopItemWidth();
-			ImGui::DragFloat("Visible Range X", &visibleRangeX.y, 0.01f, visibleRangeX.x + eps, 2);
+			isModified = ImGui::DragFloat("Visible Range X", &visibleRangeX.y, 0.01f, visibleRangeX.x + eps, 2)
+				|| isModified;
 			ImGui::SameLine();
 			ImGui::PopItemWidth();
 			if (ImGui::Button("[0, 1]##X"))
@@ -619,10 +621,12 @@ bool BlenderCurveEditor::Draw(ImVec2 editorSize)
 		}
 		{
 			ImGui::PushMultiItemsWidths(2, 250);
-			ImGui::DragFloat("##ymin", &visibleRangeY.x, 0.01f, -2, visibleRangeY.y - eps);
+			isModified = ImGui::DragFloat("##ymin", &visibleRangeY.x, 0.01f, -2, visibleRangeY.y - eps)
+				|| isModified;
 			ImGui::SameLine();
 			ImGui::PopItemWidth();
-			ImGui::DragFloat("Visible Range Y", &visibleRangeY.y, 0.01f, visibleRangeY.x + eps, 2);
+			isModified = ImGui::DragFloat("Visible Range Y", &visibleRangeY.y, 0.01f, visibleRangeY.x + eps, 2)
+				|| isModified;
 			ImGui::SameLine();
 			ImGui::PopItemWidth();
 			if (ImGui::Button("[0, 1]##Y"))
@@ -633,12 +637,14 @@ bool BlenderCurveEditor::Draw(ImVec2 editorSize)
 	}
 	if (ImGui::Button("Reset points"))
 	{
+		isModified = true;
 		m_controlPoints = { {0, 0}, {1, 1} };
 		m_selectedPoint.reset();
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("Zoom to all points"))
 	{
+		isModified = true;
 		auto CompareX = [](const ImVec2& lhs, const ImVec2& rhs) { return lhs.x < rhs.x; };
 		auto CompareY = [](const ImVec2& lhs, const ImVec2& rhs) { return lhs.y < rhs.y; };
 		auto [hasMinX, hasMaxX] = std::minmax_element(m_controlPoints.begin(), m_controlPoints.end(), CompareX);
@@ -892,7 +898,7 @@ bool BlenderCurveEditor::Draw(ImVec2 editorSize)
 	draw_list->PopClipRect();
 	return isModified;
 }
-void BlenderCurveEditor::GetControlPointsCopy(std::vector<ImVec2>& resultOut)
+const std::vector<ImVec2>& BlenderCurveEditor::GetControlPoints()
 {
-	resultOut = m_controlPoints;
+	return m_controlPoints;
 }
