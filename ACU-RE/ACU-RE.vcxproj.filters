@@ -95,5 +95,6 @@
     <ClCompile Include="src\UISounds.cpp" />
     <ClCompile Include="src\ACUGlobalSoundSet.cpp" />
     <ClCompile Include="src\CLAssassin.cpp" />
+    <ClCompile Include="src\AvatarGearManager.cpp" />
   </ItemGroup>
 </Project>

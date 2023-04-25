@@ -2,8 +2,19 @@
 
 #include "ACU/ManagedObject.h"
 #include "ACU/SharedPtr.h"
+#include "ACU/SmallArray.h"
 
 class InventoryItemSettings;
+
+class UIString
+{
+public:
+    uint32 stringID;
+};
+assert_sizeof(UIString, 4);
+
+class TextureMapSpec;
+class AvatarGearModifier;
 
 class AvatarGear : public Object
 {
@@ -11,16 +22,31 @@ public:
     char pad_0008[8]; //0x0008
     SharedPtrNew<InventoryItemSettings>* inventoryItemSettings; //0x0010
     SharedPtrNew<InventoryItemSettings>* invItemSett_18; //0x0018
-    char pad_0020[120]; //0x0020
+    char pad_0020[16]; //0x0020
+    SharedPtrNew<TextureMapSpec>* shared_textureMapSpec; //0x0030
+    SmallArray<AvatarGearModifier*> gearModifiers_38; //0x0038
+    SmallArray<AvatarGearModifier*> gearModifiers_44; //0x0044
+    char pad_0050[4]; //0x0050
+    uint32 price; //0x0054
+    char pad_0058[8]; //0x0058
+    uint32 upgradePrice; //0x0060
+    char pad_0064[4]; //0x0064
+    UIString stringID_gearName; //0x0068
+    UIString stringID_gearDescription; //0x006C
+    UIString stringID_requirementsLine2; //0x0070 // As in "THE TOURNAMENT" if the Requirements == "Co-op Mission\nTHE TOURNAMENT" or "Club Competition" if Requirements == "Play\nClub Competition"
+    UIString stringID_requirementsLine1; //0x0074 // As in "Co-op Mission" if the Requirements == "Co-op Mission\nTHE TOURNAMENT" or "Play" if Requirements == "Play\nClub Competition"
+    char pad_0078[32]; //0x0078
 }; //Size: 0x0098
 assert_offsetof(AvatarGear, inventoryItemSettings, 0x10);
 assert_sizeof(AvatarGear, 0x98);
+
 #include "ACU/SmallArray.h"
 class AvatarGearManager
 {
 public:
+    // @members
     char pad_0000[16]; //0x0000
-    SmallArray<AvatarGear*> gears_10; //0x0010
+    SmallArray<AvatarGear*> gears_10_shopGears_mb; //0x0010
     SmallArray<AvatarGear*> gears_1C_hasLanternAtEnd; //0x001C
     void* arr_28; //0x0028
     char pad_0030[964]; //0x0030
@@ -49,5 +75,8 @@ public:
     uint8 stonesThrownByRaidersHaveNoEffect; //0x04F0
     uint8 whenHitByBerserkBladeRaiderAttacksLeader; //0x04F1
     char pad_04F2[46]; //0x04F2
+
+    // @helper_functions
+    static AvatarGearManager* GetSingleton();
 }; //Size: 0x0520
 assert_sizeof(AvatarGearManager, 0x0520);

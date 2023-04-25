@@ -155,6 +155,15 @@ public:
 assert_offsetof(PlayerProgressionCharacterData, stru_190, 0x190);
 assert_sizeof(PlayerProgressionCharacterData, 0x240);
 
+
+class InventoryItemSettingsSaveData : public Object
+{
+public:
+	SharedPtrNew<InventoryItemSettings>* shared_invItemSettings; //0x0008
+	char pad_0010[8]; //0x0010
+}; //Size: 0x0018
+assert_sizeof(InventoryItemSettingsSaveData, 0x18);
+
 class PlayerProgressionManager : public MandatoryUniverseComponent
 {
 public:
@@ -164,7 +173,8 @@ public:
 	char pad_0090[8]; //0x0090
 	WorldUpgradeInventorySettingsRepository worldUpgradeInventorySettingsRepository; //0x0098
 	InventoryItemQuestsRepository inventoryItemQuestsRepository; //0x00B0
-	char pad_00C8[24]; //0x00C8
+	SmallArray<InventoryItemSettingsSaveData*> invItemSaveData; //0x00C8
+	char pad_00D4[12]; //0x00D4
 	InventoryItemCategoryDataRepository inventoryItemCategoryDataRepository; //0x00E0
 	InventoryItemDataRepository inventoryItemDataRepository; //0x00F8
 	char pad_0110[16]; //0x0110

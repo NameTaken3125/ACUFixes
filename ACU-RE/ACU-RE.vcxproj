@@ -251,6 +251,7 @@
     <ClCompile Include="src\ACUGetSingletons.cpp" />
     <ClCompile Include="src\ACUGlobalSoundSet.cpp" />
     <ClCompile Include="src\ACUPlayerCameraComponent.cpp" />
+    <ClCompile Include="src\AvatarGearManager.cpp" />
     <ClCompile Include="src\BallisticProjectileAimingControlsSettings.cpp" />
     <ClCompile Include="src\BhvAssassin.cpp" />
     <ClCompile Include="src\CLAssassin.cpp" />
