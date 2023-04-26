@@ -17,6 +17,8 @@
 #include "Hack_DontForceUnsheatheWhenInDisguise.h"
 #include "Hack_CrouchFix.h"
 #include "Hack_ReworkedTakeCover.h"
+#include "Hack_BreakfallAndLedgeGrab.h"
+#include "Hack_EasierTurnWhenSwinging.h"
 #include "Hack_LookbehindButton.h"
 
 #include "Hack_WhistleAbility.h"
@@ -50,6 +52,8 @@ public:
     AutoAssembleWrapper<CrouchFix> slightlyMoreResponsiveCrouch;
     AutoAssembleWrapper<ReworkedTakeCover> takingCoverIsLessSticky;
     AutoAssembleWrapper<LookbehindButton> lookbehindButton;
+    AutoAssembleWrapper<BreakfallAndLedgeGrab> breakfallAndCatchLedgeByPressingE;
+    AutoAssembleWrapper<EasierTurnWhenSwinging> easierTurnWhenSwingingOnAHorizontalBar;
 
     AutoAssembleWrapper<WhistleAbility> whistleAbility;
 
@@ -128,6 +132,26 @@ public:
                 "instead of leaning around the corner."
             );
         }
+        ImGui::DrawCheckboxForHack(breakfallAndCatchLedgeByPressingE, "More reliable Breakfall and Catch Ledge");
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip(
+                "When in uncontrolled freefall (when Arno is windmilling his arms\n"
+                "e.g. after making a long manual jump from a great height,\n"
+                "or when being shot down while climbing a wall),\n"
+                "hold \"Parkour Down/Interact\" button (default \"E\") to grab\n"
+                "the nearest ledge in front of you.\n"
+                "If you also hold directional keys, you can catch ledges in a different direction,\n"
+                "if there are any close enough.\n"
+            );
+        }
+        ImGui::DrawCheckboxForHack(easierTurnWhenSwingingOnAHorizontalBar, "Easier turn when swinging on a horizontal bar");
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip(
+                "If you hold Sprint+MoveBack when jumping onto a horizontal bar and about to swing on it,\n"
+                "Arno will change direction and swing back."
+            );
+        }
+
         ImGui::DrawCheckboxForHack(lookbehindButton, "Lookbehind button");
         if (ImGui::IsItemHovered())
         {
@@ -141,7 +165,8 @@ public:
         {
             if (ImGuiCTX::TreeNode _header{ "Unfinished and useless hacks" })
             {
-                // This is one of the useless experimental hacks, and has some stuttering I either didn't see or notice before.
+                // This is one of the useless experimental hacks, and has some severe stuttering,
+                // but only _sometimes_ for some reason.
                 //ImGui::DrawCheckboxForHack(fovGames, "Play with FOV");
                 ImGui::DrawCheckboxForHack(bombAimExperiments2, "Bomb aim experiments2");
             }
@@ -208,6 +233,8 @@ public:
         dontUnsheatheWhenInDisguise.Toggle(hacksSection->dontUnsheatheWhenInDisguise);
         slightlyMoreResponsiveCrouch.Toggle(hacksSection->slightlyMoreResponsiveCrouch);
         takingCoverIsLessSticky.Toggle(hacksSection->takingCoverIsLessSticky);
+        breakfallAndCatchLedgeByPressingE.Toggle(hacksSection->breakfallAndCatchLedgeByPressingE);
+        easierTurnWhenSwingingOnAHorizontalBar.Toggle(hacksSection->easierTurnWhenSwingingOnAHorizontalBar);
         lookbehindButton.Toggle(hacksSection->lookbehindWhenPressingMiddleMouseButton);
     }
     void WriteConfig(ConfigTop& cfg)
@@ -220,6 +247,8 @@ public:
         hacksSection->dontUnsheatheWhenInDisguise = dontUnsheatheWhenInDisguise.IsActive();
         hacksSection->slightlyMoreResponsiveCrouch = slightlyMoreResponsiveCrouch.IsActive();
         hacksSection->takingCoverIsLessSticky = takingCoverIsLessSticky.IsActive();
+        hacksSection->breakfallAndCatchLedgeByPressingE = breakfallAndCatchLedgeByPressingE.IsActive();
+        hacksSection->easierTurnWhenSwingingOnAHorizontalBar = easierTurnWhenSwingingOnAHorizontalBar.IsActive();
         hacksSection->lookbehindWhenPressingMiddleMouseButton = lookbehindButton.IsActive();
     }
     AutoAssembleWrapper<BatlampOfFrancide> batlampOfFranciade;

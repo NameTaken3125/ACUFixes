@@ -85,6 +85,10 @@ bool IsPressed(MouseButton mouseBtn)
 {
     return ACU::Input::Get_InputContainerBig()->mouseState.mouseButtonStates[(uint32)mouseBtn];
 }
+bool IsPressed(ActionKeyCode actionKey)
+{
+    return InputContainer::GetMainSingleton().keyStates_thisFrame.IsPressed(actionKey);
+}
 bool IsJustPressed(BindableKeyCode_Keyboard keycode)
 {
     return InputHooks::GetSingleton().IsJustPressed((uint8)keycode);

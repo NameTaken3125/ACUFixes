@@ -3,7 +3,6 @@
 #include <vector>
 #include <optional>
 
-// Control points and values are currently expected to be within [0.0, 1.0].
 class BlenderCurveEditor
 {
 public:

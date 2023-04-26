@@ -185,6 +185,7 @@
     <ClCompile Include="src\Cheat_BatlampOfFranciade.cpp" />
     <ClCompile Include="src\Cheat_DisguiseUpgrades.cpp" />
     <ClCompile Include="src\Cheat_Health.cpp" />
+    <ClCompile Include="src\Hack_BreakfallAndLedgeGrab.cpp" />
     <ClCompile Include="src\Hack_CycleEquipmentWhenScrollingMousewheel.cpp" />
     <ClCompile Include="include\vmath\vmath.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
@@ -230,11 +231,13 @@
     <ClInclude Include="src\Cheat_PretendYoureInFranciade.h" />
     <ClInclude Include="src\Enum_BindableKeyCode_Keyboard.h" />
     <ClInclude Include="src\Hacks_VariousExperiments.h" />
+    <ClInclude Include="src\Hack_BreakfallAndLedgeGrab.h" />
     <ClInclude Include="src\Hack_CrouchFix.h" />
     <ClInclude Include="src\Hack_CycleEquipmentWhenScrollingMousewheel.h" />
     <ClInclude Include="include\vmath\vmath.h" />
     <ClInclude Include="include\vmath\vmath_extra.h" />
     <ClInclude Include="src\Hack_DontForceUnsheatheWhenInDisguise.h" />
+    <ClInclude Include="src\Hack_EasierTurnWhenSwinging.h" />
     <ClInclude Include="src\Hack_EnterWindowsWhenRisPressed.h" />
     <ClInclude Include="src\Hack_GameRawInputHook.h" />
     <ClInclude Include="src\Hack_LookbehindButton.h" />

@@ -11,6 +11,7 @@ namespace ACU::Input {
 InputContainerBig* Get_InputContainerBig();
 bool IsPressed(BindableKeyCode_Keyboard keycode);
 bool IsPressed(MouseButton mouseBtn);
+bool IsPressed(ActionKeyCode actionKey);
 bool IsJustPressed(BindableKeyCode_Keyboard keycode);
 bool IsJustPressed(MouseButton mouseButton);
 bool IsJustReleased(BindableKeyCode_Keyboard keycode);
