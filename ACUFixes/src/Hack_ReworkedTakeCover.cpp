@@ -48,15 +48,44 @@ ReworkedTakeCover::ReworkedTakeCover()
         whenCheckingIfNeedToTakeCover, 5,
         WhenCheckingIfNeedToTakeCover_ForceIfSpacebarIsPressed, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, false);
 
-    // There are multiple way the player can leave cover: press Space, start sprinting or just walk away.
+    // There are multiple ways the player can leave cover: press Space, start sprinting
+    // or just walk directly away.
     // Normally, if you try to move directly away from the cover without sprinting,
     // you need to hold the direction button for 0.15 seconds
     // before actually leaving. Here, I remove the timer.
     DEFINE_ADDR(whenMovingAwayFromCoverAndCheckingIfTimerForKeypressIsFinished, 0x14192541F);
     DEFINE_ADDR(whenMovingAwayFromCoverAndKeypressTimerIsFinished, 0x141925455);
     whenMovingAwayFromCoverAndCheckingIfTimerForKeypressIsFinished = {
-        0xE9, RIP(whenMovingAwayFromCoverAndKeypressTimerIsFinished, 4)
+        0xE9, RIP(whenMovingAwayFromCoverAndKeypressTimerIsFinished, 4),
+        nop(2)
     };
+    auto AlsoAllowDetachIfMovingAwayFromOpenCornerTowardWallContinuation = [&]()
+    {
+        // If Arno is behind cover, moving away from the open corner toward wall continuation,
+        // but is not allowed to move further along,
+        // he stops and turns his head away from the corner.
+        // Instead of letting him do this, pretend he is moving away from cover.
+        // Combined with removed timer, this means Arno immediately unsticks instead of turning his head.
+        DEFINE_ADDR(whenBehindCoverTryingToMove_decideIfAlongOrAway, 0x1419253DB);
+        DEFINE_ADDR(whenBehindCoverTryingToMove_decideIfAlongOrAway__return, 0x1419253DB + 7);
+        DEFINE_ADDR(whenMovingAwayFromCoverInsteadOfAlong, 0x141925412);
+        ALLOC(whenBehindCoverTryingToMove_decideIfAlongOrAway__cave, 0x80, 0x1419253DB);
+
+        whenBehindCoverTryingToMove_decideIfAlongOrAway = {
+            0xE9, RIP(whenBehindCoverTryingToMove_decideIfAlongOrAway__cave),
+            nop(2)
+        };
+        whenBehindCoverTryingToMove_decideIfAlongOrAway__cave = {
+            "48 8B 4B 28"                                                        // - mov rcx,[rbx+28]
+            "48 8B 09"                                                           // - mov rcx,[rcx]
+            "80 B9 04020000 01"                                                  // - cmp byte ptr [rcx+00000204],01
+            "0F84", RIP(whenMovingAwayFromCoverInsteadOfAlong),                  // - je ACU.exe+1925412
+            "0FC6 C1 11"                                                         // - shufps xmm0,xmm1,11
+            "0F58 C1"                                                            // - addps xmm0,xmm1
+            "E9", RIP(whenBehindCoverTryingToMove_decideIfAlongOrAway__return)   // - jmp ACU.exe+19253E2
+        };
+    };
+    AlsoAllowDetachIfMovingAwayFromOpenCornerTowardWallContinuation();
 
     uintptr_t whenLeaningAroundTheCornerAndCheckingIfSprintingOutOfTheCover = 0x142656652;
     PresetScript_CCodeInTheMiddle(
@@ -72,5 +101,4 @@ ReworkedTakeCover::ReworkedTakeCover()
     uintptr_t whenBehindCoverAndDisallowingBombAimIfSprintIsPressed = 0x14265665C;
     PresetScript_NOP(
         whenBehindCoverAndDisallowingBombAimIfSprintIsPressed, 4);
-
 }
