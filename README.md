@@ -7,10 +7,12 @@ A small mod that aims to fix some of the annoying things about Assassin's Creed 
 ## Features:
 - Enter windows by pressing R like in Assassin's Creed Syndicate (when climbing walls)
 - Wider FOV when aiming bombs and the Guillotine Gun, zoom can be adjusted by pressing Right Mouse Button
+- More reliable "Breakfall" (Hold ParkourDown/Interact (E) to Catch Ledge when in uncontrolled freefall)
 - Select Bombs Equipment Type by scrolling the Mouse Wheel
 - Arno is not forced to pull out the melee weapon while Disguise is active
 - Autowalk and Slow Walk
-- Slightly less "sticky" Take Cover/Leave Cover
+- Less "sticky" Take Cover/Leave Cover
+- Easier turn on horizontal swings
 - Slightly more responsive Crouch button
 - Some other minor things
 
@@ -42,7 +44,7 @@ The Loader opens a console window. You can make it go away automatically by sett
 "automaticallyCloseConsoleWindow" : true
 ```
 in `acufixesloader-config.json` that will be created next to the `ACUFixesLoader.exe` after the first time it is started.
-##### If the game is already running.
+##### If the game is already running
 If the game version is correct, there should be no problems with this method.
 - Start the `ACUFixesLoader.exe`.
 - Done.
