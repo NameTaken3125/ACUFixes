@@ -166,15 +166,18 @@ public:
         if (ImGui::IsItemHovered())
         {
             ImGui::SetTooltip(
-                "Allows to quickly drop bombs in more situations: when hiding in a closet,\n"
-                "during a jump, during an assassination, when hanging onto walls, swinging on a horizontal bar etc.\n"
-                "Because this starts a throw animation, one that which involves the left arm at the minimum,\n"
-                "there are cases when animations will look out of place\n"
-                "(e.g. if you throw a bomb right in the middle of a stab, or when hanging on one arm),\n"
-                "and there probably won't be much I can do to make the animation seamless.\n"
-                "Protip: for some reason, if Arno is climbing a wall and dropping a bomb,\n"
-                "he will let go with _both_ arms (but remain in place), drop the bomb, then regrab.\n"
-                "However, if you hold Sprint while doing so, he will only use his left arm."
+                "Allows to quickly drop bombs in more situations: when hiding in a closet,"
+                "\nduring a jump, during an assassination, when hanging onto walls, swinging on a horizontal bar etc."
+                "\nBecause this starts a throw animation, one that which involves the left arm at the minimum,"
+                "\nthere are cases when animations will look out of place"
+                "\n(e.g. if you throw a bomb right in the middle of a stab, or when hanging on one arm),"
+                "\nand there probably won't be much I can do to make all the animations seamless."
+                "\nProtip: for some reason, if Arno is climbing a wall and dropping a bomb,"
+                "\nhe will let go with _both_ arms (but remain in place), drop the bomb, then regrab."
+                "\nHowever, if you hold Sprint while doing so, he will only use his left arm."
+                "\nThis also applies when dropping bombs in other situations: when moving on slopes,"
+                "\nduring the leap of faith etc. Holding Sprint fixes most of animation strangeness"
+                "\n(but this needs to be done manually for now)."
             );
         }
 
@@ -264,6 +267,9 @@ public:
         slightlyMoreResponsiveBombQuickDrop.Toggle(hacksSection->slightlyMoreResponsiveBombQuickDrop);
         moreSituationsToDropBombs.Toggle(hacksSection->moreSituationsToDropBombs);
         lookbehindButton.Toggle(hacksSection->lookbehindWhenPressingMiddleMouseButton);
+
+        auto& cheatsSection = cfg.cheats;
+        dontDecreaseRemainingAmmo.Toggle(cheatsSection->infiniteAmmo);
     }
     void WriteConfig(ConfigTop& cfg)
     {
@@ -280,6 +286,9 @@ public:
         hacksSection->slightlyMoreResponsiveBombQuickDrop = slightlyMoreResponsiveBombQuickDrop.IsActive();
         hacksSection->moreSituationsToDropBombs = moreSituationsToDropBombs.IsActive();
         hacksSection->lookbehindWhenPressingMiddleMouseButton = lookbehindButton.IsActive();
+
+        auto& cheatsSection = cfg.cheats;
+        cheatsSection->infiniteAmmo = dontDecreaseRemainingAmmo.IsActive();
     }
     AutoAssembleWrapper<BatlampOfFrancide> batlampOfFranciade;
     AutoAssembleWrapper<AmmoCheat> dontDecreaseRemainingAmmo;

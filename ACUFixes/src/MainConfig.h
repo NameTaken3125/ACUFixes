@@ -55,6 +55,7 @@ struct ConfigTop : YAConfigSection {
             ACM(batlampChargeModeButton, BindableKeyCode_Keyboard, EnumAdapter_template<BindableKeyCode_Keyboard>, BindableKeyCode_Keyboard::K_N);
         };
         ACM(batlampOfFranciadeManipulations, BatlampOfFranciadeCfg, YAConfigSectionAdapter, );
+        ACM(infiniteAmmo, bool, BooleanAdapter, false);
     };
     ACM(cheats, Cheats, YAConfigSectionAdapter, );
 };

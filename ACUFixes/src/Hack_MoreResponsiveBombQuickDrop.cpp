@@ -109,4 +109,13 @@ MoreSituationsToDropBomb::MoreSituationsToDropBomb()
     WhenBuildingArrayOfStatesToBeUpdated_AddQuickdropChecker();
     StrangeFixToUnbreakCombatAndAssassinations();
     StrangeFixForTheStrangeFixToAvoidTPose();
+
+    // Also allow during a wallrun and when standing in the V-shape of a tree or flagpole.
+    uintptr_t whenCheckingIfShouldDisallowDropBomb = 0x141AA7C51;
+    PresetScript_NOP(whenCheckingIfShouldDisallowDropBomb, 2);
+
+    // Also allow during movement on steep slopes (like Notre Dame's).
+    // This is actually independent from the above hacks.
+    uintptr_t whenCheckingIfShouldDisallowDropBombOnSlopes = 0x142667042;
+    PresetScript_NOP(whenCheckingIfShouldDisallowDropBombOnSlopes, 6);
 }
