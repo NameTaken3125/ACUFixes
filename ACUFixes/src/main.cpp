@@ -16,6 +16,7 @@ Brings the app's components together.
 // Required so that the game doesn't crash on code modification.
 void DisableMainIntegrityCheck();
 void WaitUntilGameIsInitializedEnoughSoThatTheMainIntegrityCheckCanBeDisabled();
+void ClearThe_BeingDebugged_Flag();
 // Respond to input: toggle hacks, etc.
 LRESULT CALLBACK WndProc_HackControls(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -58,6 +59,10 @@ static void MainThread(HMODULE thisDLLModule)
     Base::Start(*basehook);
     while (!Base::Data::Detached)
     {
+        // If the debugger is attached, the game can crash, though not immediately.
+        // Manually repeatedly resetting the `BeingDebugged` flag is a simplistic solution,
+        // but it has been enough so far.
+        //ClearThe_BeingDebugged_Flag();
         Sleep(100);
     }
 

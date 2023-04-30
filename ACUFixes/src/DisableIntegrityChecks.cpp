@@ -76,3 +76,9 @@ void WaitUntilGameIsInitializedEnoughSoThatTheMainIntegrityCheckCanBeDisabled()
         break;
     }
 }
+
+#include <winternl.h>
+void ClearThe_BeingDebugged_Flag()
+{
+    NtCurrentTeb()->ProcessEnvironmentBlock->BeingDebugged = 0;
+}
