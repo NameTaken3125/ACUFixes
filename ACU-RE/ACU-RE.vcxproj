@@ -222,6 +222,7 @@
     <ClInclude Include="inc\ACU\LanterndlcComponent.h" />
     <ClInclude Include="inc\ACU\ManagedObject.h" />
     <ClInclude Include="inc\ACU\MandatoryUniverseComponent.h" />
+    <ClInclude Include="inc\ACU\MemoryManager.h" />
     <ClInclude Include="inc\ACU\Parkour_PotentialWindowEntry.h" />
     <ClInclude Include="inc\ACU\Parkour_WhileOnWallSystem.h" />
     <ClInclude Include="inc\ACU\PlayerProgressionManager.h" />

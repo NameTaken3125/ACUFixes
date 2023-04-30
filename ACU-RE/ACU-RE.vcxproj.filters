@@ -81,6 +81,7 @@
     <ClInclude Include="inc\ACU\DebugCommandsHolder.h" />
     <ClInclude Include="inc\ACU\Clock.h" />
     <ClInclude Include="inc\ACU\Enum_MouseButtons.h" />
+    <ClInclude Include="inc\ACU\MemoryManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />
