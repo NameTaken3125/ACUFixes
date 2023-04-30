@@ -19,6 +19,7 @@
 #include "Hack_ReworkedTakeCover.h"
 #include "Hack_BreakfallAndLedgeGrab.h"
 #include "Hack_EasierTurnWhenSwinging.h"
+#include "Hack_MoreResponsiveBombQuickDrop.h"
 #include "Hack_LookbehindButton.h"
 
 #include "Hack_WhistleAbility.h"
@@ -54,6 +55,8 @@ public:
     AutoAssembleWrapper<LookbehindButton> lookbehindButton;
     AutoAssembleWrapper<BreakfallAndLedgeGrab> breakfallAndCatchLedgeByPressingE;
     AutoAssembleWrapper<EasierTurnWhenSwinging> easierTurnWhenSwingingOnAHorizontalBar;
+    AutoAssembleWrapper<LessFinickyBombQuickDrop> slightlyMoreResponsiveBombQuickDrop;
+    AutoAssembleWrapper<MoreSituationsToDropBomb> moreSituationsToDropBombs;
 
     AutoAssembleWrapper<WhistleAbility> whistleAbility;
 
@@ -151,6 +154,29 @@ public:
                 "Arno will change direction and swing back."
             );
         }
+        ImGui::DrawCheckboxForHack(slightlyMoreResponsiveBombQuickDrop, "Slightly more responsive Bomb Quickdrop");
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::SetTooltip(
+                "Normally, if the character is sprinting, _holding_ the \"Drop Bomb\" button (F) does nothing .\n"
+                "With this enabled, Arno will immediately drop a bomb at his feet."
+            );
+        }
+        ImGui::DrawCheckboxForHack(moreSituationsToDropBombs, "Can drop bombs in more situations, e.g. during a jump. Please read.");
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::SetTooltip(
+                "Allows to quickly drop bombs in more situations: when hiding in a closet,\n"
+                "during a jump, during an assassination, when hanging onto walls, swinging on a horizontal bar etc.\n"
+                "Because this starts a throw animation, one that which involves the left arm at the minimum,\n"
+                "there are cases when animations will look out of place\n"
+                "(e.g. if you throw a bomb right in the middle of a stab, or when hanging on one arm),\n"
+                "and there probably won't be much I can do to make the animation seamless.\n"
+                "Protip: for some reason, if Arno is climbing a wall and dropping a bomb,\n"
+                "he will let go with _both_ arms (but remain in place), drop the bomb, then regrab.\n"
+                "However, if you hold Sprint while doing so, he will only use his left arm."
+            );
+        }
 
         ImGui::DrawCheckboxForHack(lookbehindButton, "Lookbehind button");
         if (ImGui::IsItemHovered())
@@ -235,6 +261,8 @@ public:
         takingCoverIsLessSticky.Toggle(hacksSection->takingCoverIsLessSticky);
         breakfallAndCatchLedgeByPressingE.Toggle(hacksSection->breakfallAndCatchLedgeByPressingE);
         easierTurnWhenSwingingOnAHorizontalBar.Toggle(hacksSection->easierTurnWhenSwingingOnAHorizontalBar);
+        slightlyMoreResponsiveBombQuickDrop.Toggle(hacksSection->slightlyMoreResponsiveBombQuickDrop);
+        moreSituationsToDropBombs.Toggle(hacksSection->moreSituationsToDropBombs);
         lookbehindButton.Toggle(hacksSection->lookbehindWhenPressingMiddleMouseButton);
     }
     void WriteConfig(ConfigTop& cfg)
@@ -249,6 +277,8 @@ public:
         hacksSection->takingCoverIsLessSticky = takingCoverIsLessSticky.IsActive();
         hacksSection->breakfallAndCatchLedgeByPressingE = breakfallAndCatchLedgeByPressingE.IsActive();
         hacksSection->easierTurnWhenSwingingOnAHorizontalBar = easierTurnWhenSwingingOnAHorizontalBar.IsActive();
+        hacksSection->slightlyMoreResponsiveBombQuickDrop = slightlyMoreResponsiveBombQuickDrop.IsActive();
+        hacksSection->moreSituationsToDropBombs = moreSituationsToDropBombs.IsActive();
         hacksSection->lookbehindWhenPressingMiddleMouseButton = lookbehindButton.IsActive();
     }
     AutoAssembleWrapper<BatlampOfFrancide> batlampOfFranciade;

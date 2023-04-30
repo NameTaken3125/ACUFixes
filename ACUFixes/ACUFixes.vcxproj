@@ -199,6 +199,7 @@
     <ClCompile Include="src\Hack_EnterWindowsWhenRisPressed.cpp" />
     <ClCompile Include="src\Hack_LookbehindButton.cpp" />
     <ClCompile Include="src\Hack_ModifyAimingFOV.cpp" />
+    <ClCompile Include="src\Hack_MoreResponsiveBombQuickDrop.cpp" />
     <ClCompile Include="src\Hack_ReworkedTakeCover.cpp" />
     <ClCompile Include="src\Hack_SlowMenacingWalkAndAutowalk.cpp" />
     <ClCompile Include="src\Hack_SlowMotionTrick.cpp" />
@@ -242,6 +243,7 @@
     <ClInclude Include="src\Hack_GameRawInputHook.h" />
     <ClInclude Include="src\Hack_LookbehindButton.h" />
     <ClInclude Include="src\Hack_ModifyAimingFOV.h" />
+    <ClInclude Include="src\Hack_MoreResponsiveBombQuickDrop.h" />
     <ClInclude Include="src\Hack_ReworkedTakeCover.h" />
     <ClInclude Include="src\Hack_SlowMenacingWalkAndAutowalk.h" />
     <ClInclude Include="src\Hack_WhistleAbility.h" />
