@@ -9,6 +9,7 @@
 
 
 DEFINE_GAME_FUNCTION(InputContainer__IsLongPressJustHappened, 0x1427202B0, char, __fastcall, (InputContainer* a1, ActionKeyCode p_actionKeyCode, float p_testHowLong, __int64 a4));
+DEFINE_GAME_FUNCTION(InputContainer__IsJustShortPressed, 0x142720530, bool, __fastcall, (InputContainer* a1, ActionKeyCode a2, float p_noLongerThanThis, __int64 p_is0forShortPressCheck));
 
 #include "base.h"
 void GameRawInputHook_ImGuiLayer(InputContainerBig& inpCont)
@@ -97,6 +98,12 @@ bool IsJustPressed(MouseButton mouseButton)
 {
     return InputHooks::GetSingleton().IsJustPressed(mouseButton);
 }
+bool IsJustPressed(ActionKeyCode actionKey)
+{
+    auto& inpCont = InputContainer::GetMainSingleton();
+    return inpCont.keyStates_thisFrame.IsPressed(actionKey)
+        && !inpCont.keyStates_prevFrame.IsPressed(actionKey);
+}
 bool IsJustReleased(MouseButton mouseButton)
 {
     return InputHooks::GetSingleton().IsJustReleased(mouseButton);
@@ -108,6 +115,10 @@ bool IsJustReleased(BindableKeyCode_Keyboard keycode)
 bool IsJustPressedLong(ActionKeyCode actionKey, float howLong)
 {
     return InputContainer__IsLongPressJustHappened(&InputContainer::GetMainSingleton(), actionKey, howLong, 0);
+}
+bool IsJustPressedShort(ActionKeyCode actionKey, float noLongerThanThis)
+{
+    return InputContainer__IsJustShortPressed(&InputContainer::GetMainSingleton(), actionKey, noLongerThanThis, 0);
 }
 
 
