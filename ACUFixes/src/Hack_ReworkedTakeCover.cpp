@@ -41,6 +41,36 @@ void WhenLeavingTheCoverBySprintAndForcingSprintStart_DontSprintUnnecessarily(Al
     const bool isReallySprinting = InputContainer::GetMainSingleton().keyStates_thisFrame.IsPressed(ActionKeyCode::Sprint);
     (bool&)params->r9_ = isReallySprinting;
 }
+
+DEFINE_GAME_FUNCTION(createsLeaveCoverFunctor, 0x141979050, char, __fastcall, (__int64 p_node, __m128* p_directionInGroundPlane, float p_wasdMagnitude, char p_doRunOut));
+char* g_WhenBehindCover_flag_IsStartedDetaching = nullptr;
+void WhenBehindCoverFunctionPrologue_SaveParams(AllRegisters* params)
+{
+    g_WhenBehindCover_flag_IsStartedDetaching = *(char**)(params->GetRSP() + 0x28);
+}
+void WhenBehindCoverStandingStillOrMovingAlong_DetachIfTryingToMoveButStuckNowhereToGo(AllRegisters* params)
+{
+    const bool isTryingToMove = params->rdx_ & 0xFF;
+    const float detectedSizeOfWalkableSpaceInTheDirectionOfCurrentMovement_mb = *(float*)(params->GetRSP() + 8 * 7);
+    bool shouldDetach =
+        isTryingToMove
+        && detectedSizeOfWalkableSpaceInTheDirectionOfCurrentMovement_mb <= 0.1f;
+    if (g_WhenBehindCover_flag_IsStartedDetaching && *g_WhenBehindCover_flag_IsStartedDetaching)
+        shouldDetach = false;
+
+    if (!shouldDetach)
+        return;
+
+    __int64 node = *(__int64*)(*(uint64*)(params->rbx_ + 0x28) + 8);
+    Vector4f* attemptedMovementDirection = *(Vector4f**)(params->GetRSP() + 8 * 5);
+    __declspec(align(16)) Vector4f leaveCoverDirection = *attemptedMovementDirection;
+    createsLeaveCoverFunctor(node, (__m128*)&leaveCoverDirection, 1.0f, 0);
+    if (g_WhenBehindCover_flag_IsStartedDetaching)
+    {
+        *g_WhenBehindCover_flag_IsStartedDetaching = 1;
+        g_WhenBehindCover_flag_IsStartedDetaching = nullptr;
+    }
+}
 ReworkedTakeCover::ReworkedTakeCover()
 {
     uintptr_t whenCheckingIfNeedToTakeCover = 0x1426521C6;
@@ -101,4 +131,32 @@ ReworkedTakeCover::ReworkedTakeCover()
     uintptr_t whenBehindCoverAndDisallowingBombAimIfSprintIsPressed = 0x14265665C;
     PresetScript_NOP(
         whenBehindCoverAndDisallowingBombAimIfSprintIsPressed, 4);
+
+    auto AlsoDetachWhenMovingAlongTheWallAndSuddenlyAreStuck = [&]()
+    {
+        // TODO: Don't detach until the player has turned to face the direction of "stuckness".
+
+        // When behind cover, there are some spots where Arno is moving along the wall,
+        // and just stops midwall. Not turning his head, sort of leaning in that direction, but just stops,
+        // pretty much fails to go further for no reason. I imagine this has something to do
+        // with edges of invisible "cover meshes" or something.
+        // The point is he gets stuck, and I'd like for him to instead detach.
+
+        // BUG: Even in unmodded game, if you move along the wall, and manually detach by pressing Space,
+        // then immediately start moving in the opposite direction, Arno will do
+        // several quick weird direction changes. Since this hack will make you detach automatically
+        // in places where you should really just be able to keep hugging the wall,
+        // I worry this detaching will be sudden enough to provoke instictive change of direction,
+        // which might produce the aforementioned direction flips, which might be even more jarring
+        // than getting stuck. TBD.
+        uintptr_t whenBehindCoverStandingStillOrMovingAlong = 0x1419261C4;
+        PresetScript_CCodeInTheMiddle(
+            whenBehindCoverStandingStillOrMovingAlong, 6,
+            WhenBehindCoverStandingStillOrMovingAlong_DetachIfTryingToMoveButStuckNowhereToGo, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
+        uintptr_t whenBehindCover_functionPrologue = 0x141924BC0;
+        PresetScript_CCodeInTheMiddle(
+            whenBehindCover_functionPrologue, 7,
+            WhenBehindCoverFunctionPrologue_SaveParams, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
+    };
+    AlsoDetachWhenMovingAlongTheWallAndSuddenlyAreStuck();
 }
