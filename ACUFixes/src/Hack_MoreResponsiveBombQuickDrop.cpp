@@ -39,12 +39,6 @@ void WhenCheckingIfBombShouldBeQuickDropped_ForceIfSprinting(AllRegisters* param
     const bool doBombDrop = params->r15_ & 0xFF;
     if (!doBombDrop)
         return;
-    SetIsDropping(true);
-    g_BombQuickthrowEnabler_isStartedBombDropThisFrame = true;
-    if (g_BombQuickthrowEnabler_bombDropCheckerHasBeenForceEnabledThisFrame)
-    {
-        g_BombQuickthrowEnabler_isNeedToFixRightArm = true;
-    }
 }
 LessFinickyBombQuickDrop::LessFinickyBombQuickDrop()
 {
@@ -77,8 +71,16 @@ void AddBombDropStateToListOfToBeUpdated(SmallArray<uint32>& arrayToFill)
     {
         return;
     }
+    constexpr uint32 stateEnumThatIsUsedWhenLootingBodies = 14;
+    if (std::find(arrayToFill.begin(), arrayToFill.end(), stateEnumThatIsUsedWhenLootingBodies) != arrayToFill.end())
+    {
+        return;
+    }
     SmallArray_DWORD__AppendIfNotPresent_mb(&arrayToFill, &stateEnumThatChecksForBombDrop);
     {
+        // UPD: I'm now having doubts regarding what's written below about preserving the original array's order.
+        //      State `1` _does_ have to be placed at the start though.
+        //
         // This here is extremely important.
         // Without this, when in combat, Arno dropping a bomb during a roll or an attack
         // uses not just the left arm to drop the bomb, but also the right arm and really the whole upper body
@@ -134,7 +136,7 @@ void WhenUpdatingPlayerStatesMakingSomeStrangeCall_DoMagicToAllowQuickthrowAndAv
 }
 static bool BombQuickthrowEnabler_isNeedToFixRightArm()
 {
-    return g_BombQuickthrowEnabler_isDroppingBombAnimationNow;
+    return g_BombQuickthrowEnabler_isNeedToFixRightArm;
 }
 //void WhenNavigationStateIsUpdated_PretendArnoIsInHighProfileIfItsNeededToFixAnimations(AllRegisters* params)
 //{
@@ -218,6 +220,30 @@ void WhenHighProfileMovementIsDecided_insideGetter_PretendArnoIsInHighProfileIfI
         *(byte*)(params->rcx_ + 0x20) = 1;
     }
 }
+void WhenSuccessfullyStartingToDropBomb_RememberSuccess(AllRegisters* params)
+{
+    SetIsDropping(true);
+    g_BombQuickthrowEnabler_isStartedBombDropThisFrame = true;
+    if (g_BombQuickthrowEnabler_bombDropCheckerHasBeenForceEnabledThisFrame)
+    {
+        g_BombQuickthrowEnabler_isNeedToFixRightArm = true;
+    }
+}
+class HasLanterndlcComponent;
+DEFINE_GAME_FUNCTION(sub_142666AE0, 0x142666AE0, char, __fastcall, (HasLanterndlcComponent* a1));
+void WhenCombatActionsAreUpdatedChecksBombDrop_DisableOriginalBombDropHandlingInCombat(AllRegisters* params)
+{
+    //auto* a1 = (HasLanterndlcComponent*)params->rcx_;
+    //char result = sub_142666AE0(a1);
+    *params->rax_ = 0;
+}
+void WhenOnWallCheckingIfAssassinateAttemptTargetAvailable_DisableIfBombJustDropped(AllRegisters* params)
+{
+    if (g_BombQuickthrowEnabler_isStartedBombDropThisFrame)
+    {
+        params->rbx_ = 1;
+    }
+}
 MoreSituationsToDropBomb::MoreSituationsToDropBomb()
 {
     auto WhenBuildingArrayOfStatesToBeUpdated_AddQuickdropChecker = [&]() {
@@ -252,11 +278,19 @@ MoreSituationsToDropBomb::MoreSituationsToDropBomb()
     PresetScript_CCodeInTheMiddle(whenCheckingIfShouldDisallowDropBombOnSlopes, 6,
         WhenCheckingIfShouldDisallowDropBombOnSlopes_DisobeyOrders, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, false);
 
+    // Also allow during social stealth interaction like sitting on a bench, leaning on a wall.
+    uintptr_t whenCheckingIfDropbombIsAvailableInAbilitySets = 0x142664422;
+    PresetScript_NOP(whenCheckingIfDropbombIsAvailableInAbilitySets, 6);
+
 
     uintptr_t whenDropBombCheckerFinishes = 0x14265764C;
     uintptr_t whenDropBombCheckerFinishes_returnTo = 0x1426577BD;
     PresetScript_CCodeInTheMiddle(whenDropBombCheckerFinishes, 5,
         WhenDropBombCheckerFinishes_PretendArnoIsInHighProfileIfItsNeededToFixAnimations, whenDropBombCheckerFinishes_returnTo, false);
+
+    uintptr_t whenSuccessfullyStartingToDropBomb = 0x141A2C040;
+    PresetScript_CCodeInTheMiddle(whenSuccessfullyStartingToDropBomb, 6,
+        WhenSuccessfullyStartingToDropBomb_RememberSuccess, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
 
     //uintptr_t whenHighProfileMovementIsDecided = 0x1426576CC;
     //PresetScript_CCodeInTheMiddle(whenHighProfileMovementIsDecided, 7,
@@ -277,4 +311,16 @@ MoreSituationsToDropBomb::MoreSituationsToDropBomb()
     uintptr_t whenStatesUpdaterFinishes = 0x1426572B1;
     PresetScript_CCodeInTheMiddle(whenStatesUpdaterFinishes, 7,
         WhenStatesUpdaterFinishes_ClearFlagsForFrame, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
+
+    auto PreventDoubleBombDropInCombat = [&]()
+    {
+        uintptr_t whenCombatActionsAreUpdatedChecksBombDrop = 0x14265C72B;
+        PresetScript_CCodeInTheMiddle(whenCombatActionsAreUpdatedChecksBombDrop, 5,
+            WhenCombatActionsAreUpdatedChecksBombDrop_DisableOriginalBombDropHandlingInCombat, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, false);
+    };
+    PreventDoubleBombDropInCombat();
+
+    uintptr_t whenOnWallCheckingIfAssassinateAttemptTargetAvailable = 0x142651B03;
+    PresetScript_CCodeInTheMiddle(whenOnWallCheckingIfAssassinateAttemptTargetAvailable, 7,
+        WhenOnWallCheckingIfAssassinateAttemptTargetAvailable_DisableIfBombJustDropped, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
 }
