@@ -98,12 +98,34 @@ void AddBombDropStateToListOfToBeUpdated(SmallArray<uint32>& arrayToFill)
 }
 void WhenFillingArrayOfStateEnumsToUpdate_EnableChecksForBombQuickDrop(AllRegisters* params)
 {
-    auto* arrayToFill = (SmallArray<uint32>*)(params->GetRSP() + 0x30);
-    if (arrayToFill->size)
+    auto& arrayToFill = *(SmallArray<uint32>*)(params->GetRSP() + 0x30);
+    if (arrayToFill.size == 2
+        && arrayToFill[0] == 0
+        && arrayToFill[1] == 2
+        )
     {
-        // _While_entering_ the Hidespot closet, the array is empty. Adding the one element crashes the game.
-        AddBombDropStateToListOfToBeUpdated(*arrayToFill);
+        // The combat situation. There are some confusing and hard to catch bugs if enabled in combat.
+        // _Sometimes_, under undetermined conditions, perhaps after rolling around a lot,
+        // dropping bombs and quickshooting a lot, Arno gets stuck in a state where he can't change ranged weapon,
+        // and shooting itself feels, um, weird.
+        // Exiting and reentering combat (weapon needs to be completely sheathed, I guess)
+        // restores normalcy, but this is not really acceptable.
+        // Perhaps if I'm able to also implement an always-available quickshot,
+        // then "combat version" of quickshot can be removed just as the "combat version"
+        // of quickthrow was.
+        return;
     }
+    if (arrayToFill.size == 3
+        && arrayToFill[0] == 0
+        && arrayToFill[1] == 6
+        && arrayToFill[2] == 3
+        )
+    {
+        // Sitting behind cover. Not needed, perhaps (and enabling it has a side effect of
+        // `Loot` interaction pop up near dead bodies).
+        return;
+    }
+    AddBombDropStateToListOfToBeUpdated(arrayToFill);
 }
 
 
@@ -247,8 +269,8 @@ void WhenOnWallCheckingIfAssassinateAttemptTargetAvailable_DisableIfBombJustDrop
 MoreSituationsToDropBomb::MoreSituationsToDropBomb()
 {
     auto WhenBuildingArrayOfStatesToBeUpdated_AddQuickdropChecker = [&]() {
-        uintptr_t whenFillingArrayOfStateEnumsToUpdate = 0x142656F4C;
-        PresetScript_CCodeInTheMiddle(whenFillingArrayOfStateEnumsToUpdate, 6,
+        uintptr_t whenFillingArrayOfStateEnumsToUpdate = 0x142656F47;
+        PresetScript_CCodeInTheMiddle(whenFillingArrayOfStateEnumsToUpdate, 5,
             WhenFillingArrayOfStateEnumsToUpdate_EnableChecksForBombQuickDrop, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
     };
     auto StrangeFixToUnbreakCombatAndAssassinations = [&]() {
@@ -268,7 +290,6 @@ MoreSituationsToDropBomb::MoreSituationsToDropBomb()
 
     // Also allow during a wallrun and when standing in the V-shape of a tree or flagpole.
     uintptr_t whenCheckingIfShouldDisallowDropBombInWallrunAndTrees = 0x141AA7C51;
-    //PresetScript_NOP(whenCheckingIfShouldDisallowDropBombInWallrunAndTrees, 2);
     PresetScript_CCodeInTheMiddle(whenCheckingIfShouldDisallowDropBombInWallrunAndTrees, 5,
         WhenCheckingIfShouldDisallowDropBombInWallrunAndTrees_DisobeyOrders, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, false);
 
@@ -312,15 +333,15 @@ MoreSituationsToDropBomb::MoreSituationsToDropBomb()
     PresetScript_CCodeInTheMiddle(whenStatesUpdaterFinishes, 7,
         WhenStatesUpdaterFinishes_ClearFlagsForFrame, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
 
+    uintptr_t whenOnWallCheckingIfAssassinateAttemptTargetAvailable = 0x142651B03;
+    PresetScript_CCodeInTheMiddle(whenOnWallCheckingIfAssassinateAttemptTargetAvailable, 7,
+        WhenOnWallCheckingIfAssassinateAttemptTargetAvailable_DisableIfBombJustDropped, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
+
     auto PreventDoubleBombDropInCombat = [&]()
     {
         uintptr_t whenCombatActionsAreUpdatedChecksBombDrop = 0x14265C72B;
         PresetScript_CCodeInTheMiddle(whenCombatActionsAreUpdatedChecksBombDrop, 5,
             WhenCombatActionsAreUpdatedChecksBombDrop_DisableOriginalBombDropHandlingInCombat, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, false);
     };
-    PreventDoubleBombDropInCombat();
-
-    uintptr_t whenOnWallCheckingIfAssassinateAttemptTargetAvailable = 0x142651B03;
-    PresetScript_CCodeInTheMiddle(whenOnWallCheckingIfAssassinateAttemptTargetAvailable, 7,
-        WhenOnWallCheckingIfAssassinateAttemptTargetAvailable_DisableIfBombJustDropped, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
+    //PreventDoubleBombDropInCombat();
 }

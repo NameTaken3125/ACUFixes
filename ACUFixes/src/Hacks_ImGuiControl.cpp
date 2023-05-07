@@ -158,7 +158,7 @@ public:
         if (ImGui::IsItemHovered())
         {
             ImGui::SetTooltip(
-                "Normally, if the character is sprinting, _holding_ the \"Drop Bomb\" button (F) does nothing .\n"
+                "Normally, if the character is sprinting, _holding_ the \"Drop Bomb\" button (F) does nothing.\n"
                 "With this enabled, Arno will immediately drop a bomb at his feet."
             );
         }
@@ -166,18 +166,14 @@ public:
         if (ImGui::IsItemHovered())
         {
             ImGui::SetTooltip(
-                "Allows to quickly drop bombs in more situations: when hiding in a closet,"
-                "\nduring a jump, during an assassination, when hanging onto walls, swinging on a horizontal bar etc."
-                "\nBecause this starts a throw animation, one that which involves the left arm at the minimum,"
+                "Allows to quickly drop bombs in more situations: during a jump, when hanging onto walls,"
+                "\nduring an assassination, when hiding in a closet, swinging on a horizontal bar etc."
+                "\nBecause this starts a throw animation, one which involves the left arm at the minimum,"
                 "\nthere are cases when animations will look out of place"
                 "\n(e.g. if you throw a bomb right in the middle of a stab, or when hanging on one arm),"
                 "\nand there probably won't be much I can do to make all the animations seamless."
-                "\nProtip: for some reason, if Arno is climbing a wall and dropping a bomb,"
-                "\nhe will let go with _both_ arms (but remain in place), drop the bomb, then regrab."
-                "\nHowever, if you hold Sprint while doing so, he will only use his left arm."
-                "\nThis also applies when dropping bombs in other situations: when moving on slopes,"
-                "\nduring the leap of faith etc. Holding Sprint fixes most of animation strangeness"
-                "\n(but this needs to be done manually for now)."
+                "\nFor some reason, some of the animation strangeness can be fixed by holding Sprint"
+                "\nbefore starting the bomb drop."
             );
         }
 
