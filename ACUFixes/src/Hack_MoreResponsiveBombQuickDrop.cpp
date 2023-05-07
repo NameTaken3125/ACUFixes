@@ -20,6 +20,10 @@ void SetIsDropping(bool isDroppingNow)
     g_BombQuickthrowEnabler_isDroppingBombAnimationNow = isDroppingNow;
 }
 bool g_BombQuickthrowEnabler_isNeedToFixRightArm = false;
+static bool BombQuickthrowEnabler_isNeedToFixRightArm()
+{
+    return g_BombQuickthrowEnabler_isNeedToFixRightArm;
+}
 bool g_BombQuickthrowEnabler_isLevelJustReloaded = false;
 void WhenCheckingIfBombShouldBeQuickDropped_ForceIfSprinting_inner(AllRegisters* params)
 {
@@ -156,18 +160,6 @@ void WhenUpdatingPlayerStatesMakingSomeStrangeCall_DoMagicToAllowQuickthrowAndAv
     }
     *params->rax_ = strangeFunctionResult;
 }
-static bool BombQuickthrowEnabler_isNeedToFixRightArm()
-{
-    return g_BombQuickthrowEnabler_isNeedToFixRightArm;
-}
-//void WhenNavigationStateIsUpdated_PretendArnoIsInHighProfileIfItsNeededToFixAnimations(AllRegisters* params)
-//{
-//    params->rcx_ = params->rbx_;
-//    bool isInHighProfile = params->rsi_ & 0xFF;
-//    if (BombQuickthrowEnabler_isNeedToFixRightArm())
-//        isInHighProfile = true;
-//    params->rdx_ = isInHighProfile;
-//}
 void HasLanternCpnt30SetHighProfile(uint64 hasLantern, bool makeInHighProfile)
 {
     *(byte*)(*(uint64*)(hasLantern + 0x30) + 0x20) = makeInHighProfile;
@@ -196,6 +188,13 @@ void WhenDropBombCheckerFinishes_PretendArnoIsInHighProfileIfItsNeededToFixAnima
         }
     }
 }
+void WhenHighProfileMovementIsDecided_insideGetter_PretendArnoIsInHighProfileIfItsNeededToFixAnimations(AllRegisters* params)
+{
+    if (BombQuickthrowEnabler_isNeedToFixRightArm())
+    {
+        *(byte*)(params->rcx_ + 0x20) = 1;
+    }
+}
 void WhenDropBombAnimationEnds_ClearBombDropFlags(AllRegisters* params)
 {
     SetIsDropping(false);
@@ -219,28 +218,6 @@ void WhenCheckingIfShouldDisallowDropBombInWallrunAndTrees_DisobeyOrders(AllRegi
     if (needToFixRightArm)
         g_BombQuickthrowEnabler_isNeedToFixRightArm = true;
     params->rcx_ = params->rbx_;
-}
-//void WhenHighProfileMovementIsDecided_early_PretendArnoIsInHighProfileIfItsNeededToFixAnimations(AllRegisters* params)
-//{
-//    if (BombQuickthrowEnabler_isNeedToFixRightArm())
-//    {
-//        params->rsi_ = 1;
-//    }
-//}
-void WhenHighProfileMovementIsDecided_veryEarly_PretendArnoIsInHighProfileIfItsNeededToFixAnimations(AllRegisters* params)
-{
-    if (BombQuickthrowEnabler_isNeedToFixRightArm())
-    {
-        HasLanternCpnt30SetHighProfile(params->rbx_, true);
-        *params->rax_ = 1;
-    }
-}
-void WhenHighProfileMovementIsDecided_insideGetter_PretendArnoIsInHighProfileIfItsNeededToFixAnimations(AllRegisters* params)
-{
-    if (BombQuickthrowEnabler_isNeedToFixRightArm())
-    {
-        *(byte*)(params->rcx_ + 0x20) = 1;
-    }
 }
 void WhenSuccessfullyStartingToDropBomb_RememberSuccess(AllRegisters* params)
 {
@@ -304,38 +281,29 @@ MoreSituationsToDropBomb::MoreSituationsToDropBomb()
     PresetScript_NOP(whenCheckingIfDropbombIsAvailableInAbilitySets, 6);
 
 
+    uintptr_t whenSuccessfullyStartingToDropBomb = 0x141A2C040;
+    PresetScript_CCodeInTheMiddle(whenSuccessfullyStartingToDropBomb, 6,
+        WhenSuccessfullyStartingToDropBomb_RememberSuccess, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
+    uintptr_t whenDropBombAnimationEnds = 0x141AA7DF0;
+    PresetScript_CCodeInTheMiddle(whenDropBombAnimationEnds, 5,
+        WhenDropBombAnimationEnds_ClearBombDropFlags, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
+
     uintptr_t whenDropBombCheckerFinishes = 0x14265764C;
     uintptr_t whenDropBombCheckerFinishes_returnTo = 0x1426577BD;
     PresetScript_CCodeInTheMiddle(whenDropBombCheckerFinishes, 5,
         WhenDropBombCheckerFinishes_PretendArnoIsInHighProfileIfItsNeededToFixAnimations, whenDropBombCheckerFinishes_returnTo, false);
 
-    uintptr_t whenSuccessfullyStartingToDropBomb = 0x141A2C040;
-    PresetScript_CCodeInTheMiddle(whenSuccessfullyStartingToDropBomb, 6,
-        WhenSuccessfullyStartingToDropBomb_RememberSuccess, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
-
-    //uintptr_t whenHighProfileMovementIsDecided = 0x1426576CC;
-    //PresetScript_CCodeInTheMiddle(whenHighProfileMovementIsDecided, 7,
-    //    WhenNavigationStateIsUpdated_PretendArnoIsInHighProfileIfItsNeededToFixAnimations, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, false);
-    //uintptr_t whenHighProfileMovementIsDecided_early = 0x142657605;
-    //PresetScript_CCodeInTheMiddle(whenHighProfileMovementIsDecided_early, 11,
-    //    WhenHighProfileMovementIsDecided_early_PretendArnoIsInHighProfileIfItsNeededToFixAnimations, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, false);
-    //uintptr_t whenHighProfileMovementIsDecided_veryEarly = 0x142656CA3;
-    //PresetScript_CCodeInTheMiddle(whenHighProfileMovementIsDecided_veryEarly, 7,
-    //    WhenHighProfileMovementIsDecided_veryEarly_PretendArnoIsInHighProfileIfItsNeededToFixAnimations, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
     uintptr_t whenHighProfileMovementIsDecided_insideGetter = 0x1409D9700;
     PresetScript_CCodeInTheMiddle(whenHighProfileMovementIsDecided_insideGetter, 5,
         WhenHighProfileMovementIsDecided_insideGetter_PretendArnoIsInHighProfileIfItsNeededToFixAnimations, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
-    uintptr_t whenDropBombAnimationEnds = 0x141AA7DF0;
-    PresetScript_CCodeInTheMiddle(whenDropBombAnimationEnds, 5,
-        WhenDropBombAnimationEnds_ClearBombDropFlags, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
-
-    uintptr_t whenStatesUpdaterFinishes = 0x1426572B1;
-    PresetScript_CCodeInTheMiddle(whenStatesUpdaterFinishes, 7,
-        WhenStatesUpdaterFinishes_ClearFlagsForFrame, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
 
     uintptr_t whenOnWallCheckingIfAssassinateAttemptTargetAvailable = 0x142651B03;
     PresetScript_CCodeInTheMiddle(whenOnWallCheckingIfAssassinateAttemptTargetAvailable, 7,
         WhenOnWallCheckingIfAssassinateAttemptTargetAvailable_DisableIfBombJustDropped, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
+
+    uintptr_t whenStatesUpdaterFinishes = 0x1426572B1;
+    PresetScript_CCodeInTheMiddle(whenStatesUpdaterFinishes, 7,
+        WhenStatesUpdaterFinishes_ClearFlagsForFrame, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
 
     auto PreventDoubleBombDropInCombat = [&]()
     {
