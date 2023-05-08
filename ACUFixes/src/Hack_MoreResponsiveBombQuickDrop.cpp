@@ -36,7 +36,6 @@ void WhenCheckingIfBombShouldBeQuickDropped_ForceIfSprinting_inner(AllRegisters*
         //= false;
     params->r15_ = forceBombDrop;
 }
-#include "ACU/basic_types.h"
 void WhenCheckingIfBombShouldBeQuickDropped_ForceIfSprinting(AllRegisters* params)
 {
     WhenCheckingIfBombShouldBeQuickDropped_ForceIfSprinting_inner(params);
@@ -158,34 +157,24 @@ void WhenUpdatingPlayerStatesMakingSomeStrangeCall_DoMagicToAllowQuickthrowAndAv
             strangeFunctionResult = 0;
         }
     }
-    *params->rax_ = strangeFunctionResult;
+    params->GetRAX() = strangeFunctionResult;
 }
 void HasLanternCpnt30SetHighProfile(uint64 hasLantern, bool makeInHighProfile)
 {
     *(byte*)(*(uint64*)(hasLantern + 0x30) + 0x20) = makeInHighProfile;
 }
-DEFINE_GAME_FUNCTION(NavigationStateUpdate, 0x142661C90, int, __fastcall, (HasLanterndlcComponent* a1, unsigned __int8 p_isInHighProfile));
 void WhenDropBombCheckerFinishes_PretendArnoIsInHighProfileIfItsNeededToFixAnimations(AllRegisters* params)
 {
-    bool resultOfBombDropChecker_parentCall = (*params->rax_) & 0xFF;
+    bool resultOfBombDropChecker_parentCall = (params->GetRAX()) & 0xFF;
     if (!resultOfBombDropChecker_parentCall)
         return;
     if (g_BombQuickthrowEnabler_isStartedBombDropThisFrame && BombQuickthrowEnabler_isNeedToFixRightArm())
     {
         auto* someImportantObject = (HasLanterndlcComponent*)params->rbx_;
 
-        const bool variant_walls = false;
-        const bool variant_wallsAndCombat = true;
-        if (variant_walls)
-        {
-            NavigationStateUpdate(someImportantObject, 1);
-        }
-        else if (variant_wallsAndCombat)
-        {
-            HasLanternCpnt30SetHighProfile(params->rbx_, true);
-            params->rsi_ = 1;
-            *params->rax_ = 0;
-        }
+        HasLanternCpnt30SetHighProfile(params->rbx_, true);
+        params->rsi_ = 1;
+        params->GetRAX() = 0;
     }
 }
 void WhenHighProfileMovementIsDecided_insideGetter_PretendArnoIsInHighProfileIfItsNeededToFixAnimations(AllRegisters* params)
@@ -228,13 +217,9 @@ void WhenSuccessfullyStartingToDropBomb_RememberSuccess(AllRegisters* params)
         g_BombQuickthrowEnabler_isNeedToFixRightArm = true;
     }
 }
-class HasLanterndlcComponent;
-DEFINE_GAME_FUNCTION(sub_142666AE0, 0x142666AE0, char, __fastcall, (HasLanterndlcComponent* a1));
 void WhenCombatActionsAreUpdatedChecksBombDrop_DisableOriginalBombDropHandlingInCombat(AllRegisters* params)
 {
-    //auto* a1 = (HasLanterndlcComponent*)params->rcx_;
-    //char result = sub_142666AE0(a1);
-    *params->rax_ = 0;
+    params->GetRAX() = 0;
 }
 void WhenOnWallCheckingIfAssassinateAttemptTargetAvailable_DisableIfBombJustDropped(AllRegisters* params)
 {
@@ -297,9 +282,13 @@ MoreSituationsToDropBomb::MoreSituationsToDropBomb()
     PresetScript_CCodeInTheMiddle(whenHighProfileMovementIsDecided_insideGetter, 5,
         WhenHighProfileMovementIsDecided_insideGetter_PretendArnoIsInHighProfileIfItsNeededToFixAnimations, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
 
-    uintptr_t whenOnWallCheckingIfAssassinateAttemptTargetAvailable = 0x142651B03;
-    PresetScript_CCodeInTheMiddle(whenOnWallCheckingIfAssassinateAttemptTargetAvailable, 7,
-        WhenOnWallCheckingIfAssassinateAttemptTargetAvailable_DisableIfBombJustDropped, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
+    auto AlsoAllowBombDropWhenHangingOnWallAndTheresAssassinationTargetAvailableBelow = [&]()
+    {
+        uintptr_t whenOnWallCheckingIfAssassinateAttemptTargetAvailable = 0x142651B03;
+        PresetScript_CCodeInTheMiddle(whenOnWallCheckingIfAssassinateAttemptTargetAvailable, 7,
+            WhenOnWallCheckingIfAssassinateAttemptTargetAvailable_DisableIfBombJustDropped, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
+    };
+    AlsoAllowBombDropWhenHangingOnWallAndTheresAssassinationTargetAvailableBelow();
 
     uintptr_t whenStatesUpdaterFinishes = 0x1426572B1;
     PresetScript_CCodeInTheMiddle(whenStatesUpdaterFinishes, 7,
