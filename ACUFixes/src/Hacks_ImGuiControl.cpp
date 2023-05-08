@@ -55,7 +55,6 @@ public:
     AutoAssembleWrapper<LookbehindButton> lookbehindButton;
     AutoAssembleWrapper<BreakfallAndLedgeGrab> breakfallAndCatchLedgeByPressingE;
     AutoAssembleWrapper<EasierTurnWhenSwinging> easierTurnWhenSwingingOnAHorizontalBar;
-    AutoAssembleWrapper<LessFinickyBombQuickDrop> slightlyMoreResponsiveBombQuickDrop;
     AutoAssembleWrapper<MoreSituationsToDropBomb> moreSituationsToDropBombs;
 
     AutoAssembleWrapper<WhistleAbility> whistleAbility;
@@ -152,14 +151,6 @@ public:
             ImGui::SetTooltip(
                 "If you hold Sprint+MoveBack when jumping onto a horizontal bar and about to swing on it,\n"
                 "Arno will change direction and swing back."
-            );
-        }
-        ImGui::DrawCheckboxForHack(slightlyMoreResponsiveBombQuickDrop, "Slightly more responsive Bomb Quickdrop");
-        if (ImGui::IsItemHovered())
-        {
-            ImGui::SetTooltip(
-                "Normally, if the character is sprinting, _holding_ the \"Drop Bomb\" button (F) does nothing.\n"
-                "With this enabled, Arno will immediately drop a bomb at his feet."
             );
         }
         ImGui::DrawCheckboxForHack(moreSituationsToDropBombs, "Can drop bombs in more situations, e.g. during a jump. Please read.");
@@ -260,7 +251,6 @@ public:
         takingCoverIsLessSticky.Toggle(hacksSection->takingCoverIsLessSticky);
         breakfallAndCatchLedgeByPressingE.Toggle(hacksSection->breakfallAndCatchLedgeByPressingE);
         easierTurnWhenSwingingOnAHorizontalBar.Toggle(hacksSection->easierTurnWhenSwingingOnAHorizontalBar);
-        slightlyMoreResponsiveBombQuickDrop.Toggle(hacksSection->slightlyMoreResponsiveBombQuickDrop);
         moreSituationsToDropBombs.Toggle(hacksSection->moreSituationsToDropBombs);
         lookbehindButton.Toggle(hacksSection->lookbehindWhenPressingMiddleMouseButton);
 
@@ -279,7 +269,6 @@ public:
         hacksSection->takingCoverIsLessSticky = takingCoverIsLessSticky.IsActive();
         hacksSection->breakfallAndCatchLedgeByPressingE = breakfallAndCatchLedgeByPressingE.IsActive();
         hacksSection->easierTurnWhenSwingingOnAHorizontalBar = easierTurnWhenSwingingOnAHorizontalBar.IsActive();
-        hacksSection->slightlyMoreResponsiveBombQuickDrop = slightlyMoreResponsiveBombQuickDrop.IsActive();
         hacksSection->moreSituationsToDropBombs = moreSituationsToDropBombs.IsActive();
         hacksSection->lookbehindWhenPressingMiddleMouseButton = lookbehindButton.IsActive();
 
