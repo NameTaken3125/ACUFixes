@@ -33,7 +33,6 @@ void WhenCheckingIfBombShouldBeQuickDropped_ForceIfSprinting_inner(AllRegisters*
     const bool forceBombDrop
         = ACU::Input::IsPressed(ActionKeyCode::BombDrop)
         && ACU::Input::IsPressed(ActionKeyCode::Sprint);
-        //= false;
     params->r15_ = forceBombDrop;
 }
 void WhenCheckingIfBombShouldBeQuickDropped_ForceIfSprinting(AllRegisters* params)

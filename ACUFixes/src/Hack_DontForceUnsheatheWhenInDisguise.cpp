@@ -35,10 +35,22 @@ std::optional<Vector3f> GetDisguiseTargetPosition()
 #include "ACU_DefineNativeFunction.h"
 DEFINE_GAME_FUNCTION(onEnterFight_canDisableUnsheathing_P, 0x1426582C0, __int64, __fastcall, (__int64 a1, __int64 a2, char a3));
 
+bool IsPlayerInQuickshot()
+{
+    auto* humanStates = HumanStatesHolder::GetForPlayer();
+    if (!humanStates) { return false; }
+    auto* callbacksThatCheckIfQuickshotIsActive = humanStates->callbacksForIdx[55];
+    if (!callbacksThatCheckIfQuickshotIsActive) {
+        return false;
+    }
+    return callbacksThatCheckIfQuickshotIsActive->arrThoseFnsElem.size > 0;
+}
 void WhenInCloseRangeDontForceUnsheathe(AllRegisters* params)
 {
     bool shouldSkipUnsheathing = true;
-    shouldSkipUnsheathing = IsPlayerInDisguise();
+    shouldSkipUnsheathing =
+        IsPlayerInDisguise()
+        || IsPlayerInQuickshot();
     if (shouldSkipUnsheathing)
     {
         *params->rax_ = 0;

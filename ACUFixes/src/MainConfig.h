@@ -39,6 +39,8 @@ struct ConfigTop : YAConfigSection {
         ACM(takingCoverIsLessSticky, bool, BooleanAdapter, true);
         ACM(breakfallAndCatchLedgeByPressingE, bool, BooleanAdapter, true);
         ACM(easierTurnWhenSwingingOnAHorizontalBar, bool, BooleanAdapter, true);
+        ACM(aimBombsFromPeaks, bool, BooleanAdapter, true);
+        ACM(noMoreImaginaryBombThrows, bool, BooleanAdapter, true);
         ACM(moreSituationsToDropBombs, bool, BooleanAdapter, false);
         ACM(lookbehindWhenPressingMiddleMouseButton, bool, BooleanAdapter, false);
         ACM(slowmotionTrick, bool, BooleanAdapter, false);

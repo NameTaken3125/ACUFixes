@@ -173,6 +173,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Hack_NoMoreFailedBombThrows.cpp" />
     <ClCompile Include="src\ACU_InputUtils.cpp" />
     <ClCompile Include="src\ACU_SoundUtils.cpp" />
     <ClCompile Include="src\BlenderCurveEditor.cpp">
@@ -185,6 +186,7 @@
     <ClCompile Include="src\Cheat_BatlampOfFranciade.cpp" />
     <ClCompile Include="src\Cheat_DisguiseUpgrades.cpp" />
     <ClCompile Include="src\Cheat_Health.cpp" />
+    <ClCompile Include="src\Hack_AimFromPeaks.cpp" />
     <ClCompile Include="src\Hack_BreakfallAndLedgeGrab.cpp" />
     <ClCompile Include="src\Hack_CycleEquipmentWhenScrollingMousewheel.cpp" />
     <ClCompile Include="include\vmath\vmath.cpp">
@@ -221,6 +223,7 @@
     <ClCompile Include="src\WhatIsDrawnInImGui.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Hack_NoMoreFailedBombThrows.h" />
     <ClInclude Include="src\ACU_DefineNativeFunction.h" />
     <ClInclude Include="src\ACU_InputUtils.h" />
     <ClInclude Include="src\ACU_SoundUtils.h" />
@@ -232,6 +235,7 @@
     <ClInclude Include="src\Cheat_PretendYoureInFranciade.h" />
     <ClInclude Include="src\Enum_BindableKeyCode_Keyboard.h" />
     <ClInclude Include="src\Hacks_VariousExperiments.h" />
+    <ClInclude Include="src\Hack_AimFromPeaks.h" />
     <ClInclude Include="src\Hack_BreakfallAndLedgeGrab.h" />
     <ClInclude Include="src\Hack_CrouchFix.h" />
     <ClInclude Include="src\Hack_CycleEquipmentWhenScrollingMousewheel.h" />

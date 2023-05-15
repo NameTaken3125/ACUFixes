@@ -19,6 +19,8 @@
 #include "Hack_ReworkedTakeCover.h"
 #include "Hack_BreakfallAndLedgeGrab.h"
 #include "Hack_EasierTurnWhenSwinging.h"
+#include "Hack_AimFromPeaks.h"
+#include "Hack_NoMoreFailedBombThrows.h"
 #include "Hack_MoreResponsiveBombQuickDrop.h"
 #include "Hack_LookbehindButton.h"
 
@@ -56,6 +58,8 @@ public:
     AutoAssembleWrapper<BreakfallAndLedgeGrab> breakfallAndCatchLedgeByPressingE;
     AutoAssembleWrapper<EasierTurnWhenSwinging> easierTurnWhenSwingingOnAHorizontalBar;
     AutoAssembleWrapper<MoreSituationsToDropBomb> moreSituationsToDropBombs;
+    AutoAssembleWrapper<AimFromPeaks> aimBombsFromPeaks;
+    AutoAssembleWrapper<NoMoreFailedBombThrows> noMoreImaginaryBombThrows;
 
     AutoAssembleWrapper<WhistleAbility> whistleAbility;
 
@@ -151,6 +155,16 @@ public:
             ImGui::SetTooltip(
                 "If you hold Sprint+MoveBack when jumping onto a horizontal bar and about to swing on it,\n"
                 "Arno will change direction and swing back."
+            );
+        }
+        ImGui::DrawCheckboxForHack(aimBombsFromPeaks, "Can aim bombs from \"peaks\" or \"perches\" (vertical pipes, spires etc.)");
+        ImGui::DrawCheckboxForHack(noMoreImaginaryBombThrows, "No more imaginary bomb throws");
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::SetTooltip(
+                "You know how sometimes after aiming and releasing a bomb"
+                "\nthe throw animation plays out, but no bomb is actually thrown?"
+                "\nThat shouldn't happen anymore."
             );
         }
         ImGui::DrawCheckboxForHack(moreSituationsToDropBombs, "Can drop bombs in more situations, e.g. during a jump. Please read.");
@@ -251,6 +265,8 @@ public:
         takingCoverIsLessSticky.Toggle(hacksSection->takingCoverIsLessSticky);
         breakfallAndCatchLedgeByPressingE.Toggle(hacksSection->breakfallAndCatchLedgeByPressingE);
         easierTurnWhenSwingingOnAHorizontalBar.Toggle(hacksSection->easierTurnWhenSwingingOnAHorizontalBar);
+        aimBombsFromPeaks.Toggle(hacksSection->aimBombsFromPeaks);
+        noMoreImaginaryBombThrows.Toggle(hacksSection->noMoreImaginaryBombThrows);
         moreSituationsToDropBombs.Toggle(hacksSection->moreSituationsToDropBombs);
         lookbehindButton.Toggle(hacksSection->lookbehindWhenPressingMiddleMouseButton);
 
@@ -269,6 +285,8 @@ public:
         hacksSection->takingCoverIsLessSticky = takingCoverIsLessSticky.IsActive();
         hacksSection->breakfallAndCatchLedgeByPressingE = breakfallAndCatchLedgeByPressingE.IsActive();
         hacksSection->easierTurnWhenSwingingOnAHorizontalBar = easierTurnWhenSwingingOnAHorizontalBar.IsActive();
+        hacksSection->aimBombsFromPeaks = aimBombsFromPeaks.IsActive();
+        hacksSection->noMoreImaginaryBombThrows = noMoreImaginaryBombThrows.IsActive();
         hacksSection->moreSituationsToDropBombs = moreSituationsToDropBombs.IsActive();
         hacksSection->lookbehindWhenPressingMiddleMouseButton = lookbehindButton.IsActive();
 
