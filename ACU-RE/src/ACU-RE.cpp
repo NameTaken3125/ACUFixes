@@ -90,3 +90,8 @@
 
 #include "ACU/AITask.h"
 #include "ACU/DebugCommandsHolder.h"
+
+#include "ACU/VanishingManager.h"
+
+#include "ACU/AvatarConsumablesManager.h"
+#include "ACU/WeaponComponent.h"

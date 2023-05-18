@@ -1,12 +1,26 @@
 #pragma once
 
 #include "ACU/ManagedObject.h"
+
+enum class InventoryItemID : uint32
+{
+    SmokeBomb = 5,
+    CherryBomb = 7,
+    MoneyPouch = 8,
+    PoisonGas = 0xA,
+    Bullet = 0x12,
+    PhantomBlade = 0x38,
+    BerserkBlade = 0x39,
+    MortarBomb = 0x44,
+};
+
 class InventoryItemCategorization : public Object
 {
 public:
-    uint32 categories_8; //0x0008
+    InventoryItemID invItemID; //0x0008
     uint32 categories_C; //0x000C
 }; //Size: 0x0010
+assert_sizeof(InventoryItemCategorization, 0x10);
 
 class InventoryItemSettings : public ManagedObject
 {

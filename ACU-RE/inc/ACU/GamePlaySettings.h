@@ -56,6 +56,7 @@ class NetFightSettings;
 class AwarenessSettingsNew;
 class GamePlaySettings_1960_checksEquipmentUnlocked;
 class AvatarGearManager;
+class AvatarConsumablesManager;
 
 class GamePlaySettings : public MandatoryUniverseComponent
 {
@@ -98,7 +99,9 @@ public:
     GamePlaySettings_1960_checksEquipmentUnlocked* avatarSkillTree; //0x1960
     char pad_1968[8]; //0x1968
     SharedPtrNew<AvatarGearManager>* sharedPtr_AvatarGearManager; //0x1970
-    char pad_1978[88]; //0x1978
+    char pad_1978[8]; //0x1978
+    SharedPtrNew<AvatarConsumablesManager>* shared_AvatarConsumablesManager; //0x1980
+    char pad_1988[72]; //0x1988
 
     // @helper_functions
     static GamePlaySettings* GetSingleton() { return *(GamePlaySettings**)0x1451B4C58; }

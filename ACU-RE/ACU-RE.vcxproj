@@ -177,6 +177,7 @@
     <ClInclude Include="inc\ACU\AssassinAbilitySet.h" />
     <ClInclude Include="inc\ACU\AssassinSoundSettings.h" />
     <ClInclude Include="inc\ACU\AtomAnimComponent.h" />
+    <ClInclude Include="inc\ACU\AvatarConsumablesManager.h" />
     <ClInclude Include="inc\ACU\AvatarGearManager.h" />
     <ClInclude Include="inc\ACU\BallisticProjectileAimingControlsSettings.h" />
     <ClInclude Include="inc\ACU\BaseEntity.h" />
@@ -240,6 +241,8 @@
     <ClInclude Include="inc\ACU\TypeInfo.h" />
     <ClInclude Include="inc\ACU\UISounds.h" />
     <ClInclude Include="inc\ACU\UIWorldComponent.h" />
+    <ClInclude Include="inc\ACU\VanishingManager.h" />
+    <ClInclude Include="inc\ACU\WeaponComponent.h" />
     <ClInclude Include="inc\ACU\WhenHighlightedNPCChanges.h" />
     <ClInclude Include="inc\ACU\WitnessEvent.h" />
     <ClInclude Include="inc\ACU\World.h" />
@@ -252,11 +255,13 @@
     <ClCompile Include="src\ACUGetSingletons.cpp" />
     <ClCompile Include="src\ACUGlobalSoundSet.cpp" />
     <ClCompile Include="src\ACUPlayerCameraComponent.cpp" />
+    <ClCompile Include="src\AvatarConsumablesManager.cpp" />
     <ClCompile Include="src\AvatarGearManager.cpp" />
     <ClCompile Include="src\BallisticProjectileAimingControlsSettings.cpp" />
     <ClCompile Include="src\BhvAssassin.cpp" />
     <ClCompile Include="src\CLAssassin.cpp" />
     <ClCompile Include="src\Entity.cpp" />
+    <ClCompile Include="src\Human.cpp" />
     <ClCompile Include="src\HumanStatesHolder.cpp" />
     <ClCompile Include="src\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -265,6 +270,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="src\UISounds.cpp" />
+    <ClCompile Include="src\VanishingManager.cpp" />
+    <ClCompile Include="src\WeaponComponent.cpp" />
     <ClCompile Include="src\World.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

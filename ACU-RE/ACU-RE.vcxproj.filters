@@ -82,6 +82,9 @@
     <ClInclude Include="inc\ACU\Clock.h" />
     <ClInclude Include="inc\ACU\Enum_MouseButtons.h" />
     <ClInclude Include="inc\ACU\MemoryManager.h" />
+    <ClInclude Include="inc\ACU\VanishingManager.h" />
+    <ClInclude Include="inc\ACU\WeaponComponent.h" />
+    <ClInclude Include="inc\ACU\AvatarConsumablesManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />
@@ -97,5 +100,9 @@
     <ClCompile Include="src\ACUGlobalSoundSet.cpp" />
     <ClCompile Include="src\CLAssassin.cpp" />
     <ClCompile Include="src\AvatarGearManager.cpp" />
+    <ClCompile Include="src\VanishingManager.cpp" />
+    <ClCompile Include="src\Human.cpp" />
+    <ClCompile Include="src\WeaponComponent.cpp" />
+    <ClCompile Include="src\AvatarConsumablesManager.cpp" />
   </ItemGroup>
 </Project>

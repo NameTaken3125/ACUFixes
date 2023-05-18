@@ -17,6 +17,7 @@ class WorldComponent;
 class UIWorldComponent;
 class ConflictLoopManager;
 class DeferredCastManager;
+class VanishingManager;
 class Entity;
 class World : public BaseWorld
 {
@@ -39,7 +40,9 @@ public:
     Clock clockUnpausedWithoutSlowmotion; //0x0888 // Unaffected by slowmotion, but stops ticking while paused.
     char pad_08E0[16]; //0x08E0
     ConflictLoopManager* conflictLoopManager; //0x08F0
-    char pad_08F8[120]; //0x08F8
+    char pad_08F8[24]; //0x08F8
+    VanishingManager* vanishingManager; //0x0910
+    char pad_0918[88]; //0x0918
     DeferredCastManager* deferredCastManager; //0x0970
     char pad_0978[80]; //0x0978
     UIWorldComponent* uiWorldComponent; //0x09C8
