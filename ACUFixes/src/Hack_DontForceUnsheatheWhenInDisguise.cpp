@@ -45,12 +45,18 @@ bool IsPlayerInQuickshot()
     }
     return callbacksThatCheckIfQuickshotIsActive->arrThoseFnsElem.size > 0;
 }
+static bool IsShouldNOTAutomaticallyUnsheathe()
+{
+    return IsPlayerInDisguise()
+        || IsPlayerInQuickshot();
+}
+static bool IsShouldForceAllowAssassination()
+{
+     return IsShouldNOTAutomaticallyUnsheathe();
+}
 void WhenInCloseRangeDontForceUnsheathe(AllRegisters* params)
 {
-    bool shouldSkipUnsheathing = true;
-    shouldSkipUnsheathing =
-        IsPlayerInDisguise()
-        || IsPlayerInQuickshot();
+    const bool shouldSkipUnsheathing = IsShouldNOTAutomaticallyUnsheathe();
     if (shouldSkipUnsheathing)
     {
         *params->rax_ = 0;
@@ -58,15 +64,12 @@ void WhenInCloseRangeDontForceUnsheathe(AllRegisters* params)
     }
     *params->rax_ = onEnterFight_canDisableUnsheathing_P(params->rbp_, params->rsi_, params->r8_);
 }
-bool ShouldForceAllowAssassination() {
-    return IsPlayerInDisguise();
-}
 class SharedPtr_mb;
 DEFINE_GAME_FUNCTION(WhenDecidingIfAssassinationShouldBeDisallowed_Stage1ChaseVersion, 0x1404E90C0, char, __fastcall, (__int64 a1, SharedPtr_mb* a2, SharedPtr_mb* a3));
 DEFINE_GAME_FUNCTION(WhenDecidingIfAssassinationShouldBeDisallowed_Stage2ChaseVersion, 0x1404E9310, char, __fastcall, (__int64 a1, SharedPtr_mb* a2, SharedPtr_mb* a3));
 void WhenDecidingIfAssassinationShouldBeDisallowed_Stage1ChaseVersion_ForceAllowAssassination(AllRegisters* params)
 {
-    if (ShouldForceAllowAssassination())
+    if (IsShouldForceAllowAssassination())
     {
         *params->rax_ = 0;
         return;
@@ -75,7 +78,7 @@ void WhenDecidingIfAssassinationShouldBeDisallowed_Stage1ChaseVersion_ForceAllow
 }
 void WhenDecidingIfAssassinationShouldBeDisallowed_Stage2ChaseVersion_ForceAllowAssassination(AllRegisters* params)
 {
-    if (ShouldForceAllowAssassination())
+    if (IsShouldForceAllowAssassination())
     {
         *params->rax_ = 0;
         return;

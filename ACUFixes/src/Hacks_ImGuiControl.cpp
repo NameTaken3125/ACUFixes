@@ -33,6 +33,8 @@
 #include "Cheat_Ammo.h"
 #include "Cheat_DisguiseUpgrades.h"
 
+#include "Request_Spindescent.h"
+
 
 
 void DrawSlowMotionControls();
@@ -205,6 +207,11 @@ public:
         ImGui::Text("Cheats");
         ImGui::Separator();
         DrawCheatsControls();
+        ImGui::Separator();
+        if (ImGuiCTX::TreeNode _{ "Personal requests" })
+        {
+            DrawPersonalRequestsControls();
+        }
     }
     void DrawCheatsControls()
     {
@@ -253,6 +260,41 @@ public:
             DrawSlowMotionControls();
         }
     }
+    void DrawPersonalRequestsControls()
+    {
+        ImGui::DrawCheckboxForHack(spinningDescentHelper, "Spinning descent helper");
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::SetTooltip(
+                "TL;DR: The Spinning Descent move is much more likely to trigger if you do the following:"
+                "\nWhile swinging on a horizontal bar, hold Sprint+Forward+ParkourDown."
+                "\nDetails:"
+                "\nThere is a very flashy, very rare parkour animation that involves Arno"
+                "\nmaking a 270 degrees spin in the air before grabbing a ledge."
+                "\nIt is shown in the AC Unity E3 gameplay trailer, and the easiest place"
+                "\nto trigger this move is to start swinging on the horizontal gargoyles on the sides"
+                "\nof the rear half of Notre Dame, and while the swing is performed, hold Sprint+Forward+ParkourDown."
+                "\nNormally, the conditions for this animation to be used are as follows:"
+                "\n- Player needs to be parkouring from a Swing (a horizontal bar, a clothesline,"
+                "\n  ropes hanging between two buildings etc.) to a Wall Hang"
+                "\n  (both feet planted on the wall, not dangling freely)."
+                "\n- Importantly, the wall the player needs to grab must be roughly perpendicular"
+                "\n  to the bar that the player is Swinging from."
+                "\n- The direction from the Swing to Target needs to be rather sharply downward."
+                "\n- Finally, no other \"Parkour Action\" needs to be chosen by the parkour system."
+                "\nThe last point is probably why the move is so rare: there are usually"
+                "\nmore fitting locations to land on when using the ParkourDown."
+                "\nThis patch makes it so that the spinning descent is _heavily_ prioritized when using"
+                "\nthe ParkourDown while Swinging - all other \"parkour actions\" will be ignored"
+                "\nif this one can be used."
+                "\nThis doesn't mean that you can do this on _every_ Swing, and sometimes the move will look"
+                "\nout of place."
+                "\nPersonally, I think this makes the move too frequent, but if you're making one of those"
+                "\nwonderful parkour videos, you might find this useful."
+                "\nLike everything else, this was not tested in multiplayer."
+            );
+        }
+    }
     void ReadConfig(ConfigTop& cfg)
     {
         auto& hacksSection = cfg.hacks;
@@ -272,6 +314,9 @@ public:
 
         auto& cheatsSection = cfg.cheats;
         dontDecreaseRemainingAmmo.Toggle(cheatsSection->infiniteAmmo);
+
+        auto& requestsSection = cfg.personalRequests;
+        spinningDescentHelper.Toggle(requestsSection->spinningDescentHelper);
     }
     void WriteConfig(ConfigTop& cfg)
     {
@@ -292,6 +337,9 @@ public:
 
         auto& cheatsSection = cfg.cheats;
         cheatsSection->infiniteAmmo = dontDecreaseRemainingAmmo.IsActive();
+
+        auto& requestsSection = cfg.personalRequests;
+        requestsSection->spinningDescentHelper = spinningDescentHelper.IsActive();
     }
     AutoAssembleWrapper<BatlampOfFrancide> batlampOfFranciade;
     AutoAssembleWrapper<AmmoCheat> dontDecreaseRemainingAmmo;
@@ -299,6 +347,8 @@ public:
     AutoAssembleWrapper<DisableDisguiseCooldown> disableDisguiseCooldown;
     AutoAssembleWrapper<UnbreakableDisguise> unbreakableDisguise;
     AutoAssembleWrapper<DisguiseDoesntMakeYouInvisible> disguiseDoesntMakeYouInvisible;
+
+    AutoAssembleWrapper<ParkourActionsExtraProcessing> spinningDescentHelper;
 };
 std::optional<MyHacks> g_MyHacks;
 void DrawHacksControls()

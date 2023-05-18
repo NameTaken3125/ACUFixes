@@ -219,6 +219,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="src\PresentHookOuter.cpp" />
+    <ClCompile Include="src\Request_Spindescent.cpp" />
     <ClCompile Include="src\TypeInfoSystemDump.cpp" />
     <ClCompile Include="src\WhatIsDrawnInImGui.cpp" />
   </ItemGroup>
@@ -261,6 +262,7 @@
     <ClInclude Include="src\MyVariousHacks.h" />
     <ClInclude Include="src\pch.h" />
     <ClInclude Include="src\PresentHookOuter.h" />
+    <ClInclude Include="src\Request_Spindescent.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="assets\readme.txt" />

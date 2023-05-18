@@ -59,5 +59,10 @@ struct ConfigTop : YAConfigSection {
         ACM(infiniteAmmo, bool, BooleanAdapter, false);
     };
     ACM(cheats, Cheats, YAConfigSectionAdapter, );
+    struct PersonalRequests : YAConfigSection {
+        YACSTOR(PersonalRequests);
+        ACM(spinningDescentHelper, bool, BooleanAdapter, false);
+    };
+    ACM(personalRequests, PersonalRequests, YAConfigSectionAdapter, );
 };
 extern ConfigTop g_Config;
