@@ -45,9 +45,17 @@ bool IsPlayerInQuickshot()
     }
     return callbacksThatCheckIfQuickshotIsActive->arrThoseFnsElem.size > 0;
 }
+#include "ACU/VanishingManager.h"
+static bool IsPlayerCrowdBlending()
+{
+    auto* vanishMan = VanishingManager::GetSingleton();
+    const bool isCrowdBlending = vanishMan->_8permanentBlend2crowdBlend0x40moneyPouch == 2;
+    return isCrowdBlending;
+}
 static bool IsShouldNOTAutomaticallyUnsheathe()
 {
     return IsPlayerInDisguise()
+        || IsPlayerCrowdBlending()
         || IsPlayerInQuickshot();
 }
 static bool IsShouldForceAllowAssassination()

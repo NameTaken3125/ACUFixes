@@ -22,6 +22,7 @@
 #include "Hack_AimFromPeaks.h"
 #include "Hack_NoMoreFailedBombThrows.h"
 #include "Hack_MoreResponsiveBombQuickDrop.h"
+#include "Hack_ReloadRangedWeaponsWhenRefillAllInShop.h"
 #include "Hack_LookbehindButton.h"
 
 #include "Hack_WhistleAbility.h"
@@ -62,6 +63,7 @@ public:
     AutoAssembleWrapper<MoreSituationsToDropBomb> moreSituationsToDropBombs;
     AutoAssembleWrapper<AimFromPeaks> aimBombsFromPeaks;
     AutoAssembleWrapper<NoMoreFailedBombThrows> noMoreImaginaryBombThrows;
+    AutoAssembleWrapper<ReloadRangedWeaponsWhenRefillAllInShop> automaticallyReloadWeaponsWhenRefillAllInShops;
 
     AutoAssembleWrapper<WhistleAbility> whistleAbility;
 
@@ -183,7 +185,7 @@ public:
                 "\nbefore starting the bomb drop."
             );
         }
-
+        ImGui::DrawCheckboxForHack(automaticallyReloadWeaponsWhenRefillAllInShops, "Automatically reload weapons when using \"Refill All\" in shops");
         ImGui::DrawCheckboxForHack(lookbehindButton, "Lookbehind button");
         if (ImGui::IsItemHovered())
         {
@@ -310,6 +312,7 @@ public:
         aimBombsFromPeaks.Toggle(hacksSection->aimBombsFromPeaks);
         noMoreImaginaryBombThrows.Toggle(hacksSection->noMoreImaginaryBombThrows);
         moreSituationsToDropBombs.Toggle(hacksSection->moreSituationsToDropBombs);
+        automaticallyReloadWeaponsWhenRefillAllInShops.Toggle(hacksSection->automaticallyReloadWeaponsWhenRefillAllInShops);
         lookbehindButton.Toggle(hacksSection->lookbehindWhenPressingMiddleMouseButton);
 
         auto& cheatsSection = cfg.cheats;
@@ -333,6 +336,7 @@ public:
         hacksSection->aimBombsFromPeaks = aimBombsFromPeaks.IsActive();
         hacksSection->noMoreImaginaryBombThrows = noMoreImaginaryBombThrows.IsActive();
         hacksSection->moreSituationsToDropBombs = moreSituationsToDropBombs.IsActive();
+        hacksSection->automaticallyReloadWeaponsWhenRefillAllInShops = automaticallyReloadWeaponsWhenRefillAllInShops.IsActive();
         hacksSection->lookbehindWhenPressingMiddleMouseButton = lookbehindButton.IsActive();
 
         auto& cheatsSection = cfg.cheats;
