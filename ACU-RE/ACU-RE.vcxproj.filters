@@ -85,6 +85,10 @@
     <ClInclude Include="inc\ACU\VanishingManager.h" />
     <ClInclude Include="inc\ACU\WeaponComponent.h" />
     <ClInclude Include="inc\ACU\AvatarConsumablesManager.h" />
+    <ClInclude Include="inc\ACU\ReactionManager.h" />
+    <ClInclude Include="inc\ACU\ReactionRadiusData.h" />
+    <ClInclude Include="inc\ACU\ACUHashmap.h" />
+    <ClInclude Include="inc\ACU\Enum_ReactionHash_ReactToWhat.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />
@@ -104,5 +108,6 @@
     <ClCompile Include="src\Human.cpp" />
     <ClCompile Include="src\WeaponComponent.cpp" />
     <ClCompile Include="src\AvatarConsumablesManager.cpp" />
+    <ClCompile Include="src\ACUHashmap.cpp" />
   </ItemGroup>
 </Project>

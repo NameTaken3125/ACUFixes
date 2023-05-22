@@ -169,6 +169,7 @@
     <ClInclude Include="inc\ACU\ActionKeyStates.h" />
     <ClInclude Include="inc\ACU\ACUGetSingletons.h" />
     <ClInclude Include="inc\ACU\ACUGlobalSoundSet.h" />
+    <ClInclude Include="inc\ACU\ACUHashmap.h" />
     <ClInclude Include="inc\ACU\ACUPlayerCameraComponent.h" />
     <ClInclude Include="inc\ACU\AIAction.h" />
     <ClInclude Include="inc\ACU\AIActionEntityOperatorData.h" />
@@ -206,6 +207,7 @@
     <ClInclude Include="inc\ACU\Enum_ActionKeyCode.h" />
     <ClInclude Include="inc\ACU\Enum_EquipmentType.h" />
     <ClInclude Include="inc\ACU\Enum_MouseButtons.h" />
+    <ClInclude Include="inc\ACU\Enum_ReactionHash_ReactToWhat.h" />
     <ClInclude Include="inc\ACU\EventListener.h" />
     <ClInclude Include="inc\ACU\GamePlaySettings.h" />
     <ClInclude Include="inc\ACU\GameStatsManager.h" />
@@ -229,6 +231,8 @@
     <ClInclude Include="inc\ACU\PlayerProgressionManager.h" />
     <ClInclude Include="inc\ACU\QuickSelectButtonComponent.h" />
     <ClInclude Include="inc\ACU\ReactionHandler.h" />
+    <ClInclude Include="inc\ACU\ReactionManager.h" />
+    <ClInclude Include="inc\ACU\ReactionRadiusData.h" />
     <ClInclude Include="inc\ACU\RenderValuesHolder.h" />
     <ClInclude Include="inc\ACU\SharedPtr.h" />
     <ClInclude Include="inc\ACU\SmallArray.h" />
@@ -254,6 +258,7 @@
     <ClCompile Include="src\ACU-RE.cpp" />
     <ClCompile Include="src\ACUGetSingletons.cpp" />
     <ClCompile Include="src\ACUGlobalSoundSet.cpp" />
+    <ClCompile Include="src\ACUHashmap.cpp" />
     <ClCompile Include="src\ACUPlayerCameraComponent.cpp" />
     <ClCompile Include="src\AvatarConsumablesManager.cpp" />
     <ClCompile Include="src\AvatarGearManager.cpp" />

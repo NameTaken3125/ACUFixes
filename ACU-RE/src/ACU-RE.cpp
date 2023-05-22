@@ -3,6 +3,7 @@
 #include "ACU/basic_types.h"
 
 #include "ACU/SmallArray.h"
+#include "ACU/ACUHashmap.h"
 
 #include "ACU/ManagedObject.h"
 
@@ -64,6 +65,8 @@
 
 #include "ACU/WhenHighlightedNPCChanges.h"
 #include "ACU/ReactionHandler.h"
+#include "ACU/ReactionManager.h"
+#include "ACU/ReactionRadiusData.h"
 
 #include "ACU/WitnessEvent.h"
 #include "ACU/AlertedParams.h"

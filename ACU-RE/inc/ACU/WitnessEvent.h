@@ -18,12 +18,16 @@ public:
     uint64 qword_10; //0x00010
 }; //Size: 0x0018
 assert_sizeof(SharedPtrAndSmth, 0x18);
+
+
+
+#include "Enum_ReactionHash_ReactToWhat.h"
 class DangerEvent : public Event
 {
 public:
     SharedPtrAndSmth witnessWhoPlayer; //0x0010
     SharedPtrAndSmth witnessByWhomNPC; //0x0028
-    uint32 responseHash; //0x0040
+    uint32 responseHash; //0x0040 // I now store this in `ReactionHash_ReactToWhat` enum.
     uint32 dword_44; //0x0044
 }; //Size: 0x0048
 assert_sizeof(DangerEvent, 0x48);
