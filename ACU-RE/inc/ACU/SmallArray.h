@@ -9,9 +9,6 @@ class SmallArray
 {
 public:
     T* arr;
-    
-    // I'm not sure about the order of capacity and size variables.
-
     uint16 capacityAndFlags;
     uint16 size;
 
@@ -31,3 +28,9 @@ namespace {
     assert_offsetof(TEST_SmallArray, capacityAndFlags, 8);
     assert_offsetof(TEST_SmallArray, size, 0xA);
 }
+template<typename T, size_t NumStaticElements>
+class SmallArraySemistatic : public SmallArray<T>
+{
+public:
+    T staticElements[NumStaticElements];
+};

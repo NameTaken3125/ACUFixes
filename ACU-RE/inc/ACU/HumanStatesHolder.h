@@ -56,10 +56,32 @@ public:
     char pad_0008[256]; //0x0008
 }; //Size: 0x0108
 
+class SomeStaticNode;
+// `HumanStatesHolder` also seems to be derived from this.
+// I call them `Functors` because they hold the Enter() and Exit() callbacks,
+// but I think they might be "states" of the HumanStateMachine node system.
+class FunctorBase
+{
+    using FunctorEnter_t = void(__fastcall*)(FunctorBase*);
+    using FunctorExit_t = void(__fastcall*)(FunctorBase*);
+public:
+    char pad0[0x18];
+    SomeStaticNode* staticNodes;
+    char pad_20[4];
+    uint32 dword_24;
+    SmallArraySemistatic<FunctorBase*, 0x10> subnodes_mb;
+    char pad_B8[0xE0 - 0xB8];
+    FunctorEnter_t Enter;
+    FunctorExit_t Exit;
+};
+assert_offsetof(FunctorBase, subnodes_mb, 0x28);
+assert_offsetof(FunctorBase, Enter, 0xE0);
+assert_offsetof(FunctorBase, Exit, 0xE8);
+
 class HumanStates_100
 {
 public:
-    class HumanStates_NonstaticNode* p0; //0x0000
+    FunctorBase* p0; //0x0000
     class HumanStates_100_8(*arr8)[20]; //0x0008
     char pad_0010[4]; //0x0010
 }; //Size: 0x0014
@@ -117,7 +139,7 @@ class ThoseFns_FilterElem
 {
 public:
     void* fn; //0x0000
-    class HumanStates_NonstaticNode* nonstaticNode; //0x0008
+    FunctorBase* nonstaticNode; //0x0008
 }; //Size: 0x0010
 /*
 There is a family of functions I just refer to as "one of those".
@@ -199,7 +221,7 @@ public:
     uint32 dword_1AC; //0x01AC
     SmallArray<void*> arr_1B0; //0x01B0
     char pad_01C0[8]; //0x01C0
-    HumanStates_NonstaticNode* haystackStates_mb; //0x01C8
+    FunctorBase* haystackStates_mb; //0x01C8
     char pad_01D0[56]; //0x01D0
     UsedDuringCrouch* usedDuringBombQuickDrop; //0x0208
     char pad_0210[152]; //0x0210

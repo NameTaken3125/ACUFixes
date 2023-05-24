@@ -13,15 +13,19 @@ public:
 }; //Size: 0x0018
 assert_sizeof(AbstractReactionData, 0x18);
 
+struct ReactionRadiusData_floats
+{
+    float flt_0; //0x0000
+    float flt_4; //0x0004
+    float flt_8; //0x0008
+    float flt_C; //0x000C
+    float flt_10; //0x0010
+    float flt_14; //0x0014
+};
 class ReactionRadiusData : public AbstractReactionData
 {
 public:
-    float flt_18; //0x0018
-    float flt_1C; //0x001C
-    float flt_20; //0x0020
-    float flt_24; //0x0024
-    float flt_28; //0x0028
-    float flt_2C; //0x002C
+    ReactionRadiusData_floats flts;
     char pad_0030[8]; //0x0030
 }; //Size: 0x0038
 assert_sizeof(ReactionRadiusData, 0x38);
