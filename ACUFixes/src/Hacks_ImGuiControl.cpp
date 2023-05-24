@@ -23,6 +23,7 @@
 #include "Hack_NoMoreFailedBombThrows.h"
 #include "Hack_MoreResponsiveBombQuickDrop.h"
 #include "Hack_ReloadRangedWeaponsWhenRefillAllInShop.h"
+#include "Hack_DontRandomlyTurn180Degrees.h"
 #include "Hack_LookbehindButton.h"
 
 #include "Hack_WhistleAbility.h"
@@ -63,6 +64,7 @@ public:
     AutoAssembleWrapper<MoreSituationsToDropBomb> moreSituationsToDropBombs;
     AutoAssembleWrapper<AimFromPeaks> aimBombsFromPeaks;
     AutoAssembleWrapper<NoMoreFailedBombThrows> noMoreImaginaryBombThrows;
+    AutoAssembleWrapper<DontRandomlyTurn180Degrees> dontRandomlyTurn180degrees;
     AutoAssembleWrapper<ReloadRangedWeaponsWhenRefillAllInShop> automaticallyReloadWeaponsWhenRefillAllInShops;
 
     AutoAssembleWrapper<WhistleAbility> whistleAbility;
@@ -119,6 +121,20 @@ public:
                 g_Config.hacks->menacingWalkAndAutowalk->autowalkButton.get(),
                 ImGuiComboFlags_HeightLarge);
         }
+        ImGui::DrawCheckboxForHack(moreSituationsToDropBombs, "Can drop bombs in more situations, e.g. during a jump. Please read.");
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::SetTooltip(
+                "Allows to quickly drop bombs in more situations: during a jump, when hanging onto walls,"
+                "\nduring an assassination, when hiding in a closet, swinging on a horizontal bar etc."
+                "\nBecause this starts a throw animation, one which involves the left arm at the minimum,"
+                "\nthere are cases when animations will look out of place"
+                "\n(e.g. if you throw a bomb right in the middle of a stab, or when hanging on one arm),"
+                "\nand there probably won't be much I can do to make all the animations seamless."
+                "\nFor some reason, some of the animation strangeness can be fixed by holding Sprint"
+                "\nbefore starting the bomb drop."
+            );
+        }
         ImGui::DrawCheckboxForHack(changeZoomLevelsWhenAimingBombs, "Change Zoom Levels when aiming Bombs");
         if (ImGui::IsItemHovered())
         {
@@ -171,18 +187,14 @@ public:
                 "\nThat shouldn't happen anymore."
             );
         }
-        ImGui::DrawCheckboxForHack(moreSituationsToDropBombs, "Can drop bombs in more situations, e.g. during a jump. Please read.");
+        ImGui::DrawCheckboxForHack(dontRandomlyTurn180degrees, "Don't randomly flip 180 degrees");
         if (ImGui::IsItemHovered())
         {
             ImGui::SetTooltip(
-                "Allows to quickly drop bombs in more situations: during a jump, when hanging onto walls,"
-                "\nduring an assassination, when hiding in a closet, swinging on a horizontal bar etc."
-                "\nBecause this starts a throw animation, one which involves the left arm at the minimum,"
-                "\nthere are cases when animations will look out of place"
-                "\n(e.g. if you throw a bomb right in the middle of a stab, or when hanging on one arm),"
-                "\nand there probably won't be much I can do to make all the animations seamless."
-                "\nFor some reason, some of the animation strangeness can be fixed by holding Sprint"
-                "\nbefore starting the bomb drop."
+                "Did it ever happen to you that you're crouched, being very sneaky,"
+                "\nand when trying to make some small movements, the character"
+                "\ninstantaneously turns 180 degrees out of absolutely nowhere?"
+                "\nThis removes at least one reason for this nonsense."
             );
         }
         ImGui::DrawCheckboxForHack(automaticallyReloadWeaponsWhenRefillAllInShops, "Automatically reload weapons when using \"Refill All\" in shops");
@@ -311,6 +323,7 @@ public:
         easierTurnWhenSwingingOnAHorizontalBar.Toggle(hacksSection->easierTurnWhenSwingingOnAHorizontalBar);
         aimBombsFromPeaks.Toggle(hacksSection->aimBombsFromPeaks);
         noMoreImaginaryBombThrows.Toggle(hacksSection->noMoreImaginaryBombThrows);
+        dontRandomlyTurn180degrees.Toggle(hacksSection->dontRandomlyTurn180degrees);
         moreSituationsToDropBombs.Toggle(hacksSection->moreSituationsToDropBombs);
         automaticallyReloadWeaponsWhenRefillAllInShops.Toggle(hacksSection->automaticallyReloadWeaponsWhenRefillAllInShops);
         lookbehindButton.Toggle(hacksSection->lookbehindWhenPressingMiddleMouseButton);
@@ -335,6 +348,7 @@ public:
         hacksSection->easierTurnWhenSwingingOnAHorizontalBar = easierTurnWhenSwingingOnAHorizontalBar.IsActive();
         hacksSection->aimBombsFromPeaks = aimBombsFromPeaks.IsActive();
         hacksSection->noMoreImaginaryBombThrows = noMoreImaginaryBombThrows.IsActive();
+        hacksSection->dontRandomlyTurn180degrees = dontRandomlyTurn180degrees.IsActive();
         hacksSection->moreSituationsToDropBombs = moreSituationsToDropBombs.IsActive();
         hacksSection->automaticallyReloadWeaponsWhenRefillAllInShops = automaticallyReloadWeaponsWhenRefillAllInShops.IsActive();
         hacksSection->lookbehindWhenPressingMiddleMouseButton = lookbehindButton.IsActive();

@@ -33,6 +33,7 @@ struct ConfigTop : YAConfigSection {
         };
         ACM(menacingWalkAndAutowalk, MenacingWalk, YAConfigSectionAdapter, );
         ACM(changeZoomLevelsWhenAimingBombs, bool, BooleanAdapter, true);
+        ACM(moreSituationsToDropBombs, bool, BooleanAdapter, true);
         ACM(cycleEquipmentUsingMouseWheel, bool, BooleanAdapter, true);
         ACM(dontUnsheatheWhenInDisguise, bool, BooleanAdapter, true);
         ACM(slightlyMoreResponsiveCrouch, bool, BooleanAdapter, true);
@@ -41,7 +42,7 @@ struct ConfigTop : YAConfigSection {
         ACM(easierTurnWhenSwingingOnAHorizontalBar, bool, BooleanAdapter, true);
         ACM(aimBombsFromPeaks, bool, BooleanAdapter, true);
         ACM(noMoreImaginaryBombThrows, bool, BooleanAdapter, true);
-        ACM(moreSituationsToDropBombs, bool, BooleanAdapter, false);
+        ACM(dontRandomlyTurn180degrees, bool, BooleanAdapter, true);
         ACM(automaticallyReloadWeaponsWhenRefillAllInShops, bool, BooleanAdapter, true);
         ACM(lookbehindWhenPressingMiddleMouseButton, bool, BooleanAdapter, false);
         ACM(slowmotionTrick, bool, BooleanAdapter, false);

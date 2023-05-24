@@ -173,6 +173,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Hack_DontRandomlyTurn180Degrees.cpp" />
     <ClCompile Include="src\Hack_NoMoreFailedBombThrows.cpp" />
     <ClCompile Include="src\ACU_InputUtils.cpp" />
     <ClCompile Include="src\ACU_SoundUtils.cpp" />
@@ -225,6 +226,7 @@
     <ClCompile Include="src\WhatIsDrawnInImGui.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Hack_DontRandomlyTurn180Degrees.h" />
     <ClInclude Include="src\Hack_NoMoreFailedBombThrows.h" />
     <ClInclude Include="src\ACU_DefineNativeFunction.h" />
     <ClInclude Include="src\ACU_InputUtils.h" />
