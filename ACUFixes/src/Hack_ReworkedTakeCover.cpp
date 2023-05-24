@@ -42,11 +42,24 @@ void WhenLeavingTheCoverBySprintAndForcingSprintStart_DontSprintUnnecessarily(Al
     (bool&)params->r9_ = isReallySprinting;
 }
 
-DEFINE_GAME_FUNCTION(createsLeaveCoverFunctor, 0x141979050, char, __fastcall, (__int64 p_node, __m128* p_directionInGroundPlane, float p_wasdMagnitude, char p_doRunOut));
+#include "ACU/HumanStatesHolder.h"
+DEFINE_GAME_FUNCTION(createsLeaveCoverFunctor, 0x141979050, char, __fastcall, (FunctorBase* p_node, __m128* p_directionInGroundPlane, float p_wasdMagnitude, char p_doRunOut));
 char* g_WhenBehindCover_flag_IsStartedDetaching = nullptr;
 void WhenBehindCoverFunctionPrologue_SaveParams(AllRegisters* params)
 {
     g_WhenBehindCover_flag_IsStartedDetaching = *(char**)(params->GetRSP() + 0x28);
+}
+#include "ACU/Entity.h"
+
+template<typename T>
+T& ResolveMultipleOffsets(uintptr_t start, const std::vector<int>& offsets, int addAtTheEnd = 0)
+{
+    uintptr_t curr = start;
+    for (int offset : offsets)
+    {
+        curr = *(uintptr_t*)(curr + offset);
+    }
+    return *(T*)(curr + addAtTheEnd);
 }
 void WhenBehindCoverStandingStillOrMovingAlong_DetachIfTryingToMoveButStuckNowhereToGo(AllRegisters* params)
 {
@@ -55,16 +68,34 @@ void WhenBehindCoverStandingStillOrMovingAlong_DetachIfTryingToMoveButStuckNowhe
     bool shouldDetach =
         isTryingToMove
         && detectedSizeOfWalkableSpaceInTheDirectionOfCurrentMovement_mb <= 0.1f;
+    if (!shouldDetach)
+        return;
+
+    __m128* attemptedMovementDirection = *(__m128**)(params->GetRSP() + 8 * 5);
+    FunctorBase* inCoverFnct = (FunctorBase*)params->rbx_;
+
+    // Don't detach until the player has turned to face the direction of "stuckness".
+    // Example: [76.92 -279.66 0.50]
+    {
+        HumanStatesHolder* humanStates = (HumanStatesHolder*)inCoverFnct->subnodes_mb[2];
+        Entity* player = humanStates->player;
+        const bool isFacingTheDirectionOfAttemptedMovement =
+            ((Vector3f*)attemptedMovementDirection)
+            ->dotProduct(player->GetDirectionForward()) > 0;
+        if (!isFacingTheDirectionOfAttemptedMovement)
+        {
+            shouldDetach = false;
+        }
+    }
     if (g_WhenBehindCover_flag_IsStartedDetaching && *g_WhenBehindCover_flag_IsStartedDetaching)
         shouldDetach = false;
 
     if (!shouldDetach)
         return;
 
-    __int64 node = *(__int64*)(*(uint64*)(params->rbx_ + 0x28) + 8);
-    Vector4f* attemptedMovementDirection = *(Vector4f**)(params->GetRSP() + 8 * 5);
-    __declspec(align(16)) Vector4f leaveCoverDirection = *attemptedMovementDirection;
-    createsLeaveCoverFunctor(node, (__m128*)&leaveCoverDirection, 1.0f, 0);
+    auto node = inCoverFnct->subnodes_mb[1];
+    __m128* leaveCoverDirection = attemptedMovementDirection;
+    createsLeaveCoverFunctor(node, leaveCoverDirection, 1.0f, 0);
     if (g_WhenBehindCover_flag_IsStartedDetaching)
     {
         *g_WhenBehindCover_flag_IsStartedDetaching = 1;
@@ -134,13 +165,12 @@ ReworkedTakeCover::ReworkedTakeCover()
 
     auto AlsoDetachWhenMovingAlongTheWallAndSuddenlyAreStuck = [&]()
     {
-        // TODO: Don't detach until the player has turned to face the direction of "stuckness".
-
         // When behind cover, there are some spots where Arno is moving along the wall,
         // and just stops midwall. Not turning his head, sort of leaning in that direction, but just stops,
         // pretty much fails to go further for no reason. I imagine this has something to do
         // with edges of invisible "cover meshes" or something.
         // The point is he gets stuck, and I'd like for him to instead detach.
+        // Example: "It Belongs in the Museum", [66.24 -283.21 0.50]
 
         // BUG: Even in unmodded game, if you move along the wall, and manually detach by pressing Space,
         // then immediately start moving in the opposite direction, Arno will do
