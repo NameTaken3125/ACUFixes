@@ -158,6 +158,19 @@ void WhenUpdatingPlayerStatesMakingSomeStrangeCall_DoMagicToAllowQuickthrowAndAv
     }
     params->GetRAX() = strangeFunctionResult;
 }
+class HumanStatesHolder;
+DEFINE_GAME_FUNCTION(UpdateState_ReloadRangedWeapon, 0x142663A40, __int64, __fastcall, (HasLanterndlcComponent* a1, HumanStatesHolder* a2, unsigned __int8 a3));
+void WhenUpdateGunReloadChecker_DisableIfQuickdropWasForceEnabled(AllRegisters* params)
+{
+    if (g_BombQuickthrowEnabler_bombDropCheckerHasBeenForceEnabledThisFrame)
+    {
+        params->GetRAX() = 0;
+        return;
+    }
+    HasLanterndlcComponent* a1 = (HasLanterndlcComponent*)params->rcx_;
+    HumanStatesHolder* a2 = (HumanStatesHolder*)params->rdx_;
+    params->GetRAX() = UpdateState_ReloadRangedWeapon(a1, a2, 0);
+}
 void HasLanternCpnt30SetHighProfile(uint64 hasLantern, bool makeInHighProfile)
 {
     *(byte*)(*(uint64*)(hasLantern + 0x30) + 0x20) = makeInHighProfile;
@@ -227,6 +240,144 @@ void WhenOnWallCheckingIfAssassinateAttemptTargetAvailable_DisableIfBombJustDrop
         params->rbx_ = 1;
     }
 }
+
+
+
+
+#include "ACU/ReactionManager.h"
+#include "ACU/ReactionRadiusData.h"
+
+
+#include "MovabilityUtils.h"
+template<typename T>
+class AutoRestoredValue_tmplt
+{
+public:
+    std::reference_wrapper<T> valueRef;
+    T initialValue;
+public:
+    NON_MOVABLE(AutoRestoredValue_tmplt);
+    AutoRestoredValue_tmplt(T& valueRef) : valueRef(valueRef), initialValue(valueRef) {}
+    void Restore() { valueRef.get() = initialValue; }
+    ~AutoRestoredValue_tmplt()
+    {
+        Restore();
+    }
+};
+
+class ReactionRadiusData_Accessor
+{
+public:
+    ReactionRadiusData_Accessor(ReactionRadiusData& radiusData)
+        : m_AutoRestoredValues(radiusData.flts)
+    {}
+private:
+    AutoRestoredValue_tmplt<ReactionRadiusData_floats> m_AutoRestoredValues;
+};
+
+class ReactionRadiusData_Database
+{
+public:
+    std::optional<ReactionRadiusData_Accessor> radiusData_hitSomeoneWithWristbow;
+    std::optional<ReactionRadiusData_Accessor> radiusData_bombQuickdropped1;
+    std::optional<ReactionRadiusData_Accessor> radiusData_bombQuickdropped2;
+    void RestoreDefaults()
+    {
+        radiusData_hitSomeoneWithWristbow.reset();
+        radiusData_bombQuickdropped1.reset();
+        radiusData_bombQuickdropped2.reset();
+    }
+
+
+    NON_MOVABLE(ReactionRadiusData_Database);
+    ReactionRadiusData_Database() = default;
+    static ReactionRadiusData_Database& GetSingleton() { static ReactionRadiusData_Database inst; return inst; }
+};
+void FixReactionRadiusDatas()
+{
+    auto& reactionRadiusMap = ReactionManager::GetSingleton()->hashmapReactionRadiusData;
+    auto& radiusDatas = ReactionRadiusData_Database::GetSingleton();
+    if (!radiusDatas.radiusData_bombQuickdropped1
+        || !radiusDatas.radiusData_bombQuickdropped2)
+    {
+        // When hanging on a wall above a guard, it often makes sense
+        // to drop a Smoke Bomb then drop assassinate.
+        // Dropping a bomb sends `WitnessEvents` of the player entity
+        // with hashes `ReactionHash_ReactToWhat::BombQuickdropped1/BombQuickdropped2`
+        // For some reason, guards about 3 meters below and turned away are still able to "witness"
+        // this action (that is, as soon as you barely release the bomb, before it is anywhere near ground),
+        // resulting in a detection, which in turn forces the assassination to fail.
+        // Here's a very simplistic fix: I just reduce the allowed radius for this reaction.
+        // Side effects of this change are TBD.
+        ReactionRadiusData** radiusData_bombQuickdropped1 = reactionRadiusMap.Get(ReactionHash_ReactToWhat::BombQuickdropped1);
+        ReactionRadiusData** radiusData_bombQuickdropped2 = reactionRadiusMap.Get(ReactionHash_ReactToWhat::BombQuickdropped2);
+        if (
+            radiusData_bombQuickdropped1
+            && *radiusData_bombQuickdropped1
+            && radiusData_bombQuickdropped2
+            && *radiusData_bombQuickdropped2
+            )
+        {
+            radiusDatas.radiusData_bombQuickdropped1.emplace(**radiusData_bombQuickdropped1);
+            (**radiusData_bombQuickdropped1).flts = { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
+            radiusDatas.radiusData_bombQuickdropped2.emplace(**radiusData_bombQuickdropped2);
+            (**radiusData_bombQuickdropped2).flts = { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
+        }
+    }
+    if (!radiusDatas.radiusData_hitSomeoneWithWristbow)
+    {
+        // While I'm at it, I change the detection radius for "Player shot somebody with Wristbow".
+        // Here's the thing: making a shot from the Wristbow is completely silent. To prove this,
+        // stand a meter or so behind a guard with noone around. Fire from behind, missing around his ears.
+        // The guard might notice the projectile hitting something in front of him,
+        // even see a body drop, but he won't turn around to notice you.
+        // However, check this out: "It belongs in the Museum", [46.03 -282.90 0.50]:
+        // you can stand some 5 meters, I guess, behind a gunner in the hall, 15 meters in front of a brute
+        // (second gunner in the hall, the one facing you, needs to be removed - use the invisibility cheat),
+        // in a restricted area, without being noticed.
+        // You can point the wristbow at brute's face, be in range of wristbow shot, you can spin around,
+        // but you won't get a yellow icon or even a turned head from him.
+        // You can even shoot next to the brute, at the ground in front of him, at the column behind him,
+        // and at most he will act interested by the impact sound, but won't notice you.
+        // Yet as soon as you shoot at the gunner that stands behind a column between you and the brute,
+        // you're instantly detected (provided the brute has a clear Line Of Sight to you).
+        // So which is it? The sound, the movement? It's established he doesn't hear the sound of the shot,
+        // doesn't see the glint of projectile, nor can see me standing with my arm outstretched,
+        // nor would rise to high alert if he _didn't_ have a clear Line Of Sight to me.
+        // As far as I can tell, it just doesn't make sense and more importantly, is unpredictable
+        // and unfairly inconsistent.
+        // When standing in the "safe spot" that I described above,
+        // unsheathing the melee weapon also results in immediate detection,
+        // but you could argue that the weapon glints and unsheathing itself is a more noticeable motion.
+        //
+        // The actual reason detection happens is because the "ReactionHashes" for aiming with wristbow
+        // or shooting with wristbow have a much smaller "reaction radius" than the action of
+        // specifically _hitting_ someone while being "sort of in sight".
+        // So I make the reaction radius for "player just shot someone with wristbow"
+        // the same as "player is aiming with wristbow".
+        // You can see me shooting the wristbow <=> you must see me aiming.
+        // Note that this doesn't change the following:
+        // - Aiming the gun is still more noticeable than aiming the wristbow;
+        // - It is still easier for guards to see you if they are looking for you
+        //   (e.g. in the described situation shooting the BerserkBlade at gunner would normally trigger detection
+        //   from the brute immediately, but now the brute might merely notice something is wrong with the gunner,
+        //   and _then_ start looking more closely at you)
+        // - Detection can still immediately trigger from the guard if _he_ specifically is shot.
+        ReactionRadiusData** radiusData_aimingWristbow = reactionRadiusMap.Get(ReactionHash_ReactToWhat::StartAimWristbow);
+        ReactionRadiusData** radiusData_hitSomeoneWithWristbow = reactionRadiusMap.Get(ReactionHash_ReactToWhat::PlayerHitSomeoneWithWristbow_mb);
+        if (
+            radiusData_aimingWristbow
+            && *radiusData_aimingWristbow
+            && radiusData_hitSomeoneWithWristbow
+            && *radiusData_hitSomeoneWithWristbow
+            )
+        {
+            radiusDatas.radiusData_hitSomeoneWithWristbow.emplace(**radiusData_hitSomeoneWithWristbow);
+            (**radiusData_hitSomeoneWithWristbow).flts = (**radiusData_aimingWristbow).flts;
+        }
+    }
+}
+
 MoreSituationsToDropBomb::MoreSituationsToDropBomb()
 {
     auto WhenBuildingArrayOfStatesToBeUpdated_AddQuickdropChecker = [&]() {
@@ -244,10 +395,17 @@ MoreSituationsToDropBomb::MoreSituationsToDropBomb()
         PresetScript_CCodeInTheMiddle(whenLevelReloaded_somehowAssociatedWithTPose, 7,
             WhenLevelReloaded_MakePreparationsToAvoidTPose, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
     };
+    auto DisableGunReloadIfQuickdropWasForceEnabled = [&]() {
+        uintptr_t whenUpdateGunReloadChecker = 0x14265D18E;
+        uintptr_t whenUpdateGunReloadChecker_return = 0x14265D18E;
+        PresetScript_CCodeInTheMiddle(whenUpdateGunReloadChecker, 5,
+            WhenUpdateGunReloadChecker_DisableIfQuickdropWasForceEnabled, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, false);
+    };
 
     WhenBuildingArrayOfStatesToBeUpdated_AddQuickdropChecker();
     StrangeFixToUnbreakCombatAndAssassinations();
     StrangeFixForTheStrangeFixToAvoidTPose();
+    DisableGunReloadIfQuickdropWasForceEnabled();
 
     // Also allow during a wallrun and when standing in the V-shape of a tree or flagpole.
     uintptr_t whenCheckingIfShouldDisallowDropBombInWallrunAndTrees = 0x141AA7C51;
@@ -300,4 +458,12 @@ MoreSituationsToDropBomb::MoreSituationsToDropBomb()
             WhenCombatActionsAreUpdatedChecksBombDrop_DisableOriginalBombDropHandlingInCombat, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, false);
     };
     //PreventDoubleBombDropInCombat();
+}
+void MoreSituationsToDropBomb::OnBeforeActivate()
+{
+    FixReactionRadiusDatas();
+}
+void MoreSituationsToDropBomb::OnBeforeDeactivate()
+{
+    ReactionRadiusData_Database::GetSingleton().RestoreDefaults();
 }

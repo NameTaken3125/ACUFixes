@@ -52,11 +52,39 @@ static bool IsPlayerCrowdBlending()
     const bool isCrowdBlending = vanishMan->_8permanentBlend2crowdBlend0x40moneyPouch == 2;
     return isCrowdBlending;
 }
+#include "ACU/Clock.h"
+#include "ACU/World.h"
+constexpr float durationAllowAssassination_whenCombatJustStarted = 0.7f;
+float g_lastTimePlayerWasDetected = 0;
+Clock* g_lastTimePlayerWasDetected_clock = nullptr;
+Clock* ACT_GetCurrentClock()
+{
+    auto* world = World::GetSingleton();
+    if (!world) { return nullptr; }
+    return &world->clockInWorldWithSlowmotion;
+}
+static bool IsCoyoteTimeForAssassination()
+{
+    Clock* currentClock = ACT_GetCurrentClock();
+    if (!(currentClock && currentClock == g_lastTimePlayerWasDetected_clock)) { return false; }
+    const float currentTime = currentClock->GetCurrentTimeFloat();
+    return g_lastTimePlayerWasDetected <= currentTime && currentTime < g_lastTimePlayerWasDetected + durationAllowAssassination_whenCombatJustStarted;
+}
+void WhenPlaySoundConflictStart_RememberTime(AllRegisters* params)
+{
+    g_lastTimePlayerWasDetected_clock = ACT_GetCurrentClock();
+    if (g_lastTimePlayerWasDetected_clock)
+    {
+        g_lastTimePlayerWasDetected = g_lastTimePlayerWasDetected_clock->GetCurrentTimeFloat();
+    }
+}
 static bool IsShouldNOTAutomaticallyUnsheathe()
 {
     return IsPlayerInDisguise()
         || IsPlayerCrowdBlending()
-        || IsPlayerInQuickshot();
+        || IsPlayerInQuickshot()
+        || IsCoyoteTimeForAssassination()
+        ;
 }
 static bool IsShouldForceAllowAssassination()
 {
@@ -110,4 +138,9 @@ DontUnsheatheLikeAnIdiotWhileInDisguise::DontUnsheatheLikeAnIdiotWhileInDisguise
     PresetScript_CCodeInTheMiddle(
         whenDecidingIfAssassinationsShouldBeDisallowed_stage2chase, 5
         , WhenDecidingIfAssassinationShouldBeDisallowed_Stage2ChaseVersion_ForceAllowAssassination, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, false);
+
+    const uintptr_t whenPlaySoundConflictStart = 0x1410CEB60;
+    PresetScript_CCodeInTheMiddle(
+        whenPlaySoundConflictStart, 7,
+        WhenPlaySoundConflictStart_RememberTime, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
 }

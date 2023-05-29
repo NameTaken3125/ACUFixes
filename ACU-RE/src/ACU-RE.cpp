@@ -98,3 +98,7 @@
 
 #include "ACU/AvatarConsumablesManager.h"
 #include "ACU/WeaponComponent.h"
+
+#include "ACU/Random.h"
+
+#include "ACU/Visual.h"

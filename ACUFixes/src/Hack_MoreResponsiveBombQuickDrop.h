@@ -5,6 +5,8 @@
 struct MoreSituationsToDropBomb : AutoAssemblerCodeHolder_Base
 {
     MoreSituationsToDropBomb();
+    void OnBeforeActivate() override;
+    void OnBeforeDeactivate() override;
 };
 /*
 Normally, if the character is sprinting, _holding_ the "Drop Bomb" button (F) does nothing.

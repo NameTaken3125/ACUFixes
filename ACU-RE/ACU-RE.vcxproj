@@ -230,6 +230,7 @@
     <ClInclude Include="inc\ACU\Parkour_WhileOnWallSystem.h" />
     <ClInclude Include="inc\ACU\PlayerProgressionManager.h" />
     <ClInclude Include="inc\ACU\QuickSelectButtonComponent.h" />
+    <ClInclude Include="inc\ACU\Random.h" />
     <ClInclude Include="inc\ACU\ReactionHandler.h" />
     <ClInclude Include="inc\ACU\ReactionManager.h" />
     <ClInclude Include="inc\ACU\ReactionRadiusData.h" />
@@ -246,6 +247,7 @@
     <ClInclude Include="inc\ACU\UISounds.h" />
     <ClInclude Include="inc\ACU\UIWorldComponent.h" />
     <ClInclude Include="inc\ACU\VanishingManager.h" />
+    <ClInclude Include="inc\ACU\Visual.h" />
     <ClInclude Include="inc\ACU\WeaponComponent.h" />
     <ClInclude Include="inc\ACU\WhenHighlightedNPCChanges.h" />
     <ClInclude Include="inc\ACU\WitnessEvent.h" />

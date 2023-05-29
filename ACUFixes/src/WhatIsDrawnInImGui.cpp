@@ -91,6 +91,7 @@ void ImGui3D::CalculateViewProjectionForCurrentFrame(Matrix4f& viewProjOut)
     viewProjOut = gameMatProj * gameMatView;
 }
 
+Entity* FindHighlightedNPC();
 std::optional<Vector3f> GetDisguiseTargetPosition();
 void ImGui3D::WhatIsActuallyDrawnForFrame()
 {
@@ -114,6 +115,12 @@ void ImGui3D::WhatIsActuallyDrawnForFrame()
         ImGui3D::DrawWireModelTransform(ImGui3D::GetArrowModel(), debugDirectionTransform);
         ImGui3D::DrawWireModelTransform(ImGui3D::GetArrowModel(), player->GetTransform());
         ImGui3D::DrawWireModelTransform(grid5_model, player->GetTransform());
+
+        Entity* rangedWeaponTargetNPC = FindHighlightedNPC();
+        if (rangedWeaponTargetNPC)
+        {
+            ImGui3D::DrawWireModelTransform(grid5_model, rangedWeaponTargetNPC->GetTransform());
+        }
     }
     ImGui3D::DrawMarkers();
 }

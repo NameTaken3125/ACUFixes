@@ -28,7 +28,11 @@ class Entity : public BaseEntity
 public:
     // @members
     SmallArray<Component*> cpnts_mb; //0x0078
-    char pad_0084[172]; //0x0084
+    char pad_0084[4]; //0x0084
+    uint64 flags88; //0x0088 // Read below.
+    char pad_0090[68]; //0x0090
+    uint32 dword_d4; //0x00D4
+    char pad_00D8[88]; //0x00D8
     SharedPtrNew<Entity>* selfSharedPtr; //0x0130
     char pad_0138[31]; //0x0138
     Entity_CpntIndices_157 cpntIndices_157; //0x0157
@@ -41,3 +45,8 @@ public:
 assert_offsetof(Entity, selfSharedPtr, 0x130);
 assert_offsetof(Entity, cpntIndices_157.atomAnimCpnt, 0x158);
 assert_sizeof(Entity, 0x0170);
+
+/*
+* If `(Entity::flags88 >> 58) & 1 == 1`, then animations will not be affected by bendtime.
+* However, actual movement speed will be, and Quickshot projectile might not fly after animation finishes.
+*/

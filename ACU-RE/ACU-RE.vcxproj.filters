@@ -89,6 +89,8 @@
     <ClInclude Include="inc\ACU\ReactionRadiusData.h" />
     <ClInclude Include="inc\ACU\ACUHashmap.h" />
     <ClInclude Include="inc\ACU\Enum_ReactionHash_ReactToWhat.h" />
+    <ClInclude Include="inc\ACU\Random.h" />
+    <ClInclude Include="inc\ACU\Visual.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />
