@@ -41,6 +41,7 @@
 
 void DrawSlowMotionControls();
 void DrawSlowMotionTrickControls();
+void DrawHoodControls();
 
 extern bool g_showDevExtraOptions;
 #include "ImGuiConfigUtils.h"
@@ -198,6 +199,7 @@ public:
             );
         }
         ImGui::DrawCheckboxForHack(automaticallyReloadWeaponsWhenRefillAllInShops, "Automatically reload weapons when using \"Refill All\" in shops");
+        DrawHoodControls();
         ImGui::DrawCheckboxForHack(lookbehindButton, "Lookbehind button");
         if (ImGui::IsItemHovered())
         {

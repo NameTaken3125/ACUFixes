@@ -204,6 +204,7 @@
     <ClCompile Include="src\Hack_ModifyAimingFOV.cpp" />
     <ClCompile Include="src\Hack_MoreResponsiveBombQuickDrop.cpp" />
     <ClCompile Include="src\Hack_ReloadRangedWeaponsWhenRefillAllInShop.cpp" />
+    <ClCompile Include="src\Hack_RemovableHood.cpp" />
     <ClCompile Include="src\Hack_ReworkedTakeCover.cpp" />
     <ClCompile Include="src\Hack_SlowMenacingWalkAndAutowalk.cpp" />
     <ClCompile Include="src\Hack_SlowMotionTrick.cpp" />

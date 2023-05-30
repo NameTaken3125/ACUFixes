@@ -44,6 +44,12 @@ struct ConfigTop : YAConfigSection {
         ACM(noMoreImaginaryBombThrows, bool, BooleanAdapter, true);
         ACM(dontRandomlyTurn180degrees, bool, BooleanAdapter, true);
         ACM(automaticallyReloadWeaponsWhenRefillAllInShops, bool, BooleanAdapter, true);
+        struct HoodControls : YAConfigSection {
+            YACSTOR(HoodControls);
+            ACM(isActive, bool, BooleanAdapter, false);
+            ACM(hoodToggleButton, BindableKeyCode_Keyboard, EnumAdapter_template<BindableKeyCode_Keyboard>, BindableKeyCode_Keyboard::K_H);
+        };
+        ACM(hoodControls, HoodControls, YAConfigSectionAdapter, );
         ACM(lookbehindWhenPressingMiddleMouseButton, bool, BooleanAdapter, false);
         ACM(slowmotionTrick, bool, BooleanAdapter, false);
     };

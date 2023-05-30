@@ -210,9 +210,11 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
     }
 }
 void DoSlowMotionTrick();
+void DoManualHoodControls();
 void Base::ImGuiLayer_EvenWhenMenuIsClosed()
 {
     DoSlowMotionTrick();
+    DoManualHoodControls();
     bool drawImGui3D = g_showDevExtraOptions;
     if (drawImGui3D)
         ImGui3D::DrawStuff();
