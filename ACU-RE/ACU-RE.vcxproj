@@ -223,6 +223,7 @@
     <ClInclude Include="inc\ACU\InventoryItemSettings.h" />
     <ClInclude Include="inc\ACU\KeymapScancodes.h" />
     <ClInclude Include="inc\ACU\LanterndlcComponent.h" />
+    <ClInclude Include="inc\ACU\LODSelectorInstance.h" />
     <ClInclude Include="inc\ACU\ManagedObject.h" />
     <ClInclude Include="inc\ACU\MandatoryUniverseComponent.h" />
     <ClInclude Include="inc\ACU\MemoryManager.h" />

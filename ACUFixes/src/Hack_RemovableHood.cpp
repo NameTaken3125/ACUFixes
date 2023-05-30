@@ -31,7 +31,6 @@ void EnableVisibilityForVisualCpnt(Entity& entity, uint64 lodSelectorHandle, boo
     if (!mph) { return; }
     Visual__ToggleVisibility(mph, doEnable);
 }
-bool g_IsHoodOnNow = true;
 struct HoodVariation
 {
     HoodVariation(
@@ -121,7 +120,13 @@ Visual* ToVisual(Component* cpnt)
     }
     return nullptr;
 }
-HoodVariation* FindCurrentHoodVariation(Entity& player)
+struct CurrentHoodState
+{
+    HoodVariation* m_currentHood;
+    bool m_isHoodOn;
+};
+#include "ACU/LODSelectorInstance.h"
+CurrentHoodState FindCurrentHoodVariation(Entity& player)
 {
     for (Component* cpnt : player.cpnts_mb)
     {
@@ -131,31 +136,31 @@ HoodVariation* FindCurrentHoodVariation(Entity& player)
             HoodVariation* matchingHood = g_Hoods.FindByHandle_HoodOn(potentialHoodHandleUsedInThisVisual);
             if (matchingHood)
             {
-                return matchingHood;
+                const bool isVisible = !vis->flags.isHidden;
+                return { matchingHood, isVisible };
             }
         }
     }
-    return nullptr;
+    return { nullptr, false };
 }
 constexpr uint64 handle_hair1 = 0x17412AB3AC;
 constexpr uint64 handle_hair2 = 0x17412AB39C;
-void ToggleHoodVisuals(HoodVariation& hood)
+void ToggleHoodVisuals(HoodVariation& hood, bool doPutHoodOn)
 {
     Entity* player = ACU::GetPlayer();
     if (!player) { return; }
-    EnableVisibilityForVisualCpnt(*player, hood.handle_hoodOff, g_IsHoodOnNow);
-    EnableVisibilityForVisualCpnt(*player, hood.handle_hoodOn, !g_IsHoodOnNow);
-    EnableVisibilityForVisualCpnt(*player, handle_hair1, g_IsHoodOnNow);
-    EnableVisibilityForVisualCpnt(*player, handle_hair2, g_IsHoodOnNow);
-    g_IsHoodOnNow = !g_IsHoodOnNow;
+    EnableVisibilityForVisualCpnt(*player, hood.handle_hoodOn, doPutHoodOn);
+    EnableVisibilityForVisualCpnt(*player, hood.handle_hoodOff, !doPutHoodOn);
+    EnableVisibilityForVisualCpnt(*player, handle_hair1, !doPutHoodOn);
+    EnableVisibilityForVisualCpnt(*player, handle_hair2, !doPutHoodOn);
 }
 void ToggleHood()
 {
     Entity* player = ACU::GetPlayer();
     if (!player) { return; }
-    HoodVariation* currentHood = FindCurrentHoodVariation(*player);
-    if (!currentHood) { return; }
-    ToggleHoodVisuals(*currentHood);
+    CurrentHoodState currentHood = FindCurrentHoodVariation(*player);
+    if (!currentHood.m_currentHood) { return; }
+    ToggleHoodVisuals(*currentHood.m_currentHood, !currentHood.m_isHoodOn);
 }
 #include "ACU_InputUtils.h"
 #include "MainConfig.h"

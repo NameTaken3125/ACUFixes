@@ -102,3 +102,4 @@
 #include "ACU/Random.h"
 
 #include "ACU/Visual.h"
+#include "ACU/LODSelectorInstance.h"
