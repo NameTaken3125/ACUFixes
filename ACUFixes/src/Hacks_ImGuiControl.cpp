@@ -96,6 +96,7 @@ public:
         if (enterWindowsByPressingAButton.IsActive())
         {
             ImGuiCTX::Indent _indent;
+            ImGui::Checkbox("Also enter nearby Hidespot Closets", &g_Config.hacks->enterWindowsByPressingAButton->alsoEnterNearbyHidespotClosets.get());
             bool isHotkeyChanged = ImGui::DrawEnumPicker(
                 "Enter Window Button",
                 g_Config.hacks->enterWindowsByPressingAButton->enterWindowsButton.get(),
@@ -132,8 +133,6 @@ public:
                 "\nthere are cases when animations will look out of place"
                 "\n(e.g. if you throw a bomb right in the middle of a stab, or when hanging on one arm),"
                 "\nand there probably won't be much I can do to make all the animations seamless."
-                "\nFor some reason, some of the animation strangeness can be fixed by holding Sprint"
-                "\nbefore starting the bomb drop."
             );
         }
         ImGui::DrawCheckboxForHack(changeZoomLevelsWhenAimingBombs, "Change Zoom Levels when aiming Bombs");

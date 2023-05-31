@@ -23,6 +23,7 @@ struct ConfigTop : YAConfigSection {
         struct EnterWindows : YAConfigSection {
             YACSTOR(EnterWindows);
             ACM(isActive, bool, BooleanAdapter, true);
+            ACM(alsoEnterNearbyHidespotClosets, bool, BooleanAdapter, true);
             ACM(enterWindowsButton, BindableKeyCode_Keyboard, EnumAdapter_template<BindableKeyCode_Keyboard>, BindableKeyCode_Keyboard::K_R);
         };
         ACM(enterWindowsByPressingAButton, EnterWindows, YAConfigSectionAdapter, );

@@ -21,16 +21,22 @@ void WhenCheckingIfWindowIsToBeEnteredNow_ConfirmIfRequestedForThisFrame(AllRegi
     }
 }
 #include "ACU_DefineNativeFunction.h"
-
+static bool IsEnabled_AssistedEnterClosets()
+{
+    return g_Config.hacks->enterWindowsByPressingAButton->alsoEnterNearbyHidespotClosets;
+}
 DEFINE_GAME_FUNCTION(IsShouldEnterHideyClosetNow, 0x14265B350, char, __fastcall, (__int64 a1, __int64 a2));
 void WhenCheckingIfHideyClosetIsToBeEnteredNow_ConfirmIfRequestedForThisFrame(AllRegisters* params)
 {
-    if (ACU::Input::IsPressed(g_Config.hacks->enterWindowsByPressingAButton->enterWindowsButton))
+    if (!IsEnabled_AssistedEnterClosets())
     {
-        *params->rax_ = 1;
+        params->GetRAX() = IsShouldEnterHideyClosetNow(params->rcx_, params->rdx_);
         return;
     }
-    *params->rax_ = IsShouldEnterHideyClosetNow(params->rcx_, params->rdx_);
+    if (ACU::Input::IsPressed(g_Config.hacks->enterWindowsByPressingAButton->enterWindowsButton))
+    {
+        params->GetRAX() = 1;
+    }
 }
 EnterWindowWhenRisPressed::EnterWindowWhenRisPressed()
 {

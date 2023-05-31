@@ -37,14 +37,17 @@ struct HoodVariation
         const std::string& name
         , uint64 handleHoodOn
         , uint64 handleHoodOff
+        , std::optional<uint64> handleHoodOnExtra = {}
     )
         : name(name)
         , handle_hoodOn(handleHoodOn)
         , handle_hoodOff(handleHoodOff)
+        , handle_hoodOnExtra(handleHoodOnExtra)
     {}
     std::string name;
     uint64 handle_hoodOn;
     uint64 handle_hoodOff;
+    std::optional<uint64> handle_hoodOnExtra;
 };
 class HoodVariations
 {
@@ -64,6 +67,9 @@ public:
 private:
     std::vector<HoodVariation> m_Hoods;
 };
+constexpr uint64 handle_hair1 = 0x17412AB3AC;
+constexpr uint64 handle_hair2 = 0x17412AB39C;
+constexpr uint64 handle_greyHairOfFranciadeHoods = 0x2318E0DEA8;
 // Note: "Hood Down" means that hood is off.
 HoodVariations g_Hoods({
     HoodVariation( "CN_P_FR_Hood_Down_Arnaud_V1", 119263477692, 147798842981 ),
@@ -110,6 +116,11 @@ HoodVariations g_Hoods({
     HoodVariation( "Connor", 0x234E8D4922, 0x234E8D4923 ),
     HoodVariation( "Edward", 0x234E8D727E, 0x234E8D727D ),
     HoodVariation( "Arno Fearless", 0x23DAB1789C, 0x2626CE15AE ),
+
+    HoodVariation( "Hood of Franciade", 0x3DA29AFE88, 0x3DA29AFE60, handle_greyHairOfFranciadeHoods ),
+    HoodVariation( "Hood of the Raiders", 0x3DA29AFD6B, 0x3DA29AFD85, handle_greyHairOfFranciadeHoods ),
+    HoodVariation( "Outfit - Franciade", 0x3DA29AFBF6, 0x3DA29AFB58, handle_greyHairOfFranciadeHoods ),
+    HoodVariation( "Outfit - Raider", 0x3DA29AFC85, 0x3DA29AFCA1, handle_greyHairOfFranciadeHoods ),
     });
 
 Visual* ToVisual(Component* cpnt)
@@ -143,13 +154,16 @@ CurrentHoodState FindCurrentHoodVariation(Entity& player)
     }
     return { nullptr, false };
 }
-constexpr uint64 handle_hair1 = 0x17412AB3AC;
-constexpr uint64 handle_hair2 = 0x17412AB39C;
 void ToggleHoodVisuals(HoodVariation& hood, bool doPutHoodOn)
 {
     Entity* player = ACU::GetPlayer();
     if (!player) { return; }
     EnableVisibilityForVisualCpnt(*player, hood.handle_hoodOn, doPutHoodOn);
+    if (hood.handle_hoodOnExtra)
+    {
+        EnableVisibilityForVisualCpnt(*player, *hood.handle_hoodOnExtra, doPutHoodOn);
+    }
+
     EnableVisibilityForVisualCpnt(*player, hood.handle_hoodOff, !doPutHoodOn);
     EnableVisibilityForVisualCpnt(*player, handle_hair1, !doPutHoodOn);
     EnableVisibilityForVisualCpnt(*player, handle_hair2, !doPutHoodOn);
