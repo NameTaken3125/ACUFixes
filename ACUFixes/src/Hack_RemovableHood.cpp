@@ -70,7 +70,7 @@ private:
 constexpr uint64 handle_hair1 = 0x17412AB3AC;
 constexpr uint64 handle_hair2 = 0x17412AB39C;
 constexpr uint64 handle_greyHairOfFranciadeHoods = 0x2318E0DEA8;
-// Note: "Hood Down" means that hood is off.
+// Note: In game files, "Hood Down" means that hood is off.
 HoodVariations g_Hoods({
     HoodVariation( "CN_P_FR_Hood_Down_Arnaud_V1", 119263477692, 147798842981 ),
     HoodVariation( "CN_P_FR_Hood_Down_Arnaud_V2", 84857383766, 147798842259 ),
@@ -168,6 +168,23 @@ void ToggleHoodVisuals(HoodVariation& hood, bool doPutHoodOn)
     EnableVisibilityForVisualCpnt(*player, handle_hair1, !doPutHoodOn);
     EnableVisibilityForVisualCpnt(*player, handle_hair2, !doPutHoodOn);
 }
+#include "ACU_SoundUtils.h"
+#include "ACU/ACUGlobalSoundSet.h"
+void PlaySound_ToggleHood(Entity& player, bool doPutItOn)
+{
+    auto* agss = ACUGlobalSoundSet::GetSingleton();
+    if (!agss) { return; }
+
+    SoundInstance& sound =
+        doPutItOn
+        ? agss->arrSoundEvents_38[ACUGlobalSoundSet::k_ClothSoundSharp]
+        : agss->arrSoundEvents_38[ACUGlobalSoundSet::k_LikeStartDisguiseButSharper];
+    ACU::Sound::PlaySoundFromEntity(sound, player);
+}
+bool IsToggleHoodSoundEnabled()
+{
+    return true;
+}
 void ToggleHood()
 {
     Entity* player = ACU::GetPlayer();
@@ -175,6 +192,8 @@ void ToggleHood()
     CurrentHoodState currentHood = FindCurrentHoodVariation(*player);
     if (!currentHood.m_currentHood) { return; }
     ToggleHoodVisuals(*currentHood.m_currentHood, !currentHood.m_isHoodOn);
+    if (IsToggleHoodSoundEnabled())
+        PlaySound_ToggleHood(*player, !currentHood.m_isHoodOn);
 }
 #include "ACU_InputUtils.h"
 #include "MainConfig.h"
