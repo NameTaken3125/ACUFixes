@@ -54,8 +54,6 @@ public:
     AutoAssembleWrapper<AllowSlowMenacingWalkAndAutowalk> menacingWalkAndAutowalk;
     AutoAssembleWrapper<ModifyConditionalFOVs> changeZoomLevelsWhenAimingBombs;
     AutoAssembleWrapper<InputInjection_CycleEquipmentWhenScrollingMousewheel> cycleEquipmentUsingMouseWheel;
-    AutoAssembleWrapper<PlayWithFOV> fovGames;
-    AutoAssembleWrapper<PlayWithBombAimCameraTracker2> bombAimExperiments2;
     AutoAssembleWrapper<DontUnsheatheLikeAnIdiotWhileInDisguise> dontUnsheatheWhenInDisguise;
     AutoAssembleWrapper<CrouchFix> slightlyMoreResponsiveCrouch;
     AutoAssembleWrapper<ReworkedTakeCover> takingCoverIsLessSticky;
@@ -68,7 +66,11 @@ public:
     AutoAssembleWrapper<DontRandomlyTurn180Degrees> dontRandomlyTurn180degrees;
     AutoAssembleWrapper<ReloadRangedWeaponsWhenRefillAllInShop> automaticallyReloadWeaponsWhenRefillAllInShops;
 
+    // Unused and unfinished
+    AutoAssembleWrapper<PlayWithFOV> fovGames;
+    AutoAssembleWrapper<PlayWithBombAimCameraTracker2> bombAimExperiments2;
     AutoAssembleWrapper<WhistleAbility> whistleAbility;
+    AutoAssembleWrapper<BetterAimingFromBehindCover> moreConsistentAimBombFromBehindCover;
 
     void DrawControls()
     {
@@ -216,6 +218,17 @@ public:
                 // but only _sometimes_ for some reason.
                 //ImGui::DrawCheckboxForHack(fovGames, "Play with FOV");
                 ImGui::DrawCheckboxForHack(bombAimExperiments2, "Bomb aim experiments2");
+                ImGui::DrawCheckboxForHack(moreConsistentAimBombFromBehindCover, "Slightly more permissive Aim Bombs out of cover");
+                if (ImGui::IsItemHovered())
+                {
+                    ImGui::SetTooltip(
+                        "You know how sometimes you try to throw a bomb around the corner,"
+                        "\nbut the character instead steps away from the wall, because you're not hugging"
+                        "\nthe _very_ edge of cover? Then you end up aiming sort of _at_ the wall instead of"
+                        "\naround the corner? This should make these situations less likely."
+                        "\nCurrently, however, there are places where this makes things worse."
+                    );
+                }
             }
         }
         ImGui::Separator();

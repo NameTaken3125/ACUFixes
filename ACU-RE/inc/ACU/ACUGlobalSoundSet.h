@@ -38,6 +38,7 @@ public:
         k_SomeTicking_62 = 62,
         k_SomeTickingEnd = 63,
         k_Gunshot = 91,
+        k_GunTriggerClick = 93,
 
         k_NUM_ITEMS = 111,
     };

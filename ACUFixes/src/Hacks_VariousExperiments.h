@@ -49,6 +49,13 @@ void OverrideThrowPredictorBeamPosition(AllRegisters* params)
     thr->trackerCrawlsTowardPredictorBeamEnd.z = player->GetPosition().z + 1;
     //(Vector3f&)thr->cameraTrackerMovingTowardPredictionBeamEnd = player->GetPosition() + Vector3f{ 0, 3, 1 };
 }
+#include "ACU/HumanStatesHolder.h"
+void WhenAimBombBehindCoverSetPredictorBeamOriginOffsetFromCenterMass_Override(AllRegisters* params)
+{
+    Vector4f& calculatedOffset = *(Vector4f*)(params->GetRSP() + 0x20);
+    auto humanStates = (HumanStatesHolder*)params->rbx_;
+    (Vector2f&)calculatedOffset = (Vector2f&)humanStates->player->GetDirectionForward();
+}
 struct PlayWithBombAimCameraTracker2 : AutoAssemblerCodeHolder_Base
 {
     PlayWithBombAimCameraTracker2()
@@ -58,5 +65,25 @@ struct PlayWithBombAimCameraTracker2 : AutoAssemblerCodeHolder_Base
             , OverrideThrowPredictorBeamPosition
             , RETURN_TO_RIGHT_AFTER_STOLEN_BYTES
             , true);
+
+        auto SetBallisticAimingOriginToFrontOfPlayer = [&]()
+        {
+            uintptr_t whenAimBombBehindCoverSetPredictorBeamOriginOffsetFromCenterMass = 0x1419F97CE;
+            PresetScript_CCodeInTheMiddle(whenAimBombBehindCoverSetPredictorBeamOriginOffsetFromCenterMass, 5,
+                WhenAimBombBehindCoverSetPredictorBeamOriginOffsetFromCenterMass_Override, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
+        };
+        //SetBallisticAimingOriginToFrontOfPlayer();
     }
 };
+
+#include "AutoAssemblerKinda/AutoAssemblerKinda.h"
+
+struct BetterAimingFromBehindCover : AutoAssemblerCodeHolder_Base
+{
+    BetterAimingFromBehindCover();
+};
+BetterAimingFromBehindCover::BetterAimingFromBehindCover()
+{
+    const uintptr_t whenDecidingIfPlayerIsCloseEnoughToTheEdgeOfCoverToAimBombsInThatDirection = 0x1419623FC;
+    PresetScript_NOP(whenDecidingIfPlayerIsCloseEnoughToTheEdgeOfCoverToAimBombsInThatDirection, 2);
+}
