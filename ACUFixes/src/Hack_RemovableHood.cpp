@@ -1,3 +1,38 @@
+/*
+Thank you to Vector4782
+on NexusMods for the original "Hood Down Outfits Pack"
+https://www.nexusmods.com/assassinscreedunity/users/98797348
+https://www.nexusmods.com/assassinscreedunity/mods/93
+and kamzik123
+for AnvilToolkit
+https://www.nexusmods.com/assassinscreedunity/users/84094778
+https://www.nexusmods.com/assassinscreedunity/mods/38
+
+There are several cutscenes in the game where Arno can be seen with his hood down.
+Not all outfits support this (e.g. Altair's and Ezio's outfits don't),
+but most do.
+The player's `Entity` has several components of type `Visual`. The exact number depends
+on which specific Gear items are currently equipped.
+If the equipped Hood or Outfit has a "hood down" version, then the `Entity` simultaneously
+has separate `Visual` components for the "hood up" and "hood down" versions.
+When the hood is taken off, the visibility for the "hood on" version is turned off,
+and for the "hood off" is turned on. The visibility of Arno's hair is also toggled
+(there are 2 separate `Visual` components for it)
+(the Franciade/Raider hoods also have a partial hair mesh with yet another `Visual` component -
+it can be seen when the hood is on).
+
+In this little hack, I identify the relevant `Visual` components
+and toggle visibility for them.
+To identify them, I search the array of player's components for `Visual`s that
+have a `LODSelector` member with a particular Handle.
+Most of these handles were discovered using the AnvilToolkit to unpack the following file:
+    DataPC_ACU_LGS_BelleEpoque.forge\334_-_CN_P_Arno.data\122_-_CN_P_ArnoAvatar_Hoods.BuildTable
+    // Note: In game files, "Hood Down" means that the hood is off.
+The Handles for outfits not present in that file were caught by setting a breakpoint at
+    `Visual::SetVisibility()` 0x1421F4DD0
+and catching the `Visual`s that belong to player's `Entity`
+when the Hood mode changes in the Sequence 7, Mission 1: Cautious Alliance.
+*/
 #include "pch.h"
 
 
@@ -70,7 +105,6 @@ private:
 constexpr uint64 handle_hair1 = 0x17412AB3AC;
 constexpr uint64 handle_hair2 = 0x17412AB39C;
 constexpr uint64 handle_greyHairOfFranciadeHoods = 0x2318E0DEA8;
-// Note: In game files, "Hood Down" means that hood is off.
 HoodVariations g_Hoods({
     HoodVariation( "CN_P_FR_Hood_Down_Arnaud_V1", 119263477692, 147798842981 ),
     HoodVariation( "CN_P_FR_Hood_Down_Arnaud_V2", 84857383766, 147798842259 ),
@@ -136,7 +170,6 @@ struct CurrentHoodState
     HoodVariation* m_currentHood;
     bool m_isHoodOn;
 };
-#include "ACU/LODSelectorInstance.h"
 CurrentHoodState FindCurrentHoodVariation(Entity& player)
 {
     for (Component* cpnt : player.cpnts_mb)

@@ -8,6 +8,135 @@
 #include "ACU/SmallArray.h"
 
 
+enum class EnumParkourAction
+{
+    unk0 = 0x0,
+    stumbleAtEdge_mb = 0x1,
+    passement2 = 0x2,
+    leap_3_slowStepDown_mb = 0x3,
+    leapBeamToVShape = 0x4,
+    unk5 = 0x5,
+    unk6 = 0x6,
+    unk7 = 0x7,
+    unk8 = 0x8,
+    passement9 = 0x9,
+    passementFromBeam_A = 0xA,
+    passementB = 0xB,
+    passementFromBeam_C = 0xC,
+    passementD = 0xD,
+    passement_E = 0xE,
+    leap_F = 0xF,
+    unk16 = 0x10,
+    unk17 = 0x11,
+    breakfall_1st_0x12 = 0x12,
+    unk19 = 0x13,
+    freefallLedgeLandOn = 0x14,
+    breakfall_2nd_0x15 = 0x15,
+    unk22 = 0x16,
+    hangShimmy_17 = 0x17,
+    unk24 = 0x18,
+    unk25 = 0x19,
+    hangCornerInside_1A = 0x1A,
+    hangCornerOutside_1B = 0x1B,
+    hangCornerInside_1C = 0x1C,
+    hangCornerOutside_1D = 0x1D,
+    unk30 = 0x1E,
+    hang_1F = 0x1F,
+    hang_20 = 0x20,
+    hangShimmy_21 = 0x21,
+    hangTurn_22 = 0x22,
+    unk35 = 0x23,
+    offTheWall_fromWallToGroundReleaseOrEject = 0x24,
+    unk37 = 0x25,
+    unk38 = 0x26,
+    climbFacade_fromWallDescentSidewaysToGround = 0x27,
+    dive = 0x28,
+    leapOffBuildingIntoUncontrolledFall_mb = 0x29,
+    unk42 = 0x2A,
+    swing_2B = 0x2B,
+    swing_2C = 0x2C,
+    swingTurn_2D = 0x2D,
+    swing_2E = 0x2E,
+    swing_2F_SwingToSidewall_includingSpindescent = 0x2F,
+    swing_30 = 0x30,
+    swing_31 = 0x31,
+    offTheWall_fromWallToWallEjectAndCatch = 0x32,
+    unk51 = 0x33,
+    unk52 = 0x34,
+    unk53 = 0x35,
+    unk54 = 0x36,
+    unk55 = 0x37,
+    unk56 = 0x38,
+    unk57 = 0x39,
+    unk58 = 0x3A,
+    edgeDropBeforeFreeeFall_3B = 0x3B,
+    unk60 = 0x3C,
+    unk61 = 0x3D,
+    unk62 = 0x3E,
+    edgeDropBeforeFreeeFall_3F = 0x3F,
+    unk64 = 0x40,
+    climb_onWallNormalClimb = 0x41,
+    unk66 = 0x42,
+    climbCornerInside_onWallTurnCornerInner = 0x43,
+    onWallTurnCornerOuter = 0x44,
+    unk69 = 0x45,
+    fromWallCalmDescentToFeet = 0x46,
+    climbCornerInside_47 = 0x47,
+    climbCornerOutside = 0x48,
+    climb_fromWallRiseToFeetOnLedge_49 = 0x49,
+    climb_fromWallRiseToFeetOnLedge_4A = 0x4A,
+    climb_fromWallRiseToFeetOnLedge_4B = 0x4B,
+    unk76 = 0x4C,
+    unk77 = 0x4D,
+    hangShimmy_4E = 0x4E,
+    backEject_4F = 0x4F,
+    climb_50 = 0x50,
+    unk81 = 0x51,
+    unk82 = 0x52,
+    unk83 = 0x53,
+    unk84 = 0x54,
+    unk85 = 0x55,
+    choke_mb = 0x56,
+    unk87 = 0x57,
+    unk88 = 0x58,
+    unk89 = 0x59,
+    unk90 = 0x5A,
+    unk91 = 0x5B,
+    unk92 = 0x5C,
+    unk93 = 0x5D,
+    unk94 = 0x5E,
+    unk95 = 0x5F,
+    unk96 = 0x60,
+    unk97 = 0x61,
+    unk98 = 0x62,
+    unk99 = 0x63,
+    unk100 = 0x64,
+    unk101 = 0x65,
+    unk102 = 0x66,
+    unk103 = 0x67,
+    unk104 = 0x68,
+    unk105 = 0x69,
+    passement6A_walkThroughWindow_mb = 0x6A,
+    passement6B = 0x6B,
+    enterWindow = 0x6C,
+    unk109 = 0x6D,
+    unk110 = 0x6E,
+    unk111 = 0x6F,
+    unk112 = 0x70,
+    unk113 = 0x71,
+    passementFromHayStack = 0x72,
+    passement_73 = 0x73,
+    unk116 = 0x74,
+    unk117 = 0x75,
+    unk118 = 0x76,
+    defenestrateSprintOutOfWindow_77 = 0x77,
+    unk120 = 0x78,
+    defenestrateSprintOutOfWindow_79 = 0x79,
+    defenestrateSprintOutOfWindow_7A = 0x7A,
+    unk123 = 0x7B,
+    unk124 = 0x7C,
+};
+
 class SomeStaticNode
 {
 public:
@@ -20,19 +149,31 @@ public:
 }; //Size: 0x0020
 assert_sizeof(SomeStaticNode, 0x20);
 
+struct FancyVTable
+{
+    std::array<SomeStaticNode, 0x78> fancyVirtuals;
+};
 class AvailableParkourAction
 {
 public:
+    // @members
     uint64 vtbl;
-    uint64 staticNodes;
+    FancyVTable* fancyVTable;
+
+    // @helper_functions
+    EnumParkourAction GetEnumParkourAction()
+    {
+        using GetEnumParkourAction_t = EnumParkourAction(__fastcall*)(AvailableParkourAction* action);
+        auto GetEnumParkourAction_impl = (GetEnumParkourAction_t)fancyVTable->fancyVirtuals[69].fn;
+        return GetEnumParkourAction_impl(this);
+    }
 };
 #include "ACU/SharedPtr.h"
 class Entity;
 class EntityGroup;
-class ParkourAction_Spindescent
+class ParkourAction_Spindescent : public AvailableParkourAction
 {
 public:
-    char pad_0000[16]; //0x0000
     Vector4f handsLocationFrom; //0x0010
     char pad_0020[16]; //0x0020
     Vector4f handsLocationTo_center_mb; //0x0030
@@ -81,14 +222,15 @@ std::optional<int> SelectBestMatchingMoveIdx_ExtraProcessing_CustomSelection(All
     for (int i = 0; i < availableParkourActions.size; i++)
     {
         AvailableParkourAction* action = availableParkourActions[i];
-        constexpr uint64 SwingToSidewall_includingSpindescent_StaticNodes = 0x143A3E170;
-        if (action->staticNodes ==
-            SwingToSidewall_includingSpindescent_StaticNodes
-            //0x143A47FA0         // dive, mb?
-            //0x143A4E1D0         // swing turn
-            //0x143A13130         // descent from wall to ground; also sidehop
-            //0x1439FA6C0
-            )
+        //constexpr uint64 SwingToSidewall_includingSpindescent_StaticNodes = 0x143A3E170;
+        //if ((uint64&)action->fancyVTable ==
+        //    SwingToSidewall_includingSpindescent_StaticNodes
+        //    //0x143A47FA0         // dive, mb?
+        //    //0x143A4E1D0         // swing turn
+        //    //0x143A13130         // descent from wall to ground; also sidehop
+        //    //0x1439FA6C0
+        //)
+        if (action->GetEnumParkourAction() == EnumParkourAction::swing_2F_SwingToSidewall_includingSpindescent)
         {
             /*
             At [608.67 -35.59 13.42], lower from swing, immediately hold Sprint+E+forward.
@@ -137,7 +279,6 @@ std::optional<int> SelectBestMatchingMoveIdx_ExtraProcessing_CustomSelection(All
                 ForceSpindescentAnimation();
                 return i;
             }
-            //return PARKOUR_ACTIONS_NO_RESULTS_ACCEPTED;
         }
     }
     return {};
