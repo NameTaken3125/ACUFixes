@@ -186,6 +186,10 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
                     ImGuiPrintMatrix(gameMatProj);
                 }
             }
+            if (ImGuiCTX::Tab _{ "Player's Visuals" })
+            {
+                DrawPlayerVisualsControls();
+            }
             if (ImGuiCTX::Tab _typeInfosTab{ "TypeInfos" })
             {
                 TypeInfoSystemTests();

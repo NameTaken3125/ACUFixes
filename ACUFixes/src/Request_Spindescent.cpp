@@ -49,7 +49,7 @@ enum class EnumParkourAction
     offTheWall_fromWallToGroundReleaseOrEject = 0x24,
     unk37 = 0x25,
     unk38 = 0x26,
-    climbFacade_fromWallDescentSidewaysToGround = 0x27,
+    climbFacade_fromWallDescentSidewaysToGround_alsoSidehop = 0x27,
     dive = 0x28,
     leapOffBuildingIntoUncontrolledFall_mb = 0x29,
     unk42 = 0x2A,
@@ -58,9 +58,9 @@ enum class EnumParkourAction
     swingTurn_2D = 0x2D,
     swing_2E = 0x2E,
     swing_2F_SwingToSidewall_includingSpindescent = 0x2F,
-    swing_30 = 0x30,
-    swing_31 = 0x31,
-    offTheWall_fromWallToWallEjectAndCatch = 0x32,
+    swing_30_fromSwingToFeet = 0x30,
+    swing_31_swingToSwing_mb = 0x31,
+    offTheWall_fromWallToWallEjectAndCatch = 0x32, // If you force this you can cover absolutely ridiculous wall-to-wall distances like from [194.55 -335.12 1.71] to [186.31 -331.30 3.76]
     unk51 = 0x33,
     unk52 = 0x34,
     unk53 = 0x35,
@@ -230,7 +230,8 @@ std::optional<int> SelectBestMatchingMoveIdx_ExtraProcessing_CustomSelection(All
         //    //0x143A13130         // descent from wall to ground; also sidehop
         //    //0x1439FA6C0
         //)
-        if (action->GetEnumParkourAction() == EnumParkourAction::swing_2F_SwingToSidewall_includingSpindescent)
+        EnumParkourAction actionType = action->GetEnumParkourAction();
+        if (actionType == EnumParkourAction::swing_2F_SwingToSidewall_includingSpindescent)
         {
             /*
             At [608.67 -35.59 13.42], lower from swing, immediately hold Sprint+E+forward.

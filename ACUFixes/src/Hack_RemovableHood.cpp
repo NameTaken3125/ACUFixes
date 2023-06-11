@@ -242,6 +242,38 @@ void DoManualHoodControls()
     }
 }
 #include "ImGuiConfigUtils.h"
+void DrawPlayerVisualsControls()
+{
+    ImGui::Text(
+        "The list of player's Visual components to turn on and off."
+        "\nThe numbers are the unique Handles of the corresponding LODSelector objects."
+        "\nClick with the Right Mouse Button to copy the Handle to clipboard."
+    );
+    Entity* player = ACU::GetPlayer();
+    if (!player) { return; }
+    static std::string fmt;
+    for (Component* cpnt : player->cpnts_mb)
+    {
+        if (*(uint64*)cpnt != Visual__VTable)
+        {
+            continue;
+        }
+        Visual* vis = (Visual*)cpnt;
+        ImGui::PushID(vis);
+        bool isVisible = !vis->flags.isHidden;
+        fmt.clear();
+        fmt = std::to_string(vis->shared_LODSelector->handle);
+        if (ImGui::Checkbox(fmt.c_str(), &isVisible))
+        {
+            Visual__ToggleVisibility(vis, isVisible);
+        }
+        if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+        {
+            ImGui::SetClipboardText(fmt.c_str());
+        }
+        ImGui::PopID();
+    }
+}
 void DrawHoodControls()
 {
     ImGui::Checkbox("Removable Hood", &g_Config.hacks->hoodControls->isActive.get());
