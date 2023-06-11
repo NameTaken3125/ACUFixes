@@ -127,4 +127,36 @@ public:
         ImGui::Unindent(m_indent);
     }
 };
+class MenuBar
+{
+    bool m_opened;
+public:
+    MenuBar()
+    {
+        m_opened = ImGui::BeginMenuBar();
+    }
+    ~MenuBar()
+    {
+        if (m_opened) {
+            ImGui::EndMenuBar();
+        }
+    }
+    operator bool() { return m_opened; }
+};
+class Menu
+{
+    bool m_opened;
+public:
+    Menu(const char* label, bool enabled = true)
+    {
+        m_opened = ImGui::BeginMenu(label, enabled);
+    }
+    ~Menu()
+    {
+        if (m_opened) {
+            ImGui::EndMenu();
+        }
+    }
+    operator bool() { return m_opened; }
+};
 }

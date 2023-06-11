@@ -92,6 +92,7 @@
     <ClInclude Include="inc\ACU\Random.h" />
     <ClInclude Include="inc\ACU\Visual.h" />
     <ClInclude Include="inc\ACU\LODSelectorInstance.h" />
+    <ClInclude Include="inc\ACU\Timer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />

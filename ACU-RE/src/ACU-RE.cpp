@@ -14,6 +14,7 @@
 #include "ACU/SharedPtr.h"
 #include "ACU/Component.h"
 #include "ACU/Clock.h"
+#include "ACU/Timer.h"
 #include "ACU/World.h"
 #include "ACU/WorldComponent.h"
 #include "ACU/BhvAssassin.h"

@@ -244,6 +244,7 @@
     <ClInclude Include="inc\ACU\SoundSet.h" />
     <ClInclude Include="inc\ACU\Statechart.h" />
     <ClInclude Include="inc\ACU\ThrowTargetPrecision.h" />
+    <ClInclude Include="inc\ACU\Timer.h" />
     <ClInclude Include="inc\ACU\TypeInfo.h" />
     <ClInclude Include="inc\ACU\UISounds.h" />
     <ClInclude Include="inc\ACU\UIWorldComponent.h" />

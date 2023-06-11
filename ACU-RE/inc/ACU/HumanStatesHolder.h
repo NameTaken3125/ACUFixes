@@ -85,17 +85,7 @@ public:
     class HumanStates_100_8(*arr8)[20]; //0x0008
     char pad_0010[4]; //0x0010
 }; //Size: 0x0014
-class Timer
-{
-public:
-    uint64 timestampStart; //0x0000
-    uint64 timestampEnd; //0x0008
-    char pad_0010[8]; //0x0010
-    class Clock* clock; //0x0018
-    uint8 isActive_mb_20; //0x0020
-    char pad_0021[7]; //0x0021
-}; //Size: 0x0028
-assert_sizeof(Timer, 0x28);
+#include "Timer.h"
 
 class AtomAnimComponent;
 class Entity;
@@ -191,7 +181,7 @@ class HumanStatesHolder_3C4_BagOfCallbacks
 public:
     uint32 frameWhenMostRecentlyUpdated_mb; //0x0000
     char pad_0004[4]; //0x0004
-    SmallArray<ThoseFns_FilterElem*> arrThoseFnsElem; //0x0008
+    SmallArray<ThoseFns_FilterElem> arrThoseFnsElem; //0x0008
     char pad_0014[4]; //0x0014
 }; //Size: 0x0018
 assert_sizeof(HumanStatesHolder_3C4_BagOfCallbacks, 0x18);
