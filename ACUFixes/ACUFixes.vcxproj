@@ -208,6 +208,7 @@
     <ClCompile Include="src\Hack_ReworkedTakeCover.cpp" />
     <ClCompile Include="src\Hack_SlowMenacingWalkAndAutowalk.cpp" />
     <ClCompile Include="src\Hack_SlowMotionTrick.cpp" />
+    <ClCompile Include="src\Hack_UninterruptibleQuickshot.cpp" />
     <ClCompile Include="src\Hack_WhistleAbility.cpp" />
     <ClCompile Include="src\ImGui3D.cpp" />
     <ClCompile Include="src\ImGui3DRenderer.cpp" />
@@ -256,6 +257,7 @@
     <ClInclude Include="src\Hack_ReloadRangedWeaponsWhenRefillAllInShop.h" />
     <ClInclude Include="src\Hack_ReworkedTakeCover.h" />
     <ClInclude Include="src\Hack_SlowMenacingWalkAndAutowalk.h" />
+    <ClInclude Include="src\Hack_UninterruptibleQuickshot.h" />
     <ClInclude Include="src\Hack_WhistleAbility.h" />
     <ClInclude Include="src\ImGui3D.h" />
     <ClInclude Include="src\ImGui3DRenderer.h" />

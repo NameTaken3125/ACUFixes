@@ -23,6 +23,7 @@
 #include "Hack_NoMoreFailedBombThrows.h"
 #include "Hack_MoreResponsiveBombQuickDrop.h"
 #include "Hack_ReloadRangedWeaponsWhenRefillAllInShop.h"
+#include "Hack_UninterruptibleQuickshot.h"
 #include "Hack_DontRandomlyTurn180Degrees.h"
 #include "Hack_LookbehindButton.h"
 
@@ -65,6 +66,8 @@ public:
     AutoAssembleWrapper<NoMoreFailedBombThrows> noMoreImaginaryBombThrows;
     AutoAssembleWrapper<DontRandomlyTurn180Degrees> dontRandomlyTurn180degrees;
     AutoAssembleWrapper<ReloadRangedWeaponsWhenRefillAllInShop> automaticallyReloadWeaponsWhenRefillAllInShops;
+    AutoAssembleWrapper<UninterruptibleQuickshot> uninterruptibleQuickshot;
+    AutoAssembleWrapper<QuickshotTargettingWhenSittingOnPeaks> quickshotTargettingWhenSittingOnPeaks;
 
     // Unused and unfinished
     AutoAssembleWrapper<PlayWithFOV> fovGames;
@@ -137,6 +140,40 @@ public:
                 "\nand there probably won't be much I can do to make all the animations seamless."
             );
         }
+        ImGui::DrawCheckboxForHack(uninterruptibleQuickshot, "Better Quickshot");
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::SetTooltip(
+                "Normally, the Quickshot is very easily interrupted:"
+                "\nrunning into a table, stepping off a table, even just running into a wall"
+                "\nwithout climbing it can cancel the animation."
+                "\nThis removes most of these interruptions, allowing you to, for example,"
+                "\nshoot while sliding across a table for massive style points."
+                "\nFixes the very strange situation: when you try to Quickshoot your pistol"
+                "\n_while_ sheathing your melee weapon, Arno will instead attempt to reload,"
+                "\neven if the magazine is full."
+                "\nAlso, allows you to do pistol quickshots from peaks and V-shapes"
+                "\nlike flagpoles or trees."
+                "\nAlso, if the \"More situations to drop bombs\" patch is enabled,"
+                "\nallows you to perform Quickshots in most of those situations, too. For example"
+                "\nduring a jump, during a roll, even while hanging on a wall."
+                "\nThis mostly applies to pistols and the wristbow, as shooting"
+                "\na twohanded ranged weapon like a rifle while hanging on a wall makes no sense."
+                "\nSadly, you're still unable to shoot rifles from ledges."
+                "\nBe warned: unlike the Drop Bomb animation, which mostly just uses"
+                "\nthe left arm, the Quickshot animation involves the character's torso too."
+                "\nThis means that there are more opportunities for the animations"
+                "\nto look strange, for example the lower body can perform a roll"
+                "\nwhile the upper body is standing upright in the Quickshot posture."
+                "\nTry it out and see for yourself what looks good."
+                "\nBeing able to shoot in more situations also provides more opportunities"
+                "\nfor the very elusive Quickshot bugs to occur such as being unable to switch"
+                "\nranged weapons all of a sudden or being left with a gun"
+                "\ntemporarily glued to your hand."
+                "\nAs far as I can tell, these are not actually due to this patch."
+            );
+        }
+        ImGui::DrawCheckboxForHack(quickshotTargettingWhenSittingOnPeaks, "Quickshot when sitting on peaks and V-shapes");
         ImGui::DrawCheckboxForHack(changeZoomLevelsWhenAimingBombs, "Change Zoom Levels when aiming Bombs");
         if (ImGui::IsItemHovered())
         {
@@ -397,6 +434,8 @@ void MyVariousHacks::Start()
 {
     g_MyHacks.emplace();
     g_MyHacks->gameInputHooks.Activate();
+    g_MyHacks->uninterruptibleQuickshot.Activate();
+    g_MyHacks->quickshotTargettingWhenSittingOnPeaks.Activate();
     g_MyHacks->ReadConfig(g_Config);
     g_MyHacks->WriteConfig(g_Config);
     MainConfig::WriteToFile();
