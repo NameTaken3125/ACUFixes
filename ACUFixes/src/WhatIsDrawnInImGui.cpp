@@ -162,6 +162,12 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
                 {
                     ImGui::SetTooltip("These contain my experiments and nothing that improves the gameplay.");
                 }
+                if (g_showDevExtraOptions)
+                {
+                    ImGui::Checkbox("Draw 3D markers", &g_DrawImGui3DifDevExtrasEnabled);
+                    ImGui::Separator();
+                    ImGui::Checkbox("Show ImGui Demo Window", &enableDemoWindow);
+                }
             }
             if (g_showDevExtraOptions)
             {
@@ -204,13 +210,9 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
                     DrawBuiltinDebugCommands();
                 }
             }
-            if (ImGuiCTX::Tab _typeInfosTab{ "DX11-BaseHook veriables" })
+            if (ImGuiCTX::Tab _typeInfosTab{ "DX11-BaseHook variables" })
             {
                 Base::ImGuiDrawBasehookDebug();
-            }
-            if (ImGuiCTX::Tab _typeInfosTab{ "ImGui demo" })
-            {
-                ImGui::Checkbox("Show ImGui demo window", &enableDemoWindow);
             }
             }
         }
