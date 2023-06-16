@@ -125,10 +125,12 @@ void ImGui3D::WhatIsActuallyDrawnForFrame()
     ImGui3D::DrawMarkers();
 }
 void DrawBuiltinDebugCommands();
+void DrawPlayerVisualsControls();
 
 std::filesystem::path& GetThisDLLAbsolutePath();
 #include "MainConfig.h"
 bool g_showDevExtraOptions = false;
+bool g_DrawImGui3DifDevExtrasEnabled = true;
 void Base::ImGuiLayer_WhenMenuIsOpen()
 {
     static bool enableDemoWindow = false;
@@ -165,6 +167,7 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
             {
             if (ImGuiCTX::Tab _3dMarkersTab{ "3D Markers" })
             {
+                ImGui::Checkbox("Draw 3D markers", &g_DrawImGui3DifDevExtrasEnabled);
                 ImGui3D::DrawPersistent3DMarkersControls();
                 if (ImGui::Button("Visualize location from clipboard"))
                 {
@@ -219,7 +222,7 @@ void Base::ImGuiLayer_EvenWhenMenuIsClosed()
 {
     DoSlowMotionTrick();
     DoManualHoodControls();
-    bool drawImGui3D = g_showDevExtraOptions;
+    bool drawImGui3D = g_showDevExtraOptions && g_DrawImGui3DifDevExtrasEnabled;
     if (drawImGui3D)
         ImGui3D::DrawStuff();
     if (g_Config.imgui_showSuccessfulInjectionIndicator)
