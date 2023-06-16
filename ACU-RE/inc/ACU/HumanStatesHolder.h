@@ -65,6 +65,7 @@ class FunctorBase
     using FunctorEnter_t = void(__fastcall*)(FunctorBase*);
     using FunctorExit_t = void(__fastcall*)(FunctorBase*);
 public:
+    // @members
     char pad0[0x18];
     SomeStaticNode* staticNodes;
     char pad_20[4];
@@ -73,6 +74,10 @@ public:
     char pad_B8[0xE0 - 0xB8];
     FunctorEnter_t Enter;
     FunctorExit_t Exit;
+
+    // @helper_functions
+    template<typename ParentFunctorType>
+    ParentFunctorType* GetNthParent(unsigned short N) { return (ParentFunctorType*)subnodes_mb[N]; }
 };
 assert_offsetof(FunctorBase, subnodes_mb, 0x28);
 assert_offsetof(FunctorBase, Enter, 0xE0);
