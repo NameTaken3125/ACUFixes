@@ -93,6 +93,7 @@
     <ClInclude Include="inc\ACU\Visual.h" />
     <ClInclude Include="inc\ACU\LODSelectorInstance.h" />
     <ClInclude Include="inc\ACU\Timer.h" />
+    <ClInclude Include="inc\ACU\FancyVTable.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />

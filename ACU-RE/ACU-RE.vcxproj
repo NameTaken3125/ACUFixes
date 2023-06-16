@@ -209,6 +209,7 @@
     <ClInclude Include="inc\ACU\Enum_MouseButtons.h" />
     <ClInclude Include="inc\ACU\Enum_ReactionHash_ReactToWhat.h" />
     <ClInclude Include="inc\ACU\EventListener.h" />
+    <ClInclude Include="inc\ACU\FancyVTable.h" />
     <ClInclude Include="inc\ACU\GamePlaySettings.h" />
     <ClInclude Include="inc\ACU\GameStatsManager.h" />
     <ClInclude Include="inc\ACU\HasInputContainers.h" />

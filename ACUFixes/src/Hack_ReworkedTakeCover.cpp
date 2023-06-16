@@ -77,7 +77,7 @@ void WhenBehindCoverStandingStillOrMovingAlong_DetachIfTryingToMoveButStuckNowhe
     // Don't detach until the player has turned to face the direction of "stuckness".
     // Example: [76.92 -279.66 0.50]
     {
-        HumanStatesHolder* humanStates = (HumanStatesHolder*)inCoverFnct->subnodes_mb[2];
+        HumanStatesHolder* humanStates = (HumanStatesHolder*)inCoverFnct->parentStack[2];
         Entity* player = humanStates->player;
         const bool isFacingTheDirectionOfAttemptedMovement =
             ((Vector3f*)attemptedMovementDirection)
@@ -93,7 +93,7 @@ void WhenBehindCoverStandingStillOrMovingAlong_DetachIfTryingToMoveButStuckNowhe
     if (!shouldDetach)
         return;
 
-    auto node = inCoverFnct->subnodes_mb[1];
+    auto node = inCoverFnct->parentStack[1];
     __m128* leaveCoverDirection = attemptedMovementDirection;
     createsLeaveCoverFunctor(node, leaveCoverDirection, 1.0f, 0);
     if (g_WhenBehindCover_flag_IsStartedDetaching)

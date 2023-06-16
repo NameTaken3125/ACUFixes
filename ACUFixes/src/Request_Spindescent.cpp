@@ -137,28 +137,17 @@ enum class EnumParkourAction
     unk124 = 0x7C,
 };
 
-class SomeStaticNode
+#include "ACU/FancyVTable.h"
+struct ParkourAction_FancyVTable
 {
-public:
-    uint32 hash; //0x0000
-    uint32 staticIdx; //0x0004
-    uint32 nestedness; //0x0008
-    char pad_000C[4]; //0x000C
-    uint64 fn; //0x0010
-    char pad_0018[8]; //0x0018
-}; //Size: 0x0020
-assert_sizeof(SomeStaticNode, 0x20);
-
-struct FancyVTable
-{
-    std::array<SomeStaticNode, 0x78> fancyVirtuals;
+    std::array<FancyVFunction, 0x78> fancyVirtuals;
 };
 class AvailableParkourAction
 {
 public:
     // @members
     uint64 vtbl;
-    FancyVTable* fancyVTable;
+    ParkourAction_FancyVTable* fancyVTable;
 
     // @helper_functions
     EnumParkourAction GetEnumParkourAction()

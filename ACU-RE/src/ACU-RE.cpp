@@ -48,6 +48,7 @@
 
 #include "ACU/BallisticProjectileAimingControlsSettings.h"
 #include "ACU/ThrowTargetPrecision.h"
+#include "ACU/FancyVTable.h"
 #include "ACU/HumanStatesHolder.h"
 #include "ACU/AtomAnimComponent.h"
 #include "ACU/Human.h"

@@ -56,7 +56,8 @@ public:
     char pad_0008[256]; //0x0008
 }; //Size: 0x0108
 
-class SomeStaticNode;
+
+class FancyVFunction;
 // `HumanStatesHolder` also seems to be derived from this.
 // I call them `Functors` because they hold the Enter() and Exit() callbacks,
 // but I think they might be "states" of the HumanStateMachine node system.
@@ -67,19 +68,19 @@ class FunctorBase
 public:
     // @members
     char pad0[0x18];
-    SomeStaticNode* staticNodes;
+    FancyVFunction* fancyVTable;
     char pad_20[4];
     uint32 dword_24;
-    SmallArraySemistatic<FunctorBase*, 0x10> subnodes_mb;
+    SmallArraySemistatic<FunctorBase*, 0x10> parentStack;
     char pad_B8[0xE0 - 0xB8];
     FunctorEnter_t Enter;
     FunctorExit_t Exit;
 
     // @helper_functions
     template<typename ParentFunctorType>
-    ParentFunctorType* GetNthParent(unsigned short N) { return (ParentFunctorType*)subnodes_mb[N]; }
+    ParentFunctorType* GetNthParent(unsigned short N) { return (ParentFunctorType*)parentStack[N]; }
 };
-assert_offsetof(FunctorBase, subnodes_mb, 0x28);
+assert_offsetof(FunctorBase, parentStack, 0x28);
 assert_offsetof(FunctorBase, Enter, 0xE0);
 assert_offsetof(FunctorBase, Exit, 0xE8);
 
