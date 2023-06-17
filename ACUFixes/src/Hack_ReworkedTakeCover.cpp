@@ -78,7 +78,7 @@ void WhenBehindCoverStandingStillOrMovingAlong_DetachIfTryingToMoveButStuckNowhe
     // Example: [76.92 -279.66 0.50]
     {
         HumanStatesHolder* humanStates = (HumanStatesHolder*)inCoverFnct->parentStack[2];
-        Entity* player = humanStates->player;
+        Entity* player = humanStates->ownerEntity;
         const bool isFacingTheDirectionOfAttemptedMovement =
             ((Vector3f*)attemptedMovementDirection)
             ->dotProduct(player->GetDirectionForward()) > 0;

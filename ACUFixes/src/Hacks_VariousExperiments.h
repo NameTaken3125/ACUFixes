@@ -54,7 +54,7 @@ void WhenAimBombBehindCoverSetPredictorBeamOriginOffsetFromCenterMass_Override(A
 {
     Vector4f& calculatedOffset = *(Vector4f*)(params->GetRSP() + 0x20);
     auto humanStates = (HumanStatesHolder*)params->rbx_;
-    (Vector2f&)calculatedOffset = (Vector2f&)humanStates->player->GetDirectionForward();
+    (Vector2f&)calculatedOffset = (Vector2f&)humanStates->ownerEntity->GetDirectionForward();
 }
 struct PlayWithBombAimCameraTracker2 : AutoAssemblerCodeHolder_Base
 {

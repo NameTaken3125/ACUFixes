@@ -63,7 +63,7 @@ void WhenInstantSheathingOrReholsteringDueToParkour_DontDoThat(AllRegisters* par
     const int p_1melee2ranged = (int&)params->rdx_;
     FunctorBase* node = (FunctorBase*)params->rcx_;
     auto* humanStates = node->GetNthParent<HumanStatesHolder>(0);
-    Entity* ownerEntity = humanStates->player;
+    Entity* ownerEntity = humanStates->ownerEntity;
     if (WhenInstantSheathingOrReholsteringDueToParkour_IsShouldSkipReholstering(ownerEntity, p_1melee2ranged))
     {
         return;
@@ -96,12 +96,12 @@ bool IsPlayerParkouringBothHandsBusy()
     if (!navigationCallbacks) {
         return false;
     }
-    if (!navigationCallbacks->arrThoseFnsElem.size) { return false; }
+    if (!navigationCallbacks->callbacksWithReceivers.size) { return false; }
     uint64 WhileOnWallSystem_VTable = 0x142FFC970;
     uint64 WhileInVerticalWallrun_VTable = 0x142FFCAA8;
     uint64 WhileInSwingHang_VTable = 0x142FFCB20;
     uint64 WhileInLeap_VTable = 0x142FFD1E0;
-    uint64 currentParkourModeVTable = *(uint64*)(navigationCallbacks->arrThoseFnsElem[0].nonstaticNode);
+    uint64 currentParkourModeVTable = *(uint64*)(navigationCallbacks->callbacksWithReceivers[0].humanStateNode);
     return currentParkourModeVTable == WhileOnWallSystem_VTable
         || currentParkourModeVTable == WhileInVerticalWallrun_VTable
         || currentParkourModeVTable == WhileInSwingHang_VTable
@@ -190,7 +190,7 @@ void Functor_Quickshot_Enter__hook(AllRegisters* params)
 {
     Functor_Quickshot* functorQuickshot = (Functor_Quickshot*)params->rcx_;
     HumanStatesHolder* humanStates = functorQuickshot->GetNthParent<HumanStatesHolder>(2);
-    Entity* ownerCharacter = humanStates->player;
+    Entity* ownerCharacter = humanStates->ownerEntity;
     if (ownerCharacter && ownerCharacter == ACU::GetPlayer())
     {
         PlayerHasJustEnteredQuickshot(*functorQuickshot);
@@ -200,7 +200,7 @@ void Functor_Quickshot_Exit__hook(AllRegisters* params)
 {
     Functor_Quickshot* functorQuickshot = (Functor_Quickshot*)params->rcx_;
     HumanStatesHolder* humanStates = functorQuickshot->GetNthParent<HumanStatesHolder>(2);
-    Entity* ownerCharacter = humanStates->player;
+    Entity* ownerCharacter = humanStates->ownerEntity;
     if (ownerCharacter && ownerCharacter == ACU::GetPlayer())
     {
         PlayerHasJustExitedQuickshot();
@@ -209,7 +209,7 @@ void Functor_Quickshot_Exit__hook(AllRegisters* params)
 void WhenAboutToCreateAGunshot_RememberTime(AllRegisters* params)
 {
     auto humanStates = (HumanStatesHolder*)params->rcx_;
-    Entity* ownerCharacter = humanStates->player;
+    Entity* ownerCharacter = humanStates->ownerEntity;
     if (ownerCharacter && ownerCharacter == ACU::GetPlayer())
     {
         PlayerHasJustMadeRangedWeaponShot();
@@ -218,7 +218,7 @@ void WhenAboutToCreateAGunshot_RememberTime(AllRegisters* params)
 void WhenAssassinationAttemptStarted(AllRegisters* params)
 {
     auto humanStates = ((FunctorBase*)params->rcx_)->GetNthParent<HumanStatesHolder>(2);
-    Entity* ownerCharacter = humanStates->player;
+    Entity* ownerCharacter = humanStates->ownerEntity;
     if (ownerCharacter && ownerCharacter == ACU::GetPlayer())
     {
         PlayerJustStartedAssassinationAttempt();
@@ -227,7 +227,7 @@ void WhenAssassinationAttemptStarted(AllRegisters* params)
 void WhenAssassinationAttemptEnded(AllRegisters* params)
 {
     auto humanStates = ((FunctorBase*)params->rcx_)->GetNthParent<HumanStatesHolder>(2);
-    Entity* ownerCharacter = humanStates->player;
+    Entity* ownerCharacter = humanStates->ownerEntity;
     if (ownerCharacter && ownerCharacter == ACU::GetPlayer())
     {
         PlayerJustEndedAssassinationAttempt();
@@ -264,11 +264,11 @@ void WhenCheckingIfTimerToEndQuickshotIsActive_ReactivateIfRecentlyFailed(AllReg
     {
         return;
     }
-    if (!callbacksForEndingQuickshot->arrThoseFnsElem.size)
+    if (!callbacksForEndingQuickshot->callbacksWithReceivers.size)
     {
         return;
     }
-    Functor_Quickshot* unendedQS = (Functor_Quickshot*)callbacksForEndingQuickshot->arrThoseFnsElem[0].nonstaticNode;
+    Functor_Quickshot* unendedQS = (Functor_Quickshot*)callbacksForEndingQuickshot->callbacksWithReceivers[0].humanStateNode;
     if (!unendedQS)
     {
         return;
@@ -414,7 +414,7 @@ void WhenGettingRangedWeaponTarget_onWallInJumpEtc_ForceScan_inner(__int64 a1, _
 
     HumanStatesHolder* humanStates = (HumanStatesHolder*)a1;
     fakeFunctor.fakeParentStackInstance.humanStatesRoot = humanStates;
-    fakeFunctor.playerForward = (Vector4f&)humanStates->player->mainTransform[4 * 1];
+    fakeFunctor.playerForward = (Vector4f&)humanStates->ownerEntity->mainTransform[4 * 1];
     fakeFunctor.parentStack = &fakeFunctor.fakeParentStackInstance;
 
     sitOnLedge_writeRangedTargetEntity((__int64)&fakeFunctor, a2);

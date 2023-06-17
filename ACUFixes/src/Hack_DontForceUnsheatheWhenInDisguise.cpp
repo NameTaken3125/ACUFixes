@@ -43,7 +43,7 @@ bool IsPlayerInQuickshot()
     if (!callbacksThatCheckIfQuickshotIsActive) {
         return false;
     }
-    return callbacksThatCheckIfQuickshotIsActive->arrThoseFnsElem.size > 0;
+    return callbacksThatCheckIfQuickshotIsActive->callbacksWithReceivers.size > 0;
 }
 #include "ACU/VanishingManager.h"
 static bool IsPlayerCrowdBlending()

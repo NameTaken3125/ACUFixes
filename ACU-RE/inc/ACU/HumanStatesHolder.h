@@ -131,12 +131,13 @@ public:
     char pad_0054[4]; //0x0054
 }; //Size: 0x0058
 assert_sizeof(UsedDuringQuickshot, 0x58);
-class ThoseFns_FilterElem
+class CallbackWithReceiver
 {
 public:
     void* fn; //0x0000
-    FunctorBase* nonstaticNode; //0x0008
+    FunctorBase* humanStateNode; //0x0008
 }; //Size: 0x0010
+assert_sizeof(CallbackWithReceiver, 0x10);
 /*
 There is a family of functions I just refer to as "one of those".
 It seems their first parameter is the "HumanStatesHolder", and the rest of parameters,
@@ -187,7 +188,7 @@ class HumanStatesHolder_3C4_BagOfCallbacks
 public:
     uint32 frameWhenMostRecentlyUpdated_mb; //0x0000
     char pad_0004[4]; //0x0004
-    SmallArray<ThoseFns_FilterElem> arrThoseFnsElem; //0x0008
+    SmallArray<CallbackWithReceiver> callbacksWithReceivers; //0x0008
     char pad_0014[4]; //0x0014
 }; //Size: 0x0018
 assert_sizeof(HumanStatesHolder_3C4_BagOfCallbacks, 0x18);
@@ -238,7 +239,7 @@ public:
     BallisticProjectileAimingProcess aiming_equip19_1770; //0x1770
     BallisticProjectileAimingProcess aimingGuillotineGun; //0x1970
     char pad_1B70[280]; //0x1B70
-    Entity* player; //0x1C88
+    Entity* ownerEntity; //0x1C88
     AtomAnimComponent* atomAnimCpnt; //0x1C90
     char pad_1C98[56]; //0x1C98
     UsedDuringQuickshot* hasAnimationEventsData_mb; //0x1CD0
