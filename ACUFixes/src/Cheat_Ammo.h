@@ -14,4 +14,6 @@ AmmoCheat::AmmoCheat()
     PresetScript_NOP(whenDecreasingTheRemainingShotsUntilReload_quickshotInCombat, 3);
     uintptr_t whenDecreasingRemainingAmmo = 0x140FDA3C4;
     PresetScript_NOP(whenDecreasingRemainingAmmo, 3);
+    uintptr_t whenDecreasingRemainingAmmo_rangedWeaponsAfterReload = 0x140FE053E;
+    PresetScript_NOP(whenDecreasingRemainingAmmo_rangedWeaponsAfterReload, 3);
 }
