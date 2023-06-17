@@ -8,6 +8,7 @@
 
 #include "ACU_DefineNativeFunction.h"
 
+bool g_BetterQuickshot_LessRestrictions = true;
 
 bool IsPlayerParkouringBothHandsBusy();
 bool IsCurrentRangedWeaponTwohanded();
@@ -54,6 +55,11 @@ bool WhenInstantSheathingOrReholsteringDueToParkour_IsShouldSkipReholstering(Ent
 }
 void WhenInstantSheathingOrReholsteringDueToParkour_DontDoThat(AllRegisters* params)
 {
+    if (!g_BetterQuickshot_LessRestrictions)
+    {
+        ReattachWeaponToSheathOrHolster(params->rcx_, params->rdx_);
+        return;
+    }
     const int p_1melee2ranged = (int&)params->rdx_;
     FunctorBase* node = (FunctorBase*)params->rcx_;
     auto* humanStates = node->GetNthParent<HumanStatesHolder>(0);
@@ -66,6 +72,11 @@ void WhenInstantSheathingOrReholsteringDueToParkour_DontDoThat(AllRegisters* par
 }
 void WhenInstantSheathingOrReholsteringDueToAssassinationStart_DontDoThat(AllRegisters* params)
 {
+    if (!g_BetterQuickshot_LessRestrictions)
+    {
+        ReattachWeaponToSheathOrHolster(params->rcx_, params->rdx_);
+        return;
+    }
     const bool allowToProceedWithoutReholstering = BetterQuickshot_IsShouldAllowToProceedWithoutReholstering_AssassinationStart();
     if (!allowToProceedWithoutReholstering)
     {
@@ -401,6 +412,10 @@ void WhenGettingRangedWeaponTarget_onWallInJumpEtc_ForceScan_inner(__int64 a1, _
 }
 void WhenGettingRangedWeaponTarget_onWallInJumpEtc_ForceScan(AllRegisters* params)
 {
+    if (!g_BetterQuickshot_LessRestrictions)
+    {
+        return;
+    }
     if (!IsShouldForceAllowScanForQuickshotTargets())
     {
         return;

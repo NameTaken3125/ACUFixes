@@ -10,3 +10,4 @@ struct QuickshotTargettingWhenSittingOnPeaks : AutoAssemblerCodeHolder_Base
 {
     QuickshotTargettingWhenSittingOnPeaks();
 };
+extern bool g_BetterQuickshot_LessRestrictions;

@@ -173,6 +173,11 @@ public:
                 "\nAs far as I can tell, these are not actually due to this patch."
             );
         }
+        if (uninterruptibleQuickshot.IsActive())
+        {
+            ImGuiCTX::Indent _indent;
+            ImGui::Checkbox("Less Quickshot restrictions", &g_BetterQuickshot_LessRestrictions);
+        }
         ImGui::DrawCheckboxForHack(quickshotTargettingWhenSittingOnPeaks, "Quickshot when sitting on peaks and V-shapes");
         ImGui::DrawCheckboxForHack(changeZoomLevelsWhenAimingBombs, "Change Zoom Levels when aiming Bombs");
         if (ImGui::IsItemHovered())
