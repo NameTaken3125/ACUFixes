@@ -23,7 +23,7 @@
 #include "Hack_NoMoreFailedBombThrows.h"
 #include "Hack_MoreResponsiveBombQuickDrop.h"
 #include "Hack_ReloadRangedWeaponsWhenRefillAllInShop.h"
-#include "Hack_UninterruptibleQuickshot.h"
+#include "Hack_MoreReliableQuickshot.h"
 #include "Hack_DontRandomlyTurn180Degrees.h"
 #include "Hack_LookbehindButton.h"
 
@@ -66,8 +66,7 @@ public:
     AutoAssembleWrapper<NoMoreFailedBombThrows> noMoreImaginaryBombThrows;
     AutoAssembleWrapper<DontRandomlyTurn180Degrees> dontRandomlyTurn180degrees;
     AutoAssembleWrapper<ReloadRangedWeaponsWhenRefillAllInShop> automaticallyReloadWeaponsWhenRefillAllInShops;
-    AutoAssembleWrapper<UninterruptibleQuickshot> uninterruptibleQuickshot;
-    AutoAssembleWrapper<QuickshotTargettingWhenSittingOnPeaks> quickshotTargettingWhenSittingOnPeaks;
+    AutoAssembleWrapper<MoreReliableQuickshot> moreReliableQuickshot;
 
     // Unused and unfinished
     AutoAssembleWrapper<PlayWithFOV> fovGames;
@@ -140,7 +139,7 @@ public:
                 "\nand there probably won't be much I can do to make all the animations seamless."
             );
         }
-        ImGui::DrawCheckboxForHack(uninterruptibleQuickshot, "Better Quickshot");
+        ImGui::DrawCheckboxForHack(moreReliableQuickshot, "More reliable Quickshot");
         if (ImGui::IsItemHovered())
         {
             ImGui::SetTooltip(
@@ -173,12 +172,11 @@ public:
                 "\nAs far as I can tell, these are not actually due to this patch."
             );
         }
-        if (uninterruptibleQuickshot.IsActive())
+        if (moreReliableQuickshot.IsActive())
         {
             ImGuiCTX::Indent _indent;
             ImGui::Checkbox("Less Quickshot restrictions", &g_BetterQuickshot_LessRestrictions);
         }
-        ImGui::DrawCheckboxForHack(quickshotTargettingWhenSittingOnPeaks, "Quickshot when sitting on peaks and V-shapes");
         ImGui::DrawCheckboxForHack(changeZoomLevelsWhenAimingBombs, "Change Zoom Levels when aiming Bombs");
         if (ImGui::IsItemHovered())
         {
@@ -439,8 +437,7 @@ void MyVariousHacks::Start()
 {
     g_MyHacks.emplace();
     g_MyHacks->gameInputHooks.Activate();
-    g_MyHacks->uninterruptibleQuickshot.Activate();
-    g_MyHacks->quickshotTargettingWhenSittingOnPeaks.Activate();
+    g_MyHacks->moreReliableQuickshot.Activate();
     g_MyHacks->ReadConfig(g_Config);
     g_MyHacks->WriteConfig(g_Config);
     MainConfig::WriteToFile();

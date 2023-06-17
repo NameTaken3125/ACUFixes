@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include "Hack_UninterruptibleQuickshot.h"
+#include "Hack_MoreReliableQuickshot.h"
 #include "ACU/Entity.h"
 #include "ACU/HumanStatesHolder.h"
 #include "ACU/CSrvPlayerWeaponSwitch.h"
@@ -278,7 +278,8 @@ void WhenCheckingIfTimerToEndQuickshotIsActive_ReactivateIfRecentlyFailed(AllReg
         hasQSEndTimer->timer_ReholsterAfterQuickshot.isActive_mb_20 = true;
     }
 }
-UninterruptibleQuickshot::UninterruptibleQuickshot()
+void WhenGettingRangedWeaponTarget_onWallInJumpEtc_ForceScan(AllRegisters* params);
+MoreReliableQuickshot::MoreReliableQuickshot()
 {
     //auto PreventAutomaticInstantReholsteringInMostSituations_v1 = [&]()
     //{
@@ -350,6 +351,12 @@ UninterruptibleQuickshot::UninterruptibleQuickshot()
             "E9", RIP(whenUpdatingRangedWeaponTarget_sitOnLedge)    // - jmp ACU.exe+1A14B30
         };
     };
+    auto AllowScanForQuickshotTargetInMostSituations = [&]()
+    {
+        uintptr_t whenUpdatingRangedWeaponTarget_onWallInJumpEtc_fnepilogue = 0x141AAD9EF;
+        PresetScript_CCodeInTheMiddle(whenUpdatingRangedWeaponTarget_onWallInJumpEtc_fnepilogue, 5,
+            WhenGettingRangedWeaponTarget_onWallInJumpEtc_ForceScan, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
+    };
 
 
 
@@ -365,6 +372,8 @@ UninterruptibleQuickshot::UninterruptibleQuickshot()
     //PreventAutomaticInstantReholsteringInMostSituations_v1();
     PreventAutomaticInstantReholsteringInMostSituations_v3();
     PreventAutomaticInstantReholstering_AssassinationStart();
+
+    AllowScanForQuickshotTargetInMostSituations();
 }
 
 
@@ -421,14 +430,4 @@ void WhenGettingRangedWeaponTarget_onWallInJumpEtc_ForceScan(AllRegisters* param
         return;
     }
     WhenGettingRangedWeaponTarget_onWallInJumpEtc_ForceScan_inner(params->rdi_, params->rsi_);
-}
-QuickshotTargettingWhenSittingOnPeaks::QuickshotTargettingWhenSittingOnPeaks()
-{
-    auto AllowScanForQuickshotTargetInMostSituations = [&]()
-    {
-        uintptr_t whenUpdatingRangedWeaponTarget_onWallInJumpEtc_fnepilogue = 0x141AAD9EF;
-        PresetScript_CCodeInTheMiddle(whenUpdatingRangedWeaponTarget_onWallInJumpEtc_fnepilogue, 5,
-            WhenGettingRangedWeaponTarget_onWallInJumpEtc_ForceScan, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
-    };
-    AllowScanForQuickshotTargetInMostSituations();
 }
