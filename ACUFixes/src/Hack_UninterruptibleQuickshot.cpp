@@ -294,11 +294,6 @@ UninterruptibleQuickshot::UninterruptibleQuickshot()
         PresetScript_NOP(whenFinalConfirmationThatQuickshotIsToBeAttempted, 2);
     };
 
-    //PreventAutomaticInstantReholsteringInMostSituations_v1();
-    PreventAutomaticInstantReholsteringInMostSituations_v3();
-    PreventAutomaticInstantReholstering_AssassinationStart();
-    FixImaginaryReloadIfQuickshotWhileSheathing();
-
     auto HookQuickshotStateLifetime = [&]()
     {
         PresetScript_CCodeInTheMiddle(0x141AA4DD0, 9,
@@ -323,9 +318,6 @@ UninterruptibleQuickshot::UninterruptibleQuickshot()
         PresetScript_CCodeInTheMiddle(Functor_Parkour_Assassination_Entry__Exit, 5,
             WhenAssassinationAttemptEnded, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
     };
-    HookQuickshotStateLifetime();
-    HookQuickshotMomentOfDischarge();
-    HookAssassinationStateLifetime();
 
     auto FixForGettingStuckUnableToMoveOnLedgesOrChangeRangedWeapon_HookTimerThatEndsQuickshot = [&]()
     {
@@ -336,9 +328,33 @@ UninterruptibleQuickshot::UninterruptibleQuickshot()
         PresetScript_CCodeInTheMiddle(whenCheckingIfTimerToEndQuickshotIsActive, 7,
             WhenCheckingIfTimerToEndQuickshotIsActive_ReactivateIfRecentlyFailed, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
     };
-    FixForGettingStuckUnableToMoveOnLedgesOrChangeRangedWeapon_HookTimerThatEndsQuickshot();
-}
 
+    auto AllowScanForQuickshotTargetFromPeaksAndVShapes = [&]()
+    {
+        DEFINE_ADDR(whenUpdatingRangedWeaponTarget_sitOnPeak, 0x141A03660);
+        DEFINE_ADDR(whenUpdatingRangedWeaponTarget_sitOnLedge, 0x141A14B30);
+        whenUpdatingRangedWeaponTarget_sitOnPeak = {
+            "48 8B 49 28"                                           // - mov rcx,[rcx+28]
+            "48 8B 49 08"                                           // - mov rcx,[rcx+08]
+            "E9", RIP(whenUpdatingRangedWeaponTarget_sitOnLedge)    // - jmp ACU.exe+1A14B30
+        };
+    };
+
+
+
+    HookQuickshotStateLifetime();
+    FixForGettingStuckUnableToMoveOnLedgesOrChangeRangedWeapon_HookTimerThatEndsQuickshot();
+
+    FixImaginaryReloadIfQuickshotWhileSheathing();
+    AllowScanForQuickshotTargetFromPeaksAndVShapes();
+
+    HookQuickshotMomentOfDischarge();
+    HookAssassinationStateLifetime();
+
+    //PreventAutomaticInstantReholsteringInMostSituations_v1();
+    PreventAutomaticInstantReholsteringInMostSituations_v3();
+    PreventAutomaticInstantReholstering_AssassinationStart();
+}
 
 
 
@@ -393,15 +409,11 @@ void WhenGettingRangedWeaponTarget_onWallInJumpEtc_ForceScan(AllRegisters* param
 }
 QuickshotTargettingWhenSittingOnPeaks::QuickshotTargettingWhenSittingOnPeaks()
 {
-    DEFINE_ADDR(whenUpdatingRangedWeaponTarget_sitOnPeak, 0x141A03660);
-    DEFINE_ADDR(whenUpdatingRangedWeaponTarget_sitOnLedge, 0x141A14B30);
-    whenUpdatingRangedWeaponTarget_sitOnPeak = {
-        "48 8B 49 28"                                           // - mov rcx,[rcx+28]
-        "48 8B 49 08"                                           // - mov rcx,[rcx+08]
-        "E9", RIP(whenUpdatingRangedWeaponTarget_sitOnLedge)    // - jmp ACU.exe+1A14B30
+    auto AllowScanForQuickshotTargetInMostSituations = [&]()
+    {
+        uintptr_t whenUpdatingRangedWeaponTarget_onWallInJumpEtc_fnepilogue = 0x141AAD9EF;
+        PresetScript_CCodeInTheMiddle(whenUpdatingRangedWeaponTarget_onWallInJumpEtc_fnepilogue, 5,
+            WhenGettingRangedWeaponTarget_onWallInJumpEtc_ForceScan, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
     };
-
-    uintptr_t whenUpdatingRangedWeaponTarget_onWallInJumpEtc_fnepilogue = 0x141AAD9EF;
-    PresetScript_CCodeInTheMiddle(whenUpdatingRangedWeaponTarget_onWallInJumpEtc_fnepilogue, 5,
-        WhenGettingRangedWeaponTarget_onWallInJumpEtc_ForceScan, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
+    AllowScanForQuickshotTargetInMostSituations();
 }
