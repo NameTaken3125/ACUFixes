@@ -4,6 +4,7 @@
 #include "ACU/Entity.h"
 #include "ACU/HumanStatesHolder.h"
 #include "ACU/CSrvPlayerWeaponSwitch.h"
+#include "ACU/ACUGetSingletons.h"
 
 #include "ACU_DefineNativeFunction.h"
 
@@ -11,28 +12,12 @@
 bool IsPlayerParkouringBothHandsBusy();
 bool IsCurrentRangedWeaponTwohanded();
 static bool BetterQuickshot_IsPlayerInAssassination();
-static bool BetterQuickshot_IsQuickshotOngoing();
+static bool BetterQuickshot_IsWaitingForQuickshotToComplete();
 // Triggers every frame when you're in state that would normally prevent you from having a gun out:
 // during assassinations, jumps, while on wall, etc.
 static bool BetterQuickshot_IsShouldAllowToProceedWithoutReholstering_Parkour(int p_1melee2ranged)
 {
-    const bool isPlayer = true;
-    if (!isPlayer)
-    {
-        return false;
-    }
-    //const bool isTryingToHolsterRanged = p_1melee2ranged == 2;
-    //if (!isTryingToHolsterRanged)
-    //{
-    //    return false;
-    //}
-    //return true;
-    //if (!IsShouldForceAllowScanForQuickshotTargets())
-    //{
-    //    return false;
-    //}
-    //return true;
-    bool isQuickshot = BetterQuickshot_IsQuickshotOngoing();
+    bool isQuickshot = BetterQuickshot_IsWaitingForQuickshotToComplete();
     if (!isQuickshot)
     {
         return false;
@@ -58,15 +43,26 @@ static bool BetterQuickshot_IsShouldAllowToProceedWithoutReholstering_Assassinat
     return true;
 }
 DEFINE_GAME_FUNCTION(ReattachWeaponToSheathOrHolster, 0x141B05570, void, __fastcall, (__int64 a1, int p_1melee2ranged));
+bool WhenInstantSheathingOrReholsteringDueToParkour_IsShouldSkipReholstering(Entity* ownerEntity, int p_1melee2ranged)
+{
+    const bool isPlayer = ownerEntity && ownerEntity == ACU::GetPlayer();
+    if (!isPlayer)
+    {
+        return false;
+    }
+    return BetterQuickshot_IsShouldAllowToProceedWithoutReholstering_Parkour(p_1melee2ranged);
+}
 void WhenInstantSheathingOrReholsteringDueToParkour_DontDoThat(AllRegisters* params)
 {
-    const int p_1melee2ranged = params->rdx_;
-    const bool allowToProceedWithoutReholstering = BetterQuickshot_IsShouldAllowToProceedWithoutReholstering_Parkour(p_1melee2ranged);
-    if (!allowToProceedWithoutReholstering)
+    const int p_1melee2ranged = (int&)params->rdx_;
+    FunctorBase* node = (FunctorBase*)params->rcx_;
+    auto* humanStates = node->GetNthParent<HumanStatesHolder>(0);
+    Entity* ownerEntity = humanStates->player;
+    if (WhenInstantSheathingOrReholsteringDueToParkour_IsShouldSkipReholstering(ownerEntity, p_1melee2ranged))
     {
-        ReattachWeaponToSheathOrHolster(params->rcx_, params->rdx_);
         return;
     }
+    ReattachWeaponToSheathOrHolster(params->rcx_, params->rdx_);
 }
 void WhenInstantSheathingOrReholsteringDueToAssassinationStart_DontDoThat(AllRegisters* params)
 {
@@ -166,7 +162,7 @@ void PlayerHasJustMadeRangedWeaponShot()
     }
     g_PlayerQuickshot->m_isShotDischargedYet = true;
 }
-bool BetterQuickshot_IsQuickshotOngoing()
+bool BetterQuickshot_IsWaitingForQuickshotToComplete()
 {
     if (!g_PlayerQuickshot)
     {
@@ -179,7 +175,6 @@ bool BetterQuickshot_IsQuickshotOngoing()
     return true;
 }
 
-#include "ACU/ACUGetSingletons.h"
 void Functor_Quickshot_Enter__hook(AllRegisters* params)
 {
     Functor_Quickshot* functorQuickshot = (Functor_Quickshot*)params->rcx_;
@@ -281,10 +276,6 @@ UninterruptibleQuickshot::UninterruptibleQuickshot()
     //        0xC3        // ret
     //    };
     //};
-    //auto PreventAutomaticInstantReholsteringInMostSituations_v2 = [&]()
-    //{
-    //    PresetScript_NOP(0x141AB34F9, 5);
-    //};
     auto PreventAutomaticInstantReholsteringInMostSituations_v3 = [&]()
     {
         const uintptr_t whenInstantSheathingOrReholsteringDueToParkour = 0x141AB34F9;
@@ -304,7 +295,6 @@ UninterruptibleQuickshot::UninterruptibleQuickshot()
     };
 
     //PreventAutomaticInstantReholsteringInMostSituations_v1();
-    //PreventAutomaticInstantReholsteringInMostSituations_v2();
     PreventAutomaticInstantReholsteringInMostSituations_v3();
     PreventAutomaticInstantReholstering_AssassinationStart();
     FixImaginaryReloadIfQuickshotWhileSheathing();
