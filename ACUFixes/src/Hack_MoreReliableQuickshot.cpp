@@ -8,7 +8,11 @@
 
 #include "ACU_DefineNativeFunction.h"
 
-bool g_BetterQuickshot_LessRestrictions = true;
+#include "MainConfig.h"
+bool BetterQuickshot_IsLessRestrictionsEnabled()
+{
+    return g_Config.hacks->moreReliableQuickshot->lessQuickshotRestrictions;
+}
 
 bool IsPlayerParkouringBothHandsBusy();
 bool IsCurrentRangedWeaponTwohanded();
@@ -55,7 +59,7 @@ bool WhenInstantSheathingOrReholsteringDueToParkour_IsShouldSkipReholstering(Ent
 }
 void WhenInstantSheathingOrReholsteringDueToParkour_DontDoThat(AllRegisters* params)
 {
-    if (!g_BetterQuickshot_LessRestrictions)
+    if (!BetterQuickshot_IsLessRestrictionsEnabled())
     {
         ReattachWeaponToSheathOrHolster(params->rcx_, params->rdx_);
         return;
@@ -72,7 +76,7 @@ void WhenInstantSheathingOrReholsteringDueToParkour_DontDoThat(AllRegisters* par
 }
 void WhenInstantSheathingOrReholsteringDueToAssassinationStart_DontDoThat(AllRegisters* params)
 {
-    if (!g_BetterQuickshot_LessRestrictions)
+    if (!BetterQuickshot_IsLessRestrictionsEnabled())
     {
         ReattachWeaponToSheathOrHolster(params->rcx_, params->rdx_);
         return;
@@ -421,7 +425,7 @@ void WhenGettingRangedWeaponTarget_onWallInJumpEtc_ForceScan_inner(__int64 a1, _
 }
 void WhenGettingRangedWeaponTarget_onWallInJumpEtc_ForceScan(AllRegisters* params)
 {
-    if (!g_BetterQuickshot_LessRestrictions)
+    if (!BetterQuickshot_IsLessRestrictionsEnabled())
     {
         return;
     }

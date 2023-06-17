@@ -175,7 +175,7 @@ public:
         if (moreReliableQuickshot.IsActive())
         {
             ImGuiCTX::Indent _indent;
-            ImGui::Checkbox("Less Quickshot restrictions", &g_BetterQuickshot_LessRestrictions);
+            ImGui::Checkbox("Less Quickshot restrictions", &g_Config.hacks->moreReliableQuickshot->lessQuickshotRestrictions.get());
         }
         ImGui::DrawCheckboxForHack(changeZoomLevelsWhenAimingBombs, "Change Zoom Levels when aiming Bombs");
         if (ImGui::IsItemHovered())
@@ -379,6 +379,7 @@ public:
         noMoreImaginaryBombThrows.Toggle(hacksSection->noMoreImaginaryBombThrows);
         dontRandomlyTurn180degrees.Toggle(hacksSection->dontRandomlyTurn180degrees);
         moreSituationsToDropBombs.Toggle(hacksSection->moreSituationsToDropBombs);
+        moreReliableQuickshot.Toggle(hacksSection->moreReliableQuickshot->isActive);
         automaticallyReloadWeaponsWhenRefillAllInShops.Toggle(hacksSection->automaticallyReloadWeaponsWhenRefillAllInShops);
         lookbehindButton.Toggle(hacksSection->lookbehindWhenPressingMiddleMouseButton);
 
@@ -404,6 +405,7 @@ public:
         hacksSection->noMoreImaginaryBombThrows = noMoreImaginaryBombThrows.IsActive();
         hacksSection->dontRandomlyTurn180degrees = dontRandomlyTurn180degrees.IsActive();
         hacksSection->moreSituationsToDropBombs = moreSituationsToDropBombs.IsActive();
+        hacksSection->moreReliableQuickshot->isActive = moreReliableQuickshot.IsActive();
         hacksSection->automaticallyReloadWeaponsWhenRefillAllInShops = automaticallyReloadWeaponsWhenRefillAllInShops.IsActive();
         hacksSection->lookbehindWhenPressingMiddleMouseButton = lookbehindButton.IsActive();
 
@@ -437,7 +439,6 @@ void MyVariousHacks::Start()
 {
     g_MyHacks.emplace();
     g_MyHacks->gameInputHooks.Activate();
-    g_MyHacks->moreReliableQuickshot.Activate();
     g_MyHacks->ReadConfig(g_Config);
     g_MyHacks->WriteConfig(g_Config);
     MainConfig::WriteToFile();

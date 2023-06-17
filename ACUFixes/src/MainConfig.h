@@ -35,6 +35,12 @@ struct ConfigTop : YAConfigSection {
         ACM(menacingWalkAndAutowalk, MenacingWalk, YAConfigSectionAdapter, );
         ACM(changeZoomLevelsWhenAimingBombs, bool, BooleanAdapter, true);
         ACM(moreSituationsToDropBombs, bool, BooleanAdapter, true);
+        struct YACS_MoreReliableQuickshot : YAConfigSection {
+            YACSTOR(YACS_MoreReliableQuickshot);
+            ACM(isActive, bool, BooleanAdapter, true);
+            ACM(lessQuickshotRestrictions, bool, BooleanAdapter, true);
+        };
+        ACM(moreReliableQuickshot, YACS_MoreReliableQuickshot, YAConfigSectionAdapter, );
         ACM(cycleEquipmentUsingMouseWheel, bool, BooleanAdapter, true);
         ACM(dontUnsheatheWhenInDisguise, bool, BooleanAdapter, true);
         ACM(slightlyMoreResponsiveCrouch, bool, BooleanAdapter, true);
