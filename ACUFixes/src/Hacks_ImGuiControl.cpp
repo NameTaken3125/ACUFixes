@@ -139,6 +139,11 @@ public:
                 "\nand there probably won't be much I can do to make all the animations seamless."
             );
         }
+        if (moreSituationsToDropBombs.IsActive())
+        {
+            ImGuiCTX::Indent _ind;
+            ImGui::Checkbox("Also more responsive in combat", &g_Config.hacks->moreSituationsToDropBombs->alsoMoreResponsiveInCombat.get());
+        }
         ImGui::DrawCheckboxForHack(moreReliableQuickshot, "More reliable Quickshot. Please read.");
         if (ImGui::IsItemHovered())
         {
@@ -383,7 +388,7 @@ public:
         aimBombsFromPeaks.Toggle(hacksSection->aimBombsFromPeaks);
         noMoreImaginaryBombThrows.Toggle(hacksSection->noMoreImaginaryBombThrows);
         dontRandomlyTurn180degrees.Toggle(hacksSection->dontRandomlyTurn180degrees);
-        moreSituationsToDropBombs.Toggle(hacksSection->moreSituationsToDropBombs);
+        moreSituationsToDropBombs.Toggle(hacksSection->moreSituationsToDropBombs->isActive);
         moreReliableQuickshot.Toggle(hacksSection->moreReliableQuickshot->isActive);
         automaticallyReloadWeaponsWhenRefillAllInShops.Toggle(hacksSection->automaticallyReloadWeaponsWhenRefillAllInShops);
         lookbehindButton.Toggle(hacksSection->lookbehindWhenPressingMiddleMouseButton);
@@ -409,7 +414,7 @@ public:
         hacksSection->aimBombsFromPeaks = aimBombsFromPeaks.IsActive();
         hacksSection->noMoreImaginaryBombThrows = noMoreImaginaryBombThrows.IsActive();
         hacksSection->dontRandomlyTurn180degrees = dontRandomlyTurn180degrees.IsActive();
-        hacksSection->moreSituationsToDropBombs = moreSituationsToDropBombs.IsActive();
+        hacksSection->moreSituationsToDropBombs->isActive = moreSituationsToDropBombs.IsActive();
         hacksSection->moreReliableQuickshot->isActive = moreReliableQuickshot.IsActive();
         hacksSection->automaticallyReloadWeaponsWhenRefillAllInShops = automaticallyReloadWeaponsWhenRefillAllInShops.IsActive();
         hacksSection->lookbehindWhenPressingMiddleMouseButton = lookbehindButton.IsActive();

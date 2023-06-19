@@ -10,11 +10,16 @@
 
 
 
-
+#include "MainConfig.h"
+bool IsBombQuickdropEnabledInCombat()
+{
+    return g_Config.hacks->moreSituationsToDropBombs->alsoMoreResponsiveInCombat;
+}
 
 bool g_BombQuickthrowEnabler_bombDropCheckerHasBeenForceEnabledThisFrame = false;
 bool g_BombQuickthrowEnabler_isDroppingBombAnimationNow = false;
 bool g_BombQuickthrowEnabler_isStartedBombDropThisFrame = false;
+bool g_BombQuickthrowEnabler_IsCombatRightNow = false;
 void SetIsDropping(bool isDroppingNow)
 {
     g_BombQuickthrowEnabler_isDroppingBombAnimationNow = isDroppingNow;
@@ -115,7 +120,12 @@ void WhenFillingArrayOfStateEnumsToUpdate_EnableChecksForBombQuickDrop(AllRegist
         // Perhaps if I'm able to also implement an always-available quickshot,
         // then "combat version" of quickshot can be removed just as the "combat version"
         // of quickthrow was.
-        return;
+
+        g_BombQuickthrowEnabler_IsCombatRightNow = true;
+        if (!IsBombQuickdropEnabledInCombat())
+        {
+            return;
+        }
     }
     if (arrayToFill.size == 3
         && arrayToFill[0] == 0
@@ -205,6 +215,7 @@ void WhenStatesUpdaterFinishes_ClearFlagsForFrame(AllRegisters* params)
 {
     g_BombQuickthrowEnabler_bombDropCheckerHasBeenForceEnabledThisFrame = false;
     g_BombQuickthrowEnabler_isStartedBombDropThisFrame = false;
+    g_BombQuickthrowEnabler_IsCombatRightNow = false;
 }
 void WhenCheckingIfShouldDisallowDropBombOnSlopes_DisobeyOrders(AllRegisters* params)
 {
@@ -229,9 +240,15 @@ void WhenSuccessfullyStartingToDropBomb_RememberSuccess(AllRegisters* params)
         g_BombQuickthrowEnabler_isNeedToFixRightArm = true;
     }
 }
+DEFINE_GAME_FUNCTION(sub_142666AE0, 0x142666AE0, char, __fastcall, (HasLanterndlcComponent* a1));
 void WhenCombatActionsAreUpdatedChecksBombDrop_DisableOriginalBombDropHandlingInCombat(AllRegisters* params)
 {
-    params->GetRAX() = 0;
+    if (IsBombQuickdropEnabledInCombat())
+    {
+        params->GetRAX() = 0;
+        return;
+    }
+    params->GetRAX() = sub_142666AE0((HasLanterndlcComponent*)params->rcx_);
 }
 void WhenOnWallCheckingIfAssassinateAttemptTargetAvailable_DisableIfBombJustDropped(AllRegisters* params)
 {
@@ -377,6 +394,35 @@ void FixReactionRadiusDatas()
         }
     }
 }
+DEFINE_GAME_FUNCTION(onQuickshot_PX, 0x14265DDD0, __int64, __fastcall, (HasLanterndlcComponent* a1, HumanStatesHolder* rdx0, char a3));
+void WhenUpdatingOutOfCombatVersionOfQuickshot_DisableWhenInCombat(AllRegisters* params)
+{
+    if (IsBombQuickdropEnabledInCombat())
+    {
+        if (g_BombQuickthrowEnabler_bombDropCheckerHasBeenForceEnabledThisFrame
+            && g_BombQuickthrowEnabler_IsCombatRightNow)
+        {
+            params->GetRAX() = 0;
+            return;
+        }
+    }
+    HasLanterndlcComponent* a1 = (HasLanterndlcComponent*)params->rcx_;
+    HumanStatesHolder* a2 = (HumanStatesHolder*)params->rdx_;
+    params->GetRAX() = onQuickshot_PX(a1, a2, 1);
+}
+void WhenCheckingIfLeaveCombatBySprint_MakeSureIsReallyTryingToSprint(AllRegisters* params)
+{
+    if (!IsBombQuickdropEnabledInCombat())
+    {
+        return;
+    }
+    const bool isReallySprinting = ACU::Input::IsPressed(ActionKeyCode::Sprint);
+    if (!isReallySprinting)
+    {
+        byte* pIsShouldLeaveCombat = (byte*)(params->rbp_ + 0x420);
+        *pIsShouldLeaveCombat = 0;
+    }
+}
 
 MoreSituationsToDropBomb::MoreSituationsToDropBomb()
 {
@@ -457,7 +503,26 @@ MoreSituationsToDropBomb::MoreSituationsToDropBomb()
         PresetScript_CCodeInTheMiddle(whenCombatActionsAreUpdatedChecksBombDrop, 5,
             WhenCombatActionsAreUpdatedChecksBombDrop_DisableOriginalBombDropHandlingInCombat, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, false);
     };
-    //PreventDoubleBombDropInCombat();
+    auto DisableOutOfCombatVersionOfQuickshotWhenInCombat = [&]()
+    {
+        const uintptr_t whenUpdatingOutOfCombatVersionOfQuickshot = 0x14265D11F;
+        PresetScript_CCodeInTheMiddle(whenUpdatingOutOfCombatVersionOfQuickshot, 5,
+            WhenUpdatingOutOfCombatVersionOfQuickshot_DisableWhenInCombat, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, false);
+    };
+    auto PreventAccidentalSprintWhenDropBombInCombat = [&]()
+    {
+        /*
+        Because I put the player into High Profile while dropping bombs,
+        doing so in combat might result in undesired breaking of combat by sprint.
+        */
+        const uintptr_t whenCheckingIfLeaveCombatBySprint = 0x1426593BF;
+        PresetScript_CCodeInTheMiddle(whenCheckingIfLeaveCombatBySprint, 7,
+            WhenCheckingIfLeaveCombatBySprint_MakeSureIsReallyTryingToSprint, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
+    };
+
+    PreventDoubleBombDropInCombat();
+    DisableOutOfCombatVersionOfQuickshotWhenInCombat();
+    PreventAccidentalSprintWhenDropBombInCombat();
 }
 void MoreSituationsToDropBomb::OnBeforeActivate()
 {
