@@ -19,7 +19,7 @@ enum class EnumParkourAction
     unk6 = 0x6,
     unk7 = 0x7,
     unk8 = 0x8,
-    passement9 = 0x9,
+    passement9_passOver_mb = 0x9,
     passementFromBeam_A = 0xA,
     passementB = 0xB,
     passementFromBeam_C = 0xC,

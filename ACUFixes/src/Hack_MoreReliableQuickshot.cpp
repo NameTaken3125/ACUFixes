@@ -16,11 +16,8 @@ bool BetterQuickshot_IsLessRestrictionsEnabled()
 
 bool IsPlayerParkouringBothHandsBusy();
 bool IsCurrentRangedWeaponTwohanded();
-static bool BetterQuickshot_IsPlayerInAssassination();
 static bool BetterQuickshot_IsWaitingForQuickshotToComplete();
-// Triggers every frame when you're in state that would normally prevent you from having a gun out:
-// during assassinations, jumps, while on wall, etc.
-static bool BetterQuickshot_IsShouldAllowToProceedWithoutReholstering_Parkour(int p_1melee2ranged)
+static bool BetterQuickshot_IsShouldAllowToProceedWithoutReholstering_Player(int p_1melee2ranged)
 {
     bool isQuickshot = BetterQuickshot_IsWaitingForQuickshotToComplete();
     if (!isQuickshot)
@@ -41,21 +38,15 @@ static bool BetterQuickshot_IsShouldAllowToProceedWithoutReholstering_Parkour(in
     const bool isStillAllowedToQuickshotTwohandedMelee = !IsPlayerParkouringBothHandsBusy();
     return isStillAllowedToQuickshotTwohandedMelee;
 }
-// Triggers once when just starting an "assassination attempt":
-// choke, failed assassination from above do also count.
-static bool BetterQuickshot_IsShouldAllowToProceedWithoutReholstering_AssassinationStart()
-{
-    return true;
-}
 DEFINE_GAME_FUNCTION(ReattachWeaponToSheathOrHolster, 0x141B05570, void, __fastcall, (__int64 a1, int p_1melee2ranged));
-bool WhenInstantSheathingOrReholsteringDueToParkour_IsShouldSkipReholstering(Entity* ownerEntity, int p_1melee2ranged)
+bool WhenInstantSheathingOrReholstering_IsShouldProceedWithoutReholstering(Entity* ownerEntity, int p_1melee2ranged)
 {
     const bool isPlayer = ownerEntity && ownerEntity == ACU::GetPlayer();
     if (!isPlayer)
     {
         return false;
     }
-    return BetterQuickshot_IsShouldAllowToProceedWithoutReholstering_Parkour(p_1melee2ranged);
+    return BetterQuickshot_IsShouldAllowToProceedWithoutReholstering_Player(p_1melee2ranged);
 }
 void WhenInstantSheathingOrReholsteringDueToParkour_DontDoThat(AllRegisters* params)
 {
@@ -68,7 +59,7 @@ void WhenInstantSheathingOrReholsteringDueToParkour_DontDoThat(AllRegisters* par
     FunctorBase* node = (FunctorBase*)params->rcx_;
     auto* humanStates = node->GetNthParent<HumanStatesHolder>(0);
     Entity* ownerEntity = humanStates->ownerEntity;
-    if (WhenInstantSheathingOrReholsteringDueToParkour_IsShouldSkipReholstering(ownerEntity, p_1melee2ranged))
+    if (WhenInstantSheathingOrReholstering_IsShouldProceedWithoutReholstering(ownerEntity, p_1melee2ranged))
     {
         return;
     }
@@ -81,12 +72,15 @@ void WhenInstantSheathingOrReholsteringDueToAssassinationStart_DontDoThat(AllReg
         ReattachWeaponToSheathOrHolster(params->rcx_, params->rdx_);
         return;
     }
-    const bool allowToProceedWithoutReholstering = BetterQuickshot_IsShouldAllowToProceedWithoutReholstering_AssassinationStart();
-    if (!allowToProceedWithoutReholstering)
+    const int p_1melee2ranged = (int&)params->rdx_;
+    FunctorBase* node = (FunctorBase*)params->rcx_;
+    auto* humanStates = node->GetNthParent<HumanStatesHolder>(0);
+    Entity* ownerEntity = humanStates->ownerEntity;
+    if (WhenInstantSheathingOrReholstering_IsShouldProceedWithoutReholstering(ownerEntity, p_1melee2ranged))
     {
-        ReattachWeaponToSheathOrHolster(params->rcx_, params->rdx_);
         return;
     }
+    ReattachWeaponToSheathOrHolster(params->rcx_, params->rdx_);
 }
 
 
@@ -294,12 +288,16 @@ MoreReliableQuickshot::MoreReliableQuickshot()
     //};
     auto PreventAutomaticInstantReholsteringInMostSituations_v3 = [&]()
     {
+        // Triggers every frame when you're in state that would normally prevent you from having a gun out:
+        // during assassinations, jumps, while on wall, etc.
         const uintptr_t whenInstantSheathingOrReholsteringDueToParkour = 0x141AB34F9;
         PresetScript_CCodeInTheMiddle(whenInstantSheathingOrReholsteringDueToParkour, 5,
             WhenInstantSheathingOrReholsteringDueToParkour_DontDoThat, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, false);
     };
     auto PreventAutomaticInstantReholstering_AssassinationStart = [&]()
     {
+        // Triggers once when just starting an "assassination attempt":
+        // choke, failed assassination from above do also count.
         const uintptr_t whenInstantSheathingOrReholsteringDueToAssassination = 0x141AB3E74;
         PresetScript_CCodeInTheMiddle(whenInstantSheathingOrReholsteringDueToAssassination, 5,
             WhenInstantSheathingOrReholsteringDueToAssassinationStart_DontDoThat, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, false);
