@@ -6,13 +6,16 @@ A small mod that aims to fix some of the annoying things about Assassin's Creed 
 
 ## Features:
 - Enter windows by pressing R like in Assassin's Creed Syndicate (when climbing walls)
-- Wider FOV when aiming bombs and the Guillotine Gun, zoom can be adjusted by pressing Right Mouse Button
 - More reliable "Breakfall" (Hold ParkourDown/Interact (E) to Catch Ledge when in uncontrolled freefall)
+- Can drop bombs in more situations (while hanging on a wall, during a jump etc.)
+- No more imaginary bomb throws
+- Wider FOV when aiming bombs and the Guillotine Gun, zoom can be adjusted by pressing Right Mouse Button
 - Select Bombs Equipment Type by scrolling the Mouse Wheel
 - Arno is not forced to pull out the melee weapon while Disguise is active
 - Autowalk and Slow Walk
 - Less "sticky" Take Cover/Leave Cover
 - Easier turn on horizontal swings
+- Can aim bombs while sitting on perches
 - Slightly more responsive Crouch button
 - Some other minor things
 
