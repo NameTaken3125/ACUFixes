@@ -197,13 +197,12 @@ bool IsShouldTryForceTheSpindescentAnimation()
     return ACU::Input::IsPressed(ActionKeyCode::ParkourDownInteract);
 }
 constexpr int PARKOUR_ACTIONS_NO_RESULTS_ACCEPTED = -1;
-std::optional<int> SelectBestMatchingMoveIdx_ExtraProcessing_CustomSelection(AllRegisters* params)
+std::optional<int> SelectBestMatchingMoveIdx_ExtraProcessing_CustomSelection(SmallArray<AvailableParkourAction*>& availableParkourActions)
 {
     if (!IsShouldTryForceTheSpindescentAnimation())
     {
         return {};
     }
-    SmallArray<AvailableParkourAction*>& availableParkourActions = **(SmallArray<AvailableParkourAction*>**)(params->GetRSP() + 8 * 8);
     if (!availableParkourActions.size)
     {
         return PARKOUR_ACTIONS_NO_RESULTS_ACCEPTED;
@@ -276,12 +275,12 @@ std::optional<int> SelectBestMatchingMoveIdx_ExtraProcessing_CustomSelection(All
 using BestMatchSelector_fnt = int(__fastcall*)(__int64 a1, __int64 a2, __int64 a3, __int64 a4, float a5, int a6, __int64 a7, __int64 a8, SmallArray<AvailableParkourAction*>* p_parkourActions);
 int SelectBestMatchingMoveIdx_ExtraProcessing(AllRegisters* params)
 {
-    std::optional<int> customSelectedAction = SelectBestMatchingMoveIdx_ExtraProcessing_CustomSelection(params);
+    SmallArray<AvailableParkourAction*>& availableParkourActions = **(SmallArray<AvailableParkourAction*>**)(params->GetRSP() + 8 * 8);
+    std::optional<int> customSelectedAction = SelectBestMatchingMoveIdx_ExtraProcessing_CustomSelection(availableParkourActions);
     if (customSelectedAction)
     {
         return *customSelectedAction;
     }
-    SmallArray<AvailableParkourAction*>& availableParkourActions = **(SmallArray<AvailableParkourAction*>**)(params->GetRSP() + 8 * 8);
     int bestMatchIdx = ((BestMatchSelector_fnt)params->r10_)(
         params->rcx_,
         params->rdx_,
