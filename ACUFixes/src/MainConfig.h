@@ -37,7 +37,7 @@ struct ConfigTop : YAConfigSection {
         struct YACS_moreSituationsToDropBombs : YAConfigSection {
             YACSTOR(YACS_moreSituationsToDropBombs);
             ACM(isActive, bool, BooleanAdapter, true);
-            ACM(alsoMoreResponsiveInCombat, bool, BooleanAdapter, false);
+            ACM(alsoMoreResponsiveInCombat, bool, BooleanAdapter, true);
         };
         ACM(moreSituationsToDropBombs, YACS_moreSituationsToDropBombs, YAConfigSectionAdapter, );
         struct YACS_MoreReliableQuickshot : YAConfigSection {

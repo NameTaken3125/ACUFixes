@@ -143,6 +143,13 @@ public:
         {
             ImGuiCTX::Indent _ind;
             ImGui::Checkbox("Also more responsive in combat", &g_Config.hacks->moreSituationsToDropBombs->alsoMoreResponsiveInCombat.get());
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::SetTooltip(
+                    "When in combat, allows dropping bombs while performing a different action,"
+                    "\ne.g. during a parry, during a roll, during a finisher."
+                );
+            }
         }
         ImGui::DrawCheckboxForHack(moreReliableQuickshot, "More reliable Quickshot. Please read.");
         if (ImGui::IsItemHovered())
@@ -170,7 +177,7 @@ public:
                     "Normally, the Quickshot is very easily interrupted:"
                     "\nrunning into a table, stepping off a table, even just running into a wall"
                     "\nwithout climbing it can cancel the animation."
-                    "\nThis removes most of these interruptions, allowing you to, for example,"
+                    "\nThis patch removes _most_ of these interruptions, allowing you to, for example,"
                     "\nshoot while sliding across a table for massive style points."
                     "\nAlso, if the \"More situations to drop bombs\" patch is enabled,"
                     "\nallows you to perform Quickshots in most of those situations, too. For example"
