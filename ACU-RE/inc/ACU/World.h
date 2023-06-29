@@ -18,6 +18,9 @@ class UIWorldComponent;
 class ConflictLoopManager;
 class DeferredCastManager;
 class VanishingManager;
+class TimeOfDayManager;
+class GameplayCoordinatorWorldComponent;
+class RiftWorldManager;
 class Entity;
 class World : public BaseWorld
 {
@@ -44,9 +47,14 @@ public:
     VanishingManager* vanishingManager; //0x0910
     char pad_0918[88]; //0x0918
     DeferredCastManager* deferredCastManager; //0x0970
-    char pad_0978[80]; //0x0978
+    char pad_0978[8]; //0x0978
+    TimeOfDayManager* timeOfDayManager; //0x0980
+    GameplayCoordinatorWorldComponent* gameplayCoordinatorWorldComponent; //0x0988
+    char pad_0990[56]; //0x0990
     UIWorldComponent* uiWorldComponent; //0x09C8
-    char pad_09D0[152]; //0x09D0
+    char pad_09D0[24]; //0x09D0
+    RiftWorldManager* riftWorldManager; //0x09E8
+    char pad_09F0[120]; //0x09F0
 
     // @helper_functions
     static World* GetSingleton();

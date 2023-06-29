@@ -22,10 +22,7 @@ class LODSelectorInstance : public GraphicObjectInstanceDataContainer
 {
 public:
 	LODSelector* lodSelector; //0x0028
-	MeshInstanceData* meshInstData30; //0x0030
-	MeshInstanceData* meshInstData38; //0x0038
-	MeshInstanceData* meshInstData40; //0x0040
-	MeshInstanceData* meshInstData48; //0x0048
+	MeshInstanceData* meshInstDatas[4]; //0x0030
 	char pad_0050[40]; //0x0050
 }; //Size: 0x0078
 assert_sizeof(LODSelectorInstance, 0x78);

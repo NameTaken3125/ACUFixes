@@ -187,6 +187,7 @@ CurrentHoodState FindCurrentHoodVariation(Entity& player)
     }
     return { nullptr, false };
 }
+void FindPlayerFaceComponentAndApplyTheMaterialWithoutTheFakeHoodShadow(Entity& arno, const bool trueAddFalseRemove);
 void ToggleHoodVisuals(HoodVariation& hood, bool doPutHoodOn)
 {
     Entity* player = ACU::GetPlayer();
@@ -195,6 +196,7 @@ void ToggleHoodVisuals(HoodVariation& hood, bool doPutHoodOn)
         EnableVisibilityForVisualCpnt(*player, handle, doPutHoodOn);
     for (uint64 handle : hood.handlesWhenOff)
         EnableVisibilityForVisualCpnt(*player, handle, !doPutHoodOn);
+    FindPlayerFaceComponentAndApplyTheMaterialWithoutTheFakeHoodShadow(*player, !doPutHoodOn);
 }
 #include "ACU_SoundUtils.h"
 #include "ACU/ACUGlobalSoundSet.h"
@@ -234,6 +236,82 @@ void DoManualHoodControls()
     if (ACU::Input::IsJustPressed(g_Config.hacks->hoodControls->hoodToggleButton))
     {
         ToggleHood();
+    }
+}
+#include "ACU/LODSelectorInstance.h"
+class MeshInstanceData;
+class Material;
+class FXMaterialOverlayContainer_10_0
+{
+public:
+    MeshInstanceData* meshInstData; //0x0000
+    SharedPtrNew<Material>* shared_material8; //0x0008
+    SharedPtrNew<Material>* shared_material10; //0x0010
+    SmallArray<SharedPtrNew<Material>*> arrSharedMaterials; //0x0018
+    char pad_0024[4]; //0x0024
+}; //Size: 0x0028
+assert_offsetof(FXMaterialOverlayContainer_10_0, arrSharedMaterials, 0x18);
+class MeshInstanceData_3C;
+class MeshInstanceData_48;
+class MeshInstanceData_58;
+class Mesh;
+class MeshInstanceData : public GraphicObjectInstanceData
+{
+public:
+    Mesh* mesh; //0x0028
+    SmallArray<FXMaterialOverlayContainer_10_0*> arr30; //0x0030
+    SmallArray<MeshInstanceData_3C> arr3C; //0x003C
+    SmallArray<MeshInstanceData_48> arr48; //0x0048
+    char pad_0054[4]; //0x0054
+    MeshInstanceData_58* p58; //0x0058
+    char pad_0060[24]; //0x0060
+}; //Size: 0x0078
+assert_sizeof(MeshInstanceData, 0x78);
+DEFINE_GAME_FUNCTION(FXMaterialOverlayContainer_10_0__AddToPendingOverlayCommands_AddOverlay, 0x1421BE490, void, __fastcall, (FXMaterialOverlayContainer_10_0* a1, Material* a2, unsigned __int8 a3));
+DEFINE_GAME_FUNCTION(FXMaterialOverlayContainer_10_0__AddToPendingOverlayCommands_RemoveOverlay, 0x1421DEB50, void, __fastcall, (FXMaterialOverlayContainer_10_0* a1, Material* a2));
+Material* TryFindMaterialToApply(LODSelectorInstance& faceLODs)
+{
+    MeshInstanceData* meshInstDataHighestLOD_mb = faceLODs.meshInstDatas[0];
+    if (!meshInstDataHighestLOD_mb) {
+        return nullptr;
+    }
+    if (!meshInstDataHighestLOD_mb->arr30.size) { return nullptr; }
+    return meshInstDataHighestLOD_mb->arr30[0]->shared_material8->GetPtr();
+}
+constexpr uint64 handle_ArnoFace = 211488955670;
+void FindPlayerFaceComponentAndApplyTheMaterialWithoutTheFakeHoodShadow(Entity& arno, const bool trueAddFalseRemove)
+{
+    Visual* arnoFaceVisual = FindVisualCpnt(arno, handle_ArnoFace);
+    if (!arnoFaceVisual) { return; }
+    LODSelectorInstance* faceLODs = arnoFaceVisual->LODSelectorInstance_;
+    if (!faceLODs)
+    {
+        return;
+    }
+    Material* appliedMaterial = TryFindMaterialToApply(*faceLODs);
+    if (!appliedMaterial)
+    {
+        return;
+    }
+    for (MeshInstanceData* meshInstData : arnoFaceVisual->LODSelectorInstance_->meshInstDatas)
+    {
+        if (!meshInstData->arr30.size) { continue; }
+        FXMaterialOverlayContainer_10_0* a1 = meshInstData->arr30[0];
+        if (trueAddFalseRemove)
+        {
+            FXMaterialOverlayContainer_10_0__AddToPendingOverlayCommands_AddOverlay(
+                a1,
+                appliedMaterial,
+                1
+            );
+        }
+        else
+        {
+            FXMaterialOverlayContainer_10_0__AddToPendingOverlayCommands_RemoveOverlay(
+                a1,
+                appliedMaterial
+            );
+        }
     }
 }
 #include "ImGuiConfigUtils.h"
@@ -278,7 +356,6 @@ void DrawHoodControls()
             "Can take Hood off and put it on by pressing a button."
             "\nActually, since the Hood isn't animated, this is just switching"
             "\nbetween the On and Off versions."
-            "\nBUG: There remains a bad-looking shadow of the removed hood on Arno's forehead."
         );
     }
     if (g_Config.hacks->hoodControls->isActive)

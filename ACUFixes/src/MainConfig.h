@@ -58,7 +58,7 @@ struct ConfigTop : YAConfigSection {
         ACM(automaticallyReloadWeaponsWhenRefillAllInShops, bool, BooleanAdapter, true);
         struct HoodControls : YAConfigSection {
             YACSTOR(HoodControls);
-            ACM(isActive, bool, BooleanAdapter, false);
+            ACM(isActive, bool, BooleanAdapter, true);
             ACM(hoodToggleButton, BindableKeyCode_Keyboard, EnumAdapter_template<BindableKeyCode_Keyboard>, BindableKeyCode_Keyboard::K_H);
         };
         ACM(hoodControls, HoodControls, YAConfigSectionAdapter, );
