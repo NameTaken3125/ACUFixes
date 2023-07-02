@@ -62,9 +62,21 @@ DEFINE_GAME_FUNCTION(Visual__ToggleVisibility, 0x1421F4DD0, int, __fastcall, (Vi
 //DEFINE_GAME_FUNCTION(Visual__ToggleVisibility_P, 0x141CE1440, int, __fastcall, (Visual* a1, unsigned char a2));
 void EnableVisibilityForVisualCpnt(Entity& entity, uint64 lodSelectorHandle, bool doEnable)
 {
-    Visual* mph = FindVisualCpnt(entity, lodSelectorHandle);
-    if (!mph) { return; }
-    Visual__ToggleVisibility(mph, doEnable);
+    for (Component* cpnt : entity.cpnts_mb)
+    {
+        if (*(uint64*)cpnt == Visual__VTable)
+        {
+            Visual* vis = static_cast<Visual*>(cpnt);
+            if (vis->shared_LODSelector->handle == lodSelectorHandle)
+            {
+                Visual__ToggleVisibility(vis, doEnable);
+                // In unmodded game, there should only be a single matching `Visual`,
+                // but some Forge Mods can result in player's entity having duplicate `Visual`s.
+                // If I don't toggle their visibility accordingly, I'll end up with hair on top of hood.
+                // So I continue walking the array of components.
+            }
+        }
+    }
 }
 struct HoodVariation
 {

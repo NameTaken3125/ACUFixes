@@ -137,7 +137,9 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
     if (enableDemoWindow) {
         ImGui::ShowDemoWindow();
     }
-    if (ImGuiCTX::Window _mainWindow{ "Stuff" })
+    ImGui::SetNextWindowPos(ImVec2(100, 100), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(500, 500), ImGuiCond_FirstUseEver);
+    if (ImGuiCTX::Window _mainWindow{ "ACUFixes Mod Menu" })
     {
         if (ImGuiCTX::TabBar _tabbar{ "MainWindowTabs" })
         {
