@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SoundResource.h"
+#include "SoundState.h"
 #include "SharedPtr.h"
 
 class ACUGlobalSoundSet;
@@ -13,13 +13,6 @@ public:
     char pad_0010[8]; //0x0010
 }; //Size: 0x0018
 assert_sizeof(SoundRTPC, 0x18);
-
-class SoundState
-{
-public:
-    char pad_0000[24]; //0x0000
-}; //Size: 0x0018
-assert_sizeof(SoundState, 0x18);
 
 class SoundSettings : public ManagedObject
 {

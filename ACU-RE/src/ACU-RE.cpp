@@ -17,6 +17,7 @@
 #include "ACU/Timer.h"
 #include "ACU/World.h"
 #include "ACU/WorldComponent.h"
+#include "ACU/MandatoryWorldComponent.h"
 #include "ACU/BhvAssassin.h"
 #include "ACU/CharacterAI.h"
 #include "ACU/Statechart.h"
@@ -75,6 +76,7 @@
 
 #include "ACU/SoundManager.h"
 #include "ACU/SoundResource.h"
+#include "ACU/SoundState.h"
 #include "ACU/SoundEvent.h"
 #include "ACU/SoundSet.h"
 #include "ACU/ACUGlobalSoundSet.h"
@@ -105,3 +107,9 @@
 
 #include "ACU/Visual.h"
 #include "ACU/LODSelectorInstance.h"
+
+#include "ACU/TimeOfDayManager.h"
+#include "ACU/ActionWeatherWindSelection.h"
+#include "ACU/WeatherControls.h"
+#include "ACU/WeatherPropertyControllerData.h"
+#include "ACU/Season.h"

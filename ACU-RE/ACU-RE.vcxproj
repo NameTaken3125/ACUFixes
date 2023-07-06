@@ -167,6 +167,7 @@
   <ItemGroup>
     <ClInclude Include="inc\ACU\ActionAbilitySet.h" />
     <ClInclude Include="inc\ACU\ActionKeyStates.h" />
+    <ClInclude Include="inc\ACU\ActionWeatherWindSelection.h" />
     <ClInclude Include="inc\ACU\ACUGetSingletons.h" />
     <ClInclude Include="inc\ACU\ACUGlobalSoundSet.h" />
     <ClInclude Include="inc\ACU\ACUHashmap.h" />
@@ -227,6 +228,7 @@
     <ClInclude Include="inc\ACU\LODSelectorInstance.h" />
     <ClInclude Include="inc\ACU\ManagedObject.h" />
     <ClInclude Include="inc\ACU\MandatoryUniverseComponent.h" />
+    <ClInclude Include="inc\ACU\MandatoryWorldComponent.h" />
     <ClInclude Include="inc\ACU\MemoryManager.h" />
     <ClInclude Include="inc\ACU\Parkour_PotentialWindowEntry.h" />
     <ClInclude Include="inc\ACU\Parkour_WhileOnWallSystem.h" />
@@ -237,14 +239,17 @@
     <ClInclude Include="inc\ACU\ReactionManager.h" />
     <ClInclude Include="inc\ACU\ReactionRadiusData.h" />
     <ClInclude Include="inc\ACU\RenderValuesHolder.h" />
+    <ClInclude Include="inc\ACU\Season.h" />
     <ClInclude Include="inc\ACU\SharedPtr.h" />
     <ClInclude Include="inc\ACU\SmallArray.h" />
     <ClInclude Include="inc\ACU\SoundEvent.h" />
     <ClInclude Include="inc\ACU\SoundManager.h" />
     <ClInclude Include="inc\ACU\SoundResource.h" />
     <ClInclude Include="inc\ACU\SoundSet.h" />
+    <ClInclude Include="inc\ACU\SoundState.h" />
     <ClInclude Include="inc\ACU\Statechart.h" />
     <ClInclude Include="inc\ACU\ThrowTargetPrecision.h" />
+    <ClInclude Include="inc\ACU\TimeOfDayManager.h" />
     <ClInclude Include="inc\ACU\Timer.h" />
     <ClInclude Include="inc\ACU\TypeInfo.h" />
     <ClInclude Include="inc\ACU\UISounds.h" />
@@ -252,6 +257,8 @@
     <ClInclude Include="inc\ACU\VanishingManager.h" />
     <ClInclude Include="inc\ACU\Visual.h" />
     <ClInclude Include="inc\ACU\WeaponComponent.h" />
+    <ClInclude Include="inc\ACU\WeatherControls.h" />
+    <ClInclude Include="inc\ACU\WeatherPropertyControllerData.h" />
     <ClInclude Include="inc\ACU\WhenHighlightedNPCChanges.h" />
     <ClInclude Include="inc\ACU\WitnessEvent.h" />
     <ClInclude Include="inc\ACU\World.h" />
@@ -279,6 +286,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="src\TimeOfDayManager.cpp" />
     <ClCompile Include="src\UISounds.cpp" />
     <ClCompile Include="src\VanishingManager.cpp" />
     <ClCompile Include="src\WeaponComponent.cpp" />
