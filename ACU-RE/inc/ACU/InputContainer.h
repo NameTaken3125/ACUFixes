@@ -49,7 +49,7 @@ class MouseState
 public:
     int32 mouseDeltaIntForCamera_X; //0x0000
     int32 mouseDeltaIntForCamera_Y; //0x0004
-    char pad_0008[4]; //0x0008
+    int32 mouseWheelDeltaInt_usedInMenus; //0x0008
     uint8 mouseButtonStates[5]; //0x000C
     char pad_0011[3]; //0x0011
     int32 mouseDeltaInt_X; //0x0014

@@ -7,6 +7,10 @@
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK WndProc_HackControls(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+    // In Assassin's Creed Unity, when going Fullscreen (but not Borderless Fullscreen)
+    // this fails to receive WM_MOUSEWHEEL and mouse button events
+    // such as WM_LBUTTONDOWN.
+    // WM_MOUSEMOVE is ok, go figure.
     constexpr unsigned __int64 isPreviouslyPressedMask = 1 << 30;
     if (uMsg == WM_KEYDOWN)
     {
