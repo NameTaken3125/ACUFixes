@@ -173,6 +173,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Cheat_WeatherControls.cpp" />
     <ClCompile Include="src\Hack_DontRandomlyTurn180Degrees.cpp" />
     <ClCompile Include="src\Hack_MoreReliableQuickshot.cpp" />
     <ClCompile Include="src\Hack_NoMoreFailedBombThrows.cpp" />

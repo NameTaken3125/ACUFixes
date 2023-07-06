@@ -126,6 +126,7 @@ void ImGui3D::WhatIsActuallyDrawnForFrame()
 }
 void DrawBuiltinDebugCommands();
 void DrawPlayerVisualsControls();
+void DrawWeatherControls();
 
 std::filesystem::path& GetThisDLLAbsolutePath();
 #include "MainConfig.h"
@@ -150,6 +151,13 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
                     DrawHacksControls();
                     ImGui::Separator();
                     ImGui::Checkbox("Show the \"is injected\" indicator", &g_Config.imgui_showSuccessfulInjectionIndicator.get());
+                }
+            }
+            if (ImGuiCTX::Tab _mainTab{ "Weather" })
+            {
+                if (ImGuiCTX::WindowChild _{ "WeatherTabChild" })
+                {
+                    DrawWeatherControls();
                 }
             }
             if (ImGuiCTX::Tab _extraoptions{ "Extra" })
