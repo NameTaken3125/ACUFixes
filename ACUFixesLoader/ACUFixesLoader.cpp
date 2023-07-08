@@ -126,6 +126,24 @@ void StartAnExecutable(const fs::path& absPath)
     );
 }
 
+#include <winternl.h>
+#pragma comment(lib, "ntdll")
+bool TryToClearTheBeingDebuggedFlagBeforeInjection(HANDLE processHandle)
+{
+    if (processHandle == INVALID_HANDLE_VALUE) { return false; }
+    PROCESS_BASIC_INFORMATION info;
+    NTSTATUS status = NtQueryInformationProcess(
+        processHandle,
+        ProcessBasicInformation,
+        &info,
+        sizeof(info),
+        0);
+    if (!NT_SUCCESS(status)) { return false; }
+    PEB* peb = info.PebBaseAddress;
+    unsigned char toBeWrittenAtBeingDebuggedFlag[1] = { 0 };
+    const bool isSuccess = WriteProcessMemory(processHandle, &peb->BeingDebugged, toBeWrittenAtBeingDebuggedFlag, 1, NULL);
+    return isSuccess;
+}
 // Thanks https://cocomelonc.github.io/tutorial/2021/09/20/malware-injection-2.html
 bool Inject(const fs::path& injectedDLLPath, ProcessID_t pid)
 {
@@ -138,7 +156,13 @@ bool Inject(const fs::path& injectedDLLPath, ProcessID_t pid)
     HANDLE processHandle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
     HANDLE remoteThread;
     LPVOID remoteBuffer;
-
+    {
+        // If e.g. Visual Studio debugger is attached while I'm trying to inject
+        // (or to start any thread, I think), `kernel32.ExitProcess()` will be called
+        // before reaching DllMain().
+        // If this call somehow fails, well, injection is still worth a try.
+        const bool _isSuccessfullyAvoidedDebugger = TryToClearTheBeingDebuggedFlagBeforeInjection(processHandle);
+    }
     std::wstring pathString = injectedDLLPath.native();
     size_t howManyBytesToAllocateInProcess = (pathString.length() + 1) * sizeof(std::wstring::value_type);
 
@@ -363,7 +387,7 @@ int main_procedure()
     }
     bool seeminglySucceeded = Inject(injectedDLLPath, pid.value());
     if (!seeminglySucceeded) {
-        wprintf(L"[X] Failed to inject.");
+        wprintf(L"[X] Failed to inject. If you haven't already, try running as administrator.");
         return -1;
     }
     wprintf(L"[+] Did my best to inject the DLL.\n");
