@@ -26,8 +26,80 @@
 #define IMGUI_IMPL_WIN32_DISABLE_LINKING_XINPUT
 #endif
 #if defined(_MSC_VER) && !defined(IMGUI_IMPL_WIN32_DISABLE_LINKING_XINPUT)
-#pragma comment(lib, "xinput")
-//#pragma comment(lib, "Xinput9_1_0")
+//#pragma comment(lib, "xinput")
+/*
+By default, the
+    #pragma comment(lib, "xinput")
+is used, but in AC Unity this causes a game crashing bug when Alt+Tabbing the game,
+under the following circumstances:
+1. Start ACU normally
+2. Inject the mod while the intro videos are playing (because there are more bugs down the line that make injection problematic)
+3. Wait for the intro videos to finish, landing you in the main menu
+   (you can minimize and unminimize the game now, barring some other bugs, possibly)
+4. Uninject
+5. Alt+Tab to minimize the game
+6. Crash.
+Here are the results from diagnostics:
+The Steam overlay, or the Ubisoft Connect overlay, or whoever, loads the `gameoverlayrenderer64.dll`.
+It seems that this DLL places a hook at the start of `XInput1_3.XInputEnable()`.
+From the prologue of that function a `jmp` is placed to a trampoline and from there to
+    `gameoverlayrenderer64.dll+BA260`
+When that function finishes, it essentially does a
+    `jmp [gameoverlayrenderer64.dll+16C218]`
+Here's some CheatEngineAutoAssembler pseudocode:
+...
+XInput1_3.XInputEnable:
+    jmp newmem1_3_forwardTrampoline
+
+newmem1_3:
+newmem1_3_backTrampoline:
+    mov [rsp+08],ecx
+    sub rsp,38
+    jmp XINPUT1_3.XInputEnable+8
+newmem1_3_forwardTrampoline:
+    jmp gameoverlayrenderer64.dll+BA260
+
+gameoverlayrenderer64.dll+16C218:
+    dq newmem1_3_backTrampoline
+...
+Further,
+ACU is normally loaded with `XInput1_3.dll` and `XINPUT9_1_0.dll`.
+When the mod is injected, `XInput1_4.dll` is loaded (do note the `4`).
+Now the following CheatEngineAutoAssembler pseudocode is executed:
+...
+XInput1_4.XInputEnable:
+    jmp newmem1_4_forwardTrampoline
+
+newmem1_4:
+newmem1_4_backTrampoline:
+    mov [rsp+08],rbx
+    jmp XINPUT1_4.dll+1F65
+newmem1_4_forwardTrampoline:
+    jmp gameoverlayrenderer64.dll+BA260
+
+gameoverlayrenderer64.dll+16C218:
+    dq newmem1_4_backTrampoline
+...
+So without the mod, here's what normally happens:
+Game code --> XInput1_3.dll        XInput1_3.dll --> return to game code
+                  |                       ^
+                  v                       |
+        gameoverlayrenderer64.dll+BA260 --+
+After the mod is injected, the situation becomes:
+
+Game code --> XInput1_3.dll        XInput1_4.dll --> return to game code
+                  |                       ^
+                  v                       |
+        gameoverlayrenderer64.dll+BA260 --+
+Again, note the `4`.
+After the mod is uninjected:
+Game code --> XInput1_3.dll        UNLOADED_DLL --> BAD MEMORY ACCESS, CRASH
+                  |                       ^
+                  v                       |
+        gameoverlayrenderer64.dll+BA260 --+
+So the solution I have here is to avoid loading the `XInput1_4` and use the already present version of XInput.
+*/
+#pragma comment(lib, "Xinput9_1_0")
 #endif
 
 // CHANGELOG
