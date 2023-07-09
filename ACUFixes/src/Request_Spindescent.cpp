@@ -194,13 +194,16 @@ public:
 }; //Size: 0x02B0
 assert_sizeof(ParkourAction_Spindescent, 0x2B0);
 #include "ACU_InputUtils.h"
+#include "MainConfig.h"
 bool IsShouldTryForceTheSpindescentAnimation()
 {
-    return ACU::Input::IsPressed(ActionKeyCode::ParkourDownInteract);
+    return g_Config.personalRequests->parkourHelper->spinningDescentHelper
+        && ACU::Input::IsPressed(ActionKeyCode::ParkourDownInteract);
 }
 static bool IsShouldTryForceDive()
 {
-    return ACU::Input::IsPressed(MouseButton::Mouse5);
+    return g_Config.personalRequests->parkourHelper->diveHelper
+        && ACU::Input::IsPressed(MouseButton::Mouse5);
 }
 constexpr int PARKOUR_ACTIONS_NO_RESULTS_ACCEPTED = -1;
 struct CustomSelectedParkourMove

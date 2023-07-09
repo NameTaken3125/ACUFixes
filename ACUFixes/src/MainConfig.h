@@ -81,7 +81,13 @@ struct ConfigTop : YAConfigSection {
     ACM(cheats, Cheats, YAConfigSectionAdapter, );
     struct PersonalRequests : YAConfigSection {
         YACSTOR(PersonalRequests);
-        ACM(spinningDescentHelper, bool, BooleanAdapter, false);
+        struct YACS_ParkourHelper : YAConfigSection {
+            YACSTOR(YACS_ParkourHelper);
+            ACM(isActive, bool, BooleanAdapter, false);
+            ACM(spinningDescentHelper, bool, BooleanAdapter, true);
+            ACM(diveHelper, bool, BooleanAdapter, true);
+        };
+        ACM(parkourHelper, YACS_ParkourHelper, YAConfigSectionAdapter, );
     };
     ACM(personalRequests, PersonalRequests, YAConfigSectionAdapter, );
 };

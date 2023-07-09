@@ -347,51 +347,68 @@ public:
     }
     void DrawPersonalRequestsControls()
     {
-        ImGui::DrawCheckboxForHack(spinningDescentHelper, "Spinning descent helper");
+        ImGui::DrawCheckboxForHack(parkourHelpers, "Parkour helpers");
         if (ImGui::IsItemHovered())
         {
             ImGui::SetTooltip(
-                "TL;DR: The Spinning Descent move is much more likely to trigger if you do the following:"
-                "\nWhile swinging on a horizontal bar, hold Sprint+Forward+ParkourDown."
-                "\nDetails:"
-                "\nThere is a very flashy, very rare parkour animation that involves Arno"
-                "\nmaking a 270 degrees spin in the air before grabbing a ledge."
-                "\nIt is shown in the AC Unity E3 gameplay trailer, and the easiest place"
-                "\nto trigger this move is to start swinging on the horizontal gargoyles on the sides"
-                "\nof the rear half of Notre Dame, and while the swing is performed, hold Sprint+Forward+ParkourDown."
-                "\nNormally, the conditions for this animation to be used are as follows:"
-                "\n- Player needs to be parkouring from a Swing (a horizontal bar, a clothesline,"
-                "\n  ropes hanging between two buildings etc.) to a Wall Hang"
-                "\n  (both feet planted on the wall, not dangling freely)."
-                "\n- Importantly, the wall the player needs to grab must be roughly perpendicular"
-                "\n  to the bar that the player is Swinging from."
-                "\n- The direction from the Swing to Target needs to be rather sharply downward."
-                "\n- Finally, no other \"Parkour Action\" needs to be chosen by the parkour system."
-                "\nThe last point is probably why the move is so rare: there are usually"
-                "\nmore fitting locations to land on when using the ParkourDown."
-                "\nThis patch makes it so that the spinning descent is _heavily_ prioritized when using"
-                "\nthe ParkourDown while Swinging - all other \"parkour actions\" will be ignored"
-                "\nif this one can be used."
-                "\nThis doesn't mean that you can do this on _every_ Swing, and sometimes the move will look"
-                "\nout of place."
-                "\nPersonally, I think this makes the move too frequent, but if you're making one of those"
-                "\nwonderful parkour videos, you might find this useful."
-                "\nLike everything else, this was not tested in multiplayer."
-
-                "\nWhen holding down a new hotkey (Mouse5), the dive move takes an even higher priority"
-                "\nthan the Spindescent (the \"dive\" or the \"basejump\" is a kind of HighProfile jump"
-                "\nthat transitions you to a state where you're holding onto"
-                "\na swing/a horizontal bar/some hanging ropes/an overhanging roof"
-                "\nwith both hands and your feet dangle freely)."
-                "\nYour other input still matters. If the bar you're targeting is close and below,"
-                "\nyou'll need to press Sprint+ParkourDown+DiveHotkey."
-                "\nIf it's close and slightly higher than yourself or below but further away,"
-                "\nyou'll need to press Sprint+ParkourUp+DiveHotkey."
-                "\nPretty much as in unmodded game, you need to be able to judge the distance"
-                "\nand the appropriate \"parkour mode\", but you can now prioritize the dive."
-                "\nI'm not super happy with the new hotkey, but you can come to rely on it,"
-                "\nand this move has been requested twice."
+                "I've been asked to make it easier to perform some of the flashy parkour moves."
+                "\nThese features aren't _fixes_ and are not for everyone but they can be fun."
             );
+        }
+        if (parkourHelpers.IsActive())
+        {
+            ImGuiCTX::Indent _ind;
+            ImGui::Checkbox("Spinning descent helper", &g_Config.personalRequests->parkourHelper->spinningDescentHelper.get());
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::SetTooltip(
+                    "TL;DR: The Spinning Descent move is much more likely to trigger if you do the following:"
+                    "\nWhile swinging on a horizontal bar, hold Sprint+Forward+ParkourDown."
+                    "\nDetails:"
+                    "\nThere is a very flashy, very rare parkour animation that involves Arno"
+                    "\nmaking a 270 degrees spin in the air before grabbing a ledge."
+                    "\nIt is shown in the AC Unity E3 gameplay trailer, and the easiest place"
+                    "\nto trigger this move is to start swinging on the horizontal gargoyles on the sides"
+                    "\nof the rear half of Notre Dame, and while the swing is performed, hold Sprint+Forward+ParkourDown."
+                    "\nNormally, the conditions for this animation to be used are as follows:"
+                    "\n- Player needs to be parkouring from a Swing (a horizontal bar, a clothesline,"
+                    "\n  ropes hanging between two buildings etc.) to a Wall Hang"
+                    "\n  (both feet planted on the wall, not dangling freely)."
+                    "\n- Importantly, the wall the player needs to grab must be roughly perpendicular"
+                    "\n  to the bar that the player is Swinging from."
+                    "\n- The direction from the Swing to Target needs to be rather sharply downward."
+                    "\n- Finally, no other \"Parkour Action\" needs to be chosen by the parkour system."
+                    "\nThe last point is probably why the move is so rare: there are usually"
+                    "\nmore fitting locations to land on when using the ParkourDown."
+                    "\nThis patch makes it so that the spinning descent is _heavily_ prioritized when using"
+                    "\nthe ParkourDown while Swinging - all other \"parkour actions\" will be ignored"
+                    "\nif this one can be used."
+                    "\nThis doesn't mean that you can do this on _every_ Swing, and sometimes the move will look"
+                    "\nout of place."
+                    "\nPersonally, I think this makes the move too frequent, but if you're making one of those"
+                    "\nwonderful parkour videos, you might find this useful."
+                    "\nLike everything else, this was not tested in multiplayer."
+                );
+            }
+            ImGui::Checkbox("Dive helper", &g_Config.personalRequests->parkourHelper->diveHelper.get());
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::SetTooltip(
+                    "When holding down a new hotkey (Mouse5), the dive move takes an even higher priority"
+                    "\nthan the Spindescent (the \"dive\" or the \"basejump\" is a kind of HighProfile jump"
+                    "\nthat transitions you to a state where you're holding onto"
+                    "\na swing/a horizontal bar/some hanging ropes/an overhanging roof"
+                    "\nwith both hands and your feet dangle freely)."
+                    "\nYour other input still matters. If the bar you're targeting is close and below,"
+                    "\nyou'll need to press Sprint+ParkourDown+Forward+DiveHotkey."
+                    "\nIf it's close and slightly higher than yourself or below but further away,"
+                    "\nyou'll need to press Sprint+ParkourUp+Forward+DiveHotkey."
+                    "\nPretty much as in unmodded game, you need to be able to judge the distance"
+                    "\nand the appropriate \"parkour mode\", but you can now prioritize the dive."
+                    "\nI'm not super happy with the new hotkey, but you can come to rely on it,"
+                    "\nand this move has been requested twice."
+                );
+            }
         }
     }
     void ReadConfig(ConfigTop& cfg)
@@ -418,7 +435,7 @@ public:
         dontDecreaseRemainingAmmo.Toggle(cheatsSection->infiniteAmmo);
 
         auto& requestsSection = cfg.personalRequests;
-        spinningDescentHelper.Toggle(requestsSection->spinningDescentHelper);
+        parkourHelpers.Toggle(requestsSection->parkourHelper->isActive);
     }
     void WriteConfig(ConfigTop& cfg)
     {
@@ -444,7 +461,7 @@ public:
         cheatsSection->infiniteAmmo = dontDecreaseRemainingAmmo.IsActive();
 
         auto& requestsSection = cfg.personalRequests;
-        requestsSection->spinningDescentHelper = spinningDescentHelper.IsActive();
+        requestsSection->parkourHelper->isActive = parkourHelpers.IsActive();
     }
     AutoAssembleWrapper<BatlampOfFrancide> batlampOfFranciade;
     AutoAssembleWrapper<AmmoCheat> dontDecreaseRemainingAmmo;
@@ -453,7 +470,7 @@ public:
     AutoAssembleWrapper<UnbreakableDisguise> unbreakableDisguise;
     AutoAssembleWrapper<DisguiseDoesntMakeYouInvisible> disguiseDoesntMakeYouInvisible;
 
-    AutoAssembleWrapper<ParkourActionsExtraProcessing> spinningDescentHelper;
+    AutoAssembleWrapper<ParkourActionsExtraProcessing> parkourHelpers;
 };
 std::optional<MyHacks> g_MyHacks;
 void DrawHacksControls()
