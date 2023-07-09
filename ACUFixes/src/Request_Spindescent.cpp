@@ -188,7 +188,9 @@ public:
     Vector4f vec180; //0x0180
     Vector4f vec190; //0x0190
     Vector4f vec1A0; //0x01A0
-    char pad_01B0[256]; //0x01B0
+    char pad_01B0[84]; //0x01B0
+    float simpleFitness; //0x0204
+    char pad_0208[168]; //0x0208
 }; //Size: 0x02B0
 assert_sizeof(ParkourAction_Spindescent, 0x2B0);
 #include "ACU_InputUtils.h"
@@ -196,16 +198,40 @@ bool IsShouldTryForceTheSpindescentAnimation()
 {
     return ACU::Input::IsPressed(ActionKeyCode::ParkourDownInteract);
 }
+static bool IsShouldTryForceDive()
+{
+    return ACU::Input::IsPressed(MouseButton::Mouse5);
+}
 constexpr int PARKOUR_ACTIONS_NO_RESULTS_ACCEPTED = -1;
-std::optional<int> SelectBestMatchingMoveIdx_ExtraProcessing_CustomSelection(SmallArray<AvailableParkourAction*>& availableParkourActions)
+struct CustomSelectedParkourMove
+{
+    AvailableParkourAction* m_action;
+    int m_idx;
+};
+CustomSelectedParkourMove SelectBestMatchingMoveIdx_ExtraProcessing_CustomSelection_DiveMove(SmallArray<AvailableParkourAction*>& availableParkourActions)
+{
+    if (!IsShouldTryForceDive())
+    {
+        return { nullptr, PARKOUR_ACTIONS_NO_RESULTS_ACCEPTED };
+    }
+    for (int i = 0; i < availableParkourActions.size; i++)
+    {
+        AvailableParkourAction* action = availableParkourActions[i];
+        EnumParkourAction actionType = action->GetEnumParkourAction();
+        if (actionType == EnumParkourAction::dive
+            || actionType == EnumParkourAction::swing_31_swingToSwing_mb
+            )
+        {
+            return { action, i };
+        }
+    }
+    return { nullptr, PARKOUR_ACTIONS_NO_RESULTS_ACCEPTED };
+}
+CustomSelectedParkourMove SelectBestMatchingMoveIdx_ExtraProcessing_CustomSelection_Spindescent(SmallArray<AvailableParkourAction*>& availableParkourActions)
 {
     if (!IsShouldTryForceTheSpindescentAnimation())
     {
-        return {};
-    }
-    if (!availableParkourActions.size)
-    {
-        return PARKOUR_ACTIONS_NO_RESULTS_ACCEPTED;
+        return { nullptr, PARKOUR_ACTIONS_NO_RESULTS_ACCEPTED };
     }
     for (int i = 0; i < availableParkourActions.size; i++)
     {
@@ -258,6 +284,12 @@ std::optional<int> SelectBestMatchingMoveIdx_ExtraProcessing_CustomSelection(Sma
                 spindescent->heightDifference = -4.04f;
                 constexpr std::array<float, 8> floatsForSpindescent = { -4.04f, 2.29f, 4.64f, 0.92f, 0.10f, 0.48f, 0.05f, 0.00f };
                 (std::array<float, 8>&)spindescent->heightDifference = floatsForSpindescent;
+
+                // See at 140133B74:
+                // If the value of `flt_204` is too close to 0, this action
+                // will get removed at the start of the sorting stage.
+                if (fabs(spindescent->simpleFitness) < 0.01f)
+                    spindescent->simpleFitness = 0.01f;
             };
             auto IsTargetSuitedForSpindescent = [&]() -> bool
             {
@@ -266,22 +298,59 @@ std::optional<int> SelectBestMatchingMoveIdx_ExtraProcessing_CustomSelection(Sma
             if (IsTargetSuitedForSpindescent())
             {
                 ForceSpindescentAnimation();
-                return i;
+                return { spindescent, i };
             }
         }
     }
-    return {};
+    return { nullptr, PARKOUR_ACTIONS_NO_RESULTS_ACCEPTED };
 }
 using BestMatchSelector_fnt = int(__fastcall*)(__int64 a1, __int64 a2, __int64 a3, __int64 a4, float a5, int a6, __int64 a7, __int64 a8, SmallArray<AvailableParkourAction*>* p_parkourActions);
 int SelectBestMatchingMoveIdx_ExtraProcessing(AllRegisters* params)
 {
     SmallArray<AvailableParkourAction*>& availableParkourActions = **(SmallArray<AvailableParkourAction*>**)(params->GetRSP() + 8 * 8);
-    std::optional<int> customSelectedAction = SelectBestMatchingMoveIdx_ExtraProcessing_CustomSelection(availableParkourActions);
-    if (customSelectedAction)
-    {
-        return *customSelectedAction;
-    }
-    int bestMatchIdx = ((BestMatchSelector_fnt)params->r10_)(
+    /*
+    The custom move selection is a little weird.
+    The idea is simple: the dive (via hotkey Mouse5) takes the highest priority (if available).
+    The spindescent takes the highest priority (if available) if the dive wasn't selected.
+    If neither was forced, let the game choose the next move normally.
+
+    Here's what I believe about the game's parkour system:
+    When the current parkour system (e.g. the `WhileOnWallSystem`) is updated
+    for the frame, the following things happen:
+    1. Current player input is gathered: camera,
+       movement direction (it's a Vector2f, for example "W" key corresponds to vector [0.0, 1.0],
+       and "A+W" == [-0.707, 0.707]),
+       the current "suggested parkour modifier" (e.g. ParkourUp, ParkourDown, ParkourStraight, TapJump).
+    2. Multiple "action scanners" (depending on the current parkour system) such as "Window Entry",
+       "Swing Turn", "Freefall Grab", "Turn Corner Inner/Outer" are initialized
+       then do their scanning (a scanner object searches for matches to one or many of the `EnumParkourAction`).
+    3. Depending on the player's input, scanners find potential parkour locations.
+       For example, when swinging on a horizontal bar, holding ParkourUp will only scan for locations above or ahead
+       of the player, but holding ParkourDown can scan way below.
+    4. The current scanner tests each of the potential locations it found to confirm it indeed fits a move type
+       that they scan for (this step is unclear to me).
+    5. A subclass of `AvailableParkourAction` corresponding to `EnumParkourAction` is created
+       and added to the `availableParkourActions` array.
+    6. By running each of the scanners, the `availableParkourActions` array is filled out.
+    7. The array of available actions is then sorted according to the value of:
+        actionFitness = defaultActionWeightForTheCurrentParkourMode * someCalculatedValueSpecificToTheCurrentEvaluatedAction
+       (this step is also not very clear to me)
+    8. The newly sorted array of available actions is then walked front to back; a couple of final checks are run
+       to determine that all conditions for the move are indeed satisfied
+       (for example, the EnterWindowFromWall action can be judged to be not satisfied unless the player
+       is fully leaning in the direction of that window).
+    9. The first action that is found to be fitting is selected as the next performed move.
+
+    This hook replaces (and optionally performs) steps 7-9 inclusively.
+    And here lies the kookiness of my custom selection algorithm:
+    I want the dive move to have higher priority than the spindescent, but
+    I have the best results when selecting the Spindescent move _before_ the available actions are sorted,
+    and the best results for the dive move _after_ the sorting.
+    So I search for the spindescent, run the sorting, search for the dive move,
+    then make my final selection.
+    */
+    auto [selectedSpindescent, _spindescentIdxBeforeSorting] = SelectBestMatchingMoveIdx_ExtraProcessing_CustomSelection_Spindescent(availableParkourActions);
+    int bestMatchIdxAfterNativeSorting = ((BestMatchSelector_fnt)params->r10_)(
         params->rcx_,
         params->rdx_,
         params->r8_,
@@ -292,7 +361,26 @@ int SelectBestMatchingMoveIdx_ExtraProcessing(AllRegisters* params)
         *(__int64*)(params->GetRSP() + 8 * 7),
         &availableParkourActions
         );
-    return bestMatchIdx;
+    auto [selectedDiveMove, selectedDiveMoveIdx] = SelectBestMatchingMoveIdx_ExtraProcessing_CustomSelection_DiveMove(availableParkourActions);
+
+    if (selectedDiveMove)
+    {
+        // The dive takes the highest priority.
+        return selectedDiveMoveIdx;
+    }
+    if (selectedSpindescent)
+    {
+        // The spindescent takes the second highest priority.
+        for (int i = 0; i < availableParkourActions.size; i++)
+        {
+            if (availableParkourActions[i] == selectedSpindescent)
+            {
+                return i;
+            }
+        }
+    }
+    // If nothing was forced, use the move that the game selected.
+    return bestMatchIdxAfterNativeSorting;
 }
 void WhenDecidingBestMatchingMove_ExtraProcessing(AllRegisters* params)
 {

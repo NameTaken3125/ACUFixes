@@ -377,6 +377,20 @@ public:
                 "\nPersonally, I think this makes the move too frequent, but if you're making one of those"
                 "\nwonderful parkour videos, you might find this useful."
                 "\nLike everything else, this was not tested in multiplayer."
+
+                "\nWhen holding down a new hotkey (Mouse5), the dive move takes an even higher priority"
+                "\nthan the Spindescent (the \"dive\" or the \"basejump\" is a kind of HighProfile jump"
+                "\nthat transitions you to a state where you're holding onto"
+                "\na swing/a horizontal bar/some hanging ropes/an overhanging roof"
+                "\nwith both hands and your feet dangle freely)."
+                "\nYour other input still matters. If the bar you're targeting is close and below,"
+                "\nyou'll need to press Sprint+ParkourDown+DiveHotkey."
+                "\nIf it's close and slightly higher than yourself or below but further away,"
+                "\nyou'll need to press Sprint+ParkourUp+DiveHotkey."
+                "\nPretty much as in unmodded game, you need to be able to judge the distance"
+                "\nand the appropriate \"parkour mode\", but you can now prioritize the dive."
+                "\nI'm not super happy with the new hotkey, but you can come to rely on it,"
+                "\nand this move has been requested twice."
             );
         }
     }
