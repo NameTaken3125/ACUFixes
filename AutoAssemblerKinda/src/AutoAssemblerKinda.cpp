@@ -244,7 +244,7 @@ ByteVector SymbolWithAnAddress::CopyCurrentBytes(size_t numBytes)
     result.m_bytes.resize(numBytes);
     uintptr_t readFrom = m_ResolvedAddr.value();
     DWORD oldProtect;
-    VirtualProtect((void*)readFrom, numBytes, PAGE_READWRITE, &oldProtect);
+    VirtualProtect((void*)readFrom, numBytes, PAGE_EXECUTE_READWRITE, &oldProtect);
     memcpy(&copiedBytes[0], (void*)readFrom, numBytes);
     VirtualProtect((void*)readFrom, numBytes, oldProtect, &oldProtect);
     return std::move(result);
