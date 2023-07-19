@@ -54,6 +54,7 @@ Matrix4f MakeSimpleDebugTransform(const Vector3f& position)
 
 
 
+#include "MainConfig.h"
 void DrawSuccessfulInjectionIndicatorOverlay()
 {
     ImGui::SetNextWindowBgAlpha(0.3f); // Transparent background
@@ -68,7 +69,13 @@ void DrawSuccessfulInjectionIndicatorOverlay()
 
     if (ImGui::Begin("Always enabled overlay", nullptr, window_flags))
     {
-        ImGui::Text("Overlay on. Press INSERT to open ImGui menu, press END to unload the mod.");
+        ImGui::Text(
+            "Press %s to open ImGui menu, press %s to unload the mod."
+            "\nThese hotkeys can be changed in the menu or in the config file (the default INSERT/END will still work)."
+            "\nThis overlay can be disabled there too. See `ACUFixes-readme.txt`."
+            , enum_reflection<VirtualKeys>::GetString(g_Config.hotkey_ToggleMenu)
+            , enum_reflection<VirtualKeys>::GetString(g_Config.hotkey_UnloadMod)
+            );
     }
     ImGui::End();
 }
@@ -127,8 +134,24 @@ void ImGui3D::WhatIsActuallyDrawnForFrame()
 void DrawBuiltinDebugCommands();
 void DrawPlayerVisualsControls();
 void DrawWeatherControls();
-
+#include "Enum_VirtualKeys.h"
+#include "ImGuiConfigUtils.h"
 std::filesystem::path& GetThisDLLAbsolutePath();
+void DrawModMenuControls()
+{
+    ImGui::Text(
+        "Mod menu hotkeys."
+        "\nYou can also change the hotkeys by manually editing"
+        "\nthe `acufixes-config.json` file in a text editor."
+    );
+    if (ImGui::Button("Open DLL's folder in File Explorer (has config)"))
+    {
+        system(("explorer \"" + GetThisDLLAbsolutePath().parent_path().string() + "\"").c_str());
+    }
+    ImGui::DrawEnumPicker("Mod menu hotkey", g_Config.hotkey_ToggleMenu.get(), ImGuiComboFlags_HeightLarge);
+    ImGui::DrawEnumPicker("Unload mod hotkey", g_Config.hotkey_UnloadMod.get(), ImGuiComboFlags_HeightLarge);
+}
+
 #include "MainConfig.h"
 bool g_showDevExtraOptions = false;
 bool g_DrawImGui3DifDevExtrasEnabled = true;
@@ -149,8 +172,6 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
                 if (ImGuiCTX::WindowChild _{ "MainTabChild" })
                 {
                     DrawHacksControls();
-                    ImGui::Separator();
-                    ImGui::Checkbox("Show the \"is injected\" indicator", &g_Config.imgui_showSuccessfulInjectionIndicator.get());
                 }
             }
             if (ImGuiCTX::Tab _mainTab{ "Weather" })
@@ -162,10 +183,9 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
             }
             if (ImGuiCTX::Tab _extraoptions{ "Extra" })
             {
-                if (ImGui::Button("Open DLL's folder in File Explorer (has config)"))
-                {
-                    system(("explorer \"" + GetThisDLLAbsolutePath().parent_path().string() + "\"").c_str());
-                }
+                DrawModMenuControls();
+                ImGui::Separator();
+                ImGui::Checkbox("Show the \"is injected\" indicator", &g_Config.imgui_showSuccessfulInjectionIndicator.get());
                 ImGui::Separator();
                 ImGui::Checkbox("Show development experiments", &g_showDevExtraOptions);
                 if (ImGui::IsItemHovered(0))

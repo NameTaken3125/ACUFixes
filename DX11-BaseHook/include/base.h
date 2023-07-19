@@ -66,8 +66,8 @@ namespace Base
 
 		namespace Keys
 		{
-			const UINT ToggleMenu = VK_INSERT;
-			const UINT DetachDll  = VK_END;
+			extern UINT ToggleMenu;
+			extern UINT DetachDll;
 		}
 	}
 

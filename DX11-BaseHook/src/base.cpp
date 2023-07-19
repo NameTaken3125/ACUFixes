@@ -27,6 +27,9 @@ bool                    Base::Data::IsUsingPresentInnerHook = false;
 
 Base::Settings*         Base::g_Settings = nullptr;
 
+UINT Base::Data::Keys::ToggleMenu = VK_INSERT;
+UINT Base::Data::Keys::DetachDll = VK_END;
+
 //Functions
 
 void Base::Start(Base::Settings& settings)

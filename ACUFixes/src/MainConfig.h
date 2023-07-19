@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Enum_BindableKeyCode_Keyboard.h"
+#include "Enum_VirtualKeys.h"
 
 namespace MainConfig {
 
@@ -18,6 +19,8 @@ struct ConfigTop : YAConfigSection {
     YACSTOR(ConfigTop);
     ACM(imgui_useImGui, bool, BooleanAdapter, true);
     ACM(imgui_showSuccessfulInjectionIndicator, bool, BooleanAdapter, true);
+    ACM(hotkey_ToggleMenu, VirtualKeys, EnumAdapter_template<VirtualKeys>, VirtualKeys::KEYBOARD_INSERT);
+    ACM(hotkey_UnloadMod, VirtualKeys, EnumAdapter_template<VirtualKeys>, VirtualKeys::KEYBOARD_END);
     struct Hacks : YAConfigSection {
         YACSTOR(Hacks);
         struct EnterWindows : YAConfigSection {

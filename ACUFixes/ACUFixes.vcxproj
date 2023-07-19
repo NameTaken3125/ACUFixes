@@ -229,6 +229,7 @@
     <ClCompile Include="src\WhatIsDrawnInImGui.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Enum_VirtualKeys.h" />
     <ClInclude Include="src\Hack_DontRandomlyTurn180Degrees.h" />
     <ClInclude Include="src\Hack_MoreReliableQuickshot.h" />
     <ClInclude Include="src\Hack_NoMoreFailedBombThrows.h" />

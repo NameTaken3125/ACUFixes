@@ -9,15 +9,14 @@ LRESULT CALLBACK Base::Hooks::WndProc_BasehookControlsThenForwardToImGuiAndThenT
 
 	if (uMsg == WM_KEYDOWN)
 	{
-		switch (wParam)
+		if (wParam == Data::Keys::ToggleMenu)
 		{
-		case Data::Keys::ToggleMenu:
 			Data::ShowMenu = !Data::ShowMenu;
-            ImGui::GetIO().MouseDrawCursor = Data::ShowMenu;
-			break;
-		case Data::Keys::DetachDll:
+			ImGui::GetIO().MouseDrawCursor = Data::ShowMenu;
+		}
+		else if (wParam == Data::Keys::DetachDll)
+		{
 			Base::Detach();
-			break;
 		}
 	}
 	ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam);

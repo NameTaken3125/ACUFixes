@@ -3,6 +3,7 @@
 #include "base.h"
 #include "MyVariousHacks.h"
 #include "MyLog.h"
+#include "MainConfig.h"
 
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK WndProc_HackControls(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -19,20 +20,19 @@ LRESULT CALLBACK WndProc_HackControls(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
         const bool isKeyJustPressed = !isPreviouslyPressed;
         if (isKeyJustPressed)
         {
-            switch (keyCode)
-            {
-            case Base::Data::Keys::ToggleMenu:
+            if (keyCode == Base::Data::Keys::ToggleMenu
+                || keyCode == (UINT)g_Config.hotkey_ToggleMenu.get())
             {
                 if (Base::Data::IsImGuiInitialized)
                 {
                     Base::Data::ShowMenu = !Base::Data::ShowMenu;
                     ImGui::GetIO().MouseDrawCursor = Base::Data::ShowMenu;
                 }
-                break;
             }
-            case Base::Data::Keys::DetachDll:
+            else if (keyCode == Base::Data::Keys::DetachDll
+                || keyCode == (UINT)g_Config.hotkey_UnloadMod.get())
+            {
                 Base::Detach();
-                break;
             }
             MyVariousHacks::MyHacks_OnKeyJustPressed(keyCode);
         }
