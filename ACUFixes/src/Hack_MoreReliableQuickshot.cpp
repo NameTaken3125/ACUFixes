@@ -135,6 +135,8 @@ struct PlayerQuickshotState
     Functor_Quickshot& m_functorQS;
     bool m_isShotDischargedYet = false;
     bool m_isSupposedToHaveEndedAlready = false;
+    bool m_isAssassinationStartedAfterQuickshotStarted = false;
+    bool m_isAssassinationEndedAfterQuickshotStarted = false;
     PlayerQuickshotState(Functor_Quickshot& functorQS) : m_functorQS(functorQS) {}
 };
 struct PlayerAssassinationAttemptState
@@ -147,17 +149,36 @@ void PlayerHasJustEnteredQuickshot(Functor_Quickshot& functorQS)
 {
     g_PlayerQuickshot.emplace(functorQS);
 }
+DEFINE_GAME_FUNCTION(HumanStatesHolder__canUnglueWristbow, 0x141AFAE60, void, __fastcall, (HumanStatesHolder* a1, Entity* a2, __int64 p_0));
+void TryToCleanUpQuickshotAnimationToPreventArmOutstretchedBug()
+{
+    HumanStatesHolder* humanStates = HumanStatesHolder::GetForPlayer();
+    if (!humanStates) { return; }
+    HumanStatesHolder__canUnglueWristbow(humanStates, humanStates->ownerEntity, 0);
+}
 void PlayerHasJustExitedQuickshot()
 {
+    if (g_PlayerQuickshot->m_isAssassinationEndedAfterQuickshotStarted)
+    {
+        TryToCleanUpQuickshotAnimationToPreventArmOutstretchedBug();
+    }
     g_PlayerQuickshot.reset();
 }
 void PlayerJustStartedAssassinationAttempt()
 {
     g_PlayerAssassinationAttemptState.emplace();
+    if (g_PlayerQuickshot)
+    {
+        g_PlayerQuickshot->m_isAssassinationStartedAfterQuickshotStarted = true;
+    }
 }
 void PlayerJustEndedAssassinationAttempt()
 {
     g_PlayerAssassinationAttemptState.reset();
+    if (g_PlayerQuickshot)
+    {
+        g_PlayerQuickshot->m_isAssassinationEndedAfterQuickshotStarted = true;
+    }
 }
 bool BetterQuickshot_IsPlayerInAssassination()
 {

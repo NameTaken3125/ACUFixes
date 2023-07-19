@@ -302,7 +302,10 @@ void DrawWeatherControls()
     std::optional<WorldSection> recognizedCurrentLocation = WhereIsPlayerNow();
     if (!recognizedCurrentLocation)
     {
-        ImGui::Text("You're in unsupported location. The weather sliders might have an effect or might not.");
+        ImGui::Text(
+            "You're in unsupported location."
+            "\nThe weather sliders might have an effect or might not."
+        );
         WeatherControls& weatherSettings = WeatherControls::GetSingleton();
         if (ImGui::SliderFloat("Cloudiness, kind of", &weatherSettings.cloudinessCurrent, 0.0f, 1.0f))
         {

@@ -29,7 +29,6 @@ static bool BombQuickthrowEnabler_isNeedToFixRightArm()
 {
     return g_BombQuickthrowEnabler_isNeedToFixRightArm;
 }
-bool g_BombQuickthrowEnabler_isLevelJustReloaded = false;
 void WhenCheckingIfBombShouldBeQuickDropped_ForceIfSprinting_inner(AllRegisters* params)
 {
     bool doBombDrop = params->r15_ & 0xFF;
@@ -141,33 +140,7 @@ void WhenFillingArrayOfStateEnumsToUpdate_EnableChecksForBombQuickDrop(AllRegist
 }
 
 
-void WhenLevelReloaded_MakePreparationsToAvoidTPose(AllRegisters* params)
-{
-    g_BombQuickthrowEnabler_isLevelJustReloaded = true;
-}
 class HasLanterndlcComponent;
-DEFINE_GAME_FUNCTION(DisableThisToMagicallyUnbreakAssassinationsAndDropBombs_C, 0x14265DAA0, int32, __fastcall, (HasLanterndlcComponent* a1, char a2));
-void WhenUpdatingPlayerStatesMakingSomeStrangeCall_DoMagicToAllowQuickthrowAndAvoidTPose(AllRegisters* params)
-{
-    auto* someImportantObject = (HasLanterndlcComponent*)params->rcx_;
-    char a2 = params->rdx_ & 0xFF;
-    int32 strangeFunctionResult = DisableThisToMagicallyUnbreakAssassinationsAndDropBombs_C(someImportantObject, a2);
-    if (strangeFunctionResult == 1)
-    {
-        const bool isLevelJustReloaded = g_BombQuickthrowEnabler_isLevelJustReloaded;
-        if (isLevelJustReloaded)
-        {
-            // Leave it be. The level has just reloaded. If I change something here,
-            // Arno will be left in T-pose.
-            g_BombQuickthrowEnabler_isLevelJustReloaded = false;
-        }
-        else
-        {
-            strangeFunctionResult = 0;
-        }
-    }
-    params->GetRAX() = strangeFunctionResult;
-}
 class HumanStatesHolder;
 DEFINE_GAME_FUNCTION(UpdateState_ReloadRangedWeapon, 0x142663A40, __int64, __fastcall, (HasLanterndlcComponent* a1, HumanStatesHolder* a2, unsigned __int8 a3));
 void WhenUpdateGunReloadChecker_DisableIfQuickdropWasForceEnabled(AllRegisters* params)
@@ -424,22 +397,26 @@ void WhenCheckingIfLeaveCombatBySprint_MakeSureIsReallyTryingToSprint(AllRegiste
     }
 }
 
+DEFINE_GAME_FUNCTION(DisableThisToMagicallyUnbreakAssassinationsAndDropBombs, 0x14265DDA0, uint32, __fastcall, (HasLanterndlcComponent* a1, HumanStatesHolder* a2, unsigned __int8 a3));
+void WhenMakingSomeStrangeCallInNoncombatUpdates(AllRegisters* params)
+{
+    if (g_BombQuickthrowEnabler_bombDropCheckerHasBeenForceEnabledThisFrame)
+    {
+        params->GetRAX() = 0;
+        return;
+    }
+    params->GetRAX() = DisableThisToMagicallyUnbreakAssassinationsAndDropBombs(
+        (HasLanterndlcComponent*)params->rcx_,
+        (HumanStatesHolder*)params->rdx_,
+        params->r8_ & 0xFF
+    );
+}
 MoreSituationsToDropBomb::MoreSituationsToDropBomb()
 {
     auto WhenBuildingArrayOfStatesToBeUpdated_AddQuickdropChecker = [&]() {
         uintptr_t whenFillingArrayOfStateEnumsToUpdate = 0x142656F47;
         PresetScript_CCodeInTheMiddle(whenFillingArrayOfStateEnumsToUpdate, 5,
             WhenFillingArrayOfStateEnumsToUpdate_EnableChecksForBombQuickDrop, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
-    };
-    auto StrangeFixToUnbreakCombatAndAssassinations = [&]() {
-        uintptr_t someStrangeCallThatCausesCombatToBeBrokenIfQuickthrowIsEnabled = 0x14265DDAD;
-        PresetScript_CCodeInTheMiddle(someStrangeCallThatCausesCombatToBeBrokenIfQuickthrowIsEnabled, 5,
-            WhenUpdatingPlayerStatesMakingSomeStrangeCall_DoMagicToAllowQuickthrowAndAvoidTPose, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, false);
-    };
-    auto StrangeFixForTheStrangeFixToAvoidTPose = [&]() {
-        uintptr_t whenLevelReloaded_somehowAssociatedWithTPose = 0x141A03880;
-        PresetScript_CCodeInTheMiddle(whenLevelReloaded_somehowAssociatedWithTPose, 7,
-            WhenLevelReloaded_MakePreparationsToAvoidTPose, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
     };
     auto DisableGunReloadIfQuickdropWasForceEnabled = [&]() {
         uintptr_t whenUpdateGunReloadChecker = 0x14265D18E;
@@ -448,9 +425,26 @@ MoreSituationsToDropBomb::MoreSituationsToDropBomb()
             WhenUpdateGunReloadChecker_DisableIfQuickdropWasForceEnabled, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, false);
     };
 
+    auto StrangeFixToUnbreakCombatAndAssassinations_v2 = [&]()
+    {
+        // When I enable the "Bomb drop updater", I also enable plenty of other things
+        // like the calls that check whether quickshot needs to be started, the looting state, interaction,
+        // but also this one strange call.
+        // If this call is enabled, the "extended bomb dropping ability" will work fine
+        // until you try to assassinate or start combat, in which case the player's state
+        // will glitch out, repeatedly and rapidly "reset".
+        // Interestingly, skipping this strange call entirely changes pretty much nothing in the game,
+        // it seems, until you reload the level and see Arno standing in an A-pose. What is it doing?
+        // Why is it called every frame? I dunno.
+        // This strange fix consists of _not_ making that strange call if the "bomb drop updater"
+        // was force enabled for the current frame.
+        uintptr_t whenMakingSomeStrangeCallInTheNoncombatUpdates = 0x14265D137;
+        PresetScript_CCodeInTheMiddle(whenMakingSomeStrangeCallInTheNoncombatUpdates, 5,
+            WhenMakingSomeStrangeCallInNoncombatUpdates, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, false);
+    };
+
     WhenBuildingArrayOfStatesToBeUpdated_AddQuickdropChecker();
-    StrangeFixToUnbreakCombatAndAssassinations();
-    StrangeFixForTheStrangeFixToAvoidTPose();
+    StrangeFixToUnbreakCombatAndAssassinations_v2();
     DisableGunReloadIfQuickdropWasForceEnabled();
 
     // Also allow during a wallrun and when standing in the V-shape of a tree or flagpole.
