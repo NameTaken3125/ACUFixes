@@ -171,7 +171,7 @@ void PlaySoundSlowmotionEnd()
 #include "MainConfig.h"
 static bool IsSlowMotionTrickDisabled()
 {
-    return !g_Config.hacks->slowmotionTrick;
+    return !g_Config.hacks->slowmotionTrick->isActive;
 }
 
 
@@ -209,7 +209,7 @@ public:
             {
                 return;
             }
-            if (ACU::Input::IsPressed(MouseButton::Mouse4))
+            if (ACU::Input::IsPressed(g_Config.hacks->slowmotionTrick->hotkey))
             {
                 PlaySoundSlowmotionStart();
                 g_SlowmotionManager.PlayTimecurve_SmoothTransition(slowmoPhaseTargetTimescale, easeInDuration);
@@ -262,15 +262,22 @@ void DoSlowMotionTrick()
     smt.Update();
     g_SlowmotionManager.Update();
 }
+#include "ImGuiCTX.h"
+#include "ImGuiConfigUtils.h"
 void DrawSlowMotionTrickControls()
 {
-    ImGui::Checkbox("Enable Slow Motion Trick", &g_Config.hacks->slowmotionTrick.get());
+    ImGui::Checkbox("Enable Slow Motion Trick", &g_Config.hacks->slowmotionTrick->isActive.get());
     if (ImGui::IsItemHovered())
     {
         ImGui::SetTooltip(
             "Press \"Mouse Button 4\" to activate a brief slowmotion sequence.\n"
             "Try doing that right _after_ something cool happens."
         );
+    }
+    if (g_Config.hacks->slowmotionTrick->isActive)
+    {
+        ImGuiCTX::Indent _ind;
+        ImGui::DrawEnumPicker("Slow Motion Trick hotkey", g_Config.hacks->slowmotionTrick->hotkey.get(), ImGuiComboFlags_HeightLarge);
     }
 }
 void DrawSlowMotionControls()

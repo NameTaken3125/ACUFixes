@@ -64,18 +64,19 @@ BallisticProjectileAimingProcess& GetLastBallisticAimingProcess(HumanStatesHolde
         return humanStates.aimingDefault;
     }
 }
+#include "MainConfig.h"
 void WhenUpdatingCameraVirtualRotation_FlipWhenMiddleButtonIsPressed(AllRegisters* params)
 {
     ACUPlayerCameraComponent& cam = *(ACUPlayerCameraComponent*)params->r14_;
     constexpr float pi = 3.141592653589793238462643383279502884f;
     bool lookbehindStatusChanged = false;
     bool doLookbehind = false;
-    if (ACU::Input::IsJustPressed(MouseButton::Middle))
+    if (ACU::Input::IsJustPressed(g_Config.hacks->lookbehindButton->hotkey.get()))
     {
         lookbehindStatusChanged = true;
         doLookbehind = true;
     }
-    else if (ACU::Input::IsJustReleased(MouseButton::Middle))
+    else if (ACU::Input::IsJustReleased(g_Config.hacks->lookbehindButton->hotkey.get()))
     {
         lookbehindStatusChanged = true;
         doLookbehind = false;

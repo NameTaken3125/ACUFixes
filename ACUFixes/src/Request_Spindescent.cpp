@@ -202,8 +202,8 @@ bool IsShouldTryForceTheSpindescentAnimation()
 }
 static bool IsShouldTryForceDive()
 {
-    return g_Config.personalRequests->parkourHelper->diveHelper
-        && ACU::Input::IsPressed(MouseButton::Mouse5);
+    return g_Config.personalRequests->parkourHelper->diveHelper->isActive
+        && ACU::Input::IsPressed(g_Config.personalRequests->parkourHelper->diveHelper->hotkey.get());
 }
 constexpr int PARKOUR_ACTIONS_NO_RESULTS_ACCEPTED = -1;
 struct CustomSelectedParkourMove

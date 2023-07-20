@@ -266,6 +266,11 @@ public:
                 "Warning: doesn't work when aiming Guillotine Gun."
             );
         }
+        if (lookbehindButton.IsActive())
+        {
+            ImGuiCTX::Indent _ind;
+            ImGui::DrawEnumPicker("Lookbehind hotkey", g_Config.hacks->lookbehindButton->hotkey.get(), ImGuiComboFlags_HeightLarge);
+        }
         DrawSlowMotionTrickControls();
         if (g_showDevExtraOptions)
         {
@@ -390,7 +395,7 @@ public:
                     "\nLike everything else, this was not tested in multiplayer."
                 );
             }
-            ImGui::Checkbox("Dive helper", &g_Config.personalRequests->parkourHelper->diveHelper.get());
+            ImGui::Checkbox("Dive helper", &g_Config.personalRequests->parkourHelper->diveHelper->isActive.get());
             if (ImGui::IsItemHovered())
             {
                 ImGui::SetTooltip(
@@ -408,6 +413,11 @@ public:
                     "\nI'm not super happy with the new hotkey, but you can come to rely on it,"
                     "\nand this move has been requested twice."
                 );
+            }
+            if (g_Config.personalRequests->parkourHelper->diveHelper->isActive.get())
+            {
+                ImGuiCTX::Indent _ind2;
+                ImGui::DrawEnumPicker("Dive helper hotkey", g_Config.personalRequests->parkourHelper->diveHelper->hotkey.get(), ImGuiComboFlags_HeightLarge);
             }
         }
     }
@@ -429,7 +439,7 @@ public:
         moreSituationsToDropBombs.Toggle(hacksSection->moreSituationsToDropBombs->isActive);
         moreReliableQuickshot.Toggle(hacksSection->moreReliableQuickshot->isActive);
         automaticallyReloadWeaponsWhenRefillAllInShops.Toggle(hacksSection->automaticallyReloadWeaponsWhenRefillAllInShops);
-        lookbehindButton.Toggle(hacksSection->lookbehindWhenPressingMiddleMouseButton);
+        lookbehindButton.Toggle(hacksSection->lookbehindButton->isActive);
 
         auto& cheatsSection = cfg.cheats;
         dontDecreaseRemainingAmmo.Toggle(cheatsSection->infiniteAmmo);
@@ -455,7 +465,7 @@ public:
         hacksSection->moreSituationsToDropBombs->isActive = moreSituationsToDropBombs.IsActive();
         hacksSection->moreReliableQuickshot->isActive = moreReliableQuickshot.IsActive();
         hacksSection->automaticallyReloadWeaponsWhenRefillAllInShops = automaticallyReloadWeaponsWhenRefillAllInShops.IsActive();
-        hacksSection->lookbehindWhenPressingMiddleMouseButton = lookbehindButton.IsActive();
+        hacksSection->lookbehindButton->isActive = lookbehindButton.IsActive();
 
         auto& cheatsSection = cfg.cheats;
         cheatsSection->infiniteAmmo = dontDecreaseRemainingAmmo.IsActive();

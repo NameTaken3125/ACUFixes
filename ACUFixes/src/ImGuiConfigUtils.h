@@ -8,7 +8,7 @@ bool DrawEnumPicker(const char* label, EnumType& currentValueInOut, ImGuiComboFl
     auto itemsStrings = enum_reflection<EnumType>::GetAllStrings();
     auto itemsValues = enum_reflection<EnumType>::GetAllValues();
     auto it = std::find(itemsValues.begin(), itemsValues.end(), currentValueInOut);
-    int item_current_idx = it - itemsValues.begin();                    // Here our selection data is an index.
+    int item_current_idx = (int)(it - itemsValues.begin());                    // Here our selection data is an index.
     if (ImGui::BeginCombo(label, itemsStrings[item_current_idx], flags))
     {
         for (int n = 0; n < itemsStrings.size(); n++)

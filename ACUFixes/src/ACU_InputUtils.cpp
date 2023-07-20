@@ -133,6 +133,63 @@ bool IsPressed(BindableKeyCode_Keyboard keycode)
 {
     return ACU::Input::Get_InputContainerBig()->isPressed_byScancode[(uint32)keycode];
 }
+bool IsPressed(BindableKeyCode keycode)
+{
+    constexpr uint16 keyboardRange_start = 1;
+    constexpr uint16 keyboardRange_end = 255;
+    constexpr uint16 mouseRange_start = (uint16)BindableKeyCode::MOUSE_LMB;
+    constexpr uint16 mouseRange_end = (uint16)BindableKeyCode::MOUSE_X5;
+    const uint16 keycodeInt = (uint16)keycode;
+    if (keycodeInt >= mouseRange_start && keycodeInt <= mouseRange_end)
+    {
+        const uint8 mouseKeyCode = keycodeInt - mouseRange_start;
+        return IsPressed((MouseButton)mouseKeyCode);
+    }
+    if (keycodeInt >= keyboardRange_start && keycodeInt <= keyboardRange_end)
+    {
+        const uint8 keyboardKeycode = keycodeInt;
+        return IsPressed((BindableKeyCode_Keyboard)keyboardKeycode);
+    }
+    return false;
+}
+bool IsJustPressed(BindableKeyCode keycode)
+{
+    constexpr uint16 keyboardRange_start = 1;
+    constexpr uint16 keyboardRange_end = 255;
+    constexpr uint16 mouseRange_start = (uint16)BindableKeyCode::MOUSE_LMB;
+    constexpr uint16 mouseRange_end = (uint16)BindableKeyCode::MOUSE_X5;
+    const uint16 keycodeInt = (uint16)keycode;
+    if (keycodeInt >= mouseRange_start && keycodeInt <= mouseRange_end)
+    {
+        const uint8 mouseKeyCode = keycodeInt - mouseRange_start;
+        return IsJustPressed((MouseButton)mouseKeyCode);
+    }
+    if (keycodeInt >= keyboardRange_start && keycodeInt <= keyboardRange_end)
+    {
+        const uint8 keyboardKeycode = keycodeInt;
+        return IsJustPressed((BindableKeyCode_Keyboard)keyboardKeycode);
+    }
+    return false;
+}
+bool IsJustReleased(BindableKeyCode keycode)
+{
+    constexpr uint16 keyboardRange_start = 1;
+    constexpr uint16 keyboardRange_end = 255;
+    constexpr uint16 mouseRange_start = (uint16)BindableKeyCode::MOUSE_LMB;
+    constexpr uint16 mouseRange_end = (uint16)BindableKeyCode::MOUSE_X5;
+    const uint16 keycodeInt = (uint16)keycode;
+    if (keycodeInt >= mouseRange_start && keycodeInt <= mouseRange_end)
+    {
+        const uint8 mouseKeyCode = keycodeInt - mouseRange_start;
+        return IsJustReleased((MouseButton)mouseKeyCode);
+    }
+    if (keycodeInt >= keyboardRange_start && keycodeInt <= keyboardRange_end)
+    {
+        const uint8 keyboardKeycode = keycodeInt;
+        return IsJustReleased((BindableKeyCode_Keyboard)keyboardKeycode);
+    }
+    return false;
+}
 bool IsPressed(MouseButton mouseBtn)
 {
     return ACU::Input::Get_InputContainerBig()->mouseState.mouseButtonStates[(uint32)mouseBtn];

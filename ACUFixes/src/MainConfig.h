@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Enum_BindableKeyCode_Keyboard.h"
+#include "Enum_BindableKeyCode.h"
 #include "Enum_VirtualKeys.h"
 
 namespace MainConfig {
@@ -27,13 +27,13 @@ struct ConfigTop : YAConfigSection {
             YACSTOR(EnterWindows);
             ACM(isActive, bool, BooleanAdapter, true);
             ACM(alsoEnterNearbyHidespotClosets, bool, BooleanAdapter, true);
-            ACM(enterWindowsButton, BindableKeyCode_Keyboard, EnumAdapter_template<BindableKeyCode_Keyboard>, BindableKeyCode_Keyboard::K_R);
+            ACM(enterWindowsButton, BindableKeyCode, EnumAdapter_template<BindableKeyCode>, BindableKeyCode::KEYBOARD_R);
         };
         ACM(enterWindowsByPressingAButton, EnterWindows, YAConfigSectionAdapter, );
         struct MenacingWalk : YAConfigSection {
             YACSTOR(MenacingWalk);
             ACM(isActive, bool, BooleanAdapter, true);
-            ACM(autowalkButton, BindableKeyCode_Keyboard, EnumAdapter_template<BindableKeyCode_Keyboard>, BindableKeyCode_Keyboard::K_B);
+            ACM(autowalkButton, BindableKeyCode, EnumAdapter_template<BindableKeyCode>, BindableKeyCode::KEYBOARD_B);
         };
         ACM(menacingWalkAndAutowalk, MenacingWalk, YAConfigSectionAdapter, );
         ACM(changeZoomLevelsWhenAimingBombs, bool, BooleanAdapter, true);
@@ -62,11 +62,21 @@ struct ConfigTop : YAConfigSection {
         struct HoodControls : YAConfigSection {
             YACSTOR(HoodControls);
             ACM(isActive, bool, BooleanAdapter, true);
-            ACM(hoodToggleButton, BindableKeyCode_Keyboard, EnumAdapter_template<BindableKeyCode_Keyboard>, BindableKeyCode_Keyboard::K_H);
+            ACM(hoodToggleButton, BindableKeyCode, EnumAdapter_template<BindableKeyCode>, BindableKeyCode::KEYBOARD_H);
         };
         ACM(hoodControls, HoodControls, YAConfigSectionAdapter, );
-        ACM(lookbehindWhenPressingMiddleMouseButton, bool, BooleanAdapter, false);
-        ACM(slowmotionTrick, bool, BooleanAdapter, false);
+        struct YACS_LookbehindButton : YAConfigSection {
+            YACSTOR(YACS_LookbehindButton);
+            ACM(isActive, bool, BooleanAdapter, false);
+            ACM(hotkey, BindableKeyCode, EnumAdapter_template<BindableKeyCode>, BindableKeyCode::MOUSE_MMB);
+        };
+        ACM(lookbehindButton, YACS_LookbehindButton, YAConfigSectionAdapter, );
+        struct YACS_SlowmotionTrick : YAConfigSection {
+            YACSTOR(YACS_SlowmotionTrick);
+            ACM(isActive, bool, BooleanAdapter, false);
+            ACM(hotkey, BindableKeyCode, EnumAdapter_template<BindableKeyCode>, BindableKeyCode::MOUSE_X4);
+        };
+        ACM(slowmotionTrick, YACS_SlowmotionTrick, YAConfigSectionAdapter, );
     };
     ACM(hacks, Hacks, YAConfigSectionAdapter, );
     struct Cheats : YAConfigSection {
@@ -76,7 +86,7 @@ struct ConfigTop : YAConfigSection {
             ACM(isActive, bool, BooleanAdapter, false);
             ACM(doReplaceNormalLampWithMagical, bool, BooleanAdapter, false);
             ACM(doUnlockMovementWithTheBatlamp, bool, BooleanAdapter, true);
-            ACM(batlampChargeModeButton, BindableKeyCode_Keyboard, EnumAdapter_template<BindableKeyCode_Keyboard>, BindableKeyCode_Keyboard::K_N);
+            ACM(batlampChargeModeButton, BindableKeyCode, EnumAdapter_template<BindableKeyCode>, BindableKeyCode::KEYBOARD_N);
         };
         ACM(batlampOfFranciadeManipulations, BatlampOfFranciadeCfg, YAConfigSectionAdapter, );
         ACM(infiniteAmmo, bool, BooleanAdapter, false);
@@ -88,7 +98,12 @@ struct ConfigTop : YAConfigSection {
             YACSTOR(YACS_ParkourHelper);
             ACM(isActive, bool, BooleanAdapter, false);
             ACM(spinningDescentHelper, bool, BooleanAdapter, true);
-            ACM(diveHelper, bool, BooleanAdapter, true);
+            struct YACS_DiveHelper : YAConfigSection {
+                YACSTOR(YACS_DiveHelper);
+                ACM(isActive, bool, BooleanAdapter, true);
+                ACM(hotkey, BindableKeyCode, EnumAdapter_template<BindableKeyCode>, BindableKeyCode::MOUSE_X5);
+            };
+            ACM(diveHelper, YACS_DiveHelper, YAConfigSectionAdapter, );
         };
         ACM(parkourHelper, YACS_ParkourHelper, YAConfigSectionAdapter, );
     };

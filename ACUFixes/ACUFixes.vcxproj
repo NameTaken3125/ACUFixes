@@ -229,6 +229,8 @@
     <ClCompile Include="src\WhatIsDrawnInImGui.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Enum_BindableKeyCode.h" />
+    <ClInclude Include="src\Enum_BindableKeyCode_Keyboard.h" />
     <ClInclude Include="src\Enum_VirtualKeys.h" />
     <ClInclude Include="src\Hack_DontRandomlyTurn180Degrees.h" />
     <ClInclude Include="src\Hack_MoreReliableQuickshot.h" />
@@ -242,7 +244,6 @@
     <ClInclude Include="src\Cheat_DisguiseUpgrades.h" />
     <ClInclude Include="src\Cheat_Health.h" />
     <ClInclude Include="src\Cheat_PretendYoureInFranciade.h" />
-    <ClInclude Include="src\Enum_BindableKeyCode_Keyboard.h" />
     <ClInclude Include="src\Hacks_VariousExperiments.h" />
     <ClInclude Include="src\Hack_AimFromPeaks.h" />
     <ClInclude Include="src\Hack_BreakfallAndLedgeGrab.h" />
