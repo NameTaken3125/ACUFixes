@@ -1,0 +1,18 @@
+EXPORTS
+	GetFileVersionInfoA=GetFileVersionInfoA_wrapper @1
+	GetFileVersionInfoByHandle=GetFileVersionInfoByHandle_wrapper @2
+	GetFileVersionInfoExA=GetFileVersionInfoExA_wrapper @3
+	GetFileVersionInfoExW=GetFileVersionInfoExW_wrapper @4
+	GetFileVersionInfoSizeA=GetFileVersionInfoSizeA_wrapper @5
+	GetFileVersionInfoSizeExA=GetFileVersionInfoSizeExA_wrapper @6
+	GetFileVersionInfoSizeExW=GetFileVersionInfoSizeExW_wrapper @7
+	GetFileVersionInfoSizeW=GetFileVersionInfoSizeW_wrapper @8
+	GetFileVersionInfoW=GetFileVersionInfoW_wrapper @9
+	VerFindFileA=VerFindFileA_wrapper @10
+	VerFindFileW=VerFindFileW_wrapper @11
+	VerInstallFileA=VerInstallFileA_wrapper @12
+	VerInstallFileW=VerInstallFileW_wrapper @13
+	VerLanguageNameA=VerLanguageNameA_wrapper @14
+	VerLanguageNameW=VerLanguageNameW_wrapper @15
+	VerQueryValueA=VerQueryValueA_wrapper @16
+	VerQueryValueW=VerQueryValueW_wrapper @17
