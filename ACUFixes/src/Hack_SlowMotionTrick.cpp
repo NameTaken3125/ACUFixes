@@ -270,7 +270,7 @@ void DrawSlowMotionTrickControls()
     if (ImGui::IsItemHovered())
     {
         ImGui::SetTooltip(
-            "Press \"Mouse Button 4\" to activate a brief slowmotion sequence.\n"
+            "Press a hotkey (default \"Mouse Button 4\") to activate a brief slowmotion sequence.\n"
             "Try doing that right _after_ something cool happens."
         );
     }

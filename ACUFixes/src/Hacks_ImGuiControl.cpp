@@ -25,8 +25,9 @@
 #include "Hack_ReloadRangedWeaponsWhenRefillAllInShop.h"
 #include "Hack_MoreReliableQuickshot.h"
 #include "Hack_DontRandomlyTurn180Degrees.h"
-#include "Hack_LookbehindButton.h"
+#include "Hack_NoWaitForUnsafeEject.h"
 
+#include "Hack_LookbehindButton.h"
 #include "Hack_WhistleAbility.h"
 #include "Hacks_VariousExperiments.h"
 
@@ -67,6 +68,7 @@ public:
     AutoAssembleWrapper<DontRandomlyTurn180Degrees> dontRandomlyTurn180degrees;
     AutoAssembleWrapper<ReloadRangedWeaponsWhenRefillAllInShop> automaticallyReloadWeaponsWhenRefillAllInShops;
     AutoAssembleWrapper<MoreReliableQuickshot> moreReliableQuickshot;
+    AutoAssembleWrapper<NoWaitForUnsafeEject> noWaitForUnsafeEject;
 
     // Unused and unfinished
     AutoAssembleWrapper<PlayWithFOV> fovGames;
@@ -258,11 +260,20 @@ public:
         }
         ImGui::DrawCheckboxForHack(automaticallyReloadWeaponsWhenRefillAllInShops, "Automatically reload weapons when using \"Refill All\" in shops");
         DrawHoodControls();
+        ImGui::DrawCheckboxForHack(noWaitForUnsafeEject, "No waiting period for unsafe wall eject");
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::SetTooltip(
+                "In places where you are able to perform an unsafe backeject from a wall"
+                "\nthe game normally waits for 1 second after you stop moving"
+                "\nbefore letting you do so. This removes that waiting period."
+            );
+        }
         ImGui::DrawCheckboxForHack(lookbehindButton, "Lookbehind button");
         if (ImGui::IsItemHovered())
         {
             ImGui::SetTooltip(
-                "Flip camera around when Middle Mouse Button is pressed.\n"
+                "Flip camera around when a hotkey is pressed.\n"
                 "Warning: doesn't work when aiming Guillotine Gun."
             );
         }
@@ -399,7 +410,7 @@ public:
             if (ImGui::IsItemHovered())
             {
                 ImGui::SetTooltip(
-                    "When holding down a new hotkey (Mouse5), the dive move takes an even higher priority"
+                    "When holding down a new hotkey (default Mouse5), the dive move takes an even higher priority"
                     "\nthan the Spindescent (the \"dive\" or the \"basejump\" is a kind of HighProfile jump"
                     "\nthat transitions you to a state where you're holding onto"
                     "\na swing/a horizontal bar/some hanging ropes/an overhanging roof"
@@ -440,6 +451,7 @@ public:
         moreReliableQuickshot.Toggle(hacksSection->moreReliableQuickshot->isActive);
         automaticallyReloadWeaponsWhenRefillAllInShops.Toggle(hacksSection->automaticallyReloadWeaponsWhenRefillAllInShops);
         lookbehindButton.Toggle(hacksSection->lookbehindButton->isActive);
+        noWaitForUnsafeEject.Toggle(hacksSection->noWaitForUnsafeEject);
 
         auto& cheatsSection = cfg.cheats;
         dontDecreaseRemainingAmmo.Toggle(cheatsSection->infiniteAmmo);
@@ -466,6 +478,7 @@ public:
         hacksSection->moreReliableQuickshot->isActive = moreReliableQuickshot.IsActive();
         hacksSection->automaticallyReloadWeaponsWhenRefillAllInShops = automaticallyReloadWeaponsWhenRefillAllInShops.IsActive();
         hacksSection->lookbehindButton->isActive = lookbehindButton.IsActive();
+        hacksSection->noWaitForUnsafeEject = noWaitForUnsafeEject.IsActive();
 
         auto& cheatsSection = cfg.cheats;
         cheatsSection->infiniteAmmo = dontDecreaseRemainingAmmo.IsActive();

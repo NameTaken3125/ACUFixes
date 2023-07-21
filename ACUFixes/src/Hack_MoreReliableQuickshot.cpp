@@ -380,6 +380,11 @@ MoreReliableQuickshot::MoreReliableQuickshot()
         PresetScript_CCodeInTheMiddle(whenUpdatingRangedWeaponTarget_onWallInJumpEtc_fnepilogue, 5,
             WhenGettingRangedWeaponTarget_onWallInJumpEtc_ForceScan, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
     };
+    auto AnotherPreventionOfTheArmOutstretchedBug = [&]()
+    {
+        uintptr_t someConditionThatLeadsToReholsterCheck = 0x1426687B7;
+        PresetScript_NOP(someConditionThatLeadsToReholsterCheck, 2);
+    };
 
 
 
@@ -397,6 +402,8 @@ MoreReliableQuickshot::MoreReliableQuickshot()
     PreventAutomaticInstantReholstering_AssassinationStart();
 
     AllowScanForQuickshotTargetInMostSituations();
+
+    AnotherPreventionOfTheArmOutstretchedBug();
 }
 
 
