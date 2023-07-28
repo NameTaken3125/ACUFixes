@@ -394,6 +394,9 @@ void WhenPerformingSomeOtherCheckAboutWhetherQuickshotIsAllowedToStart_AllowInit
     // If trying to unholster a ranged weapon for a quickshot, allow to proceed.
     params->GetRAX() = 1;
 }
+void WhenGunshotRaycastSuccessful_Display(AllRegisters* params);
+void WhenGatheredGunshotLineOfFireResults_RememberResults(AllRegisters* params);
+void WhenTheFirstGunshotRaycastResultWasSelected_DontCollideWithTheChokedNPC(AllRegisters* params);
 MoreReliableQuickshot::MoreReliableQuickshot()
 {
     //auto PreventAutomaticInstantReholsteringInMostSituations_v1 = [&]()
@@ -521,6 +524,27 @@ MoreReliableQuickshot::MoreReliableQuickshot()
     AlsoAllowInitiateQuickshotDuringAssassination_v2();
 
     AnotherPreventionOfTheArmOutstretchedBug();
+
+
+
+    auto AWayToMonitorTheCollisionResultsOfTheGunshots = [&]()
+    {
+        uintptr_t whenGunshotRaycastSuccessful = 0x14057659E;
+        PresetScript_CCodeInTheMiddle(whenGunshotRaycastSuccessful, 5,
+            WhenGunshotRaycastSuccessful_Display, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
+        uintptr_t whenGatheredGunshotLineOfFireResults = 0x140579252;
+        PresetScript_CCodeInTheMiddle(whenGatheredGunshotLineOfFireResults, 5,
+            WhenGatheredGunshotLineOfFireResults_RememberResults, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
+    };
+    auto DontAccidentallyHitTheChokedNPCWhenPerformingQuickshotDuringChoke = [&]()
+    {
+        uintptr_t whenTheFirstRaycastResultWasSelected = 0x140579268;
+        PresetScript_CCodeInTheMiddle(whenTheFirstRaycastResultWasSelected, 6,
+            WhenTheFirstGunshotRaycastResultWasSelected_DontCollideWithTheChokedNPC, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
+    };
+
+    //AWayToMonitorTheCollisionResultsOfTheGunshots();
+    DontAccidentallyHitTheChokedNPCWhenPerformingQuickshotDuringChoke();
 }
 
 
@@ -577,4 +601,108 @@ void WhenGettingRangedWeaponTarget_onWallInJumpEtc_ForceScan(AllRegisters* param
         return;
     }
     WhenGettingRangedWeaponTarget_onWallInJumpEtc_ForceScan_inner(params->rdi_, params->rsi_);
+}
+
+
+
+#include "ImGui3D.h"
+void WhenGunshotRaycastSuccessful_Display(AllRegisters* params)
+{
+    Entity* collidedEntity = *(Entity**)(params->rbp_ - 0x80);
+    if (!collidedEntity) { return; }
+    ImGui3D::DrawLocationNamed(collidedEntity->GetPosition(), "Last Gunshot target Entity");
+    Vector3f* hitLocation = (Vector3f*)(params->rbp_ + 0xB0);
+    ImGui3D::DrawLocationNamed(*hitLocation, "Last Gunshot hit location");
+}
+class PhysicComponent;
+class RaycastResult_mb
+{
+public:
+    Vector4f hitLocation; //0x0000
+    Vector4f targetNormal; //0x0010
+    PhysicComponent* physicCpnt; //0x0020
+    SharedPtrNew<Entity>* shared_targetEntity; //0x0028
+    uint32 entityId_mb; //0x0030
+    char pad_0034[4]; //0x0034
+    float distance_mb; //0x0038
+    char pad_003C[12]; //0x003C
+    uint32 dword_48; //0x0048
+    char pad_004C[20]; //0x004C
+}; //Size: 0x0060
+assert_sizeof(RaycastResult_mb, 0x60);
+struct MyRememberedRaycastResult
+{
+    Entity* targetEntity;
+    Vector4f hitLocation;
+    Vector4f targetNormal;
+    float distance;
+};
+std::vector<MyRememberedRaycastResult> g_LastGunshotRaycastResults;
+Entity* GetChokedEntity();
+Entity* GetQuickshotTargetEntity();
+void WhenGatheredGunshotLineOfFireResults_RememberResults(AllRegisters* params)
+{
+    SmallArray<RaycastResult_mb>& arrResults = *(SmallArray<RaycastResult_mb>*)(params->GetRSP() + 0x68);
+    g_LastGunshotRaycastResults.clear();
+    for (RaycastResult_mb& res : arrResults)
+    {
+        g_LastGunshotRaycastResults.push_back({
+            res.shared_targetEntity->GetPtr(),
+            res.hitLocation,
+            res.targetNormal,
+            res.distance_mb
+            });
+    }
+}
+DEFINE_GAME_FUNCTION(ArrRaycastResults__GetNext, 0x1425D5550, RaycastResult_mb*, __fastcall, (SmallArray<RaycastResult_mb>* a1, RaycastResult_mb* p_startFrom_opt, char p_0getFirst));
+void WhenTheFirstGunshotRaycastResultWasSelected_DontCollideWithTheChokedNPC(AllRegisters* params)
+{
+    RaycastResult_mb* firstSelectedRaycastResult = (RaycastResult_mb*)params->GetRAX();
+    if (!firstSelectedRaycastResult)
+    {
+        return;
+    }
+    Entity* raycastResultTargetEntity = firstSelectedRaycastResult->shared_targetEntity->GetPtr();
+    Entity* chokedEntity = GetChokedEntity();
+    Entity* quickshotTarget = GetQuickshotTargetEntity();
+    if (!chokedEntity)
+    {
+        // No collisions need to be skipped.
+        return;
+    }
+    if (quickshotTarget == chokedEntity)
+    {
+        // The player kind of intended to hit the NPC he chokes.
+        // Probably because they started a quickshot and then immediately started an assassination on the same NPC.
+        // Probably didn't really intend to do that,
+        // but it's better to let the NPC absorb the bullet than to accidentally shoot through the NPC
+        // and into the crowd (if you _do_ make the bullet pass through, then you sometimes
+        // get to accidentally shoot a _different_ enemy, which feels cool but unpredictable).
+        return;
+    }
+    if (raycastResultTargetEntity != chokedEntity)
+    {
+        // Didn't collide with the choked NPC, just the way it should be.
+        return;
+    }
+    // The choked NPC will (accidentally) absorb the bullet unless I change that now.
+    SmallArray<RaycastResult_mb>& arrResults = *(SmallArray<RaycastResult_mb>*)(params->GetRSP() + 0x68);
+    RaycastResult_mb* it = firstSelectedRaycastResult;
+    RaycastResult_mb* selectedResult = nullptr;
+    do
+    {
+        it = ArrRaycastResults__GetNext(&arrResults, it, 0);
+        if (!it)
+        {
+            // Found no satisfactory raycast results. So scratch all that, don't change the selected result.
+            return;
+        }
+        if (it->shared_targetEntity->GetPtr() != chokedEntity)
+        {
+            // Collide with the next entity after the choked NPC.
+            selectedResult = it;
+            break;
+        }
+    } while (true);
+    params->GetRAX() = (uint64)selectedResult;
 }
