@@ -72,7 +72,7 @@ void DrawSuccessfulInjectionIndicatorOverlay()
         ImGui::Text(
             "Press %s to open ImGui menu, press %s to unload the mod."
             "\nThese hotkeys can be changed in the menu or in the config file (the default INSERT/END will still work)."
-            "\nThis overlay can be disabled there too. See `ACUFixes-readme.txt`."
+            "\nThis text can be disabled in the Extra tab of the menu. See `ACUFixes-readme.txt`."
             , enum_reflection<VirtualKeys>::GetString(g_Config.hotkey_ToggleMenu)
             , enum_reflection<VirtualKeys>::GetString(g_Config.hotkey_UnloadMod)
             );
@@ -185,7 +185,7 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
             {
                 DrawModMenuControls();
                 ImGui::Separator();
-                ImGui::Checkbox("Show the \"is injected\" indicator", &g_Config.imgui_showSuccessfulInjectionIndicator.get());
+                ImGui::Checkbox("Show the text in the top left corner", &g_Config.imgui_showSuccessfulInjectionIndicator.get());
                 ImGui::Separator();
                 ImGui::Checkbox("Show development experiments", &g_showDevExtraOptions);
                 if (ImGui::IsItemHovered(0))
