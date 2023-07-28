@@ -174,6 +174,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\Cheat_WeatherControls.cpp" />
+    <ClCompile Include="src\Hack_AllowCustomizeEquipment.cpp" />
     <ClCompile Include="src\Hack_DontRandomlyTurn180Degrees.cpp" />
     <ClCompile Include="src\Hack_MoreReliableQuickshot.cpp" />
     <ClCompile Include="src\Hack_NoMoreFailedBombThrows.cpp" />
@@ -233,6 +234,7 @@
     <ClInclude Include="src\Enum_BindableKeyCode.h" />
     <ClInclude Include="src\Enum_BindableKeyCode_Keyboard.h" />
     <ClInclude Include="src\Enum_VirtualKeys.h" />
+    <ClInclude Include="src\Hack_AllowCustomizeEquipment.h" />
     <ClInclude Include="src\Hack_DontRandomlyTurn180Degrees.h" />
     <ClInclude Include="src\Hack_MoreReliableQuickshot.h" />
     <ClInclude Include="src\Hack_NoMoreFailedBombThrows.h" />

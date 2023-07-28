@@ -65,6 +65,7 @@ struct ConfigTop : YAConfigSection {
             ACM(hoodToggleButton, BindableKeyCode, EnumAdapter_template<BindableKeyCode>, BindableKeyCode::KEYBOARD_H);
         };
         ACM(hoodControls, HoodControls, YAConfigSectionAdapter, );
+        ACM(allowCustomizeEquipmentOnLedges, bool, BooleanAdapter, true);
         ACM(noWaitForUnsafeEject, bool, BooleanAdapter, false);
         struct YACS_LookbehindButton : YAConfigSection {
             YACSTOR(YACS_LookbehindButton);

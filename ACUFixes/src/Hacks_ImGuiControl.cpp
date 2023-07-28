@@ -26,6 +26,7 @@
 #include "Hack_MoreReliableQuickshot.h"
 #include "Hack_DontRandomlyTurn180Degrees.h"
 #include "Hack_NoWaitForUnsafeEject.h"
+#include "Hack_AllowCustomizeEquipment.h"
 
 #include "Hack_LookbehindButton.h"
 #include "Hack_WhistleAbility.h"
@@ -69,6 +70,7 @@ public:
     AutoAssembleWrapper<ReloadRangedWeaponsWhenRefillAllInShop> automaticallyReloadWeaponsWhenRefillAllInShops;
     AutoAssembleWrapper<MoreReliableQuickshot> moreReliableQuickshot;
     AutoAssembleWrapper<NoWaitForUnsafeEject> noWaitForUnsafeEject;
+    AutoAssembleWrapper<AllowCustomizeEquipment> allowCustomizeEquipmentOnLedges;
 
     // Unused and unfinished
     AutoAssembleWrapper<PlayWithFOV> fovGames;
@@ -269,6 +271,7 @@ public:
                 "\nbefore letting you do so. This removes that waiting period."
             );
         }
+        ImGui::DrawCheckboxForHack(allowCustomizeEquipmentOnLedges, "Allow to open equipment customization when sitting on ledges");
         ImGui::DrawCheckboxForHack(lookbehindButton, "Lookbehind button");
         if (ImGui::IsItemHovered())
         {
@@ -452,6 +455,7 @@ public:
         automaticallyReloadWeaponsWhenRefillAllInShops.Toggle(hacksSection->automaticallyReloadWeaponsWhenRefillAllInShops);
         lookbehindButton.Toggle(hacksSection->lookbehindButton->isActive);
         noWaitForUnsafeEject.Toggle(hacksSection->noWaitForUnsafeEject);
+        allowCustomizeEquipmentOnLedges.Toggle(hacksSection->allowCustomizeEquipmentOnLedges);
 
         auto& cheatsSection = cfg.cheats;
         dontDecreaseRemainingAmmo.Toggle(cheatsSection->infiniteAmmo);
@@ -479,6 +483,7 @@ public:
         hacksSection->automaticallyReloadWeaponsWhenRefillAllInShops = automaticallyReloadWeaponsWhenRefillAllInShops.IsActive();
         hacksSection->lookbehindButton->isActive = lookbehindButton.IsActive();
         hacksSection->noWaitForUnsafeEject = noWaitForUnsafeEject.IsActive();
+        hacksSection->allowCustomizeEquipmentOnLedges = allowCustomizeEquipmentOnLedges.IsActive();
 
         auto& cheatsSection = cfg.cheats;
         cheatsSection->infiniteAmmo = dontDecreaseRemainingAmmo.IsActive();
