@@ -130,21 +130,47 @@ struct Functor_Quickshot : public FunctorBase
 {
 public:
 };
+class Functor_Quickshot_up0 : public FunctorBase
+{
+public:
+    char pad_0100[216]; //0x0100
+    SharedPtrNew<Entity>* shared_quickshotTarget; //0x01D8
+    char pad_01E0[112]; //0x01E0
+}; //Size: 0x0250
+assert_offsetof(Functor_Quickshot_up0, shared_quickshotTarget, 0x1D8);
 struct PlayerQuickshotState
 {
     Functor_Quickshot& m_functorQS;
+    Entity* m_targetEntity;
     bool m_isShotDischargedYet = false;
     bool m_isSupposedToHaveEndedAlready = false;
     bool m_isAssassinationStartedAfterQuickshotStarted = false;
     bool m_isAssassinationEndedAfterQuickshotStarted = false;
-    PlayerQuickshotState(Functor_Quickshot& functorQS) : m_functorQS(functorQS) {}
+    PlayerQuickshotState(Functor_Quickshot& functorQS)
+        : m_functorQS(functorQS)
+    {
+        m_targetEntity = functorQS.GetNthParent<Functor_Quickshot_up0>(0)->shared_quickshotTarget->GetPtr();
+    }
 };
 struct PlayerAssassinationAttemptState
 {
-
+    Entity* targetNPC = nullptr;
+    Entity* secondOptionalTargetNPC = nullptr;
 };
 std::optional<PlayerAssassinationAttemptState> g_PlayerAssassinationAttemptState;
 std::optional<PlayerQuickshotState> g_PlayerQuickshot;
+Entity* GetChokedEntity()
+{
+    return g_PlayerAssassinationAttemptState
+        ? g_PlayerAssassinationAttemptState->targetNPC
+        : nullptr;
+}
+Entity* GetQuickshotTargetEntity()
+{
+    return g_PlayerQuickshot
+        ? g_PlayerQuickshot->m_targetEntity
+        : nullptr;
+}
 void PlayerHasJustEnteredQuickshot(Functor_Quickshot& functorQS)
 {
     g_PlayerQuickshot.emplace(functorQS);
@@ -164,9 +190,27 @@ void PlayerHasJustExitedQuickshot()
     }
     g_PlayerQuickshot.reset();
 }
-void PlayerJustStartedAssassinationAttempt()
+class SharedPtrAndSmth
+{
+public:
+    SharedPtrNew<Entity>* shared; //0x0000
+    char pad_0008[16]; //0x0008
+}; //Size: 0x0018
+assert_sizeof(SharedPtrAndSmth, 0x18);
+class Functor_Parkour_Assassination_Entry : public FunctorBase
+{
+public:
+    char pad_0100[232]; //0x0100
+    SharedPtrAndSmth targetNPC; //0x01E8
+    SharedPtrAndSmth secondOptionalTargetNPC_mb; //0x0200
+    char pad_0218[152]; //0x0218
+}; //Size: 0x02B0
+assert_sizeof(Functor_Parkour_Assassination_Entry, 0x2B0);
+void PlayerJustStartedAssassinationAttempt(Functor_Parkour_Assassination_Entry& parkourAssassinationState)
 {
     g_PlayerAssassinationAttemptState.emplace();
+    g_PlayerAssassinationAttemptState->targetNPC = parkourAssassinationState.targetNPC.shared->GetPtr();
+    g_PlayerAssassinationAttemptState->secondOptionalTargetNPC = parkourAssassinationState.secondOptionalTargetNPC_mb.shared->GetPtr();
     if (g_PlayerQuickshot)
     {
         g_PlayerQuickshot->m_isAssassinationStartedAfterQuickshotStarted = true;
@@ -184,6 +228,8 @@ bool BetterQuickshot_IsPlayerInAssassination()
 {
     return g_PlayerAssassinationAttemptState.has_value();
 }
+#include "ACU/CLAssassin.h"
+#include "ACU/Clock.h"
 void PlayerHasJustMadeRangedWeaponShot()
 {
     if (!g_PlayerQuickshot)
@@ -191,6 +237,22 @@ void PlayerHasJustMadeRangedWeaponShot()
         return;
     }
     g_PlayerQuickshot->m_isShotDischargedYet = true;
+    if (!g_PlayerAssassinationAttemptState) { return; }
+    CLAssassin* cla = CLAssassin::GetSingleton();
+    if (!cla) { return; }
+    HasLanterndlcComponent* hasQuickshotEndTimer = cla->hasLanternCpnt;
+    if (!hasQuickshotEndTimer) { return; }
+    Timer& quickshotEndTimer = hasQuickshotEndTimer->timer_ReholsterAfterQuickshot;
+    constexpr uint64 GAME_TIMER_INTEGER_TICKS_PER_SECOND = 30000;
+    quickshotEndTimer.timestampEnd = quickshotEndTimer.clock->currentTimestamp;
+    if (!g_PlayerQuickshot->m_isAssassinationStartedAfterQuickshotStarted)
+    {
+        // If the Quickshot was started _before_ Assassination, then stop the Quickshot animation
+        // as soon as the weapon is discharged.
+        // If the Quickshot was started _while_ Assassination is going on,
+        // then let the animation play out for a brief moment after discharge.
+        quickshotEndTimer.timestampEnd += GAME_TIMER_INTEGER_TICKS_PER_SECOND * 0.3f;
+    }
 }
 bool BetterQuickshot_IsWaitingForQuickshotToComplete()
 {
@@ -200,6 +262,7 @@ bool BetterQuickshot_IsWaitingForQuickshotToComplete()
     }
     if (BetterQuickshot_IsPlayerInAssassination())
     {
+        return true;
         return !g_PlayerQuickshot->m_isShotDischargedYet;
     }
     return true;
@@ -236,11 +299,12 @@ void WhenAboutToCreateAGunshot_RememberTime(AllRegisters* params)
 }
 void WhenAssassinationAttemptStarted(AllRegisters* params)
 {
-    auto humanStates = ((FunctorBase*)params->rcx_)->GetNthParent<HumanStatesHolder>(2);
+    auto* parkourAssassinationState = (Functor_Parkour_Assassination_Entry*)params->rcx_;
+    auto humanStates = parkourAssassinationState->GetNthParent<HumanStatesHolder>(2);
     Entity* ownerCharacter = humanStates->ownerEntity;
     if (ownerCharacter && ownerCharacter == ACU::GetPlayer())
     {
-        PlayerJustStartedAssassinationAttempt();
+        PlayerJustStartedAssassinationAttempt(*parkourAssassinationState);
     }
 }
 void WhenAssassinationAttemptEnded(AllRegisters* params)
@@ -298,6 +362,38 @@ void WhenCheckingIfTimerToEndQuickshotIsActive_ReactivateIfRecentlyFailed(AllReg
     }
 }
 void WhenGettingRangedWeaponTarget_onWallInJumpEtc_ForceScan(AllRegisters* params);
+DEFINE_GAME_FUNCTION(sub_141B034A0, 0x141B034A0, char, __fastcall, (FunctorBase* a1, FunctorBase* a2));
+DEFINE_GAME_FUNCTION(sub_1419FA390, 0x1419FA390, char, __fastcall, (HumanStatesHolder* p_humanStates, unsigned int edx0, __int64 a3));
+bool g_MoreReliableQuickshot_DuringAssassination_IsTryingToStartAQuickshotNow = false;
+void WhenTryingToMakeAQuickshotAndLeadingToAnAllowUnsheathingCheck_RememberTheContextOfQuickshotAttempt(AllRegisters* params)
+{
+    g_MoreReliableQuickshot_DuringAssassination_IsTryingToStartAQuickshotNow = true;
+    // There is a hook several calls down that enables the player
+    // to initiate Quickshots during assassination.
+    // A side effect of that is being allowed to unsheathe the melee weapon
+    // when sitting on ledges, but in a bad way
+    // (some of my other patches cause it to be immediately resheathed).
+    // Here I just provide the information to the "deeper" hook that
+    // "I'm trying to start a quickshot, not unsheathe a melee weapon".
+    sub_1419FA390((HumanStatesHolder*)params->rcx_, (unsigned int&)params->rdx_, params->r8_);
+    g_MoreReliableQuickshot_DuringAssassination_IsTryingToStartAQuickshotNow = false;
+}
+void WhenPerformingSomeOtherCheckAboutWhetherQuickshotIsAllowedToStart_AllowInitiateQuickshotDuringAssassination(AllRegisters* params)
+{
+    char isUnsheatheNormallyAllowedToStartHere = sub_141B034A0((FunctorBase*)params->rcx_, (FunctorBase*)params->rdx_);
+    params->GetRAX() = isUnsheatheNormallyAllowedToStartHere;
+    if (isUnsheatheNormallyAllowedToStartHere)
+    {
+        return;
+    }
+    if (!g_MoreReliableQuickshot_DuringAssassination_IsTryingToStartAQuickshotNow) { return; }
+    if (!BetterQuickshot_IsLessRestrictionsEnabled())
+    {
+        return;
+    }
+    // If trying to unholster a ranged weapon for a quickshot, allow to proceed.
+    params->GetRAX() = 1;
+}
 MoreReliableQuickshot::MoreReliableQuickshot()
 {
     //auto PreventAutomaticInstantReholsteringInMostSituations_v1 = [&]()
@@ -385,6 +481,24 @@ MoreReliableQuickshot::MoreReliableQuickshot()
         uintptr_t someConditionThatLeadsToReholsterCheck = 0x1426687B7;
         PresetScript_NOP(someConditionThatLeadsToReholsterCheck, 2);
     };
+    //auto AlsoAllowInitiateQuickshotDuringAssassination = [&]()
+    //{
+    //    DEFINE_ADDR(whenDoingSomeOtherCheckAboutWhetherQuickshotAnimationIsAllowed, 0x141B054B4);
+
+    //    // I've been hunting these two bytes for about a month.
+    //    whenDoingSomeOtherCheckAboutWhetherQuickshotAnimationIsAllowed = {
+    //        0xEB, 0x44          // - jmp ACU.exe+1B054FA
+    //    };
+    //};
+    auto AlsoAllowInitiateQuickshotDuringAssassination_v2 = [&]()
+    {
+        uintptr_t whenPerformingSomeOtherCheckAboutWhetherQuickshotIsAllowedToStart = 0x141B054AD;
+        uintptr_t whenTryingToMakeAQuickshotAndLeadingToAnAllowUnsheathingCheck = 0x14265E03B;
+        PresetScript_CCodeInTheMiddle(whenPerformingSomeOtherCheckAboutWhetherQuickshotIsAllowedToStart, 5,
+            WhenPerformingSomeOtherCheckAboutWhetherQuickshotIsAllowedToStart_AllowInitiateQuickshotDuringAssassination, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, false);
+        PresetScript_CCodeInTheMiddle(whenTryingToMakeAQuickshotAndLeadingToAnAllowUnsheathingCheck, 5,
+            WhenTryingToMakeAQuickshotAndLeadingToAnAllowUnsheathingCheck_RememberTheContextOfQuickshotAttempt, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, false);
+    };
 
 
 
@@ -402,6 +516,9 @@ MoreReliableQuickshot::MoreReliableQuickshot()
     PreventAutomaticInstantReholstering_AssassinationStart();
 
     AllowScanForQuickshotTargetInMostSituations();
+
+    //AlsoAllowInitiateQuickshotDuringAssassination();
+    AlsoAllowInitiateQuickshotDuringAssassination_v2();
 
     AnotherPreventionOfTheArmOutstretchedBug();
 }

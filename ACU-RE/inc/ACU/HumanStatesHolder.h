@@ -75,6 +75,7 @@ public:
     char pad_B8[0xE0 - 0xB8];
     FunctorEnter_t Enter;
     FunctorExit_t Exit;
+    char pad_00F0[16]; //0x00F0
 
     // @helper_functions
     template<typename ParentFunctorType>
@@ -83,6 +84,7 @@ public:
 assert_offsetof(FunctorBase, parentStack, 0x28);
 assert_offsetof(FunctorBase, Enter, 0xE0);
 assert_offsetof(FunctorBase, Exit, 0xE8);
+assert_sizeof(FunctorBase, 0x100);
 
 class HumanStates_100
 {
