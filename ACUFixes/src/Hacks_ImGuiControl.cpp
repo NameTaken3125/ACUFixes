@@ -231,6 +231,11 @@ public:
                 "if there are any close enough.\n"
             );
         }
+        if (breakfallAndCatchLedgeByPressingE.IsActive())
+        {
+            ImGuiCTX::Indent _ind;
+            ImGui::DragFloat("Catch Ledge range multiplier", &pretendPlayerIsCloserToWall_multiplier, 0.1f, 0.5f, 5.0f);
+        }
         ImGui::DrawCheckboxForHack(easierTurnWhenSwingingOnAHorizontalBar, "Easier turn when swinging on a horizontal bar");
         if (ImGui::IsItemHovered()) {
             ImGui::SetTooltip(

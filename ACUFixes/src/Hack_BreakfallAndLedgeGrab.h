@@ -6,3 +6,4 @@ struct BreakfallAndLedgeGrab : AutoAssemblerCodeHolder_Base
 {
     BreakfallAndLedgeGrab();
 };
+extern float pretendPlayerIsCloserToWall_multiplier;

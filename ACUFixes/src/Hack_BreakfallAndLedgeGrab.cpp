@@ -5,6 +5,7 @@
 #include "ImGui3D.h"
 #include "ACU_InputUtils.h"
 Vector4f g_SavedBreakfallScannerPosition;
+float pretendPlayerIsCloserToWall_multiplier = 1.5f;
 void WhenInFreefall_RestoreModifiedVectors(AllRegisters* params)
 {
     Vector4f* playerFeetPosition = (Vector4f*)params->rbp_;
@@ -22,7 +23,6 @@ void WhenInFreefall_HelpFindLedgeToGrab(AllRegisters* params)
     //Vector3f* vecTowardWall = (Vector3f*)params->rsi_;
     Vector3f* playerMovementVecInGroundPlane = (Vector3f*)params->r14_;
     Vector3f& searchDirectionInGroundPlane_UnitVector = *playerMovementVecInGroundPlane;
-    constexpr float pretendPlayerIsCloserToWall_multiplier = 1.0f;
     *playerFeetPosition = *playerFeetPosition + searchDirectionInGroundPlane_UnitVector * pretendPlayerIsCloserToWall_multiplier;
     ImGui3D::DrawLocationNamed(*playerFeetPosition, "Breakfall: sensor location");
 }
