@@ -176,6 +176,7 @@
     <ClCompile Include="src\Cheat_WeatherControls.cpp" />
     <ClCompile Include="src\Hack_AllowCustomizeEquipment.cpp" />
     <ClCompile Include="src\Hack_DontRandomlyTurn180Degrees.cpp" />
+    <ClCompile Include="src\Hack_GunRange.cpp" />
     <ClCompile Include="src\Hack_MoreReliableQuickshot.cpp" />
     <ClCompile Include="src\Hack_NoMoreFailedBombThrows.cpp" />
     <ClCompile Include="src\ACU_InputUtils.cpp" />
@@ -236,6 +237,7 @@
     <ClInclude Include="src\Enum_VirtualKeys.h" />
     <ClInclude Include="src\Hack_AllowCustomizeEquipment.h" />
     <ClInclude Include="src\Hack_DontRandomlyTurn180Degrees.h" />
+    <ClInclude Include="src\Hack_GunRange.h" />
     <ClInclude Include="src\Hack_MoreReliableQuickshot.h" />
     <ClInclude Include="src\Hack_NoMoreFailedBombThrows.h" />
     <ClInclude Include="src\ACU_DefineNativeFunction.h" />

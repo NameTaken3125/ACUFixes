@@ -42,12 +42,26 @@ public:
     uint32 ammoTillReload; //0x0020
     char pad_0024[92]; //0x0024
 }; //Size: 0x0080
+
+
+enum class WeaponComponentType : uint32
+{
+    PhantomBlade = 0x18,
+    BerserkBlade = 0x1A,
+    Pistol = 0xB,
+    Rifle = 5,
+    Blunderbuss = 6,
+    GuillotineGun = 0x1D,
+
+    // There might also be some values to identify the melee weapon types.
+};
+
 class WeaponComponent : public EquippableComponent
 {
 public:
     // @members
     char pad_0030[64]; //0x0030
-    uint32 dword_70; //0x0070
+    WeaponComponentType weaponCpntType; //0x0070
     char pad_0074[4]; //0x0074
     SharedPtrNew<NetFightWeapon>* netFightWeapon; //0x0078
     char pad_0080[208]; //0x0080

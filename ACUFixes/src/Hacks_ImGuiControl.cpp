@@ -27,6 +27,7 @@
 #include "Hack_DontRandomlyTurn180Degrees.h"
 #include "Hack_NoWaitForUnsafeEject.h"
 #include "Hack_AllowCustomizeEquipment.h"
+#include "Hack_GunRange.h"
 
 #include "Hack_LookbehindButton.h"
 #include "Hack_WhistleAbility.h"
@@ -71,6 +72,7 @@ public:
     AutoAssembleWrapper<MoreReliableQuickshot> moreReliableQuickshot;
     AutoAssembleWrapper<NoWaitForUnsafeEject> noWaitForUnsafeEject;
     AutoAssembleWrapper<AllowCustomizeEquipment> allowCustomizeEquipmentOnLedges;
+    AutoAssembleWrapper<GuillotineGunRange> guillotineGunRange;
 
     // Unused and unfinished
     AutoAssembleWrapper<PlayWithFOV> fovGames;
@@ -272,6 +274,7 @@ public:
             );
         }
         ImGui::DrawCheckboxForHack(allowCustomizeEquipmentOnLedges, "Allow to open equipment customization when sitting on ledges");
+        ImGui::DrawCheckboxForHack(guillotineGunRange, "Slightly greater Guillotine Gun quickshot range");
         ImGui::DrawCheckboxForHack(lookbehindButton, "Lookbehind button");
         if (ImGui::IsItemHovered())
         {
@@ -456,6 +459,7 @@ public:
         lookbehindButton.Toggle(hacksSection->lookbehindButton->isActive);
         noWaitForUnsafeEject.Toggle(hacksSection->noWaitForUnsafeEject);
         allowCustomizeEquipmentOnLedges.Toggle(hacksSection->allowCustomizeEquipmentOnLedges);
+        guillotineGunRange.Toggle(hacksSection->slightlyGreaterGuillotineGunQuickshotRange);
 
         auto& cheatsSection = cfg.cheats;
         dontDecreaseRemainingAmmo.Toggle(cheatsSection->infiniteAmmo);
@@ -484,6 +488,7 @@ public:
         hacksSection->lookbehindButton->isActive = lookbehindButton.IsActive();
         hacksSection->noWaitForUnsafeEject = noWaitForUnsafeEject.IsActive();
         hacksSection->allowCustomizeEquipmentOnLedges = allowCustomizeEquipmentOnLedges.IsActive();
+        hacksSection->slightlyGreaterGuillotineGunQuickshotRange = guillotineGunRange.IsActive();
 
         auto& cheatsSection = cfg.cheats;
         cheatsSection->infiniteAmmo = dontDecreaseRemainingAmmo.IsActive();
