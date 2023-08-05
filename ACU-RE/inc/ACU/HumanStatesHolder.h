@@ -86,13 +86,19 @@ assert_offsetof(FunctorBase, Enter, 0xE0);
 assert_offsetof(FunctorBase, Exit, 0xE8);
 assert_sizeof(FunctorBase, 0x100);
 
+class HumanStates_100_8
+{
+public:
+    FunctorBase* node; //0x0000
+    char pad_0008[16]; //0x0008
+}; //Size: 0x0018
 class HumanStates_100
 {
 public:
     FunctorBase* p0; //0x0000
-    class HumanStates_100_8(*arr8)[20]; //0x0008
-    char pad_0010[4]; //0x0010
-}; //Size: 0x0014
+    SmallArray<HumanStates_100_8> arr8; //0x0008
+}; //Size: 0x0018
+assert_sizeof(HumanStates_100, 0x18);
 #include "Timer.h"
 
 class AtomAnimComponent;
@@ -196,6 +202,13 @@ public:
 assert_sizeof(HumanStatesHolder_3C4_BagOfCallbacks, 0x18);
 
 #include "SharedPtr.h"
+class HumanStatesHolder_1B0
+{
+public:
+    void* ppNode; //0x0000
+    FunctorBase* pNode; //0x0008
+}; //Size: 0x0010
+assert_sizeof(HumanStatesHolder_1B0, 0x10);
 
 // vtbl: 142FFD128
 // I haven't really figured out what this large structure or its children do.
@@ -209,7 +222,7 @@ public:
     HumanStatesHolder_D0* humanStatesHolder_D0; //0x00D0
     char pad_00D8[40]; //0x00D8
     HumanStates_100 usedDuringLeaveCoverBySprintTowardEdge; //0x0100
-    char pad_0114[8]; //0x0114
+    char pad_0118[4]; //0x0118
     uint32 frameWhenMostRecentlyUpdated_mb; //0x011C
     char pad_0120[40]; //0x0120
     int32 lock_148; //0x0148
@@ -218,7 +231,7 @@ public:
     uint8 byte_1A8; //0x01A8
     char pad_01A9[3]; //0x01A9
     uint32 dword_1AC; //0x01AC
-    SmallArray<void*> arr_1B0; //0x01B0
+    SmallArray<HumanStatesHolder_1B0> arr_1B0; //0x01B0
     char pad_01C0[8]; //0x01C0
     FunctorBase* haystackStates_mb; //0x01C8
     char pad_01D0[56]; //0x01D0
@@ -252,5 +265,6 @@ public:
     // @helper_functions
     static HumanStatesHolder* GetForPlayer();
 }; //Size: 0x1EA0
+assert_offsetof(HumanStatesHolder, arr_1B0, 0x1B0);
 assert_offsetof(HumanStatesHolder, ballisticAimingCurrentEquipmentType, 0xD34);
 assert_offsetof(HumanStatesHolder, aimingGuillotineGun, 0x1970);

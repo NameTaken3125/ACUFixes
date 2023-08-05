@@ -411,6 +411,42 @@ void WhenMakingSomeStrangeCallInNoncombatUpdates(AllRegisters* params)
         params->r8_ & 0xFF
     );
 }
+#include "ACU/HumanStatesHolder.h"
+bool IsInHaystack(HumanStatesHolder& humanStates)
+{
+    const uint64 haystackState_Enter = 0x1419DECC0;
+    for (auto& primaryReceiver : humanStates.arr_1B0)
+    {
+        const uint64 currNode_Enter = (uint64)primaryReceiver.pNode->Enter;
+        if (currNode_Enter == haystackState_Enter)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+#include "ACU/Enum_EquipmentType.h"
+DEFINE_GAME_FUNCTION(oneOfThoseFns_whenTryToStartAimBomb, 0x14198F020, int, __fastcall, (HumanStatesHolder* p_humanStates, __int64 a2, EquipmentType p_bombEquipType, __int64 a4));
+void WhenLongPressedToAimBomb_DontTryIfInHaystack(AllRegisters* params)
+{
+    auto* humanStates = (HumanStatesHolder*)params->rcx_;
+    int callResult;
+
+    const bool isAllowedToTryAimBomb = !IsInHaystack(*humanStates);
+    if (isAllowedToTryAimBomb)
+    {
+        callResult = oneOfThoseFns_whenTryToStartAimBomb(
+            humanStates,
+            params->rdx_,
+            (EquipmentType&)params->r8_,
+            params->r9_);
+    }
+    else
+    {
+        callResult = 1;
+    }
+    params->GetRAX() = callResult;
+}
 MoreSituationsToDropBomb::MoreSituationsToDropBomb()
 {
     auto WhenBuildingArrayOfStatesToBeUpdated_AddQuickdropChecker = [&]() {
@@ -517,6 +553,16 @@ MoreSituationsToDropBomb::MoreSituationsToDropBomb()
     PreventDoubleBombDropInCombat();
     DisableOutOfCombatVersionOfQuickshotWhenInCombat();
     PreventAccidentalSprintWhenDropBombInCombat();
+
+
+
+    auto DisableBombAimInHaystack = [&]()
+    {
+        uintptr_t whenLongPressedToAimBomb = 0x1426647AF;
+        PresetScript_CCodeInTheMiddle(whenLongPressedToAimBomb, 5,
+            WhenLongPressedToAimBomb_DontTryIfInHaystack, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, false);
+    };
+    DisableBombAimInHaystack();
 }
 void MoreSituationsToDropBomb::OnBeforeActivate()
 {
