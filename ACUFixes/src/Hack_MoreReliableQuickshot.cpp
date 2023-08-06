@@ -397,6 +397,7 @@ void WhenPerformingSomeOtherCheckAboutWhetherQuickshotIsAllowedToStart_AllowInit
 void WhenGunshotRaycastSuccessful_Display(AllRegisters* params);
 void WhenGatheredGunshotLineOfFireResults_RememberResults(AllRegisters* params);
 void WhenTheFirstGunshotRaycastResultWasSelected_DontCollideWithTheChokedNPC(AllRegisters* params);
+void WhenFilteringTheResultsOfCoarseQuickshotScan_ExcludeChokedNPC(AllRegisters* params);
 MoreReliableQuickshot::MoreReliableQuickshot()
 {
     //auto PreventAutomaticInstantReholsteringInMostSituations_v1 = [&]()
@@ -542,9 +543,16 @@ MoreReliableQuickshot::MoreReliableQuickshot()
         PresetScript_CCodeInTheMiddle(whenTheFirstRaycastResultWasSelected, 6,
             WhenTheFirstGunshotRaycastResultWasSelected_DontCollideWithTheChokedNPC, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
     };
+    auto ExcludeChokedNPCFromQuickshotTargets = [&]()
+    {
+        uintptr_t whenFilteringTheResultsOfCoarseQuickshotScan = 0x141B24323;
+        PresetScript_CCodeInTheMiddle(whenFilteringTheResultsOfCoarseQuickshotScan, 5,
+            WhenFilteringTheResultsOfCoarseQuickshotScan_ExcludeChokedNPC, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, false);
+    };
 
     //AWayToMonitorTheCollisionResultsOfTheGunshots();
     DontAccidentallyHitTheChokedNPCWhenPerformingQuickshotDuringChoke();
+    ExcludeChokedNPCFromQuickshotTargets();
 }
 
 
@@ -705,4 +713,23 @@ void WhenTheFirstGunshotRaycastResultWasSelected_DontCollideWithTheChokedNPC(All
         }
     } while (true);
     params->GetRAX() = (uint64)selectedResult;
+}
+DEFINE_GAME_FUNCTION(IsEntityKilledOrBeingKilled_mb, 0x1409E7490, char, __fastcall, (SharedPtrAndSmth* a1));
+void WhenFilteringTheResultsOfCoarseQuickshotScan_ExcludeChokedNPC(AllRegisters* params)
+{
+    SharedPtrAndSmth* testedNPC_shared = (SharedPtrAndSmth*)params->rcx_;
+    bool isNPCtoBeExcludedFromQuickshot = IsEntityKilledOrBeingKilled_mb(testedNPC_shared);
+    if (!isNPCtoBeExcludedFromQuickshot)
+    {
+        if (g_PlayerAssassinationAttemptState)
+        {
+            Entity* npc = testedNPC_shared->shared->GetPtr();
+            const bool isCurrentTestedNPCchoked = (npc && npc == g_PlayerAssassinationAttemptState->targetNPC);
+            if (isCurrentTestedNPCchoked)
+            {
+                isNPCtoBeExcludedFromQuickshot = true;
+            }
+        }
+    }
+    params->GetRAX() = isNPCtoBeExcludedFromQuickshot;
 }
