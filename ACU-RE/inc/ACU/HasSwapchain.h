@@ -1,6 +1,7 @@
 #pragma once
 
 #include "basic_types.h"
+#include "vmath/vmath.h"
 
 struct IDXGISwapchain;
 
@@ -21,7 +22,9 @@ assert_offsetof(HasSwapchain_6f8, swapchain, 0x10);
 class HasSwapchain
 {
 public:
-    char pad_0000[1776]; //0x0000
+    char pad_0000[16]; //0x0000
+    Vector2f windowSizeIncludingLetterbox; //0x0010
+    char pad_0018[1752]; //0x0018
     uint64 hWindow; //0x06F0
     HasSwapchain_6f8* toSwapchain; //0x06F8
     char pad_0700[1080]; //0x0700
