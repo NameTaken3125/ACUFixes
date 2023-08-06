@@ -12,6 +12,7 @@ void WriteToFile();
 
 #include "OLYAFSer/OLYAFSer.h"
 #include "Serialization/EnumAdapter.h"
+#include "Serialization/NumericAdapters.h"
 
 #define ACM(varName, VarType, AdapterType, optionalDefaultValue) ADD_CONFIG_MEMBER(varName, VarType, AdapterType, optionalDefaultValue)
 #define YACSTOR(SubclsName) YACONFIGSECTION_SUBCLASS_CTOR(SubclsName)
@@ -109,6 +110,12 @@ struct ConfigTop : YAConfigSection {
             ACM(diveHelper, YACS_DiveHelper, YAConfigSectionAdapter, );
         };
         ACM(parkourHelper, YACS_ParkourHelper, YAConfigSectionAdapter, );
+        struct YACS_FreezeFOV : YAConfigSection {
+            YACSTOR(YACS_FreezeFOV);
+            ACM(isActive, bool, BooleanAdapter, false);
+            ACM(fov, float, NumericAdapter_template<float>, 1.0f);
+        };
+        ACM(freezeFOV, YACS_FreezeFOV, YAConfigSectionAdapter, );
     };
     ACM(personalRequests, PersonalRequests, YAConfigSectionAdapter, );
 };

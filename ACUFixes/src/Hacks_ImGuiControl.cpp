@@ -40,6 +40,7 @@
 #include "Cheat_DisguiseUpgrades.h"
 
 #include "Request_Spindescent.h"
+#include "Request_FreezeFOV.h"
 
 
 
@@ -369,6 +370,11 @@ public:
     }
     void DrawPersonalRequestsControls()
     {
+        ImGui::DrawCheckboxForHack(freezeFOV, "Freeze global FOV");
+        if (freezeFOV.IsActive())
+        {
+            DrawFreezeFOVControls();
+        }
         ImGui::DrawCheckboxForHack(parkourHelpers, "Parkour helpers");
         if (ImGui::IsItemHovered())
         {
@@ -466,6 +472,7 @@ public:
 
         auto& requestsSection = cfg.personalRequests;
         parkourHelpers.Toggle(requestsSection->parkourHelper->isActive);
+        freezeFOV.Toggle(requestsSection->freezeFOV->isActive);
     }
     void WriteConfig(ConfigTop& cfg)
     {
@@ -495,6 +502,7 @@ public:
 
         auto& requestsSection = cfg.personalRequests;
         requestsSection->parkourHelper->isActive = parkourHelpers.IsActive();
+        requestsSection->freezeFOV->isActive = freezeFOV.IsActive();
     }
     AutoAssembleWrapper<BatlampOfFrancide> batlampOfFranciade;
     AutoAssembleWrapper<AmmoCheat> dontDecreaseRemainingAmmo;
@@ -504,6 +512,7 @@ public:
     AutoAssembleWrapper<DisguiseDoesntMakeYouInvisible> disguiseDoesntMakeYouInvisible;
 
     AutoAssembleWrapper<ParkourActionsExtraProcessing> parkourHelpers;
+    AutoAssembleWrapper<FreezeFOV> freezeFOV;
 };
 std::optional<MyHacks> g_MyHacks;
 void DrawHacksControls()

@@ -77,6 +77,10 @@ template<class CastTo> struct NumericAdapter_template
 		}
 		return false;
 	}
+	JSON ToJSON()
+	{
+		return this->source;
+	}
 };
 template<class CastTo> NumericAdapter_template<CastTo> NumericAdapter(CastTo& source)
 {
