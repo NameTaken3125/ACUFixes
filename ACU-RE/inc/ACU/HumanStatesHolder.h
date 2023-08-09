@@ -67,12 +67,16 @@ class FunctorBase
     using FunctorExit_t = void(__fastcall*)(FunctorBase*);
 public:
     // @members
-    char pad0[0x18];
+    char pad_0000[8]; //0x0000
+    FunctorBase* directChild_mb; //0x0008
+    FunctorBase* pendingDirectChild; //0x0010
     FancyVFunction* fancyVTable;
     char pad_20[4];
     uint32 dword_24;
     SmallArraySemistatic<FunctorBase*, 0x10> parentStack;
-    char pad_B8[0xE0 - 0xB8];
+    SmallArray<FunctorBase*> someNodes_B8; //0x00B8 // I haven't seen this array being non-empty.
+    SmallArray<FunctorBase*> nonoverridingChildren; //0x00C4
+    SmallArray<FunctorBase*> pendingNonoverridingChildren; //0x00C4
     FunctorEnter_t Enter;
     FunctorExit_t Exit;
     char pad_00F0[16]; //0x00F0
@@ -82,8 +86,10 @@ public:
     ParentFunctorType* GetNthParent(unsigned short N) { return (ParentFunctorType*)parentStack[N]; }
 };
 assert_offsetof(FunctorBase, parentStack, 0x28);
+assert_offsetof(FunctorBase, nonoverridingChildren, 0xC4);
 assert_offsetof(FunctorBase, Enter, 0xE0);
 assert_offsetof(FunctorBase, Exit, 0xE8);
+// I think this structure is actually slightly bigger than 0x100 bytes.
 assert_sizeof(FunctorBase, 0x100);
 
 class HumanStates_100_8
@@ -231,14 +237,7 @@ public:
     uint8 byte_1A8; //0x01A8
     char pad_01A9[3]; //0x01A9
     uint32 dword_1AC; //0x01AC
-    SmallArray<HumanStatesHolder_1B0> arr_1B0; //0x01B0
-    char pad_01C0[8]; //0x01C0
-    FunctorBase* haystackStates_mb; //0x01C8
-    char pad_01D0[56]; //0x01D0
-    UsedDuringCrouch* usedDuringBombQuickDrop; //0x0208
-    char pad_0210[152]; //0x0210
-    UsedDuringDisguiseParent_b_UsedDuringCrouch* UsedDuringDisguiseParent_b_UsedDuringCrouch_; //0x02A8
-    char pad_02B0[272]; //0x02B0
+    SmallArraySemistatic<HumanStatesHolder_1B0, 0x20> primaryCallbackReceivers; //0x01B0
     uint32 lock_3C0; //0x03C0
     SmallArray<HumanStatesHolder_3C4_BagOfCallbacks*> callbacksForIdx; //0x03C4
     char pad_03D0[264]; //0x03D0
@@ -265,6 +264,7 @@ public:
     // @helper_functions
     static HumanStatesHolder* GetForPlayer();
 }; //Size: 0x1EA0
-assert_offsetof(HumanStatesHolder, arr_1B0, 0x1B0);
+assert_offsetof(HumanStatesHolder, primaryCallbackReceivers, 0x1B0);
+assert_offsetof(HumanStatesHolder, callbacksForIdx, 0x3C4);
 assert_offsetof(HumanStatesHolder, ballisticAimingCurrentEquipmentType, 0xD34);
 assert_offsetof(HumanStatesHolder, aimingGuillotineGun, 0x1970);

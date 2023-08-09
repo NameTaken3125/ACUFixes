@@ -415,7 +415,7 @@ void WhenMakingSomeStrangeCallInNoncombatUpdates(AllRegisters* params)
 bool IsInHaystack(HumanStatesHolder& humanStates)
 {
     const uint64 haystackState_Enter = 0x1419DECC0;
-    for (auto& primaryReceiver : humanStates.arr_1B0)
+    for (auto& primaryReceiver : humanStates.primaryCallbackReceivers)
     {
         const uint64 currNode_Enter = (uint64)primaryReceiver.pNode->Enter;
         if (currNode_Enter == haystackState_Enter)

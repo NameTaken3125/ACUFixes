@@ -265,6 +265,7 @@
     <ClInclude Include="src\Hack_ModifyAimingFOV.h" />
     <ClInclude Include="src\Hack_MoreResponsiveBombQuickDrop.h" />
     <ClInclude Include="src\Hack_NoWaitForUnsafeEject.h" />
+    <ClInclude Include="src\Hack_PreventAutomaticReequipPistol.h" />
     <ClInclude Include="src\Hack_ReloadRangedWeaponsWhenRefillAllInShop.h" />
     <ClInclude Include="src\Hack_ReworkedTakeCover.h" />
     <ClInclude Include="src\Hack_SlowMenacingWalkAndAutowalk.h" />
