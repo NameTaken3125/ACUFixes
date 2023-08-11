@@ -327,17 +327,10 @@ void FindPlayerFaceComponentAndApplyTheMaterialWithoutTheFakeHoodShadow(Entity& 
     }
 }
 #include "ImGuiConfigUtils.h"
-void DrawPlayerVisualsControls()
+void DrawEntityVisualsControls(Entity& entity)
 {
-    ImGui::Text(
-        "The list of player's Visual components to turn on and off."
-        "\nThe numbers are the unique Handles of the corresponding LODSelector objects."
-        "\nClick with the Right Mouse Button to copy the Handle to clipboard."
-    );
-    Entity* player = ACU::GetPlayer();
-    if (!player) { return; }
     static std::string fmt;
-    for (Component* cpnt : player->cpnts_mb)
+    for (Component* cpnt : entity.cpnts_mb)
     {
         if (*(uint64*)cpnt != Visual__VTable)
         {
@@ -358,6 +351,17 @@ void DrawPlayerVisualsControls()
         }
         ImGui::PopID();
     }
+}
+void DrawPlayerVisualsControls()
+{
+    ImGui::Text(
+        "The list of player's Visual components to turn on and off."
+        "\nThe numbers are the unique Handles of the corresponding LODSelector objects."
+        "\nClick with the Right Mouse Button to copy the Handle to clipboard."
+    );
+    Entity* player = ACU::GetPlayer();
+    if (!player) { return; }
+    DrawEntityVisualsControls(*player);
 }
 void DrawHoodControls()
 {
