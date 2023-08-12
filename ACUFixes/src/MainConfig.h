@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Enum_BindableKeyCode.h"
-#include "Enum_VirtualKeys.h"
 
 namespace MainConfig {
 
@@ -18,10 +17,6 @@ void WriteToFile();
 #define YACSTOR(SubclsName) YACONFIGSECTION_SUBCLASS_CTOR(SubclsName)
 struct ConfigTop : YAConfigSection {
     YACSTOR(ConfigTop);
-    ACM(imgui_useImGui, bool, BooleanAdapter, true);
-    ACM(imgui_showSuccessfulInjectionIndicator, bool, BooleanAdapter, true);
-    ACM(hotkey_ToggleMenu, VirtualKeys, EnumAdapter_template<VirtualKeys>, VirtualKeys::KEYBOARD_INSERT);
-    ACM(hotkey_UnloadMod, VirtualKeys, EnumAdapter_template<VirtualKeys>, VirtualKeys::KEYBOARD_END);
     struct Hacks : YAConfigSection {
         YACSTOR(Hacks);
         struct EnterWindows : YAConfigSection {

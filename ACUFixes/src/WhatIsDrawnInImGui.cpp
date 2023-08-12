@@ -55,30 +55,6 @@ Matrix4f MakeSimpleDebugTransform(const Vector3f& position)
 
 
 #include "MainConfig.h"
-void DrawSuccessfulInjectionIndicatorOverlay()
-{
-    ImGui::SetNextWindowBgAlpha(0.3f); // Transparent background
-    ImGui::SetNextWindowPos({ 0, 0 }, ImGuiCond_Always);
-    ImGuiWindowFlags window_flags = 0;
-    window_flags |= ImGuiWindowFlags_NoDecoration;
-    window_flags |= ImGuiWindowFlags_NoMove;
-    window_flags |= ImGuiWindowFlags_AlwaysAutoResize;
-    window_flags |= ImGuiWindowFlags_NoFocusOnAppearing;
-    window_flags |= ImGuiWindowFlags_NoNav;
-    window_flags |= ImGuiWindowFlags_NoInputs;
-
-    if (ImGui::Begin("Always enabled overlay", nullptr, window_flags))
-    {
-        ImGui::Text(
-            "Press %s to open ImGui menu, press %s to unload the mod."
-            "\nThese hotkeys can be changed in the menu or in the config file (the default INSERT/END will still work)."
-            "\nThis text can be disabled in the Extra tab of the menu. See `ACUFixes-readme.txt`."
-            , enum_reflection<VirtualKeys>::GetString(g_Config.hotkey_ToggleMenu)
-            , enum_reflection<VirtualKeys>::GetString(g_Config.hotkey_UnloadMod)
-            );
-    }
-    ImGui::End();
-}
 void SetProjMatrix(Matrix4f& matOut)
 {
     matOut = RenderValuesHolder::GetSingleton()->matProjection_mb;
@@ -134,7 +110,6 @@ void ImGui3D::WhatIsActuallyDrawnForFrame()
 void DrawBuiltinDebugCommands();
 void DrawPlayerVisualsControls();
 void DrawWeatherControls();
-#include "Enum_VirtualKeys.h"
 #include "ImGuiConfigUtils.h"
 std::filesystem::path& GetThisDLLAbsolutePath();
 void DrawModMenuControls()
@@ -148,8 +123,6 @@ void DrawModMenuControls()
     {
         system(("explorer \"" + GetThisDLLAbsolutePath().parent_path().string() + "\"").c_str());
     }
-    ImGui::DrawEnumPicker("Mod menu hotkey", g_Config.hotkey_ToggleMenu.get(), ImGuiComboFlags_HeightLarge);
-    ImGui::DrawEnumPicker("Unload mod hotkey", g_Config.hotkey_UnloadMod.get(), ImGuiComboFlags_HeightLarge);
 }
 
 #include "MainConfig.h"
@@ -184,8 +157,6 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
             if (ImGuiCTX::Tab _extraoptions{ "Extra" })
             {
                 DrawModMenuControls();
-                ImGui::Separator();
-                ImGui::Checkbox("Show the text in the top left corner", &g_Config.imgui_showSuccessfulInjectionIndicator.get());
                 ImGui::Separator();
                 ImGui::Checkbox("Show development experiments", &g_showDevExtraOptions);
                 if (ImGui::IsItemHovered(0))
@@ -257,6 +228,4 @@ void Base::ImGuiLayer_EvenWhenMenuIsClosed()
     bool drawImGui3D = g_showDevExtraOptions && g_DrawImGui3DifDevExtrasEnabled;
     if (drawImGui3D)
         ImGui3D::DrawStuff();
-    if (g_Config.imgui_showSuccessfulInjectionIndicator)
-        DrawSuccessfulInjectionIndicatorOverlay();
 }

@@ -200,7 +200,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="src\DisableIntegrityChecks.cpp" />
     <ClCompile Include="src\Hacks_ImGuiControl.cpp" />
     <ClCompile Include="src\Hack_DontForceUnsheatheWhenInDisguise.cpp" />
     <ClCompile Include="src\Hack_EnterWindowsWhenRisPressed.cpp" />
@@ -219,7 +218,6 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\MainConfig.cpp" />
     <ClCompile Include="src\MyLog.cpp" />
-    <ClCompile Include="src\My_WndProc_InputHandling.cpp" />
     <ClCompile Include="src\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -234,7 +232,6 @@
   <ItemGroup>
     <ClInclude Include="src\Enum_BindableKeyCode.h" />
     <ClInclude Include="src\Enum_BindableKeyCode_Keyboard.h" />
-    <ClInclude Include="src\Enum_VirtualKeys.h" />
     <ClInclude Include="src\Hack_AllowCustomizeEquipment.h" />
     <ClInclude Include="src\Hack_DontRandomlyTurn180Degrees.h" />
     <ClInclude Include="src\Hack_GunRange.h" />
