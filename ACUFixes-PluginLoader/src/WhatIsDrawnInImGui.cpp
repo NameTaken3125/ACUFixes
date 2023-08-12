@@ -47,6 +47,7 @@ void DrawModMenuControls()
     ImGui::DrawEnumPicker("Unload mod hotkey", g_PluginLoaderConfig.hotkey_UnloadMod.get(), ImGuiComboFlags_HeightLarge);
 }
 
+void DrawPluginLoaderControls();
 void Base::ImGuiLayer_WhenMenuIsOpen()
 {
     static bool enableDemoWindow = false;
@@ -63,6 +64,7 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
             {
                 if (ImGuiCTX::WindowChild _{ "MainTabChild" })
                 {
+                    DrawPluginLoaderControls();
                 }
             }
             if (ImGuiCTX::Tab _extraoptions{ "Extra" })

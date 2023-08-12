@@ -26,8 +26,67 @@ public:
         PresentHookOuter::Deactivate();
     }
 };
-
 fs::path AbsolutePathInMyDirectory(const fs::path& filenameRel);
+class PluginLoader_TheFixes
+{
+public:
+    PluginLoader_TheFixes() {}
+    ~PluginLoader_TheFixes() { UnloadFixesPlugin(); }
+
+    void LoadPlugins();
+    void UnloadFixesPlugin();
+
+    std::optional<HMODULE> theFixesDLLHandle;
+};
+using PluginStart_fnt = void(*)();
+using PluginStop_fnt = void(*)();
+namespace fs = std::filesystem;
+
+void PluginLoader_TheFixes::LoadPlugins()
+{
+    if (theFixesDLLHandle) { return; }
+    fs::path theFixesPluginFilepath = AbsolutePathInMyDirectory("ACUFixes.dll");
+    HMODULE loadedDLL = LoadLibraryW(theFixesPluginFilepath.c_str());
+    if (!loadedDLL)
+    {
+        return;
+    }
+    theFixesDLLHandle = loadedDLL;
+    PluginStart_fnt startFn = (PluginStart_fnt)GetProcAddress(loadedDLL, "ACUPluginStart");
+    if (startFn)
+    {
+        startFn();
+    }
+}
+
+void PluginLoader_TheFixes::UnloadFixesPlugin()
+{
+    if (!theFixesDLLHandle)
+    {
+        return;
+    }
+    PluginStop_fnt stopFn = (PluginStop_fnt)GetProcAddress(*theFixesDLLHandle, "ACUPluginStop");
+    if (stopFn)
+    {
+        stopFn();
+    }
+    FreeLibrary(*theFixesDLLHandle);
+    theFixesDLLHandle.reset();
+}
+
+PluginLoader_TheFixes g_PluginLoader;
+void DrawPluginLoaderControls()
+{
+    if (ImGui::Button("Load plugins"))
+    {
+        g_PluginLoader.LoadPlugins();
+    }
+    if (ImGui::Button("Unload plugins"))
+    {
+        g_PluginLoader.UnloadFixesPlugin();
+    }
+}
+
 static void PluginLoader_MainThread(HMODULE thisDLLModule)
 {
     Base::Data::thisDLLModule = thisDLLModule;

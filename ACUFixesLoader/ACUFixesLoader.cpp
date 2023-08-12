@@ -8,8 +8,8 @@
 namespace fs = std::filesystem;
 
 const wchar_t* g_targetProcessName = L"ACU.exe";
-const char* g_DLLPathRelativeToThisExecutable = "ACUFixes.dll";
-const char* g_configFileName = "acufixesloader-config.json";
+const char* g_DLLPathRelativeToThisExecutable = "ACUFixes-PluginLoader.dll";
+const char* g_configFileName = "ACUFixesLoader-config.json";
 
 struct LoaderConfig
 {
