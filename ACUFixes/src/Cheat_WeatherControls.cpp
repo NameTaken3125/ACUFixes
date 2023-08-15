@@ -235,19 +235,19 @@ enum class WorldSection
 };
 enum class KnownTimeOfDayHandles : uint64
 {
-    Paris_Morning = 0x7F5F1BB41,
-    Paris_Day = 0x7F5F1BC0B,
-    Paris_Evening = 0x7F5F1BC07,
-    Paris_Night = 0x7F5F1BC03,
-    Versailles_Morning = 0x10CDE128B3,
-    Versailles_Day = 0x10CDE128BF,
-    Versailles_Evening = 0x10CDE128C5,
-    Versailles_Night = 0x10CDE128B9,
-    Franciade_Dayish = 0x12F8374554,
-    Franciade_Nightish = 0x13786FCCA1,
+    Paris_Morning = 0x7F5F1BB41,               // PAR_TOD_Paris_Dawn/PAR_TOD_Paris_Dawn.Season
+    Paris_Day = 0x7F5F1BC0B,                   // PAR_TOD_Paris_Noon/PAR_TOD_Paris_Noon.Season
+    Paris_Evening = 0x7F5F1BC07,               // PAR_TOD_Paris_Sunset/PAR_TOD_Paris_Sunset.Season
+    Paris_Night = 0x7F5F1BC03,                 // PAR_TOD_Paris_Night/PAR_TOD_Paris_Night.Season
+    Versailles_Morning = 0x10CDE128B3,         // VERS_TOD_Dawn/VERS_TOD_Dawn.Season
+    Versailles_Day = 0x10CDE128BF,             // VERS_TOD_Noon/VERS_TOD_Noon.Season
+    Versailles_Evening = 0x10CDE128C5,         // VERS_TOD_Sunset/VERS_TOD_Sunset.Season
+    Versailles_Night = 0x10CDE128B9,           // VERS_TOD_Night/VERS_TOD_Night.Season
+    Franciade_Dayish = 0x12F8374554,           // SDN_Season/SDN_Season.Season
+    Franciade_Nightish = 0x13786FCCA1,         // SDN_moon_Season/SDN_moon_Season.Season
 
-    OccupiedParis_Unknown0 = 0x61765A1F0,
-    OccupiedParis_Night = 0x110E816873,
+    OccupiedParis_Unknown0 = 0x61765A1F0,      // ACU_Generic_Season/ACU_Generic_Season.Season
+    OccupiedParis_Night = 0x110E816873,        // LGS_WWR_AP_Night/LGS_WWR_AP_Night.Season
 };
 std::array<KnownTimeOfDayHandles, 4> g_KnownSeasons_Paris = {
     KnownTimeOfDayHandles::Paris_Morning,

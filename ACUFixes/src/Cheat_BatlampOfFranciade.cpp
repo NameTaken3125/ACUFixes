@@ -6,8 +6,8 @@
 
 #include "ACU/InventoryItemSettings.h"
 #include "ACU/AvatarGearManager.h"
-constexpr uint64 magicalLanternHandle = 0x000000238FD23D0F;
-constexpr uint64 oldAndBustedLanternHandle = 0x000000238FD23D13;
+constexpr uint64 magicalLanternHandle = 0x000000238FD23D0F;         // DLC_Saint-Denis - EconomicSystemSettings\ACU_LanternDLC_AppleOfEden.InventoryItemSettings
+constexpr uint64 oldAndBustedLanternHandle = 0x000000238FD23D13;    // DLC_Saint-Denis - EconomicSystemSettings\ACU_LanternDLC_SaintDenis.InventoryItemSettings
 AvatarGear* FindMagicalLanternGear(AvatarGearManager& agm)
 {
     for (auto rit = agm.gears_1C_hasLanternAtEnd.rbegin(), rend = agm.gears_1C_hasLanternAtEnd.rend(); rit != rend; rit++)
