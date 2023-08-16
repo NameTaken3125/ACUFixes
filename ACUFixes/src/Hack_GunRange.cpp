@@ -9,31 +9,7 @@
 
 
 
-#include "ACU/ManagedObject.h"
-#include "ACU/SharedPtr.h"
-class AllManagedObjects_mb
-{
-public:
-
-    // @helper_functions
-    static AllManagedObjects_mb& GetSingleton() { return *(AllManagedObjects_mb*)0x14525BB70; }
-};
-DEFINE_GAME_FUNCTION(ManagedObjectsList__GetByHandle_mb, 0x1426EAF00, SharedPtrNew<ManagedObject>*, __fastcall, (AllManagedObjects_mb* objList, __int64 p_managedObjHandle_mb_opt, ManagedObject* a3));
-DEFINE_GAME_FUNCTION(ManagedObjectsList__FreeObject_mb, 0x1426EC8E0, void, __fastcall, (AllManagedObjects_mb* objList, SharedPtrNew<ManagedObject>* a2));
-template<class ManagedObjectSubcls>
-void ReleaseSharedPtr(SharedPtrNew<ManagedObjectSubcls>& sharedPtr)
-{
-    ManagedObject* obj = sharedPtr.GetPtr();
-    if (!_InterlockedDecrement(&sharedPtr.refCount))
-    {
-        // Refcount (weak refcount maybe?) reached 0.
-        if (obj && !(sharedPtr.dword_C & 0xFFFFFF))
-        {
-            SharedPtrNew<ManagedObject>* asManagedObjPtr = (SharedPtrNew<ManagedObject>*) & sharedPtr;
-            ManagedObjectsList__FreeObject_mb(&AllManagedObjects_mb::GetSingleton(), asManagedObjPtr);
-        }
-    }
-}
+#include "ACU_SharedPtrs.h"
 
 DEFINE_GAME_FUNCTION(Entity__Get_Human1C8, 0x140C17A50, void*, __fastcall, (Entity* entity));
 DEFINE_GAME_FUNCTION(Entity__Get_WeaponComponent, 0x140C1B7E0, WeaponComponent*, __fastcall, (Entity* weaponEntity));
@@ -47,7 +23,7 @@ WeaponComponent* FindCurrentRangedWeaponComponent(Entity& player)
     if (!human1C8) { return nullptr; }
     Human1C8__GetCurrentRangedWeaponShared_mb(human1C8, &foundRangedWeapon, 0);
     Entity* wpnEntity = foundRangedWeapon->GetPtr();
-    ReleaseSharedPtr(*foundRangedWeapon);
+    DecrementWeakRefcount(*foundRangedWeapon);
     if (!wpnEntity) { return nullptr; }
     return Entity__Get_WeaponComponent(wpnEntity);
 }
