@@ -25,11 +25,28 @@ void Base::ImGuiLayer_EvenWhenMenuIsClosed();
 void Base::ImGuiLayer_WhenMenuIsOpen();
 fs::path AbsolutePathInMyDirectory(const fs::path& filenameRel);
 
-extern "C" __declspec(dllexport) void ACUPluginStart()
+#include "Common_Plugins/ACUPlugin.h"
+
+class ACUFixes_TheFixesPlugin : public ACUPluginInterfaceVirtuals
 {
-	MyLogFileLifetime _log{ AbsolutePathInMyDirectory("acufixes-log.log") };
-	MainConfig::FindAndLoadConfigFileOrCreateDefault();
-	MyVariousHacks::Start();
+public:
+    virtual void ImGui_WhenMenuIsOpen() override
+    {
+        Base::ImGuiLayer_WhenMenuIsOpen();
+    }
+    virtual void ImGui_EvenWhenMenuIsClosed() override
+    {
+        Base::ImGuiLayer_EvenWhenMenuIsClosed();
+    }
+} thisPlugin;
+std::optional<MyLogFileLifetime> g_LogLifetime;
+extern "C" __declspec(dllexport) ACUPluginInterfaceVirtuals* ACUPluginStart()
+{
+    g_LogLifetime.emplace(AbsolutePathInMyDirectory("acufixes-log.log"));
+    MainConfig::FindAndLoadConfigFileOrCreateDefault();
+    MyVariousHacks::Start();
+
+    return &thisPlugin;
 }
 extern "C" __declspec(dllexport) void ACUPluginStop()
 {

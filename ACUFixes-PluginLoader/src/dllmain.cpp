@@ -27,64 +27,124 @@ public:
     }
 };
 fs::path AbsolutePathInMyDirectory(const fs::path& filenameRel);
-class PluginLoader_TheFixes
+
+#include "Common_Plugins/ACUPlugin.h"
+using ACUPluginStart_fnt = ACUPluginInterfaceVirtuals*(*)();
+struct MyPluginResult
+{
+    fs::path m_filepath;
+    struct SuccessfulLoad
+    {
+        HMODULE m_moduleHandle;
+        ACUPluginStart_fnt m_startFn;
+        ACUPluginInterfaceVirtuals* m_pluginInterface = nullptr;
+    };
+    std::optional<SuccessfulLoad> m_successfulLoad;
+};
+using PluginLoaderResults = std::vector<MyPluginResult>;
+MyPluginResult LoadPlugin(const fs::path& filepath)
+{
+    MyPluginResult result;
+    result.m_filepath = filepath;
+    HMODULE moduleHandle = LoadLibraryW(result.m_filepath.c_str());
+    if (!moduleHandle)
+    {
+        return result;
+    }
+    ACUPluginStart_fnt startFn = reinterpret_cast<ACUPluginStart_fnt>(GetProcAddress(moduleHandle, "ACUPluginStart"));
+    if (!startFn)
+    {
+        FreeLibrary(moduleHandle);
+        return result;
+    }
+    result.m_successfulLoad = { moduleHandle, startFn };
+    return result;
+}
+class MyPluginLoader
 {
 public:
-    PluginLoader_TheFixes() {}
-    ~PluginLoader_TheFixes() { UnloadFixesPlugin(); }
-
-    void LoadPlugins();
-    void UnloadFixesPlugin();
-
-    std::optional<HMODULE> theFixesDLLHandle;
-};
-using PluginStart_fnt = void(*)();
-using PluginStop_fnt = void(*)();
-namespace fs = std::filesystem;
-
-void PluginLoader_TheFixes::LoadPlugins()
+    void LoadAllPluginsInFolder();
+    void UnloadAllPlugins();
+    void DrawImGuiControls();
+    void DrawImGuiForPlugins_WhenMenuIsOpened();
+    void DrawImGuiForPlugins_EvenWhenMenuIsClosed();
+    ~MyPluginLoader() { UnloadAllPlugins(); }
+private:
+    PluginLoaderResults dllResults;
+} g_MyPluginLoader;
+void MyPluginLoader::UnloadAllPlugins()
 {
-    if (theFixesDLLHandle) { return; }
-    fs::path theFixesPluginFilepath = AbsolutePathInMyDirectory("ACUFixes.dll");
-    HMODULE loadedDLL = LoadLibraryW(theFixesPluginFilepath.c_str());
-    if (!loadedDLL)
+    for (MyPluginResult& dll : dllResults)
     {
-        return;
+        if (dll.m_successfulLoad)
+        {
+            FreeLibrary(dll.m_successfulLoad->m_moduleHandle);
+        }
     }
-    theFixesDLLHandle = loadedDLL;
-    PluginStart_fnt startFn = (PluginStart_fnt)GetProcAddress(loadedDLL, "ACUPluginStart");
-    if (startFn)
+    dllResults.clear();
+}
+void MyPluginLoader::LoadAllPluginsInFolder()
+{
+    UnloadAllPlugins();
+    fs::path pluginsFolder = AbsolutePathInMyDirectory(L"plugins");
+
+    fs::create_directory(pluginsFolder);
+    for (const auto& entry : std::filesystem::directory_iterator(pluginsFolder)) {
+        if (entry.path().extension() == L".dll") {
+            MyPluginResult result = LoadPlugin(entry.path());
+            dllResults.push_back(std::move(result));
+        }
+    }
+
+    for (MyPluginResult& dll : dllResults)
     {
-        startFn();
+        if (dll.m_successfulLoad)
+        {
+            dll.m_successfulLoad->m_pluginInterface = dll.m_successfulLoad->m_startFn();
+            dll.m_successfulLoad->m_pluginInterface->m_imguiCtxPtr = GImGui;
+        }
+    }
+}
+void MyPluginLoader::DrawImGuiControls()
+{
+    ImGui::Text("Found plugins: %d", dllResults.size());
+    if (ImGui::Button("Load"))
+    {
+        LoadAllPluginsInFolder();
+    }
+    if (ImGui::Button("Unload"))
+    {
+        UnloadAllPlugins();
+    }
+}
+void MyPluginLoader::DrawImGuiForPlugins_WhenMenuIsOpened()
+{
+    for (const MyPluginResult& plugin : g_MyPluginLoader.dllResults)
+    {
+        if (!plugin.m_successfulLoad) { continue; }
+        plugin.m_successfulLoad->m_pluginInterface->ImGui_WhenMenuIsOpen();
+    }
+}
+void MyPluginLoader::DrawImGuiForPlugins_EvenWhenMenuIsClosed()
+{
+    for (const MyPluginResult& plugin : g_MyPluginLoader.dllResults)
+    {
+        if (!plugin.m_successfulLoad) { continue; }
+        plugin.m_successfulLoad->m_pluginInterface->ImGui_EvenWhenMenuIsClosed();
     }
 }
 
-void PluginLoader_TheFixes::UnloadFixesPlugin()
-{
-    if (!theFixesDLLHandle)
-    {
-        return;
-    }
-    PluginStop_fnt stopFn = (PluginStop_fnt)GetProcAddress(*theFixesDLLHandle, "ACUPluginStop");
-    if (stopFn)
-    {
-        stopFn();
-    }
-    FreeLibrary(*theFixesDLLHandle);
-    theFixesDLLHandle.reset();
-}
-
-PluginLoader_TheFixes g_PluginLoader;
 void DrawPluginLoaderControls()
 {
-    if (ImGui::Button("Load plugins"))
-    {
-        g_PluginLoader.LoadPlugins();
-    }
-    if (ImGui::Button("Unload plugins"))
-    {
-        g_PluginLoader.UnloadFixesPlugin();
-    }
+    g_MyPluginLoader.DrawImGuiControls();
+}
+void DrawPluginsWhenMenuOpen()
+{
+    g_MyPluginLoader.DrawImGuiForPlugins_WhenMenuIsOpened();
+}
+void DrawPluginsEvenWhenMenuIsClosed()
+{
+    g_MyPluginLoader.DrawImGuiForPlugins_EvenWhenMenuIsClosed();
 }
 
 static void PluginLoader_MainThread(HMODULE thisDLLModule)

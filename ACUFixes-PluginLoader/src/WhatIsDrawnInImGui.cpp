@@ -48,6 +48,8 @@ void DrawModMenuControls()
 }
 
 void DrawPluginLoaderControls();
+void DrawPluginsWhenMenuOpen();
+void DrawPluginsEvenWhenMenuIsClosed();
 void Base::ImGuiLayer_WhenMenuIsOpen()
 {
     static bool enableDemoWindow = false;
@@ -56,7 +58,7 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
     }
     ImGui::SetNextWindowPos(ImVec2(100, 100), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSize(ImVec2(500, 500), ImGuiCond_FirstUseEver);
-    if (ImGuiCTX::Window _mainWindow{ "ACUFixes Mod Menu" })
+    if (ImGuiCTX::Window _mainWindow{ "ACU Plugin Loader" })
     {
         if (ImGuiCTX::TabBar _tabbar{ "MainWindowTabs" })
         {
@@ -77,9 +79,11 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
             }
         }
     }
+    DrawPluginsWhenMenuOpen();
 }
 void Base::ImGuiLayer_EvenWhenMenuIsClosed()
 {
     if (g_PluginLoaderConfig.imgui_showSuccessfulInjectionIndicator)
         DrawSuccessfulInjectionIndicatorOverlay();
+    DrawPluginsEvenWhenMenuIsClosed();
 }
