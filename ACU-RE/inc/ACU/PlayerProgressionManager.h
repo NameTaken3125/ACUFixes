@@ -130,27 +130,44 @@ class InventoryItemList : public Object
 public:
 	char pad_0008[16]; //0x0008
 }; //Size: 0x0018
+assert_sizeof(InventoryItemList, 0x18);
 
-class PlayerProgressionCharacterData_190
+class InventoryItemContainer;
+class LogicalInventory
 {
 public:
-	char pad_0000[48]; //0x0000
-}; //Size: 0x0030
+	char pad_0000[8]; //0x0000
+	SmallArray<InventoryItemContainer*> invItemContainers; //0x0008
+	char pad_0014[4]; //0x0014
+}; //Size: 0x0018
+assert_sizeof(LogicalInventory, 0x18);
 
+#include "PlayerCustomizationItems.h"
+
+
+class PlayerProgressionCharacterCustomization;
 class PlayerProgressionCharacterData
 {
 public:
-	char pad_0000[40]; //0x0000
+	char pad_0000[16]; //0x0000
+	LogicalInventory logicalInventory; //0x0010
 	InventoryItemList invItemList_28; //0x0028
 	InventoryItemList invItemList_40; //0x0040
 	InventoryItemList invItemList_58; //0x0058
 	InventoryItemList invItemList_70; //0x0070
-	char pad_0088[12]; //0x0088
+	SmallArray<SharedPtrNew<InventoryItemSettings>*> invItemSettings_88; //0x0088
 	SmallArray<SharedPtrNew<InventoryItemSettings>*> invItemSettings_94; //0x0094
 	SharedPtrNew<ProgressionCharacter>* shared_progressionCharacter; //0x00A0
-	char pad_00A8[232]; //0x00A8
-	PlayerProgressionCharacterData_190 stru_190; //0x0190
-	char pad_01C0[128]; //0x01C0
+	char pad_00A8[88]; //0x00A8
+	PlayerProgressionCharacterCustomization* progressCharCustomization; //0x0100
+	char pad_0108[24]; //0x0108
+	uint64 avatarSkillTree60; //0x0120
+	uint64 avatarSkillTree68; //0x0128
+	char pad_0130[96]; //0x0130
+	PlayerCustomizationItems stru_190; //0x0190
+	char pad_0218[12]; //0x0218
+	uint32 spentSkillPoints_mb; //0x0224
+	char pad_0228[24]; //0x0228
 }; //Size: 0x0240
 assert_offsetof(PlayerProgressionCharacterData, stru_190, 0x190);
 assert_sizeof(PlayerProgressionCharacterData, 0x240);

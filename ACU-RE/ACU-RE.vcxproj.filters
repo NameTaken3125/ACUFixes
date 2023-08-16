@@ -101,6 +101,9 @@
     <ClInclude Include="inc\ACU\MandatoryWorldComponent.h" />
     <ClInclude Include="inc\ACU\Season.h" />
     <ClInclude Include="inc\ACU\SoundState.h" />
+    <ClInclude Include="inc\ACU\PlayerCustomizationItems.h" />
+    <ClInclude Include="inc\ACU\PlayerCustomizationWorker.h" />
+    <ClInclude Include="inc\ACU\BuildTable.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />

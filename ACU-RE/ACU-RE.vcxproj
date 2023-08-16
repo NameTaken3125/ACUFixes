@@ -185,6 +185,7 @@
     <ClInclude Include="inc\ACU\BaseEntity.h" />
     <ClInclude Include="inc\ACU\basic_types.h" />
     <ClInclude Include="inc\ACU\BhvAssassin.h" />
+    <ClInclude Include="inc\ACU\BuildTable.h" />
     <ClInclude Include="inc\ACU\CameraData.h" />
     <ClInclude Include="inc\ACU\CameraManager.h" />
     <ClInclude Include="inc\ACU\CameraSelectorBlenderNode.h" />
@@ -232,6 +233,8 @@
     <ClInclude Include="inc\ACU\MemoryManager.h" />
     <ClInclude Include="inc\ACU\Parkour_PotentialWindowEntry.h" />
     <ClInclude Include="inc\ACU\Parkour_WhileOnWallSystem.h" />
+    <ClInclude Include="inc\ACU\PlayerCustomizationItems.h" />
+    <ClInclude Include="inc\ACU\PlayerCustomizationWorker.h" />
     <ClInclude Include="inc\ACU\PlayerProgressionManager.h" />
     <ClInclude Include="inc\ACU\QuickSelectButtonComponent.h" />
     <ClInclude Include="inc\ACU\Random.h" />

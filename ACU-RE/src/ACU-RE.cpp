@@ -83,6 +83,9 @@
 #include "ACU/UISounds.h"
 #include "ACU/AssassinSoundSettings.h"
 
+#include "ACU/PlayerCustomizationItems.h"
+#include "ACU/PlayerCustomizationWorker.h"
+
 #include "ACU/AIAction.h"
 #include "ACU/PlayerProgressionManager.h"
 #include "ACU/AssassinAbilitySet.h"
@@ -113,3 +116,5 @@
 #include "ACU/WeatherControls.h"
 #include "ACU/WeatherPropertyControllerData.h"
 #include "ACU/Season.h"
+
+#include "ACU/BuildTable.h"
