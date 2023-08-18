@@ -29,7 +29,7 @@ public:
 fs::path AbsolutePathInMyDirectory(const fs::path& filenameRel);
 
 #include "Common_Plugins/ACUPlugin.h"
-using ACUPluginStart_fnt = ACUPluginInterfaceVirtuals*(*)();
+using ACUPluginStart_fnt = decltype(ACUPluginStart)*;
 struct MyPluginResult
 {
     fs::path m_filepath;
@@ -41,8 +41,29 @@ struct MyPluginResult
     };
     std::optional<SuccessfulLoad> m_successfulLoad;
 };
+void PluginLoader_RequestUnloadPlugin(HMODULE dllHandle);
 using PluginLoaderResults = std::vector<MyPluginResult>;
-MyPluginResult LoadPlugin(const fs::path& filepath)
+class MyPluginLoader
+{
+public:
+    void LoadAllPluginsInFolder();
+    void UnloadAllPlugins();
+    void DrawImGuiControls();
+    void DrawImGuiForPlugins_WhenMenuIsOpened();
+    void DrawImGuiForPlugins_EvenWhenMenuIsClosed();
+    ~MyPluginLoader() { UnloadAllPlugins(); }
+
+    void RequestUnloadDLL(HMODULE dllHandle);
+private:
+    MyPluginResult LoadPlugin(const fs::path& filepath);
+public:
+    void EveryFrameBeforeGraphicsUpdate();
+private:
+    PluginLoaderResults dllResults;
+    ACUPluginLoaderInterface m_PluginLoaderInterfaces = { ::PluginLoader_RequestUnloadPlugin };
+    HMODULE m_RequestedToUnload = nullptr;
+} g_MyPluginLoader;
+MyPluginResult MyPluginLoader::LoadPlugin(const fs::path& filepath)
 {
     MyPluginResult result;
     result.m_filepath = filepath;
@@ -60,18 +81,6 @@ MyPluginResult LoadPlugin(const fs::path& filepath)
     result.m_successfulLoad = { moduleHandle, startFn };
     return result;
 }
-class MyPluginLoader
-{
-public:
-    void LoadAllPluginsInFolder();
-    void UnloadAllPlugins();
-    void DrawImGuiControls();
-    void DrawImGuiForPlugins_WhenMenuIsOpened();
-    void DrawImGuiForPlugins_EvenWhenMenuIsClosed();
-    ~MyPluginLoader() { UnloadAllPlugins(); }
-private:
-    PluginLoaderResults dllResults;
-} g_MyPluginLoader;
 void MyPluginLoader::UnloadAllPlugins()
 {
     for (MyPluginResult& dll : dllResults)
@@ -82,6 +91,15 @@ void MyPluginLoader::UnloadAllPlugins()
         }
     }
     dllResults.clear();
+}
+void MyPluginLoader::RequestUnloadDLL(HMODULE dllHandle)
+{
+    m_RequestedToUnload = dllHandle;
+}
+
+void PluginLoader_RequestUnloadPlugin(HMODULE dllHandle)
+{
+    g_MyPluginLoader.RequestUnloadDLL(dllHandle);
 }
 void MyPluginLoader::LoadAllPluginsInFolder()
 {
@@ -100,8 +118,7 @@ void MyPluginLoader::LoadAllPluginsInFolder()
     {
         if (dll.m_successfulLoad)
         {
-            dll.m_successfulLoad->m_pluginInterface = dll.m_successfulLoad->m_startFn();
-            dll.m_successfulLoad->m_pluginInterface->m_imguiCtxPtr = GImGui;
+            dll.m_successfulLoad->m_pluginInterface = dll.m_successfulLoad->m_startFn(m_PluginLoaderInterfaces);
         }
     }
 }
@@ -117,12 +134,13 @@ void MyPluginLoader::DrawImGuiControls()
         UnloadAllPlugins();
     }
 }
+extern ImGuiContext* GImGui;
 void MyPluginLoader::DrawImGuiForPlugins_WhenMenuIsOpened()
 {
     for (const MyPluginResult& plugin : g_MyPluginLoader.dllResults)
     {
         if (!plugin.m_successfulLoad) { continue; }
-        plugin.m_successfulLoad->m_pluginInterface->ImGui_WhenMenuIsOpen();
+        plugin.m_successfulLoad->m_pluginInterface->EveryFrameWhenMenuIsOpen(*GImGui);
     }
 }
 void MyPluginLoader::DrawImGuiForPlugins_EvenWhenMenuIsClosed()
@@ -130,10 +148,22 @@ void MyPluginLoader::DrawImGuiForPlugins_EvenWhenMenuIsClosed()
     for (const MyPluginResult& plugin : g_MyPluginLoader.dllResults)
     {
         if (!plugin.m_successfulLoad) { continue; }
-        plugin.m_successfulLoad->m_pluginInterface->ImGui_EvenWhenMenuIsClosed();
+        plugin.m_successfulLoad->m_pluginInterface->EveryFrameEvenWhenMenuIsClosed(*GImGui);
     }
 }
 
+void MyPluginLoader::EveryFrameBeforeGraphicsUpdate()
+{
+    if (m_RequestedToUnload)
+    {
+        m_RequestedToUnload = nullptr;
+        UnloadAllPlugins();
+    }
+}
+void EveryFrameBeforeGraphicsUpdate()
+{
+    g_MyPluginLoader.EveryFrameBeforeGraphicsUpdate();
+}
 void DrawPluginLoaderControls()
 {
     g_MyPluginLoader.DrawImGuiControls();

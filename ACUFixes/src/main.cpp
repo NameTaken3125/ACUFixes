@@ -10,14 +10,6 @@ Brings the app's components together.
 #include "MyLog.h"
 #include "MainConfig.h"
 
-#include "ACU/ACUGetSingletons.h"
-
-// Required so that the game doesn't crash on code modification.
-void DisableMainIntegrityCheck();
-void WaitUntilGameIsInitializedEnoughSoThatTheMainIntegrityCheckCanBeDisabled();
-void ClearThe_BeingDebugged_Flag();
-// Respond to input: toggle hacks, etc.
-LRESULT CALLBACK WndProc_HackControls(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 // Just re-declaring these as a reminder that they're the user-defined parts
 // that are needed to make the BaseHook work.
@@ -27,30 +19,44 @@ fs::path AbsolutePathInMyDirectory(const fs::path& filenameRel);
 
 #include "Common_Plugins/ACUPlugin.h"
 
+
+HMODULE g_ThisDLLHandle = nullptr;
+using RequestUnloadPlugin_fnt = decltype(ACUPluginLoaderInterface::RequestUnloadPlugin);
+RequestUnloadPlugin_fnt RequestUnloadThisPlugin_fnptr = nullptr;
+void RequestUnloadThisPlugin()
+{
+    RequestUnloadThisPlugin_fnptr(g_ThisDLLHandle);
+}
+void GrabPluginLoaderGlobalVariables(ACUPluginLoaderInterface& pluginLoader)
+{
+    RequestUnloadThisPlugin_fnptr = pluginLoader.RequestUnloadPlugin;
+}
+
+extern ImGuiContext* GImGui;
 class ACUFixes_TheFixesPlugin : public ACUPluginInterfaceVirtuals
 {
 public:
-    virtual void ImGui_WhenMenuIsOpen() override
+    virtual void EveryFrameWhenMenuIsOpen(ImGuiContext& readyToUseImGuiContext) override
     {
+        GImGui = &readyToUseImGuiContext;
         Base::ImGuiLayer_WhenMenuIsOpen();
     }
-    virtual void ImGui_EvenWhenMenuIsClosed() override
+    virtual void EveryFrameEvenWhenMenuIsClosed(ImGuiContext& readyToUseImGuiContext) override
     {
+        GImGui = &readyToUseImGuiContext;
         Base::ImGuiLayer_EvenWhenMenuIsClosed();
     }
-} thisPlugin;
+} g_thisPlugin;
 std::optional<MyLogFileLifetime> g_LogLifetime;
-extern "C" __declspec(dllexport) ACUPluginInterfaceVirtuals* ACUPluginStart()
+extern "C" __declspec(dllexport) ACUPluginInterfaceVirtuals* ACUPluginStart(ACUPluginLoaderInterface& pluginLoader)
 {
+    GrabPluginLoaderGlobalVariables(pluginLoader);
+
     g_LogLifetime.emplace(AbsolutePathInMyDirectory("acufixes-log.log"));
     MainConfig::FindAndLoadConfigFileOrCreateDefault();
     MyVariousHacks::Start();
 
-    return &thisPlugin;
-}
-extern "C" __declspec(dllexport) void ACUPluginStop()
-{
-
+    return &g_thisPlugin;
 }
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
@@ -58,6 +64,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
     switch (dwReason)
     {
     case DLL_PROCESS_ATTACH:
+        g_ThisDLLHandle = hModule;
         Base::Data::thisDLLModule = hModule;
         DisableThreadLibraryCalls(hModule);
         break;

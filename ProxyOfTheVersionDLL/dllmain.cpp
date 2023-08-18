@@ -24,7 +24,7 @@ static void FindOutWhereThisDLLIs(HMODULE hModule)
 
 static void LoadTheActualTargetDLL()
 {
-    g_injectedDLLPath = GetThisDLLAbsolutePath().parent_path() / "ACUFixes/ACUFixes.dll";
+    g_injectedDLLPath = GetThisDLLAbsolutePath().parent_path() / "ACUFixes/ACUFixes-PluginLoader.dll";
     std::wstring pathString = g_injectedDLLPath.native();
     HMODULE targetDLL = LoadLibraryW(pathString.c_str());
 }

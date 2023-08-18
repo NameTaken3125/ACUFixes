@@ -81,8 +81,10 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
     }
     DrawPluginsWhenMenuOpen();
 }
+void EveryFrameBeforeGraphicsUpdate();
 void Base::ImGuiLayer_EvenWhenMenuIsClosed()
 {
+    EveryFrameBeforeGraphicsUpdate();
     if (g_PluginLoaderConfig.imgui_showSuccessfulInjectionIndicator)
         DrawSuccessfulInjectionIndicatorOverlay();
     DrawPluginsEvenWhenMenuIsClosed();

@@ -125,6 +125,7 @@ void DrawModMenuControls()
     }
 }
 
+void RequestUnloadThisPlugin();
 #include "MainConfig.h"
 bool g_showDevExtraOptions = false;
 bool g_DrawImGui3DifDevExtrasEnabled = true;
@@ -157,6 +158,11 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
             if (ImGuiCTX::Tab _extraoptions{ "Extra" })
             {
                 DrawModMenuControls();
+                ImGui::Separator();
+                if (ImGui::Button("Unload this plugin"))
+                {
+                    RequestUnloadThisPlugin();
+                }
                 ImGui::Separator();
                 ImGui::Checkbox("Show development experiments", &g_showDevExtraOptions);
                 if (ImGui::IsItemHovered(0))
