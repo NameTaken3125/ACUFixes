@@ -4,6 +4,9 @@
 #include "SmallArray.h"
 #include "SharedPtr.h"
 #include "AIAction.h"
+#include "BuildTags.h"
+#include "EventListener.h"
+#include "UIString.h"
 
 class SinglePlayerOptions
 {
@@ -72,20 +75,6 @@ public:
 	char pad_0020[48]; //0x0020
 }; //Size: 0x0050
 assert_sizeof(PlayerRanker, 0x50);
-
-class MissionStep : public ManagedObject
-{
-public:
-	char pad_0010[144]; //0x0010
-}; //Size: 0x00A0
-assert_sizeof(MissionStep, 0xA0);
-
-class MissionStepCollectible : public MissionStep
-{
-public:
-	char pad_00A0[88]; //0x00A0
-}; //Size: 0x00F8
-assert_sizeof(MissionStepCollectible, 0xF8);
 
 class PlayerCharacterSettings : public Object
 {
@@ -211,9 +200,13 @@ public:
 	char pad_0298[40]; //0x0298
 	InventoryItemCategoryDataRepository inventoryItemCategoryDataRepository_2C0; //0x02C0
 	InventoryItemDataRepository inventoryItemDataRepository_2D8; //0x02D8
-	char pad_02F0[64]; //0x02F0
-	MissionStepCollectible missionStepCollectible; //0x0330
-	char pad_0428[128]; //0x0428
+	char pad_02F0[4]; //0x02F0
+	BuildTags buildTags_2F4; //0x02F4
+	char pad_0300[4]; //0x0300
+	UIString uistring_304; //0x0304
+	char pad_0308[232]; //0x0308
+	EventListener evnListener_3F0; //0x03F0
+	char pad_0418[144]; //0x0418
 	PlayerCharacterSettings playerCharacterSettings_4A8; //0x04A8
 	AssassinAbilitySets assassinAbilitySets; //0x04E8
 	char pad_0528[72]; //0x0528

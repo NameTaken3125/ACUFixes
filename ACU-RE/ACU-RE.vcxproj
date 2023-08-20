@@ -186,6 +186,7 @@
     <ClInclude Include="inc\ACU\basic_types.h" />
     <ClInclude Include="inc\ACU\BhvAssassin.h" />
     <ClInclude Include="inc\ACU\BuildTable.h" />
+    <ClInclude Include="inc\ACU\BuildTags.h" />
     <ClInclude Include="inc\ACU\CameraData.h" />
     <ClInclude Include="inc\ACU\CameraManager.h" />
     <ClInclude Include="inc\ACU\CameraSelectorBlenderNode.h" />
@@ -231,6 +232,17 @@
     <ClInclude Include="inc\ACU\MandatoryUniverseComponent.h" />
     <ClInclude Include="inc\ACU\MandatoryWorldComponent.h" />
     <ClInclude Include="inc\ACU\MemoryManager.h" />
+    <ClInclude Include="inc\ACU\Mission.h" />
+    <ClInclude Include="inc\ACU\MissionContext.h" />
+    <ClInclude Include="inc\ACU\MissionGroup.h" />
+    <ClInclude Include="inc\ACU\MissionGroupSaveData.h" />
+    <ClInclude Include="inc\ACU\MissionHistory.h" />
+    <ClInclude Include="inc\ACU\MissionManager.h" />
+    <ClInclude Include="inc\ACU\MissionReplicationPack.h" />
+    <ClInclude Include="inc\ACU\MissionRoot.h" />
+    <ClInclude Include="inc\ACU\MissionSaveData.h" />
+    <ClInclude Include="inc\ACU\MissionStep.h" />
+    <ClInclude Include="inc\ACU\MissionStepSaveData.h" />
     <ClInclude Include="inc\ACU\Parkour_PotentialWindowEntry.h" />
     <ClInclude Include="inc\ACU\Parkour_WhileOnWallSystem.h" />
     <ClInclude Include="inc\ACU\PlayerCustomizationItems.h" />
@@ -256,6 +268,7 @@
     <ClInclude Include="inc\ACU\Timer.h" />
     <ClInclude Include="inc\ACU\TypeInfo.h" />
     <ClInclude Include="inc\ACU\UISounds.h" />
+    <ClInclude Include="inc\ACU\UIString.h" />
     <ClInclude Include="inc\ACU\UIWorldComponent.h" />
     <ClInclude Include="inc\ACU\VanishingManager.h" />
     <ClInclude Include="inc\ACU\Visual.h" />

@@ -63,6 +63,7 @@
 #include "ACU/HUDQuickSelectComponent.h"
 #include "ACU/QuickSelectButtonComponent.h"
 
+#include "ACU/UIString.h"
 #include "ACU/InventoryItemSettings.h"
 #include "ACU/AvatarGearManager.h"
 
@@ -117,4 +118,16 @@
 #include "ACU/WeatherPropertyControllerData.h"
 #include "ACU/Season.h"
 
+#include "ACU/BuildTags.h"
 #include "ACU/BuildTable.h"
+
+#include "ACU/MissionReplicationPack.h"
+#include "ACU/Mission.h"
+#include "ACU/MissionGroup.h"
+#include "ACU/MissionStep.h"
+#include "ACU/MissionHistory.h"
+#include "ACU/MissionSaveData.h"
+#include "ACU/MissionStepSaveData.h"
+#include "ACU/MissionRoot.h"
+#include "ACU/MissionContext.h"
+#include "ACU/MissionManager.h"

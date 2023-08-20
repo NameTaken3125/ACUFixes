@@ -3,15 +3,9 @@
 #include "ACU/ManagedObject.h"
 #include "ACU/SharedPtr.h"
 #include "ACU/SmallArray.h"
+#include "ACU/UIString.h"
 
 class InventoryItemSettings;
-
-class UIString
-{
-public:
-    uint32 stringID;
-};
-assert_sizeof(UIString, 4);
 
 class TextureMapSpec;
 class AvatarGearModifier;

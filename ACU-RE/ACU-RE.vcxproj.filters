@@ -104,6 +104,19 @@
     <ClInclude Include="inc\ACU\PlayerCustomizationItems.h" />
     <ClInclude Include="inc\ACU\PlayerCustomizationWorker.h" />
     <ClInclude Include="inc\ACU\BuildTable.h" />
+    <ClInclude Include="inc\ACU\MissionManager.h" />
+    <ClInclude Include="inc\ACU\Mission.h" />
+    <ClInclude Include="inc\ACU\MissionGroup.h" />
+    <ClInclude Include="inc\ACU\MissionReplicationPack.h" />
+    <ClInclude Include="inc\ACU\MissionHistory.h" />
+    <ClInclude Include="inc\ACU\MissionGroupSaveData.h" />
+    <ClInclude Include="inc\ACU\MissionSaveData.h" />
+    <ClInclude Include="inc\ACU\MissionStepSaveData.h" />
+    <ClInclude Include="inc\ACU\MissionStep.h" />
+    <ClInclude Include="inc\ACU\MissionRoot.h" />
+    <ClInclude Include="inc\ACU\MissionContext.h" />
+    <ClInclude Include="inc\ACU\BuildTags.h" />
+    <ClInclude Include="inc\ACU\UIString.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />
