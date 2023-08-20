@@ -181,6 +181,7 @@
     <ClInclude Include="inc\ACU\AtomAnimComponent.h" />
     <ClInclude Include="inc\ACU\AvatarConsumablesManager.h" />
     <ClInclude Include="inc\ACU\AvatarGearManager.h" />
+    <ClInclude Include="inc\ACU\AvatarGearModifierStats.h" />
     <ClInclude Include="inc\ACU\BallisticProjectileAimingControlsSettings.h" />
     <ClInclude Include="inc\ACU\BaseEntity.h" />
     <ClInclude Include="inc\ACU\basic_types.h" />
@@ -212,6 +213,7 @@
     <ClInclude Include="inc\ACU\Enum_MouseButtons.h" />
     <ClInclude Include="inc\ACU\Enum_ReactionHash_ReactToWhat.h" />
     <ClInclude Include="inc\ACU\EventListener.h" />
+    <ClInclude Include="inc\ACU\ExclusiveContent.h" />
     <ClInclude Include="inc\ACU\FancyVTable.h" />
     <ClInclude Include="inc\ACU\GamePlaySettings.h" />
     <ClInclude Include="inc\ACU\GameStatsManager.h" />
@@ -227,6 +229,7 @@
     <ClInclude Include="inc\ACU\InventoryItemSettings.h" />
     <ClInclude Include="inc\ACU\KeymapScancodes.h" />
     <ClInclude Include="inc\ACU\LanterndlcComponent.h" />
+    <ClInclude Include="inc\ACU\LocalizationManager.h" />
     <ClInclude Include="inc\ACU\LODSelectorInstance.h" />
     <ClInclude Include="inc\ACU\ManagedObject.h" />
     <ClInclude Include="inc\ACU\MandatoryUniverseComponent.h" />
@@ -296,6 +299,7 @@
     <ClCompile Include="src\Entity.cpp" />
     <ClCompile Include="src\Human.cpp" />
     <ClCompile Include="src\HumanStatesHolder.cpp" />
+    <ClCompile Include="src\LocalizationManager.cpp" />
     <ClCompile Include="src\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

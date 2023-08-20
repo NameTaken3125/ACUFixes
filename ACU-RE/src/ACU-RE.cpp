@@ -65,6 +65,7 @@
 
 #include "ACU/UIString.h"
 #include "ACU/InventoryItemSettings.h"
+#include "ACU/AvatarGearModifierStats.h"
 #include "ACU/AvatarGearManager.h"
 
 #include "ACU/WhenHighlightedNPCChanges.h"
@@ -131,3 +132,6 @@
 #include "ACU/MissionRoot.h"
 #include "ACU/MissionContext.h"
 #include "ACU/MissionManager.h"
+
+#include "ACU/LocalizationManager.h"
+#include "ACU/ExclusiveContent.h"
