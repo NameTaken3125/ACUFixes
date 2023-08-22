@@ -32,141 +32,275 @@ fs::path AbsolutePathInMyDirectory(const fs::path& filenameRel);
 using ACUPluginStart_fnt = decltype(ACUPluginStart)*;
 struct MyPluginResult
 {
-    fs::path m_filepath;
+    MyPluginResult(const fs::path& filepath) : m_filepath(filepath) {}
+    const fs::path m_filepath;
     struct SuccessfulLoad
     {
+        SuccessfulLoad(HMODULE moduleHandle, ACUPluginInterfaceVirtuals& pluginInterface)
+            : m_moduleHandle(moduleHandle)
+            , m_pluginInterface(pluginInterface)
+        {}
         HMODULE m_moduleHandle;
-        ACUPluginStart_fnt m_startFn;
-        ACUPluginInterfaceVirtuals* m_pluginInterface = nullptr;
+        ACUPluginInterfaceVirtuals& m_pluginInterface;
+        bool m_isRequestedToUnload = false;
+        bool m_isMenuOpen = false;
     };
     std::optional<SuccessfulLoad> m_successfulLoad;
 };
 void PluginLoader_RequestUnloadPlugin(HMODULE dllHandle);
-using PluginLoaderResults = std::vector<MyPluginResult>;
+HMODULE PluginLoader_GetPluginIfLoaded(const wchar_t* pluginName);
+using PluginLoaderResults = std::vector<std::unique_ptr<MyPluginResult>>;
 class MyPluginLoader
 {
 public:
-    void LoadAllPluginsInFolder();
+    MyPluginLoader();
+public:
+    void UpdateListOfAvailablePlugins();
+    void LoadAllFoundNonloadedPlugins();
     void UnloadAllPlugins();
-    void DrawImGuiControls();
+    void DrawPluginListControls();
     void DrawImGuiForPlugins_WhenMenuIsOpened();
     void DrawImGuiForPlugins_EvenWhenMenuIsClosed();
     ~MyPluginLoader() { UnloadAllPlugins(); }
 
     void RequestUnloadDLL(HMODULE dllHandle);
+    HMODULE GetPluginIfLoaded(const wchar_t* pluginName);
 private:
-    MyPluginResult LoadPlugin(const fs::path& filepath);
+    void LoadAndStartPlugin(MyPluginResult& pluginRecord);
 public:
     void EveryFrameBeforeGraphicsUpdate();
 private:
     PluginLoaderResults dllResults;
-    ACUPluginLoaderInterface m_PluginLoaderInterfaces = { ::PluginLoader_RequestUnloadPlugin };
-    HMODULE m_RequestedToUnload = nullptr;
+    bool m_IsRequestedToUnloadPlugin = false;
+    ACUPluginLoaderInterface m_PluginLoaderInterfaces;
 } g_MyPluginLoader;
-MyPluginResult MyPluginLoader::LoadPlugin(const fs::path& filepath)
+MyPluginLoader::MyPluginLoader()
 {
-    MyPluginResult result;
-    result.m_filepath = filepath;
-    HMODULE moduleHandle = LoadLibraryW(result.m_filepath.c_str());
+    m_PluginLoaderInterfaces.RequestUnloadPlugin = ::PluginLoader_RequestUnloadPlugin;
+    m_PluginLoaderInterfaces.GetPluginIfLoaded = ::PluginLoader_GetPluginIfLoaded;
+}
+void MyPluginLoader::LoadAndStartPlugin(MyPluginResult& pluginRecord)
+{
+    HMODULE moduleHandle = LoadLibraryW(pluginRecord.m_filepath.c_str());
     if (!moduleHandle)
     {
-        return result;
+        return;
     }
     ACUPluginStart_fnt startFn = reinterpret_cast<ACUPluginStart_fnt>(GetProcAddress(moduleHandle, "ACUPluginStart"));
     if (!startFn)
     {
         FreeLibrary(moduleHandle);
-        return result;
+        return;
     }
-    result.m_successfulLoad = { moduleHandle, startFn };
-    return result;
+    ACUPluginInterfaceVirtuals* successfullyStartedPlugin = startFn(m_PluginLoaderInterfaces);
+    if (!successfullyStartedPlugin)
+    {
+        FreeLibrary(moduleHandle);
+        return;
+    }
+    pluginRecord.m_successfulLoad.emplace(moduleHandle, *successfullyStartedPlugin);
 }
 void MyPluginLoader::UnloadAllPlugins()
 {
-    for (MyPluginResult& dll : dllResults)
+    for (std::unique_ptr<MyPluginResult>& dll : dllResults)
     {
-        if (dll.m_successfulLoad)
+        if (dll->m_successfulLoad)
         {
-            FreeLibrary(dll.m_successfulLoad->m_moduleHandle);
+            FreeLibrary(dll->m_successfulLoad->m_moduleHandle);
+            dll->m_successfulLoad.reset();
         }
     }
-    dllResults.clear();
 }
 void MyPluginLoader::RequestUnloadDLL(HMODULE dllHandle)
 {
-    m_RequestedToUnload = dllHandle;
+    for (std::unique_ptr<MyPluginResult>& loadedPlugin : dllResults)
+    {
+        if (loadedPlugin->m_successfulLoad
+            && loadedPlugin->m_successfulLoad->m_moduleHandle == dllHandle)
+        {
+            loadedPlugin->m_successfulLoad->m_isRequestedToUnload = true;
+            m_IsRequestedToUnloadPlugin = true;
+            break;
+        }
+    }
 }
 
+HMODULE PluginLoader_GetPluginIfLoaded(const wchar_t* pluginName)
+{
+    return g_MyPluginLoader.GetPluginIfLoaded(pluginName);
+}
 void PluginLoader_RequestUnloadPlugin(HMODULE dllHandle)
 {
     g_MyPluginLoader.RequestUnloadDLL(dllHandle);
 }
-void MyPluginLoader::LoadAllPluginsInFolder()
+HMODULE MyPluginLoader::GetPluginIfLoaded(const wchar_t* pluginName)
 {
-    UnloadAllPlugins();
+    for (auto& plugin : dllResults)
+    {
+        if (!plugin->m_successfulLoad) { continue; }
+        if (plugin->m_filepath.filename() == pluginName)
+        {
+            return plugin->m_successfulLoad->m_moduleHandle;
+        }
+    }
+    return nullptr;
+}
+void MyPluginLoader::UpdateListOfAvailablePlugins()
+{
     fs::path pluginsFolder = AbsolutePathInMyDirectory(L"plugins");
-
     fs::create_directory(pluginsFolder);
+    std::vector<fs::path> currentlyPresentDLLsInFolder;
+    currentlyPresentDLLsInFolder.reserve(32);
     for (const auto& entry : std::filesystem::directory_iterator(pluginsFolder)) {
         if (entry.path().extension() == L".dll") {
-            MyPluginResult result = LoadPlugin(entry.path());
-            dllResults.push_back(std::move(result));
+            currentlyPresentDLLsInFolder.push_back(entry.path());
         }
     }
-
-    for (MyPluginResult& dll : dllResults)
+    // Remove the records of DLLs that were available but are not anymore.
+    auto IsPluginRecordPresentButDLLisNoLongerAvailable = [&](std::unique_ptr<MyPluginResult>& alreadyDetectedPlugin)
     {
-        if (dll.m_successfulLoad)
+        if (alreadyDetectedPlugin->m_successfulLoad)
         {
-            dll.m_successfulLoad->m_pluginInterface = dll.m_successfulLoad->m_startFn(m_PluginLoaderInterfaces);
+            // If the plugin was successfully loaded, don't remove it from the list even if the file
+            // was somehow removed.
+            return false;
         }
+        for (fs::path& presentDLLpath : currentlyPresentDLLsInFolder)
+        {
+            if (presentDLLpath == alreadyDetectedPlugin->m_filepath)
+            {
+                // Though this plugin isn't loaded, a record of it is already present.
+                return false;
+            }
+        }
+        // Plugin isn't loaded and though a record of it was present, the DLL is no longer available in the "plugins" folder.
+        // Remove the record of it.
+        return true;
+    };
+    dllResults.erase(std::remove_if(dllResults.begin(), dllResults.end(),
+        IsPluginRecordPresentButDLLisNoLongerAvailable), dllResults.end());
+    // Add records for newly detected DLLs.
+    for (fs::path& presentDLLpath : currentlyPresentDLLsInFolder) {
+        bool isRecordAlreadyPresentAboutThisDLL = false;
+        for (std::unique_ptr<MyPluginResult>& alreadyDetectedPlugin : dllResults)
+        {
+            if (alreadyDetectedPlugin->m_filepath == presentDLLpath)
+            {
+                isRecordAlreadyPresentAboutThisDLL = true;
+            }
+        }
+        if (isRecordAlreadyPresentAboutThisDLL)
+        {
+            continue;
+        }
+        std::unique_ptr<MyPluginResult> result = std::make_unique<MyPluginResult>(presentDLLpath);
+        dllResults.push_back(std::move(result));
     }
 }
-void MyPluginLoader::DrawImGuiControls()
+void MyPluginLoader::LoadAllFoundNonloadedPlugins()
+{
+    for (std::unique_ptr<MyPluginResult>& plugin : dllResults)
+    {
+        if (plugin->m_successfulLoad)
+        {
+            continue;
+        }
+        LoadAndStartPlugin(*plugin);
+    }
+}
+void MyPluginLoader::DrawPluginListControls()
 {
     ImGui::Text("Found plugins: %d", dllResults.size());
-    if (ImGui::Button("Load"))
+    if (ImGui::Button("Update available plugin list"))
     {
-        LoadAllPluginsInFolder();
+        UpdateListOfAvailablePlugins();
     }
-    if (ImGui::Button("Unload"))
+    ImGui::SameLine();
+    if (ImGui::Button("Load all nonloaded"))
+    {
+        LoadAllFoundNonloadedPlugins();
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Unload all"))
     {
         UnloadAllPlugins();
+    }
+    std::string buf;
+    for (size_t i = 0; i < dllResults.size(); i++)
+    {
+        std::unique_ptr<MyPluginResult>& plugin = dllResults[i];
+        buf = std::to_string(i + 1) + ". " + plugin->m_filepath.filename().string();
+        ImGui::PushID(&plugin);
+        if (plugin->m_successfulLoad)
+        {
+            ImGui::Text(buf.c_str());
+            ImGui::SameLine();
+            if (ImGui::Button("Toggle menu"))
+            {
+                plugin->m_successfulLoad->m_isMenuOpen = !plugin->m_successfulLoad->m_isMenuOpen;
+            }
+        }
+        else
+        {
+            ImGui::TextDisabled(buf.c_str());
+            ImGui::SameLine();
+            if (ImGui::Button("Load"))
+            {
+                LoadAndStartPlugin(*plugin);
+            }
+        }
+        ImGui::PopID();
+        buf.clear();
     }
 }
 extern ImGuiContext* GImGui;
 void MyPluginLoader::DrawImGuiForPlugins_WhenMenuIsOpened()
 {
-    for (const MyPluginResult& plugin : g_MyPluginLoader.dllResults)
+    for (std::unique_ptr<MyPluginResult>& plugin : g_MyPluginLoader.dllResults)
     {
-        if (!plugin.m_successfulLoad) { continue; }
-        plugin.m_successfulLoad->m_pluginInterface->EveryFrameWhenMenuIsOpen(*GImGui);
+        if (!plugin->m_successfulLoad) { continue; }
+        if (!plugin->m_successfulLoad->m_isMenuOpen) { continue; }
+        ImGui::SetNextWindowPos(ImVec2(100, 100), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(500, 500), ImGuiCond_FirstUseEver);
+        if (ImGui::Begin(plugin->m_filepath.filename().string().c_str(), &plugin->m_successfulLoad->m_isMenuOpen))
+        {
+            plugin->m_successfulLoad->m_pluginInterface.EveryFrameWhenMenuIsOpen(*GImGui);
+        }
+        ImGui::End();
     }
 }
 void MyPluginLoader::DrawImGuiForPlugins_EvenWhenMenuIsClosed()
 {
-    for (const MyPluginResult& plugin : g_MyPluginLoader.dllResults)
+    for (const std::unique_ptr<MyPluginResult>& plugin : g_MyPluginLoader.dllResults)
     {
-        if (!plugin.m_successfulLoad) { continue; }
-        plugin.m_successfulLoad->m_pluginInterface->EveryFrameEvenWhenMenuIsClosed(*GImGui);
+        if (!plugin->m_successfulLoad) { continue; }
+        plugin->m_successfulLoad->m_pluginInterface.EveryFrameEvenWhenMenuIsClosed(*GImGui);
     }
 }
 
 void MyPluginLoader::EveryFrameBeforeGraphicsUpdate()
 {
-    if (m_RequestedToUnload)
+    if (m_IsRequestedToUnloadPlugin)
     {
-        m_RequestedToUnload = nullptr;
-        UnloadAllPlugins();
+        for (std::unique_ptr<MyPluginResult>& loadedPlugin : dllResults)
+        {
+            if (loadedPlugin->m_successfulLoad
+                && loadedPlugin->m_successfulLoad->m_isRequestedToUnload)
+            {
+                FreeLibrary(loadedPlugin->m_successfulLoad->m_moduleHandle);
+                loadedPlugin->m_successfulLoad.reset();
+            }
+        }
+        m_IsRequestedToUnloadPlugin = false;
     }
 }
 void EveryFrameBeforeGraphicsUpdate()
 {
     g_MyPluginLoader.EveryFrameBeforeGraphicsUpdate();
 }
-void DrawPluginLoaderControls()
+void DrawPluginListControls()
 {
-    g_MyPluginLoader.DrawImGuiControls();
+    g_MyPluginLoader.DrawPluginListControls();
 }
 void DrawPluginsWhenMenuOpen()
 {
@@ -184,6 +318,8 @@ static void PluginLoader_MainThread(HMODULE thisDLLModule)
     WaitUntilGameIsInitializedEnoughSoThatTheMainIntegrityCheckCanBeDisabled();
     PluginLoaderConfig::FindAndLoadConfigFileOrCreateDefault();
     DisableMainIntegrityCheck();
+    g_MyPluginLoader.UpdateListOfAvailablePlugins();
+    g_MyPluginLoader.LoadAllFoundNonloadedPlugins();
     PresentHookOuter::BasehookSettings_PresentHookOuter basehook;
     Base::Start(basehook);
     while (!Base::Data::Detached)

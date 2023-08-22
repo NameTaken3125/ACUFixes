@@ -33,6 +33,7 @@ void GrabPluginLoaderGlobalVariables(ACUPluginLoaderInterface& pluginLoader)
 }
 
 extern ImGuiContext* GImGui;
+std::optional<MyLogFileLifetime> g_LogLifetime;
 class ACUFixes_TheFixesPlugin : public ACUPluginInterfaceVirtuals
 {
 public:
@@ -46,17 +47,27 @@ public:
         GImGui = &readyToUseImGuiContext;
         Base::ImGuiLayer_EvenWhenMenuIsClosed();
     }
+    virtual bool Start(ACUPluginLoaderInterface& pluginLoader) override
+    {
+        if (pluginLoader.m_PluginLoaderVersion < g_CurrentPluginAPIversion)
+        {
+            return false;
+        }
+        GrabPluginLoaderGlobalVariables(pluginLoader);
+
+        g_LogLifetime.emplace(AbsolutePathInMyDirectory("ACUFixes-log.log"));
+        MainConfig::FindAndLoadConfigFileOrCreateDefault();
+        MyVariousHacks::Start();
+        return true;
+    }
 } g_thisPlugin;
-std::optional<MyLogFileLifetime> g_LogLifetime;
 extern "C" __declspec(dllexport) ACUPluginInterfaceVirtuals* ACUPluginStart(ACUPluginLoaderInterface& pluginLoader)
 {
-    GrabPluginLoaderGlobalVariables(pluginLoader);
-
-    g_LogLifetime.emplace(AbsolutePathInMyDirectory("acufixes-log.log"));
-    MainConfig::FindAndLoadConfigFileOrCreateDefault();
-    MyVariousHacks::Start();
-
-    return &g_thisPlugin;
+    if (!g_ThisPluginSingletonAsBaseclass->Start(pluginLoader))
+    {
+        return nullptr;
+    }
+    return g_ThisPluginSingletonAsBaseclass;
 }
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)

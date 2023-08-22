@@ -114,11 +114,6 @@ void DrawWeatherControls();
 std::filesystem::path& GetThisDLLAbsolutePath();
 void DrawModMenuControls()
 {
-    ImGui::Text(
-        "Mod menu hotkeys."
-        "\nYou can also change the hotkeys by manually editing"
-        "\nthe `acufixes-config.json` file in a text editor."
-    );
     if (ImGui::Button("Open DLL's folder in File Explorer (has config)"))
     {
         system(("explorer \"" + GetThisDLLAbsolutePath().parent_path().string() + "\"").c_str());
@@ -131,14 +126,8 @@ bool g_showDevExtraOptions = false;
 bool g_DrawImGui3DifDevExtrasEnabled = true;
 void Base::ImGuiLayer_WhenMenuIsOpen()
 {
-    static bool enableDemoWindow = false;
-    if (enableDemoWindow) {
-        ImGui::ShowDemoWindow();
-    }
     ImGui::SetNextWindowPos(ImVec2(100, 100), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSize(ImVec2(500, 500), ImGuiCond_FirstUseEver);
-    if (ImGuiCTX::Window _mainWindow{ "ACUFixes Mod Menu" })
-    {
         if (ImGuiCTX::TabBar _tabbar{ "MainWindowTabs" })
         {
             if (ImGuiCTX::Tab _mainTab{ "Main Tab" })
@@ -172,8 +161,6 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
                 if (g_showDevExtraOptions)
                 {
                     ImGui::Checkbox("Draw 3D markers", &g_DrawImGui3DifDevExtrasEnabled);
-                    ImGui::Separator();
-                    ImGui::Checkbox("Show ImGui Demo Window", &enableDemoWindow);
                 }
             }
             if (g_showDevExtraOptions)
@@ -223,7 +210,6 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
             }
             }
         }
-    }
 }
 void DoSlowMotionTrick();
 void DoManualHoodControls();
