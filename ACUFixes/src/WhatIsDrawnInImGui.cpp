@@ -111,12 +111,12 @@ void DrawBuiltinDebugCommands();
 void DrawPlayerVisualsControls();
 void DrawWeatherControls();
 #include "ImGuiConfigUtils.h"
-std::filesystem::path& GetThisDLLAbsolutePath();
+#include "Common_Plugins/Common_PluginSide.h"
 void DrawModMenuControls()
 {
     if (ImGui::Button("Open DLL's folder in File Explorer (has config)"))
     {
-        system(("explorer \"" + GetThisDLLAbsolutePath().parent_path().string() + "\"").c_str());
+        system(("explorer \"" + g_ThisDLLAbsoluteFilepath.parent_path().string() + "\"").c_str());
     }
 }
 

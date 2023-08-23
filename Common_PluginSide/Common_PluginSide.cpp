@@ -46,13 +46,29 @@ extern "C" __declspec(dllexport) ACUPluginInterfaceVirtuals* ACUPluginStart(ACUP
     }
     return g_ThisPluginSingletonAsBaseclass;
 }
+
+
 HMODULE g_ThisDLLHandle = nullptr;
+fs::path g_ThisDLLAbsoluteFilepath;
+fs::path GetDLLAbsolutePath(HMODULE dllHandle)
+{
+    wchar_t path[MAX_PATH];
+    GetModuleFileNameW(dllHandle, path, (DWORD)std::size(path));
+    return fs::path(path);
+}
+fs::path AbsolutePathInThisDLLDirectory(const fs::path& filenameRel)
+{
+    fs::path& dll = g_ThisDLLAbsoluteFilepath;
+    fs::path fullPath = dll.parent_path() / filenameRel;
+    return fullPath;
+}
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
 {
     switch (dwReason)
     {
     case DLL_PROCESS_ATTACH:
         g_ThisDLLHandle = hModule;
+        g_ThisDLLAbsoluteFilepath = GetDLLAbsolutePath(hModule);
         DisableThreadLibraryCalls(hModule);
         break;
     case DLL_PROCESS_DETACH:

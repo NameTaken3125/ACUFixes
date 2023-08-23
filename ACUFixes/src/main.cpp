@@ -15,7 +15,6 @@ Brings the app's components together.
 // that are needed to make the BaseHook work.
 void Base::ImGuiLayer_EvenWhenMenuIsClosed();
 void Base::ImGuiLayer_WhenMenuIsOpen();
-fs::path AbsolutePathInMyDirectory(const fs::path& filenameRel);
 
 #include "Common_Plugins/Common_PluginSide.h"
 
@@ -44,8 +43,8 @@ public:
         }
         GrabPluginLoaderGlobalVariables(pluginLoader);
 
-        g_LogLifetime.emplace(AbsolutePathInMyDirectory("ACUFixes-log.log"));
-        MainConfig::FindAndLoadConfigFileOrCreateDefault();
+        g_LogLifetime.emplace(AbsolutePathInThisDLLDirectory("ACUFixes-log.log"));
+        MainConfig::FindAndLoadConfigFileOrCreateDefault(AbsolutePathInThisDLLDirectory("ACUFixes-config.json"));
         MyVariousHacks::Start();
         return true;
     }

@@ -1,10 +1,11 @@
 #pragma once
 
 #include "Enum_BindableKeyCode.h"
+namespace fs = std::filesystem;
 
 namespace MainConfig {
 
-void FindAndLoadConfigFileOrCreateDefault();
+void FindAndLoadConfigFileOrCreateDefault(const fs::path& filename);
 void WriteToFile();
 
 } // namespace MainConfig
