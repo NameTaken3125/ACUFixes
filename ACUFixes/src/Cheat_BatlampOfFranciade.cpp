@@ -136,7 +136,7 @@ void UnlockMovementForTheBatlamp(LanterndlcComponent& lanternCpnt)
     }
     ToggleMovementLock(*aas, true);
 }
-#include "ACU_InputUtils.h"
+#include "Common_Plugins/ACU_InputUtils.h"
 
 void OnLanternComponentUpdate(LanterndlcComponent& lanternCpnt)
 {

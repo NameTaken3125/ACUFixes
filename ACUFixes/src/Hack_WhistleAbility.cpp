@@ -15,7 +15,7 @@
 #include "ACU/WhenHighlightedNPCChanges.h"
 
 #include "ACU_DefineNativeFunction.h"
-#include "ACU_InputUtils.h"
+#include "Common_Plugins/ACU_InputUtils.h"
 
 #include "ACU_SoundUtils.h"
 

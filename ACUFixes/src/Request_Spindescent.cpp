@@ -193,7 +193,7 @@ public:
     char pad_0208[168]; //0x0208
 }; //Size: 0x02B0
 assert_sizeof(ParkourAction_Spindescent, 0x2B0);
-#include "ACU_InputUtils.h"
+#include "Common_Plugins/ACU_InputUtils.h"
 #include "MainConfig.h"
 bool IsShouldTryForceTheSpindescentAnimation()
 {

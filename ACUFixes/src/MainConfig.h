@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Enum_BindableKeyCode.h"
+#include "Common_Plugins/Enum_BindableKeyCode.h"
 namespace fs = std::filesystem;
 
 namespace MainConfig {

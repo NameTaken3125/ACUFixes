@@ -5,7 +5,7 @@
 
 #include "ACU/Parkour_PotentialWindowEntry.h"
 #include "ACU/SmallArray.h"
-#include "ACU_InputUtils.h"
+#include "Common_Plugins/ACU_InputUtils.h"
 
 #include "MainConfig.h"
 

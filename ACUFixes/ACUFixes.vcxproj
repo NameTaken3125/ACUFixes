@@ -231,15 +231,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\ACU_SharedPtrs.h" />
-    <ClInclude Include="src\Enum_BindableKeyCode.h" />
-    <ClInclude Include="src\Enum_BindableKeyCode_Keyboard.h" />
     <ClInclude Include="src\Hack_AllowCustomizeEquipment.h" />
     <ClInclude Include="src\Hack_DontRandomlyTurn180Degrees.h" />
     <ClInclude Include="src\Hack_GunRange.h" />
     <ClInclude Include="src\Hack_MoreReliableQuickshot.h" />
     <ClInclude Include="src\Hack_NoMoreFailedBombThrows.h" />
     <ClInclude Include="src\ACU_DefineNativeFunction.h" />
-    <ClInclude Include="src\ACU_InputUtils.h" />
     <ClInclude Include="src\ACU_SoundUtils.h" />
     <ClInclude Include="src\BlenderCurveEditor.h" />
     <ClInclude Include="src\Cheat_Ammo.h" />

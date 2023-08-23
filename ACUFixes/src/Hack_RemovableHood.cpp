@@ -237,7 +237,7 @@ void ToggleHood()
     if (IsToggleHoodSoundEnabled())
         PlaySound_ToggleHood(*player, !currentHood.m_isHoodOn);
 }
-#include "ACU_InputUtils.h"
+#include "Common_Plugins/ACU_InputUtils.h"
 #include "MainConfig.h"
 void DoManualHoodControls()
 {

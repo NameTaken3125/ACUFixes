@@ -87,8 +87,8 @@ private:
     }
 };
 #include "MainConfig.h"
-#include "Enum_BindableKeyCode_Keyboard.h"
-#include "ACU_InputUtils.h"
+#include "Common_Plugins/Enum_BindableKeyCode_Keyboard.h"
+#include "Common_Plugins/ACU_InputUtils.h"
 void OnMovementVectorUpdate_ManageAutowalk(Vector2f& movementVecWithoutAdjustments, InputContainerBig* inpCont)
 {
     static InjectedAutowalkManager autowalkManager;
