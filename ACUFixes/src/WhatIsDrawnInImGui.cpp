@@ -204,10 +204,10 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
                     DrawBuiltinDebugCommands();
                 }
             }
-            if (ImGuiCTX::Tab _typeInfosTab{ "DX11-BaseHook variables" })
-            {
-                Base::ImGuiDrawBasehookDebug();
-            }
+            //if (ImGuiCTX::Tab _typeInfosTab{ "DX11-BaseHook variables" })
+            //{
+            //    Base::ImGuiDrawBasehookDebug();
+            //}
             }
         }
 }

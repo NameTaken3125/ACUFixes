@@ -14,64 +14,64 @@ DEFINE_GAME_FUNCTION(InputContainer__IsJustShortPressed, 0x142720530, bool, __fa
 #include "base.h"
 void UpdateImGuiMouseInput(MouseState& mouseState)
 {
-    // When going Fullscreen (but not Borderless Fullscreen)
-    // the `ImGui_ImplWin32_WndProcHandler()` function doesn't receive most mouse messages:
-    // WM_MOUSEWHEEL and mouse button events such as WM_LBUTTONDOWN.
-    // In fact, when in Fullscreen, the WndProc of the main window doesn't receive
-    // these messages either.
-    // WM_MOUSEMOVE is ok, go figure.
-    // This means that the ImGui menu reacts to mouse move (buttons are highlighted on hover,
-    // for example), but not to clicks, drags etc.
-    // Somehow (by using an additional WndProc in some hidden window?), the game is still aware
-    // of the mouse button updates and I use the data available in the Raw Input Hook
-    // to update the mouse state variables in `ImGuiIO`.
-    if (ImGui::GetCurrentContext() == NULL)
-        return;
+    //// When going Fullscreen (but not Borderless Fullscreen)
+    //// the `ImGui_ImplWin32_WndProcHandler()` function doesn't receive most mouse messages:
+    //// WM_MOUSEWHEEL and mouse button events such as WM_LBUTTONDOWN.
+    //// In fact, when in Fullscreen, the WndProc of the main window doesn't receive
+    //// these messages either.
+    //// WM_MOUSEMOVE is ok, go figure.
+    //// This means that the ImGui menu reacts to mouse move (buttons are highlighted on hover,
+    //// for example), but not to clicks, drags etc.
+    //// Somehow (by using an additional WndProc in some hidden window?), the game is still aware
+    //// of the mouse button updates and I use the data available in the Raw Input Hook
+    //// to update the mouse state variables in `ImGuiIO`.
+    //if (ImGui::GetCurrentContext() == NULL)
+    //    return;
 
-    ImGuiIO& io = ImGui::GetIO();
-    HWND hwnd = Base::Data::hWindow;
+    //ImGuiIO& io = ImGui::GetIO();
+    //HWND hwnd = Base::Data::hWindow;
 
-    for (uint8 button = 0; button < std::size(mouseState.mouseButtonStates); button++)
-    {
-        uint8 buttonState = mouseState.mouseButtonStates[button];
-        const bool isMouseButtonUp = buttonState == 0;
-        if (isMouseButtonUp)
-        {
-            io.MouseDown[button] = false;
-            if (!ImGui::IsAnyMouseDown() && ::GetCapture() == hwnd)
-                ::ReleaseCapture();
-            continue;
-        }
-        const bool isMouseButtonDown = buttonState == 0x80;
-        if (isMouseButtonDown)
-        {
-            if (!ImGui::IsAnyMouseDown() && ::GetCapture() == NULL)
-                ::SetCapture(hwnd);
-            io.MouseDown[button] = true;
-        }
-    }
+    //for (uint8 button = 0; button < std::size(mouseState.mouseButtonStates); button++)
+    //{
+    //    uint8 buttonState = mouseState.mouseButtonStates[button];
+    //    const bool isMouseButtonUp = buttonState == 0;
+    //    if (isMouseButtonUp)
+    //    {
+    //        io.MouseDown[button] = false;
+    //        if (!ImGui::IsAnyMouseDown() && ::GetCapture() == hwnd)
+    //            ::ReleaseCapture();
+    //        continue;
+    //    }
+    //    const bool isMouseButtonDown = buttonState == 0x80;
+    //    if (isMouseButtonDown)
+    //    {
+    //        if (!ImGui::IsAnyMouseDown() && ::GetCapture() == NULL)
+    //            ::SetCapture(hwnd);
+    //        io.MouseDown[button] = true;
+    //    }
+    //}
 
-    // `io.MouseWheel` is accumulated. This is slightly (for now) problematic
-    // because in Borderless Fullscreen (when WM_MOUSEWHEEL _is_ received)
-    // it gets accumulated twice: once here, once in ImGui_ImplWin32_WndProcHandler.
-    // Better than not working in Fullscreen at all, I guess.
-    io.MouseWheel += (float)(mouseState.mouseWheelDeltaInt_usedInMenus) / (float)WHEEL_DELTA;
+    //// `io.MouseWheel` is accumulated. This is slightly (for now) problematic
+    //// because in Borderless Fullscreen (when WM_MOUSEWHEEL _is_ received)
+    //// it gets accumulated twice: once here, once in ImGui_ImplWin32_WndProcHandler.
+    //// Better than not working in Fullscreen at all, I guess.
+    //io.MouseWheel += (float)(mouseState.mouseWheelDeltaInt_usedInMenus) / (float)WHEEL_DELTA;
 }
 void GameRawInputHook_ImGuiLayer(InputContainerBig& inpCont)
 {
-    if (!Base::Data::IsImGuiInitialized)
-    {
-        return;
-    }
-    UpdateImGuiMouseInput(inpCont.mouseState);
-    if (Base::Data::ShowMenu)
-    {
-        std::memset(inpCont.isPressed_byScancode, 0, sizeof(inpCont.isPressed_byScancode));
-        inpCont.mouseState.mouseDeltaIntForCamera_X = inpCont.mouseState.mouseDeltaIntForCamera_Y = 0;
-        inpCont.mouseState.mouseDeltaInt_X = inpCont.mouseState.mouseDeltaInt_Y = 0;
-        inpCont.mouseState.mouseWheelDeltaInt = inpCont.mouseState.mouseWheelDeltaInt_usedInMenus = 0;
-        std::memset(inpCont.mouseState.mouseButtonStates, 0, sizeof(inpCont.mouseState.mouseButtonStates));
-    }
+    //if (!Base::Data::IsImGuiInitialized)
+    //{
+    //    return;
+    //}
+    //UpdateImGuiMouseInput(inpCont.mouseState);
+    //if (Base::Data::ShowMenu)
+    //{
+    //    std::memset(inpCont.isPressed_byScancode, 0, sizeof(inpCont.isPressed_byScancode));
+    //    inpCont.mouseState.mouseDeltaIntForCamera_X = inpCont.mouseState.mouseDeltaIntForCamera_Y = 0;
+    //    inpCont.mouseState.mouseDeltaInt_X = inpCont.mouseState.mouseDeltaInt_Y = 0;
+    //    inpCont.mouseState.mouseWheelDeltaInt = inpCont.mouseState.mouseWheelDeltaInt_usedInMenus = 0;
+    //    std::memset(inpCont.mouseState.mouseButtonStates, 0, sizeof(inpCont.mouseState.mouseButtonStates));
+    //}
 }
 
 namespace ACU::Input {
@@ -118,12 +118,13 @@ public:
     {
         return !m_ThisFrameKeyStates[(int)keycode] && m_PrevFrameKeyStates[(int)keycode];
     }
-    static InputHooks& GetSingleton()
-    {
-        static InputHooks singleton;
-        return singleton;
-    }
+    static InputHooks& GetSingleton();
 };
+InputHooks g_InputHooks;
+InputHooks& InputHooks::GetSingleton()
+{
+    return g_InputHooks;
+}
 
 InputContainerBig* Get_InputContainerBig()
 {

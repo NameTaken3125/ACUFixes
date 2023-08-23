@@ -30,6 +30,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ACUFixes-PluginLoader", "AC
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Common_PluginSide", "Common_PluginSide\Common_PluginSide.vcxproj", "{707FA1AF-9276-42CA-87FC-1382164270B3}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DearImGui", "DearImGui\DearImGui.vcxproj", "{A7A4F65C-61C0-42DA-A457-2558090657A3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -110,6 +112,14 @@ Global
 		{707FA1AF-9276-42CA-87FC-1382164270B3}.Release|x64.Build.0 = Release|x64
 		{707FA1AF-9276-42CA-87FC-1382164270B3}.Release|x86.ActiveCfg = Release|Win32
 		{707FA1AF-9276-42CA-87FC-1382164270B3}.Release|x86.Build.0 = Release|Win32
+		{A7A4F65C-61C0-42DA-A457-2558090657A3}.Debug|x64.ActiveCfg = Debug|x64
+		{A7A4F65C-61C0-42DA-A457-2558090657A3}.Debug|x64.Build.0 = Debug|x64
+		{A7A4F65C-61C0-42DA-A457-2558090657A3}.Debug|x86.ActiveCfg = Debug|Win32
+		{A7A4F65C-61C0-42DA-A457-2558090657A3}.Debug|x86.Build.0 = Debug|Win32
+		{A7A4F65C-61C0-42DA-A457-2558090657A3}.Release|x64.ActiveCfg = Release|x64
+		{A7A4F65C-61C0-42DA-A457-2558090657A3}.Release|x64.Build.0 = Release|x64
+		{A7A4F65C-61C0-42DA-A457-2558090657A3}.Release|x86.ActiveCfg = Release|Win32
+		{A7A4F65C-61C0-42DA-A457-2558090657A3}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

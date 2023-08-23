@@ -92,7 +92,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)include;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DX11-BaseHook\include;$(SolutionDir)DX11-BaseHook\deps;$(SolutionDir)external\SimpleJSON;$(SolutionDir)Serialization\include;$(SolutionDir)AutoAssemblerKinda\include;$(SolutionDir)Common_PluginSide\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)include;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DX11-BaseHook\include;$(SolutionDir)DX11-BaseHook\deps;$(SolutionDir)DearImGui\inc;$(SolutionDir)external\SimpleJSON;$(SolutionDir)Serialization\include;$(SolutionDir)AutoAssemblerKinda\include;$(SolutionDir)Common_PluginSide\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -111,7 +111,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)include;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DX11-BaseHook\include;$(SolutionDir)DX11-BaseHook\deps;$(SolutionDir)external\SimpleJSON;$(SolutionDir)Serialization\include;$(SolutionDir)AutoAssemblerKinda\include;$(SolutionDir)Common_PluginSide\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)include;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DX11-BaseHook\include;$(SolutionDir)DX11-BaseHook\deps;$(SolutionDir)DearImGui\inc;$(SolutionDir)external\SimpleJSON;$(SolutionDir)Serialization\include;$(SolutionDir)AutoAssemblerKinda\include;$(SolutionDir)Common_PluginSide\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -132,7 +132,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)include;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DX11-BaseHook\include;$(SolutionDir)DX11-BaseHook\deps;$(SolutionDir)external\SimpleJSON;$(SolutionDir)Serialization\include;$(SolutionDir)AutoAssemblerKinda\include;$(SolutionDir)Common_PluginSide\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)include;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DX11-BaseHook\include;$(SolutionDir)DX11-BaseHook\deps;$(SolutionDir)DearImGui\inc;$(SolutionDir)external\SimpleJSON;$(SolutionDir)Serialization\include;$(SolutionDir)AutoAssemblerKinda\include;$(SolutionDir)Common_PluginSide\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -156,7 +156,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)include;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DX11-BaseHook\include;$(SolutionDir)DX11-BaseHook\deps;$(SolutionDir)external\SimpleJSON;$(SolutionDir)Serialization\include;$(SolutionDir)AutoAssemblerKinda\include;$(SolutionDir)Common_PluginSide\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)include;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DX11-BaseHook\include;$(SolutionDir)DX11-BaseHook\deps;$(SolutionDir)DearImGui\inc;$(SolutionDir)external\SimpleJSON;$(SolutionDir)Serialization\include;$(SolutionDir)AutoAssemblerKinda\include;$(SolutionDir)Common_PluginSide\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -293,8 +293,8 @@
     <ProjectReference Include="..\Common_PluginSide\Common_PluginSide.vcxproj">
       <Project>{707fa1af-9276-42ca-87fc-1382164270b3}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\DX11-BaseHook\DX11-BaseHook.vcxproj">
-      <Project>{493e69b7-9966-4b96-94ba-158ea9fa50c8}</Project>
+    <ProjectReference Include="..\DearImGui\DearImGui.vcxproj">
+      <Project>{a7a4f65c-61c0-42da-a457-2558090657a3}</Project>
     </ProjectReference>
     <ProjectReference Include="..\Serialization\Serialization.vcxproj">
       <Project>{7f95d10e-e7ea-42c6-8bfb-a01756337677}</Project>
