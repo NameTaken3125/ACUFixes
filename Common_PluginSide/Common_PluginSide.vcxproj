@@ -99,7 +99,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)ACU-RE\inc;$(ProjectDir)inc;$(ProjectDir)src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)ACU-RE\inc;$(ProjectDir)inc;$(ProjectDir)impl;$(ProjectDir)src;$(SolutionDir)Serialization\include;$(SolutionDir)ACUFixes\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -119,7 +119,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(SolutionDir)ACU-RE\inc;$(ProjectDir)inc;$(ProjectDir)src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)ACU-RE\inc;$(ProjectDir)inc;$(ProjectDir)impl;$(ProjectDir)src;$(SolutionDir)Serialization\include;$(SolutionDir)ACUFixes\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -138,7 +138,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)ACU-RE\inc;$(ProjectDir)inc;$(ProjectDir)src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)ACU-RE\inc;$(ProjectDir)inc;$(ProjectDir)impl;$(ProjectDir)src;$(SolutionDir)Serialization\include;$(SolutionDir)ACUFixes\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -158,7 +158,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(SolutionDir)ACU-RE\inc;$(ProjectDir)inc;$(ProjectDir)src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)ACU-RE\inc;$(ProjectDir)inc;$(ProjectDir)impl;$(ProjectDir)src;$(SolutionDir)Serialization\include;$(SolutionDir)ACUFixes\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -169,7 +169,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Common_PluginSide.cpp" />
+    <ClCompile Include="src\Common_PluginSide.cpp" />
+    <ClCompile Include="src\ACU_InputUtils.cpp" />
     <ClCompile Include="src\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -178,8 +179,13 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="impl\Common_Plugins_impl\InputHooks.h" />
+    <ClInclude Include="impl\Common_Plugins_impl\PluginLoaderSharedGlobals.h" />
     <ClInclude Include="inc\Common_Plugins\ACUPlugin.h" />
+    <ClInclude Include="inc\Common_Plugins\ACU_InputUtils.h" />
     <ClInclude Include="inc\Common_Plugins\Common_PluginSide.h" />
+    <ClInclude Include="inc\Common_Plugins\Enum_BindableKeyCode.h" />
+    <ClInclude Include="inc\Common_Plugins\Enum_BindableKeyCode_Keyboard.h" />
     <ClInclude Include="src\pch.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

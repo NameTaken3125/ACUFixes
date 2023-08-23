@@ -8,8 +8,6 @@
 
 #include "AutoAssemblerKinda/AutoAssemblerKinda.h"
 
-#include "Hack_GameRawInputHook.h"
-
 #include "Hack_EnterWindowsWhenRisPressed.h"
 #include "Hack_SlowMenacingWalkAndAutowalk.h"
 #include "Hack_CycleEquipmentWhenScrollingMousewheel.h"
@@ -54,8 +52,6 @@ extern bool g_showDevExtraOptions;
 class MyHacks
 {
 public:
-    AutoAssembleWrapper<GameRawInputHook> gameInputHooks;
-
     AutoAssembleWrapper<EnterWindowWhenRisPressed> enterWindowsByPressingAButton;
     AutoAssembleWrapper<AllowSlowMenacingWalkAndAutowalk> menacingWalkAndAutowalk;
     AutoAssembleWrapper<ModifyConditionalFOVs> changeZoomLevelsWhenAimingBombs;
@@ -540,7 +536,6 @@ void DrawHacksControls()
 void MyVariousHacks::Start()
 {
     g_MyHacks.emplace();
-    g_MyHacks->gameInputHooks.Activate();
     g_MyHacks->ReadConfig(g_Config);
     g_MyHacks->WriteConfig(g_Config);
     MainConfig::WriteToFile();

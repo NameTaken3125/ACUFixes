@@ -180,7 +180,6 @@
     <ClCompile Include="src\Hack_GunRange.cpp" />
     <ClCompile Include="src\Hack_MoreReliableQuickshot.cpp" />
     <ClCompile Include="src\Hack_NoMoreFailedBombThrows.cpp" />
-    <ClCompile Include="src\ACU_InputUtils.cpp" />
     <ClCompile Include="src\ACU_SoundUtils.cpp" />
     <ClCompile Include="src\BlenderCurveEditor.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
@@ -258,7 +257,6 @@
     <ClInclude Include="src\Hack_DontForceUnsheatheWhenInDisguise.h" />
     <ClInclude Include="src\Hack_EasierTurnWhenSwinging.h" />
     <ClInclude Include="src\Hack_EnterWindowsWhenRisPressed.h" />
-    <ClInclude Include="src\Hack_GameRawInputHook.h" />
     <ClInclude Include="src\Hack_LookbehindButton.h" />
     <ClInclude Include="src\Hack_ModifyAimingFOV.h" />
     <ClInclude Include="src\Hack_MoreResponsiveBombQuickDrop.h" />

@@ -19,6 +19,7 @@ public:
 public:
 	ACUPluginInterfaceVirtuals();
 };
+class ACUPluginLoaderSharedGlobals;
 struct ACUPluginLoaderInterface
 {
 	uint64 m_PluginLoaderVersion = g_CurrentPluginAPIversion;
@@ -26,6 +27,7 @@ struct ACUPluginLoaderInterface
     void (*RequestUnloadPlugin)(HMODULE dllHandle) = nullptr;
 	// Can be used for very basic interaction between plugins.
 	HMODULE (*GetPluginIfLoaded)(const wchar_t* pluginName) = nullptr;
+	ACUPluginLoaderSharedGlobals* m_ImplementationSharedVariables = nullptr;
 };
 assert_offsetof(ACUPluginLoaderInterface, m_PluginLoaderVersion, 0);
 assert_offsetof(ACUPluginLoaderInterface, RequestUnloadPlugin, 8);

@@ -74,10 +74,18 @@ private:
     bool m_IsRequestedToUnloadPlugin = false;
     ACUPluginLoaderInterface m_PluginLoaderInterfaces;
 } g_MyPluginLoader;
+#include "Common_Plugins_impl/PluginLoaderSharedGlobals.h"
+#include "Common_Plugins_impl/InputHooks.h"
+extern ACU::Input::InputHooks g_InputHooks;
+ACUPluginLoaderSharedGlobals g_SharedVariables;
+ACUPluginLoaderSharedGlobals::ACUPluginLoaderSharedGlobals()
+    : m_InputHooks(g_InputHooks)
+{}
 MyPluginLoader::MyPluginLoader()
 {
     m_PluginLoaderInterfaces.RequestUnloadPlugin = ::PluginLoader_RequestUnloadPlugin;
     m_PluginLoaderInterfaces.GetPluginIfLoaded = ::PluginLoader_GetPluginIfLoaded;
+    m_PluginLoaderInterfaces.m_ImplementationSharedVariables = &g_SharedVariables;
 }
 void MyPluginLoader::LoadAndStartPlugin(MyPluginResult& pluginRecord)
 {
@@ -311,6 +319,7 @@ void DrawPluginsEvenWhenMenuIsClosed()
     g_MyPluginLoader.DrawImGuiForPlugins_EvenWhenMenuIsClosed();
 }
 
+void PluginLoader_VariousHooks_Start();
 static void PluginLoader_MainThread(HMODULE thisDLLModule)
 {
     Base::Data::thisDLLModule = thisDLLModule;
@@ -318,6 +327,9 @@ static void PluginLoader_MainThread(HMODULE thisDLLModule)
     WaitUntilGameIsInitializedEnoughSoThatTheMainIntegrityCheckCanBeDisabled();
     PluginLoaderConfig::FindAndLoadConfigFileOrCreateDefault();
     DisableMainIntegrityCheck();
+
+    PluginLoader_VariousHooks_Start();
+
     g_MyPluginLoader.UpdateListOfAvailablePlugins();
     g_MyPluginLoader.LoadAllFoundNonloadedPlugins();
     PresentHookOuter::BasehookSettings_PresentHookOuter basehook;

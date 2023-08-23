@@ -15,15 +15,18 @@ void ACUPluginInterfaceVirtuals::EveryFrameEvenWhenMenuIsClosed(ImGuiContext& re
 
 
 
-using RequestUnloadPlugin_fnt = decltype(ACUPluginLoaderInterface::RequestUnloadPlugin);
-RequestUnloadPlugin_fnt RequestUnloadThisPlugin_fnptr = nullptr;
+decltype(ACUPluginLoaderInterface::RequestUnloadPlugin) RequestUnloadThisPlugin_fnptr = nullptr;
+decltype(ACUPluginLoaderInterface::GetPluginIfLoaded) GetPluginIfLoaded_fnptr = nullptr;
 void RequestUnloadThisPlugin()
 {
     RequestUnloadThisPlugin_fnptr(g_ThisDLLHandle);
 }
+#include "Common_Plugins_impl/InputHooks.h"
+#include "Common_Plugins_impl/PluginLoaderSharedGlobals.h"
 void GrabPluginLoaderGlobalVariables(ACUPluginLoaderInterface& pluginLoader)
 {
     RequestUnloadThisPlugin_fnptr = pluginLoader.RequestUnloadPlugin;
+    ACU::Input::g_InputHooksSingletonPtr = &pluginLoader.m_ImplementationSharedVariables->m_InputHooks;
 }
 
 
