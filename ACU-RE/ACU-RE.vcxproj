@@ -165,6 +165,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="inc\ACU_DefineNativeFunction.h" />
     <ClInclude Include="inc\ACU\ActionAbilitySet.h" />
     <ClInclude Include="inc\ACU\ActionKeyStates.h" />
     <ClInclude Include="inc\ACU\ActionWeatherWindSelection.h" />

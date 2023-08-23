@@ -165,6 +165,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="inc\ImGuiCTX.h" />
     <ClInclude Include="inc\imgui\imconfig.h" />
     <ClInclude Include="inc\imgui\imgui.h" />
     <ClInclude Include="inc\imgui\imgui_impl_dx11.h" />

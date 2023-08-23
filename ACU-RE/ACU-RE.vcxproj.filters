@@ -122,6 +122,7 @@
     <ClInclude Include="inc\ACU\AvatarGearModifierStats.h" />
     <ClInclude Include="vmath\vmath\vmath.h" />
     <ClInclude Include="vmath\vmath\vmath_extra.h" />
+    <ClInclude Include="inc\ACU_DefineNativeFunction.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />
