@@ -1,6 +1,5 @@
 #include "pch.h"
 
-#include "base.h"
 #include "vmath/vmath.h"
 #include <vmath/vmath_extra.h>
 
@@ -124,7 +123,7 @@ void RequestUnloadThisPlugin();
 #include "MainConfig.h"
 bool g_showDevExtraOptions = false;
 bool g_DrawImGui3DifDevExtrasEnabled = true;
-void Base::ImGuiLayer_WhenMenuIsOpen()
+void ImGuiLayer_WhenMenuIsOpen()
 {
     ImGui::SetNextWindowPos(ImVec2(100, 100), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSize(ImVec2(500, 500), ImGuiCond_FirstUseEver);
@@ -204,16 +203,12 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
                     DrawBuiltinDebugCommands();
                 }
             }
-            //if (ImGuiCTX::Tab _typeInfosTab{ "DX11-BaseHook variables" })
-            //{
-            //    Base::ImGuiDrawBasehookDebug();
-            //}
             }
         }
 }
 void DoSlowMotionTrick();
 void DoManualHoodControls();
-void Base::ImGuiLayer_EvenWhenMenuIsClosed()
+void ImGuiLayer_EvenWhenMenuIsClosed()
 {
     DoSlowMotionTrick();
     DoManualHoodControls();

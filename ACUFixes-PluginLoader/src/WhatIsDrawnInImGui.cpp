@@ -78,6 +78,10 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
                 ImGui::Separator();
                 ImGui::Checkbox("Show ImGui Demo Window", &enableDemoWindow);
             }
+            //if (ImGuiCTX::Tab _typeInfosTab{ "DX11-BaseHook variables" })
+            //{
+            //    Base::ImGuiDrawBasehookDebug();
+            //}
         }
     }
 }

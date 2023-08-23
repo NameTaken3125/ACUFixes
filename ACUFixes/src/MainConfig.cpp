@@ -8,8 +8,6 @@
 #include "Serialization/BooleanAdapter.h"
 #include "Serialization/ToFromFile/ToFromFile.h"
 
-#include "base.h"
-
 ConfigTop g_Config;
 
 
