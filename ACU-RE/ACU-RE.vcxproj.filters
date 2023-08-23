@@ -120,6 +120,8 @@
     <ClInclude Include="inc\ACU\LocalizationManager.h" />
     <ClInclude Include="inc\ACU\ExclusiveContent.h" />
     <ClInclude Include="inc\ACU\AvatarGearModifierStats.h" />
+    <ClInclude Include="vmath\vmath\vmath.h" />
+    <ClInclude Include="vmath\vmath\vmath_extra.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />
@@ -142,5 +144,6 @@
     <ClCompile Include="src\ACUHashmap.cpp" />
     <ClCompile Include="src\TimeOfDayManager.cpp" />
     <ClCompile Include="src\LocalizationManager.cpp" />
+    <ClCompile Include="vmath\vmath\vmath.cpp" />
   </ItemGroup>
 </Project>

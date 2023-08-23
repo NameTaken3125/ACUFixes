@@ -33,4 +33,5 @@ assert_offsetof(ACUPluginLoaderInterface, m_PluginLoaderVersion, 0);
 assert_offsetof(ACUPluginLoaderInterface, RequestUnloadPlugin, 8);
 assert_offsetof(ACUPluginLoaderInterface, GetPluginIfLoaded, 0x10);
 
+// This function will be called from the Plugin Loader after loading the plugin DLL.
 extern "C" __declspec(dllexport) ACUPluginInterfaceVirtuals* ACUPluginStart(ACUPluginLoaderInterface& pluginLoader);

@@ -92,7 +92,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)include;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DearImGui\inc;$(SolutionDir)external\SimpleJSON;$(SolutionDir)Serialization\include;$(SolutionDir)AutoAssemblerKinda\include;$(SolutionDir)Common_PluginSide\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)ACU-RE\vmath;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DearImGui\inc;$(SolutionDir)external\SimpleJSON;$(SolutionDir)Serialization\include;$(SolutionDir)AutoAssemblerKinda\include;$(SolutionDir)Common_PluginSide\public_headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -111,7 +111,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)include;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DearImGui\inc;$(SolutionDir)external\SimpleJSON;$(SolutionDir)Serialization\include;$(SolutionDir)AutoAssemblerKinda\include;$(SolutionDir)Common_PluginSide\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)ACU-RE\vmath;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DearImGui\inc;$(SolutionDir)external\SimpleJSON;$(SolutionDir)Serialization\include;$(SolutionDir)AutoAssemblerKinda\include;$(SolutionDir)Common_PluginSide\public_headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -132,7 +132,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)include;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DearImGui\inc;$(SolutionDir)external\SimpleJSON;$(SolutionDir)Serialization\include;$(SolutionDir)AutoAssemblerKinda\include;$(SolutionDir)Common_PluginSide\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)ACU-RE\vmath;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DearImGui\inc;$(SolutionDir)external\SimpleJSON;$(SolutionDir)Serialization\include;$(SolutionDir)AutoAssemblerKinda\include;$(SolutionDir)Common_PluginSide\public_headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -156,7 +156,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)include;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DearImGui\inc;$(SolutionDir)external\SimpleJSON;$(SolutionDir)Serialization\include;$(SolutionDir)AutoAssemblerKinda\include;$(SolutionDir)Common_PluginSide\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)ACU-RE\vmath;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DearImGui\inc;$(SolutionDir)external\SimpleJSON;$(SolutionDir)Serialization\include;$(SolutionDir)AutoAssemblerKinda\include;$(SolutionDir)Common_PluginSide\public_headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -194,12 +194,6 @@
     <ClCompile Include="src\Hack_AimFromPeaks.cpp" />
     <ClCompile Include="src\Hack_BreakfallAndLedgeGrab.cpp" />
     <ClCompile Include="src\Hack_CycleEquipmentWhenScrollingMousewheel.cpp" />
-    <ClCompile Include="include\vmath\vmath.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="src\Hacks_ImGuiControl.cpp" />
     <ClCompile Include="src\Hack_DontForceUnsheatheWhenInDisguise.cpp" />
     <ClCompile Include="src\Hack_EnterWindowsWhenRisPressed.cpp" />
@@ -249,8 +243,6 @@
     <ClInclude Include="src\Hack_BreakfallAndLedgeGrab.h" />
     <ClInclude Include="src\Hack_CrouchFix.h" />
     <ClInclude Include="src\Hack_CycleEquipmentWhenScrollingMousewheel.h" />
-    <ClInclude Include="include\vmath\vmath.h" />
-    <ClInclude Include="include\vmath\vmath_extra.h" />
     <ClInclude Include="src\Hack_DontForceUnsheatheWhenInDisguise.h" />
     <ClInclude Include="src\Hack_EasierTurnWhenSwinging.h" />
     <ClInclude Include="src\Hack_EnterWindowsWhenRisPressed.h" />
