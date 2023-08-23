@@ -8,6 +8,7 @@ constexpr uint64 g_CurrentPluginAPIversion = MAKE_PLUGIN_LOADER_VERSION(0, 8, 0,
 
 
 struct ACUPluginLoaderInterface;
+struct ImGuiContext;
 class ACUPluginInterfaceVirtuals
 {
 public:
@@ -18,23 +19,16 @@ public:
 public:
 	ACUPluginInterfaceVirtuals();
 };
-static ACUPluginInterfaceVirtuals* g_ThisPluginSingletonAsBaseclass = nullptr;
-ACUPluginInterfaceVirtuals::ACUPluginInterfaceVirtuals()
-{
-	g_ThisPluginSingletonAsBaseclass = this;
-}
-void ACUPluginInterfaceVirtuals::EveryFrameWhenMenuIsOpen(ImGuiContext& readyToUseImGuiContext) {}
-void ACUPluginInterfaceVirtuals::EveryFrameEvenWhenMenuIsClosed(ImGuiContext& readyToUseImGuiContext) {}
-
 struct ACUPluginLoaderInterface
 {
 	uint64 m_PluginLoaderVersion = g_CurrentPluginAPIversion;
     // Call this if you want the PluginLoader to unload this DLL.
-    void (*RequestUnloadPlugin)(HMODULE dllHandle);
+    void (*RequestUnloadPlugin)(HMODULE dllHandle) = nullptr;
 	// Can be used for very basic interaction between plugins.
-	HMODULE (*GetPluginIfLoaded)(const wchar_t* pluginName);
+	HMODULE (*GetPluginIfLoaded)(const wchar_t* pluginName) = nullptr;
 };
 assert_offsetof(ACUPluginLoaderInterface, m_PluginLoaderVersion, 0);
 assert_offsetof(ACUPluginLoaderInterface, RequestUnloadPlugin, 8);
+assert_offsetof(ACUPluginLoaderInterface, GetPluginIfLoaded, 0x10);
 
 extern "C" __declspec(dllexport) ACUPluginInterfaceVirtuals* ACUPluginStart(ACUPluginLoaderInterface& pluginLoader);

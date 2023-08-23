@@ -17,20 +17,9 @@ void Base::ImGuiLayer_EvenWhenMenuIsClosed();
 void Base::ImGuiLayer_WhenMenuIsOpen();
 fs::path AbsolutePathInMyDirectory(const fs::path& filenameRel);
 
-#include "Common_Plugins/ACUPlugin.h"
+#include "Common_Plugins/Common_PluginSide.h"
 
 
-HMODULE g_ThisDLLHandle = nullptr;
-using RequestUnloadPlugin_fnt = decltype(ACUPluginLoaderInterface::RequestUnloadPlugin);
-RequestUnloadPlugin_fnt RequestUnloadThisPlugin_fnptr = nullptr;
-void RequestUnloadThisPlugin()
-{
-    RequestUnloadThisPlugin_fnptr(g_ThisDLLHandle);
-}
-void GrabPluginLoaderGlobalVariables(ACUPluginLoaderInterface& pluginLoader)
-{
-    RequestUnloadThisPlugin_fnptr = pluginLoader.RequestUnloadPlugin;
-}
 
 extern ImGuiContext* GImGui;
 std::optional<MyLogFileLifetime> g_LogLifetime;
@@ -61,32 +50,3 @@ public:
         return true;
     }
 } g_thisPlugin;
-extern "C" __declspec(dllexport) ACUPluginInterfaceVirtuals* ACUPluginStart(ACUPluginLoaderInterface& pluginLoader)
-{
-    if (!g_ThisPluginSingletonAsBaseclass->Start(pluginLoader))
-    {
-        return nullptr;
-    }
-    return g_ThisPluginSingletonAsBaseclass;
-}
-
-BOOL APIENTRY DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
-{
-    switch (dwReason)
-    {
-    case DLL_PROCESS_ATTACH:
-        g_ThisDLLHandle = hModule;
-        Base::Data::thisDLLModule = hModule;
-        DisableThreadLibraryCalls(hModule);
-        break;
-    case DLL_PROCESS_DETACH:
-        break;
-    case DLL_THREAD_ATTACH:
-        break;
-    case DLL_THREAD_DETACH:
-        break;
-    default:
-        break;
-    }
-    return TRUE;
-}

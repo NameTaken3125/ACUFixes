@@ -28,6 +28,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ProxyOfTheVersionDLL", "Pro
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ACUFixes-PluginLoader", "ACUFixes-PluginLoader\ACUFixes-PluginLoader.vcxproj", "{34C4F4FA-69AB-4CDB-BED9-9E84300C5E22}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Common_PluginSide", "Common_PluginSide\Common_PluginSide.vcxproj", "{707FA1AF-9276-42CA-87FC-1382164270B3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -100,6 +102,14 @@ Global
 		{34C4F4FA-69AB-4CDB-BED9-9E84300C5E22}.Release|x64.Build.0 = Release|x64
 		{34C4F4FA-69AB-4CDB-BED9-9E84300C5E22}.Release|x86.ActiveCfg = Release|Win32
 		{34C4F4FA-69AB-4CDB-BED9-9E84300C5E22}.Release|x86.Build.0 = Release|Win32
+		{707FA1AF-9276-42CA-87FC-1382164270B3}.Debug|x64.ActiveCfg = Debug|x64
+		{707FA1AF-9276-42CA-87FC-1382164270B3}.Debug|x64.Build.0 = Debug|x64
+		{707FA1AF-9276-42CA-87FC-1382164270B3}.Debug|x86.ActiveCfg = Debug|Win32
+		{707FA1AF-9276-42CA-87FC-1382164270B3}.Debug|x86.Build.0 = Debug|Win32
+		{707FA1AF-9276-42CA-87FC-1382164270B3}.Release|x64.ActiveCfg = Release|x64
+		{707FA1AF-9276-42CA-87FC-1382164270B3}.Release|x64.Build.0 = Release|x64
+		{707FA1AF-9276-42CA-87FC-1382164270B3}.Release|x86.ActiveCfg = Release|Win32
+		{707FA1AF-9276-42CA-87FC-1382164270B3}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
