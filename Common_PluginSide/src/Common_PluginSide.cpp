@@ -2,8 +2,10 @@
 #include "Common_Plugins/Common_PluginSide.h"
 
 static ACUPluginInterfaceVirtuals* g_ThisPluginSingletonAsBaseclass = nullptr;
+void** g_PluginInterfaceBaseclassVTable = nullptr;
 ACUPluginInterfaceVirtuals::ACUPluginInterfaceVirtuals()
 {
+    g_PluginInterfaceBaseclassVTable = *(void***)this;
 	g_ThisPluginSingletonAsBaseclass = this;
 }
 void ACUPluginInterfaceVirtuals::EveryFrameWhenMenuIsOpen(ImGuiContext& readyToUseImGuiContext) {}
@@ -35,19 +37,48 @@ void GrabPluginLoaderGlobalVariables(ACUPluginLoaderInterface& pluginLoader)
 
 
 
+ACUPluginInfo g_ThisPluginInfo;
 
-
-extern "C" __declspec(dllexport) ACUPluginInterfaceVirtuals* ACUPluginStart(ACUPluginLoaderInterface& pluginLoader)
+static bool IsPluginInterfaceVirtualFunctionOverridden(int virtualFnIdx)
 {
-    if (!g_ThisPluginSingletonAsBaseclass)
-    {
+    void** pluginVTable = *(void***)g_ThisPluginSingletonAsBaseclass;
+    return g_PluginInterfaceBaseclassVTable[virtualFnIdx] != pluginVTable[virtualFnIdx];
+}
+static bool EverythingAppearsToBeReadyToStart(ACUPluginLoaderInterface& pluginLoader)
+{
+    GrabPluginLoaderGlobalVariables(pluginLoader);
+    return g_ThisPluginSingletonAsBaseclass->Start(pluginLoader);
+}
+extern "C" __declspec(dllexport) ACUPluginInfo* ACUPluginStart(ACUPluginLoaderInterface& pluginLoader)
+{
+    if (pluginLoader.m_PluginLoaderVersion < g_CurrentPluginAPIversion) {
         return nullptr;
     }
-    if (!g_ThisPluginSingletonAsBaseclass->Start(pluginLoader))
-    {
+    if (!g_ThisPluginSingletonAsBaseclass) {
         return nullptr;
     }
-    return g_ThisPluginSingletonAsBaseclass;
+
+
+    uint64 thisPluginVersion = g_ThisPluginSingletonAsBaseclass->GetThisPluginVersion();
+    g_ThisPluginInfo.m_PluginVersion = thisPluginVersion;
+
+
+    constexpr int vfnIdx_EveryFrameWhenMenuIsOpen = 3;
+    constexpr int vfnIdx_EveryFrameEvenWhenMenuIsClosed = 4;
+    if (IsPluginInterfaceVirtualFunctionOverridden(vfnIdx_EveryFrameWhenMenuIsOpen))
+    {
+        g_ThisPluginInfo.m_EveryFrameWhenMenuIsOpen = [](ImGuiContext& readyToUseImGuiContext) {
+            g_ThisPluginSingletonAsBaseclass->EveryFrameWhenMenuIsOpen(readyToUseImGuiContext);
+        };
+    }
+    if (IsPluginInterfaceVirtualFunctionOverridden(vfnIdx_EveryFrameEvenWhenMenuIsClosed))
+    {
+        g_ThisPluginInfo.m_EveryFrameEvenWhenMenuIsClosed = [](ImGuiContext& readyToUseImGuiContext) {
+            g_ThisPluginSingletonAsBaseclass->EveryFrameEvenWhenMenuIsClosed(readyToUseImGuiContext);
+        };
+    }
+    g_ThisPluginInfo.m_Start = EverythingAppearsToBeReadyToStart;
+    return &g_ThisPluginInfo;
 }
 
 

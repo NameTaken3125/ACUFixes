@@ -36,12 +36,12 @@ struct MyPluginResult
     const fs::path m_filepath;
     struct SuccessfulLoad
     {
-        SuccessfulLoad(HMODULE moduleHandle, ACUPluginInterfaceVirtuals& pluginInterface)
+        SuccessfulLoad(HMODULE moduleHandle, ACUPluginInfo& pluginInterface)
             : m_moduleHandle(moduleHandle)
             , m_pluginInterface(pluginInterface)
         {}
         HMODULE m_moduleHandle;
-        ACUPluginInterfaceVirtuals& m_pluginInterface;
+        ACUPluginInfo& m_pluginInterface;
         bool m_isRequestedToUnload = false;
         bool m_isMenuOpen = false;
     };
@@ -87,6 +87,12 @@ MyPluginLoader::MyPluginLoader()
     m_PluginLoaderInterfaces.GetPluginIfLoaded = ::PluginLoader_GetPluginIfLoaded;
     m_PluginLoaderInterfaces.m_ImplementationSharedVariables = &g_SharedVariables;
 }
+bool IsPluginAPIversionCompatible(uint64 pluginLoaderVersion, uint64 pluginVersion)
+{
+    // If the pluginloader updates introduce changes that would break old plugins,
+    // I can list the breaking versions right here.
+    return pluginLoaderVersion >= pluginVersion;
+}
 void MyPluginLoader::LoadAndStartPlugin(MyPluginResult& pluginRecord)
 {
     HMODULE moduleHandle = LoadLibraryW(pluginRecord.m_filepath.c_str());
@@ -100,8 +106,23 @@ void MyPluginLoader::LoadAndStartPlugin(MyPluginResult& pluginRecord)
         FreeLibrary(moduleHandle);
         return;
     }
-    ACUPluginInterfaceVirtuals* successfullyStartedPlugin = startFn(m_PluginLoaderInterfaces);
+    ACUPluginInfo* successfullyStartedPlugin = startFn(m_PluginLoaderInterfaces);
     if (!successfullyStartedPlugin)
+    {
+        FreeLibrary(moduleHandle);
+        return;
+    }
+    if (!IsPluginAPIversionCompatible(g_CurrentPluginAPIversion, successfullyStartedPlugin->m_PluginAPIVersion))
+    {
+        FreeLibrary(moduleHandle);
+        return;
+    }
+    if (!successfullyStartedPlugin->m_Start)
+    {
+        FreeLibrary(moduleHandle);
+        return;
+    }
+    if (!successfullyStartedPlugin->m_Start(m_PluginLoaderInterfaces))
     {
         FreeLibrary(moduleHandle);
         return;
@@ -270,11 +291,12 @@ void MyPluginLoader::DrawImGuiForPlugins_WhenMenuIsOpened()
         if (!plugin->m_successfulLoad->m_isMenuOpen) { continue; }
         ImGui::SetNextWindowPos(ImVec2(100, 100), ImGuiCond_FirstUseEver);
         ImGui::SetNextWindowSize(ImVec2(500, 500), ImGuiCond_FirstUseEver);
-        if (ImGui::Begin(plugin->m_filepath.filename().string().c_str(), &plugin->m_successfulLoad->m_isMenuOpen))
-        {
-            plugin->m_successfulLoad->m_pluginInterface.EveryFrameWhenMenuIsOpen(*GImGui);
+        if (auto* menuCallback = plugin->m_successfulLoad->m_pluginInterface.m_EveryFrameWhenMenuIsOpen) {
+            if (ImGui::Begin(plugin->m_filepath.filename().string().c_str(), &plugin->m_successfulLoad->m_isMenuOpen)) {
+                menuCallback(*GImGui);
+            }
+            ImGui::End();
         }
-        ImGui::End();
     }
 }
 void MyPluginLoader::DrawImGuiForPlugins_EvenWhenMenuIsClosed()
@@ -282,7 +304,10 @@ void MyPluginLoader::DrawImGuiForPlugins_EvenWhenMenuIsClosed()
     for (const std::unique_ptr<MyPluginResult>& plugin : g_MyPluginLoader.dllResults)
     {
         if (!plugin->m_successfulLoad) { continue; }
-        plugin->m_successfulLoad->m_pluginInterface.EveryFrameEvenWhenMenuIsClosed(*GImGui);
+        if (auto* everyFrameCallback = plugin->m_successfulLoad->m_pluginInterface.m_EveryFrameEvenWhenMenuIsClosed)
+        {
+            everyFrameCallback(*GImGui);
+        }
     }
 }
 

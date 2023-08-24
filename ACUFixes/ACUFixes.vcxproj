@@ -92,7 +92,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)ACU-RE\vmath;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DearImGui\inc;$(SolutionDir)external\SimpleJSON;$(SolutionDir)Serialization\include;$(SolutionDir)AutoAssemblerKinda\include;$(SolutionDir)Common_PluginSide\public_headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)ACU-RE\vmath;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DearImGui\inc;$(SolutionDir)Serialization\include;$(SolutionDir)AutoAssemblerKinda\include;$(SolutionDir)Common_PluginSide\public_headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -111,7 +111,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)ACU-RE\vmath;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DearImGui\inc;$(SolutionDir)external\SimpleJSON;$(SolutionDir)Serialization\include;$(SolutionDir)AutoAssemblerKinda\include;$(SolutionDir)Common_PluginSide\public_headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)ACU-RE\vmath;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DearImGui\inc;$(SolutionDir)Serialization\include;$(SolutionDir)AutoAssemblerKinda\include;$(SolutionDir)Common_PluginSide\public_headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -132,7 +132,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)ACU-RE\vmath;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DearImGui\inc;$(SolutionDir)external\SimpleJSON;$(SolutionDir)Serialization\include;$(SolutionDir)AutoAssemblerKinda\include;$(SolutionDir)Common_PluginSide\public_headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)ACU-RE\vmath;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DearImGui\inc;$(SolutionDir)Serialization\include;$(SolutionDir)AutoAssemblerKinda\include;$(SolutionDir)Common_PluginSide\public_headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -156,7 +156,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)ACU-RE\vmath;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DearImGui\inc;$(SolutionDir)external\SimpleJSON;$(SolutionDir)Serialization\include;$(SolutionDir)AutoAssemblerKinda\include;$(SolutionDir)Common_PluginSide\public_headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)ACU-RE\vmath;$(SolutionDir)ACU-RE\inc;$(SolutionDir)DearImGui\inc;$(SolutionDir)Serialization\include;$(SolutionDir)AutoAssemblerKinda\include;$(SolutionDir)Common_PluginSide\public_headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>

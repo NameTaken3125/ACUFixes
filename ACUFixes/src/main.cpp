@@ -29,14 +29,12 @@ public:
         GImGui = &readyToUseImGuiContext;
         ImGuiLayer_EvenWhenMenuIsClosed();
     }
+    virtual uint64 GetThisPluginVersion() override
+    {
+        return MAKE_VERSION_NUMBER_UINT64(0, 0, 1, 0);
+    }
     virtual bool Start(ACUPluginLoaderInterface& pluginLoader) override
     {
-        if (pluginLoader.m_PluginLoaderVersion < g_CurrentPluginAPIversion)
-        {
-            return false;
-        }
-        GrabPluginLoaderGlobalVariables(pluginLoader);
-
         g_LogLifetime.emplace(AbsolutePathInThisDLLDirectory("ACUFixes-log.log"));
         MainConfig::FindAndLoadConfigFileOrCreateDefault(AbsolutePathInThisDLLDirectory("ACUFixes-config.json"));
         MyVariousHacks::Start();
