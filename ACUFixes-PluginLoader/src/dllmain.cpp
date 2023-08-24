@@ -36,12 +36,12 @@ struct MyPluginResult
     const fs::path m_filepath;
     struct SuccessfulLoad
     {
-        SuccessfulLoad(HMODULE moduleHandle, ACUPluginInfo& pluginInterface)
+        SuccessfulLoad(HMODULE moduleHandle, std::unique_ptr<ACUPluginInfo>&& pluginInterface)
             : m_moduleHandle(moduleHandle)
-            , m_pluginInterface(pluginInterface)
+            , m_pluginInterface(std::move(pluginInterface))
         {}
         HMODULE m_moduleHandle;
-        ACUPluginInfo& m_pluginInterface;
+        std::unique_ptr<ACUPluginInfo> m_pluginInterface;
         bool m_isRequestedToUnload = false;
         bool m_isMenuOpen = false;
     };
@@ -106,28 +106,29 @@ void MyPluginLoader::LoadAndStartPlugin(MyPluginResult& pluginRecord)
         FreeLibrary(moduleHandle);
         return;
     }
-    ACUPluginInfo* successfullyStartedPlugin = startFn(m_PluginLoaderInterfaces);
-    if (!successfullyStartedPlugin)
+    std::unique_ptr<ACUPluginInfo> pluginInfo = std::make_unique<ACUPluginInfo>();
+    bool isPluginThinksIsReadyToStart = startFn(m_PluginLoaderInterfaces, *pluginInfo);
+    if (!isPluginThinksIsReadyToStart)
     {
         FreeLibrary(moduleHandle);
         return;
     }
-    if (!IsPluginAPIversionCompatible(g_CurrentPluginAPIversion, successfullyStartedPlugin->m_PluginAPIVersion))
+    if (!IsPluginAPIversionCompatible(g_CurrentPluginAPIversion, pluginInfo->m_PluginAPIVersion))
     {
         FreeLibrary(moduleHandle);
         return;
     }
-    if (!successfullyStartedPlugin->m_Start)
+    if (!pluginInfo->m_Start)
     {
         FreeLibrary(moduleHandle);
         return;
     }
-    if (!successfullyStartedPlugin->m_Start(m_PluginLoaderInterfaces))
+    if (!pluginInfo->m_Start(m_PluginLoaderInterfaces))
     {
         FreeLibrary(moduleHandle);
         return;
     }
-    pluginRecord.m_successfulLoad.emplace(moduleHandle, *successfullyStartedPlugin);
+    pluginRecord.m_successfulLoad.emplace(moduleHandle, std::move(pluginInfo));
 }
 void MyPluginLoader::UnloadAllPlugins()
 {
@@ -291,7 +292,7 @@ void MyPluginLoader::DrawImGuiForPlugins_WhenMenuIsOpened()
         if (!plugin->m_successfulLoad->m_isMenuOpen) { continue; }
         ImGui::SetNextWindowPos(ImVec2(100, 100), ImGuiCond_FirstUseEver);
         ImGui::SetNextWindowSize(ImVec2(500, 500), ImGuiCond_FirstUseEver);
-        if (auto* menuCallback = plugin->m_successfulLoad->m_pluginInterface.m_EveryFrameWhenMenuIsOpen) {
+        if (auto* menuCallback = plugin->m_successfulLoad->m_pluginInterface->m_EveryFrameWhenMenuIsOpen) {
             if (ImGui::Begin(plugin->m_filepath.filename().string().c_str(), &plugin->m_successfulLoad->m_isMenuOpen)) {
                 menuCallback(*GImGui);
             }
@@ -304,7 +305,7 @@ void MyPluginLoader::DrawImGuiForPlugins_EvenWhenMenuIsClosed()
     for (const std::unique_ptr<MyPluginResult>& plugin : g_MyPluginLoader.dllResults)
     {
         if (!plugin->m_successfulLoad) { continue; }
-        if (auto* everyFrameCallback = plugin->m_successfulLoad->m_pluginInterface.m_EveryFrameEvenWhenMenuIsClosed)
+        if (auto* everyFrameCallback = plugin->m_successfulLoad->m_pluginInterface->m_EveryFrameEvenWhenMenuIsClosed)
         {
             everyFrameCallback(*GImGui);
         }

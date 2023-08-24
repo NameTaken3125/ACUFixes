@@ -26,8 +26,8 @@ assert_offsetof(ACUPluginLoaderInterface, GetPluginIfLoaded, 0x10);
 struct ImGuiContext;
 struct ACUPluginInfo
 {
-	// The version of the plugin API that _your_ plugin is using.
-	uint64 m_PluginAPIVersion = g_CurrentPluginAPIversion;
+	// The version of the plugin API that _your_ plugin is using. From `ACUPluginStart()`, set this to `g_CurrentPluginAPIversion`.
+	uint64 m_PluginAPIVersion = -1;
 	// _Your_ plugin version. Currently is for logging only. (In the future, potentially for interplugin communications.)
 	uint64 m_PluginVersion;
 	// Will be called immediately if the plugin loader confirms that your plugin API version is compatible.
@@ -44,4 +44,4 @@ assert_offsetof(ACUPluginInfo, m_Start, 0x10);
 assert_offsetof(ACUPluginInfo, m_EveryFrameWhenMenuIsOpen, 0x18);
 assert_offsetof(ACUPluginInfo, m_EveryFrameEvenWhenMenuIsClosed, 0x20);
 
-extern "C" __declspec(dllexport) ACUPluginInfo* ACUPluginStart(ACUPluginLoaderInterface& pluginLoader);
+extern "C" __declspec(dllexport) bool ACUPluginStart(ACUPluginLoaderInterface& pluginLoader, ACUPluginInfo& yourPluginInfo_out);
