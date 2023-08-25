@@ -540,6 +540,3 @@ void MyVariousHacks::Start()
     g_MyHacks->WriteConfig(g_Config);
     MainConfig::WriteToFile();
 }
-void MyVariousHacks::MyHacks_OnKeyJustPressed(int keyCode)
-{
-}

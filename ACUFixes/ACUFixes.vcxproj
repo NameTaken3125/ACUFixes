@@ -173,7 +173,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\ACU_SharedPtrs.cpp" />
     <ClCompile Include="src\Cheat_WeatherControls.cpp" />
     <ClCompile Include="src\Hack_AllowCustomizeEquipment.cpp" />
     <ClCompile Include="src\Hack_DontRandomlyTurn180Degrees.cpp" />
@@ -224,7 +223,6 @@
     <ClCompile Include="src\WhatIsDrawnInImGui.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\ACU_SharedPtrs.h" />
     <ClInclude Include="src\Hack_AllowCustomizeEquipment.h" />
     <ClInclude Include="src\Hack_DontRandomlyTurn180Degrees.h" />
     <ClInclude Include="src\Hack_GunRange.h" />

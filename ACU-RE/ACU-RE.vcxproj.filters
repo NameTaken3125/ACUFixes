@@ -123,6 +123,13 @@
     <ClInclude Include="vmath\vmath\vmath.h" />
     <ClInclude Include="vmath\vmath\vmath_extra.h" />
     <ClInclude Include="inc\ACU_DefineNativeFunction.h" />
+    <ClInclude Include="inc\ACU_SharedPtrs.h" />
+    <ClInclude Include="inc\ACU\MenuManager.h" />
+    <ClInclude Include="inc\ACU\MenuPage.h" />
+    <ClInclude Include="inc\ACU\StandardPage.h" />
+    <ClInclude Include="inc\ACU\GearPage.h" />
+    <ClInclude Include="inc\ACU\Event.h" />
+    <ClInclude Include="inc\ACU\AllManagedObjects.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />
@@ -146,5 +153,6 @@
     <ClCompile Include="src\TimeOfDayManager.cpp" />
     <ClCompile Include="src\LocalizationManager.cpp" />
     <ClCompile Include="vmath\vmath\vmath.cpp" />
+    <ClCompile Include="src\ACU_SharedPtrs.cpp" />
   </ItemGroup>
 </Project>

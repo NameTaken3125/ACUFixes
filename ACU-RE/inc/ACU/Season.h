@@ -58,6 +58,7 @@ assert_sizeof(WindPropertyController, 0x90);
 
 
 
+// This is actually an index in the `TimeOfDayManager.arrLookupSeasonHandleBySeasonID_84`.
 enum class SeasonID : unsigned int
 {
 	Paris_Morning = 4,

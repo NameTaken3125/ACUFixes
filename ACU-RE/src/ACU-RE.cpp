@@ -73,8 +73,10 @@
 #include "ACU/ReactionManager.h"
 #include "ACU/ReactionRadiusData.h"
 
+#include "ACU/Event.h"
 #include "ACU/WitnessEvent.h"
 #include "ACU/AlertedParams.h"
+#include "ACU/EventListener.h"
 
 #include "ACU/SoundManager.h"
 #include "ACU/SoundResource.h"
@@ -135,3 +137,8 @@
 
 #include "ACU/LocalizationManager.h"
 #include "ACU/ExclusiveContent.h"
+
+#include "ACU/MenuPage.h"
+#include "ACU/StandardPage.h"
+#include "ACU/GearPage.h"
+#include "ACU/MenuManager.h"

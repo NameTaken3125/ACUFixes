@@ -114,9 +114,9 @@ public:
 private:
     std::vector<HoodVariation> m_Hoods;
 };
-constexpr uint64 handle_hair1 = 0x17412AB3AC;
-constexpr uint64 handle_hair2 = 0x17412AB39C;
-constexpr uint64 handle_greyHairOfFranciadeHoods = 0x2318E0DEA8;
+constexpr uint64 handle_hair1 = 0x17412AB3AC;   // CN_U_Arno_Hair_D_LOD1\CN_U_Arno_Hair_D_LOD1.LODSelector
+constexpr uint64 handle_hair2 = 0x17412AB39C;   // CN_U_Arno_Hair_D_LOD0\CN_U_Arno_Hair_D_LOD0.LODSelector
+constexpr uint64 handle_greyHairOfFranciadeHoods = 0x2318E0DEA8;    // CN_U_Arno_HairPlane_HoodUp\CN_U_Arno_HairPlane_HoodUp.LODSelector
 HoodVariations g_Hoods({
     HoodVariation("CN_P_FR_Hood_Down_Arnaud_V1",         119263477692, {119263477692}, {147798842981, handle_hair1, handle_hair2}),
     HoodVariation("CN_P_FR_Hood_Down_Arnaud_V2",          84857383766, { 84857383766}, {147798842259, handle_hair1, handle_hair2}),

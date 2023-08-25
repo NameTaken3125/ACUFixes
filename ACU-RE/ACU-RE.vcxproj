@@ -165,6 +165,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="inc\ACU\AllManagedObjects.h" />
+    <ClInclude Include="inc\ACU\Event.h" />
+    <ClInclude Include="inc\ACU\GearPage.h" />
+    <ClInclude Include="inc\ACU\MenuManager.h" />
+    <ClInclude Include="inc\ACU\MenuPage.h" />
+    <ClInclude Include="inc\ACU\StandardPage.h" />
     <ClInclude Include="inc\ACU_DefineNativeFunction.h" />
     <ClInclude Include="inc\ACU\ActionAbilitySet.h" />
     <ClInclude Include="inc\ACU\ActionKeyStates.h" />
@@ -283,6 +289,7 @@
     <ClInclude Include="inc\ACU\WitnessEvent.h" />
     <ClInclude Include="inc\ACU\World.h" />
     <ClInclude Include="inc\ACU\WorldComponent.h" />
+    <ClInclude Include="inc\ACU_SharedPtrs.h" />
     <ClInclude Include="src\framework.h" />
     <ClInclude Include="src\pch.h" />
     <ClInclude Include="vmath\vmath\vmath.h" />
@@ -294,6 +301,7 @@
     <ClCompile Include="src\ACUGlobalSoundSet.cpp" />
     <ClCompile Include="src\ACUHashmap.cpp" />
     <ClCompile Include="src\ACUPlayerCameraComponent.cpp" />
+    <ClCompile Include="src\ACU_SharedPtrs.cpp" />
     <ClCompile Include="src\AvatarConsumablesManager.cpp" />
     <ClCompile Include="src\AvatarGearManager.cpp" />
     <ClCompile Include="src\BallisticProjectileAimingControlsSettings.cpp" />

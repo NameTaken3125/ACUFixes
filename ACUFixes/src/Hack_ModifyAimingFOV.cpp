@@ -185,8 +185,8 @@ public:
 
 #include "Common_Plugins/ACU_InputUtils.h"
 
-constexpr uint64 objHash_BombAimRegular = 0x12F9251F30;
-constexpr uint64 objHash_BombAimFromCover = 0x34CE205063;
+constexpr uint64 handle_BombAimRegular = 0x12F9251F30;     // Game Bootstrap Settings\TEMP BUGFIX Tools.CameraSelectorBlenderNode // "TEMP BUGFIX"? Wat?
+constexpr uint64 handle_BombAimFromCover = 0x34CE205063;   // Game Bootstrap Settings\Copy of Aiming 2 Cover.CameraSelectorBlenderNode
 constexpr float g_newFOVwhileAimingBomb = 1.0f; // = 1.5f;
 constexpr float g_newFOVwhileAimingBombFromBehindCover = 1.0f;
 constexpr float g_GoalFOVWhileAimingWithoutRMB = g_newFOVwhileAimingBomb;
@@ -239,11 +239,11 @@ struct MethodLinear
 #include "ACU/ACUPlayerCameraComponent.h"
 bool IsBombAimMode(SharedPtrNew<CameraSelectorBlenderNode>* cameraMode)
 {
-    return cameraMode->handle == objHash_BombAimRegular;
+    return cameraMode->handle == handle_BombAimRegular;
 }
 bool IsBombAimFromBehindCoverMode(SharedPtrNew<CameraSelectorBlenderNode>* cameraMode)
 {
-    return cameraMode->handle == objHash_BombAimFromCover;
+    return cameraMode->handle == handle_BombAimFromCover;
 }
 bool IsInBombAimMode(ACUPlayerCameraComponent* cameraCpnt)
 {

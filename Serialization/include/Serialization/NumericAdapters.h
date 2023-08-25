@@ -116,6 +116,15 @@ struct Vector4fAdapter : public JSONAdapter<Vector4f, JSON::Class::Array>
 	{
 		return TryParseJSON_NumericArray(obj, (float*)&source, k_NumElements);
 	}
+	JSON ToJSON()
+	{
+		return json::Array(
+			source.x,
+			source.y,
+			source.z,
+			source.w
+			);
+	}
 };
 
 template<class T> auto NumericVectorAdapter(T& source);
