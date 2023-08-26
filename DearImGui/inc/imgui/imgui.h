@@ -853,6 +853,7 @@ namespace ImGui
     // Memory Allocators
     // - All those functions are not reliant on the current context.
     // - If you reload the contents of imgui.cpp at runtime, you may need to call SetCurrentContext() + SetAllocatorFunctions() again because we use global storage for those.
+    IMGUI_API void          GetAllocatorFunctions(void* (**alloc_func)(size_t sz, void* user_data), void (**free_func)(void* ptr, void* user_data), void** user_data);
     IMGUI_API void          SetAllocatorFunctions(void* (*alloc_func)(size_t sz, void* user_data), void (*free_func)(void* ptr, void* user_data), void* user_data = NULL);
     IMGUI_API void*         MemAlloc(size_t size);
     IMGUI_API void          MemFree(void* ptr);

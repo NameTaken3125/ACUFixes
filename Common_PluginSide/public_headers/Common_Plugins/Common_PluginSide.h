@@ -19,8 +19,8 @@ public:
 	virtual ~ACUPluginInterfaceVirtuals() {}
 	virtual bool Start(ACUPluginLoaderInterface& pluginLoader) = 0;
 	virtual uint64 GetThisPluginVersion() = 0;
-	virtual void EveryFrameWhenMenuIsOpen(ImGuiContext& readyToUseImGuiContext);
-	virtual void EveryFrameEvenWhenMenuIsClosed(ImGuiContext& readyToUseImGuiContext);
+	virtual void EveryFrameWhenMenuIsOpen();
+	virtual void EveryFrameEvenWhenMenuIsClosed();
 public:
 	ACUPluginInterfaceVirtuals();
 };

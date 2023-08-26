@@ -3308,6 +3308,14 @@ void ImGui::SetAllocatorFunctions(void* (*alloc_func)(size_t sz, void* user_data
     GImAllocatorFreeFunc = free_func;
     GImAllocatorUserData = user_data;
 }
+void ImGui::GetAllocatorFunctions(void* (**alloc_func)(size_t sz, void* user_data), void (**free_func)(void* ptr, void* user_data), void** user_data)
+{
+    *alloc_func = GImAllocatorAllocFunc;
+    *free_func = GImAllocatorFreeFunc;
+    *user_data = GImAllocatorUserData;
+}
+
+
 
 ImGuiContext* ImGui::CreateContext(ImFontAtlas* shared_font_atlas)
 {

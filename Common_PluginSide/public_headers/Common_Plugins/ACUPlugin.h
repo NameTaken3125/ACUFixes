@@ -23,7 +23,7 @@ assert_offsetof(ACUPluginLoaderInterface, RequestUnloadPlugin, 8);
 assert_offsetof(ACUPluginLoaderInterface, GetPluginIfLoaded, 0x10);
 
 
-struct ImGuiContext;
+class ImGuiShared;
 struct ACUPluginInfo
 {
 	// The version of the plugin API that _your_ plugin is using. From `ACUPluginStart()`, set this to `g_CurrentPluginAPIversion`.
@@ -34,9 +34,9 @@ struct ACUPluginInfo
 	// Return `false` to unload the plugin.
 	bool (*m_Start)(ACUPluginLoaderInterface& pluginLoader) = nullptr;
 	// Will be called every frame when the menu section for _your_ plugin is visible.
-	void (*m_EveryFrameWhenMenuIsOpen)(ImGuiContext& readyToUseImGuiContext) = nullptr;
+	void (*m_EveryFrameWhenMenuIsOpen)(ImGuiShared& readyToUseImGuiContext) = nullptr;
 	// Will be called every frame.
-	void (*m_EveryFrameEvenWhenMenuIsClosed)(ImGuiContext& readyToUseImGuiContext) = nullptr;
+	void (*m_EveryFrameEvenWhenMenuIsClosed)(ImGuiShared& readyToUseImGuiContext) = nullptr;
 };
 assert_offsetof(ACUPluginInfo, m_PluginAPIVersion, 0);
 assert_offsetof(ACUPluginInfo, m_PluginVersion, 8);

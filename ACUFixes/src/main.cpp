@@ -12,21 +12,18 @@ Brings the app's components together.
 #include "Common_Plugins/Common_PluginSide.h"
 
 
-extern ImGuiContext* GImGui;
 std::optional<MyLogFileLifetime> g_LogLifetime;
 void ImGuiLayer_EvenWhenMenuIsClosed();
 void ImGuiLayer_WhenMenuIsOpen();
 class ACUFixes_TheFixesPlugin : public ACUPluginInterfaceVirtuals
 {
 public:
-    virtual void EveryFrameWhenMenuIsOpen(ImGuiContext& readyToUseImGuiContext) override
+    virtual void EveryFrameWhenMenuIsOpen() override
     {
-        GImGui = &readyToUseImGuiContext;
         ImGuiLayer_WhenMenuIsOpen();
     }
-    virtual void EveryFrameEvenWhenMenuIsClosed(ImGuiContext& readyToUseImGuiContext) override
+    virtual void EveryFrameEvenWhenMenuIsClosed() override
     {
-        GImGui = &readyToUseImGuiContext;
         ImGuiLayer_EvenWhenMenuIsClosed();
     }
     virtual uint64 GetThisPluginVersion() override

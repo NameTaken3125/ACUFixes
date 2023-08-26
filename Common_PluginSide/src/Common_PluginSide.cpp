@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Common_Plugins/Common_PluginSide.h"
+#include "imgui/imgui.h"
 
 static ACUPluginInterfaceVirtuals* g_ThisPluginSingletonAsBaseclass = nullptr;
 void** g_PluginInterfaceBaseclassVTable = nullptr;
@@ -8,8 +9,8 @@ ACUPluginInterfaceVirtuals::ACUPluginInterfaceVirtuals()
     g_PluginInterfaceBaseclassVTable = *(void***)this;
 	g_ThisPluginSingletonAsBaseclass = this;
 }
-void ACUPluginInterfaceVirtuals::EveryFrameWhenMenuIsOpen(ImGuiContext& readyToUseImGuiContext) {}
-void ACUPluginInterfaceVirtuals::EveryFrameEvenWhenMenuIsClosed(ImGuiContext& readyToUseImGuiContext) {}
+void ACUPluginInterfaceVirtuals::EveryFrameWhenMenuIsOpen() {}
+void ACUPluginInterfaceVirtuals::EveryFrameEvenWhenMenuIsClosed() {}
 
 
 
@@ -65,13 +66,17 @@ extern "C" __declspec(dllexport) bool ACUPluginStart(ACUPluginLoaderInterface& p
     constexpr int vfnIdx_EveryFrameWhenMenuIsOpen = 3;
     constexpr int vfnIdx_EveryFrameEvenWhenMenuIsClosed = 4;
     if (IsPluginInterfaceVirtualFunctionOverridden(vfnIdx_EveryFrameWhenMenuIsOpen)) {
-        yourPluginInfo_out.m_EveryFrameWhenMenuIsOpen = [](ImGuiContext& readyToUseImGuiContext) {
-            g_ThisPluginSingletonAsBaseclass->EveryFrameWhenMenuIsOpen(readyToUseImGuiContext);
+        yourPluginInfo_out.m_EveryFrameWhenMenuIsOpen = [](ImGuiShared& readyToUseImGuiContext) {
+            ImGui::SetCurrentContext(&readyToUseImGuiContext.m_ctx);
+            ImGui::SetAllocatorFunctions(readyToUseImGuiContext.alloc_func, readyToUseImGuiContext.free_func, readyToUseImGuiContext.user_data);
+            g_ThisPluginSingletonAsBaseclass->EveryFrameWhenMenuIsOpen();
         };
     }
     if (IsPluginInterfaceVirtualFunctionOverridden(vfnIdx_EveryFrameEvenWhenMenuIsClosed)) {
-        yourPluginInfo_out.m_EveryFrameEvenWhenMenuIsClosed = [](ImGuiContext& readyToUseImGuiContext) {
-            g_ThisPluginSingletonAsBaseclass->EveryFrameEvenWhenMenuIsClosed(readyToUseImGuiContext);
+        yourPluginInfo_out.m_EveryFrameEvenWhenMenuIsClosed = [](ImGuiShared& readyToUseImGuiContext) {
+            ImGui::SetCurrentContext(&readyToUseImGuiContext.m_ctx);
+            ImGui::SetAllocatorFunctions(readyToUseImGuiContext.alloc_func, readyToUseImGuiContext.free_func, readyToUseImGuiContext.user_data);
+            g_ThisPluginSingletonAsBaseclass->EveryFrameEvenWhenMenuIsClosed();
         };
     }
     yourPluginInfo_out.m_Start = EverythingAppearsToBeReadyToStart;

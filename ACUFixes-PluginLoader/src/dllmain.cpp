@@ -286,6 +286,8 @@ void MyPluginLoader::DrawPluginListControls()
 extern ImGuiContext* GImGui;
 void MyPluginLoader::DrawImGuiForPlugins_WhenMenuIsOpened()
 {
+    ImGuiShared imguiShared{ *GImGui };
+    ImGui::GetAllocatorFunctions(&imguiShared.alloc_func, &imguiShared.free_func, &imguiShared.user_data);
     for (std::unique_ptr<MyPluginResult>& plugin : g_MyPluginLoader.dllResults)
     {
         if (!plugin->m_successfulLoad) { continue; }
@@ -294,7 +296,7 @@ void MyPluginLoader::DrawImGuiForPlugins_WhenMenuIsOpened()
         ImGui::SetNextWindowSize(ImVec2(500, 500), ImGuiCond_FirstUseEver);
         if (auto* menuCallback = plugin->m_successfulLoad->m_pluginInterface->m_EveryFrameWhenMenuIsOpen) {
             if (ImGui::Begin(plugin->m_filepath.filename().string().c_str(), &plugin->m_successfulLoad->m_isMenuOpen)) {
-                menuCallback(*GImGui);
+                menuCallback(imguiShared);
             }
             ImGui::End();
         }
@@ -302,12 +304,14 @@ void MyPluginLoader::DrawImGuiForPlugins_WhenMenuIsOpened()
 }
 void MyPluginLoader::DrawImGuiForPlugins_EvenWhenMenuIsClosed()
 {
+    ImGuiShared imguiShared{ *GImGui };
+    ImGui::GetAllocatorFunctions(&imguiShared.alloc_func, &imguiShared.free_func, &imguiShared.user_data);
     for (const std::unique_ptr<MyPluginResult>& plugin : g_MyPluginLoader.dllResults)
     {
         if (!plugin->m_successfulLoad) { continue; }
         if (auto* everyFrameCallback = plugin->m_successfulLoad->m_pluginInterface->m_EveryFrameEvenWhenMenuIsClosed)
         {
-            everyFrameCallback(*GImGui);
+            everyFrameCallback(imguiShared);
         }
     }
 }
