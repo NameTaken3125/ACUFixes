@@ -23,7 +23,7 @@ WeaponComponent* FindCurrentRangedWeaponComponent(Entity& player)
     if (!human1C8) { return nullptr; }
     Human1C8__GetCurrentRangedWeaponShared_mb(human1C8, &foundRangedWeapon, 0);
     Entity* wpnEntity = foundRangedWeapon->GetPtr();
-    DecrementWeakRefcount(*foundRangedWeapon);
+    foundRangedWeapon->DecrementWeakRefcount();
     if (!wpnEntity) { return nullptr; }
     return Entity__Get_WeaponComponent(wpnEntity);
 }

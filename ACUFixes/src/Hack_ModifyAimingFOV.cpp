@@ -66,7 +66,7 @@ class FOVCurveAccessor
     void SaveAllCurvePointsForFutureAccessAndRestoration(SharedPtrNew<CameraSelectorBlenderNode>* cameraMode)
     {
         std::vector<std::unique_ptr<AutoRestoredValue>> savedValuesBackups;
-        auto& horizontalPts = cameraMode->manObj->cameraData->horizontalCurvePts;
+        auto& horizontalPts = cameraMode->GetPtr()->cameraData->horizontalCurvePts;
         savedValuesBackups.reserve((size_t)horizontalPts.size * 3);
         for (auto& horPt : horizontalPts)
         {

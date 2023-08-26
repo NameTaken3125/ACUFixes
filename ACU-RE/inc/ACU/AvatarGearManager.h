@@ -37,11 +37,10 @@ assert_sizeof(AvatarGear, 0x98);
 
 #include "ACU/AvatarGearModifierStats.h"
 #include "ACU/SmallArray.h"
-class AvatarGearManager
+class AvatarGearManager : public ManagedObject
 {
 public:
     // @members
-    char pad_0000[16]; //0x0000
     SmallArray<AvatarGear*> gears_10_shopGears_mb; //0x0010
     SmallArray<AvatarGear*> gears_1C_hasLanternAtEnd; //0x001C
     char pad_28[0x38-0x28]; //0x0028

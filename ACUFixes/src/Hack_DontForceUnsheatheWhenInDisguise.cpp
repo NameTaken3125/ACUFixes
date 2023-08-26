@@ -13,8 +13,8 @@ Entity* GetCurrentDisguiseTargetEntity()
     auto* humanStates = HumanStatesHolder::GetForPlayer(); if (!humanStates) { return nullptr; }
     auto* _d0 = humanStates->humanStatesHolder_D0; if (!_d0) { return nullptr; }
     auto* usedDuringDisguise = _d0->usedDuringDisguise; if (!usedDuringDisguise) { return nullptr; }
-    SharedPtr_mb* disguiseTargetShared = usedDuringDisguise->disguiseTargetEntity; if (!disguiseTargetShared) { return nullptr; }
-    Entity* disguiseTarget = disguiseTargetShared->entity_mb;
+    auto* disguiseTargetShared = usedDuringDisguise->disguiseTargetEntity; if (!disguiseTargetShared) { return nullptr; }
+    Entity* disguiseTarget = disguiseTargetShared->GetPtr();
     return disguiseTarget;
 }
 bool IsPlayerInDisguise()

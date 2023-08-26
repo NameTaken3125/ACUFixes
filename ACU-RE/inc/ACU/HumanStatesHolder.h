@@ -2,6 +2,7 @@
 
 #include "basic_types.h"
 #include "vmath/vmath.h"
+#include "SharedPtr.h"
 #include "SmallArray.h"
 #include "Enum_EquipmentType.h"
 
@@ -37,13 +38,13 @@ public:
 }; //Size: 0x0200
 assert_sizeof(BallisticProjectileAimingProcess, 0x200);
 
-class SharedPtr_mb;
+class Entity;
 
 class UsedDuringDisguise
 {
 public:
     char pad_0000[576]; //0x0000
-    SharedPtr_mb* disguiseTargetEntity; //0x0240
+    SharedPtrNew<Entity>* disguiseTargetEntity; //0x0240
     char pad_0248[48]; //0x0248
     uint8 isInDisguise_mb; //0x0278
     char pad_0279[15]; //0x0279

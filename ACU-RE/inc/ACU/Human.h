@@ -13,6 +13,7 @@ assert_sizeof(AIActor, 0x1C8);
 
 #include "SmallArray.h"
 class SkeletonComponent;
+class Entity;
 class HumanBase_358_0
 {
 public:

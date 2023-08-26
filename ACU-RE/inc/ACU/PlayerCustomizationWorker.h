@@ -4,6 +4,7 @@
 #include "PlayerCustomizationItems.h"
 
 class AvatarGear;
+class Entity;
 
 class PlayerCustomizationWorker : public ManagedObject
 {

@@ -251,6 +251,7 @@ void DoManualHoodControls()
     }
 }
 #include "ACU/LODSelectorInstance.h"
+#include "ACU/Material.h"
 class MeshInstanceData;
 class Material;
 class FXMaterialOverlayContainer_10_0
