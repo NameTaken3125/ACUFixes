@@ -131,6 +131,10 @@
     <ClInclude Include="inc\ACU\Event.h" />
     <ClInclude Include="inc\ACU\AllManagedObjects.h" />
     <ClInclude Include="inc\ACU\Material.h" />
+    <ClInclude Include="inc\ACU\SkeletonComponent.h" />
+    <ClInclude Include="inc\ACU\Skeleton.h" />
+    <ClInclude Include="inc\ACU\SoftBodySettings.h" />
+    <ClInclude Include="inc\ACU\Bone.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />

@@ -166,11 +166,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="inc\ACU\AllManagedObjects.h" />
+    <ClInclude Include="inc\ACU\Bone.h" />
     <ClInclude Include="inc\ACU\Event.h" />
     <ClInclude Include="inc\ACU\GearPage.h" />
     <ClInclude Include="inc\ACU\Material.h" />
     <ClInclude Include="inc\ACU\MenuManager.h" />
     <ClInclude Include="inc\ACU\MenuPage.h" />
+    <ClInclude Include="inc\ACU\Skeleton.h" />
+    <ClInclude Include="inc\ACU\SkeletonComponent.h" />
+    <ClInclude Include="inc\ACU\SoftBodySettings.h" />
     <ClInclude Include="inc\ACU\StandardPage.h" />
     <ClInclude Include="inc\ACU_DefineNativeFunction.h" />
     <ClInclude Include="inc\ACU\ActionAbilitySet.h" />

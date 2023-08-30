@@ -52,6 +52,7 @@
 #include "ACU/FancyVTable.h"
 #include "ACU/HumanStatesHolder.h"
 #include "ACU/AtomAnimComponent.h"
+#include "ACU/SkeletonComponent.h"
 #include "ACU/Human.h"
 
 #include "ACU/UIWorldComponent.h"
@@ -142,3 +143,7 @@
 #include "ACU/StandardPage.h"
 #include "ACU/GearPage.h"
 #include "ACU/MenuManager.h"
+
+#include "ACU/SoftBodySettings.h"
+#include "ACU/Skeleton.h"
+#include "ACU/Bone.h"
