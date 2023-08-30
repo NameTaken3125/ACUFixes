@@ -29,6 +29,7 @@ void RequestUnloadThisPlugin()
 void GrabPluginLoaderGlobalVariables(ACUPluginLoaderInterface& pluginLoader)
 {
     RequestUnloadThisPlugin_fnptr = pluginLoader.RequestUnloadPlugin;
+    GetPluginIfLoaded_fnptr = pluginLoader.GetPluginIfLoaded;
     ACU::Input::g_InputHooksSingletonPtr = &pluginLoader.m_ImplementationSharedVariables->m_InputHooks;
 }
 
@@ -85,6 +86,7 @@ extern "C" __declspec(dllexport) bool ACUPluginStart(ACUPluginLoaderInterface& p
 
 
 HMODULE g_ThisDLLHandle = nullptr;
+namespace fs = std::filesystem;
 fs::path g_ThisDLLAbsoluteFilepath;
 fs::path GetDLLAbsolutePath(HMODULE dllHandle)
 {

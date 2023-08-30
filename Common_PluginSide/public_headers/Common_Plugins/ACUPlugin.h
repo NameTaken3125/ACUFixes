@@ -7,7 +7,6 @@
 constexpr uint64 g_CurrentPluginAPIversion = MAKE_PLUGIN_LOADER_VERSION(0, 8, 0, 0);
 
 
-struct ACUPluginLoaderInterface;
 class ACUPluginLoaderSharedGlobals;
 struct ACUPluginLoaderInterface
 {

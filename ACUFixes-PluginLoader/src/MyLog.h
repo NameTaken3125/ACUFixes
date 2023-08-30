@@ -5,7 +5,7 @@ namespace fs = std::filesystem;
 
 
 
-void LOG_DEBUG(const char* fmt, ...);
+void LOG_DEBUG(const wchar_t* fmt, ...);
 
 
 

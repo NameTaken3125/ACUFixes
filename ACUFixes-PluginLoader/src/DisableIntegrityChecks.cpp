@@ -21,7 +21,7 @@ bool TerminateThreadIfRunsTheMainIntegrityCheck(ThreadID_t thread_id)
     NTSTATUS nt_status = NtQueryInformationThread(thread_handle, (THREADINFOCLASS)ThreadQuerySetWin32StartAddress, &dwStartAddress, 0x8, 0);
     if (nt_status == 0)
     {
-        LOG_DEBUG(", start address: %llx\n", dwStartAddress);
+        LOG_DEBUG(L", start address: %llx\n", dwStartAddress);
         if (dwStartAddress == g_mainIntegrityCheckThreadStartAddress)
         {
             TerminateThread(thread_handle, 0);
@@ -50,10 +50,10 @@ void DisableMainIntegrityCheck()
                 {
                     if (te.th32OwnerProcessID == thisProcessID)
                     {
-                        LOG_DEBUG("Thread #%d, id: %x", threadCounter++, te.th32ThreadID);
+                        LOG_DEBUG(L"Thread #%d, id: %x", threadCounter++, te.th32ThreadID);
                         if (bool mainCheckIsTerminated = TerminateThreadIfRunsTheMainIntegrityCheck(te.th32ThreadID))
                         {
-                            LOG_DEBUG("Thread 0x%x terminated.\n", te.th32ThreadID);
+                            LOG_DEBUG(L"Thread 0x%x terminated.\n", te.th32ThreadID);
                             break;
                         }
                     }

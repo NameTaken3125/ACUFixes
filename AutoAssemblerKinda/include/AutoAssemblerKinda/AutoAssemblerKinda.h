@@ -554,6 +554,26 @@ typedef struct {
         double da[2];
     };
 } xmmreg, * pxmmreg;
+// From https://en.wikipedia.org/wiki/FLAGS_register.
+struct RFLAGS
+{
+    bool CF : 1;
+    bool unused_bit_1 : 1;
+    bool PF : 1;
+    bool unused_bit_3 : 1;
+    bool AF : 1;
+    bool unused_bit_5 : 1;
+    bool ZF : 1;
+    bool SF : 1;
+    bool TF : 1;
+    bool IF : 1;
+    bool DF : 1;
+    bool OF : 1;
+    unsigned char unused_bits_12_15 : 16 - 12;
+    unsigned short unused_bits_16_31;
+    unsigned int unused_bits_32_63;
+};
+static_assert(sizeof(RFLAGS) == 8);
 struct AllRegisters
 {
     char pad_0[0xA0];
@@ -591,6 +611,7 @@ struct AllRegisters
     unsigned long long r15_;
     unsigned long long GetRSP() { return (unsigned long long)rax_ + 0x18; }
     unsigned long long& GetRAX() { return *rax_; }
+    RFLAGS& GetFLAGS() { return *(RFLAGS*)((unsigned long long)rax_ + 8); }
 };
 static_assert(offsetof(AllRegisters, XMM0) == 0xA0);
 static_assert(offsetof(AllRegisters, XMM15) == 0x190);
