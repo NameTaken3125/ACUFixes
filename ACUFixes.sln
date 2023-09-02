@@ -5,23 +5,25 @@ VisualStudioVersion = 16.0.28803.202
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ACUFixes", "ACUFixes\ACUFixes.vcxproj", "{C879930E-6867-4A29-AF44-6625490FC549}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ACU-RE", "ACU-RE\ACU-RE.vcxproj", "{3CE83CE0-69AA-4C6E-9476-2E9DC734B47F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ACU-RE", "CommonLibACU\ACU-RE\ACU-RE.vcxproj", "{3CE83CE0-69AA-4C6E-9476-2E9DC734B47F}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DX11-BaseHook", "DX11-BaseHook\DX11-BaseHook.vcxproj", "{493E69B7-9966-4B96-94BA-158EA9FA50C8}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ACUFixesLoader", "ACUFixesLoader\ACUFixesLoader.vcxproj", "{5348EA3C-3D47-489C-8D0F-737C891CCBF0}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Serialization", "Serialization\Serialization.vcxproj", "{7F95D10E-E7EA-42C6-8BFB-A01756337677}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Serialization", "CommonLibACU\Serialization\Serialization.vcxproj", "{7F95D10E-E7EA-42C6-8BFB-A01756337677}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AutoAssemblerKinda", "AutoAssemblerKinda\AutoAssemblerKinda.vcxproj", "{545FD0F0-C203-4600-AD7F-4600F7907B89}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AutoAssemblerKinda", "CommonLibACU\AutoAssemblerKinda\AutoAssemblerKinda.vcxproj", "{545FD0F0-C203-4600-AD7F-4600F7907B89}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ProxyOfTheVersionDLL", "ProxyOfTheVersionDLL\ProxyOfTheVersionDLL.vcxproj", "{BB30BF15-6016-43AE-9790-BB4B423A79A4}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ACUFixes-PluginLoader", "ACUFixes-PluginLoader\ACUFixes-PluginLoader.vcxproj", "{34C4F4FA-69AB-4CDB-BED9-9E84300C5E22}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Common_PluginSide", "Common_PluginSide\Common_PluginSide.vcxproj", "{707FA1AF-9276-42CA-87FC-1382164270B3}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Common_PluginSide", "CommonLibACU\Common_PluginSide\Common_PluginSide.vcxproj", "{707FA1AF-9276-42CA-87FC-1382164270B3}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DearImGui", "DearImGui\DearImGui.vcxproj", "{A7A4F65C-61C0-42DA-A457-2558090657A3}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DearImGui", "CommonLibACU\DearImGui\DearImGui.vcxproj", "{A7A4F65C-61C0-42DA-A457-2558090657A3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libs", "Libs", "{F488EDCA-7311-4B19-8F18-24B9961336D4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -114,6 +116,13 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{3CE83CE0-69AA-4C6E-9476-2E9DC734B47F} = {F488EDCA-7311-4B19-8F18-24B9961336D4}
+		{7F95D10E-E7EA-42C6-8BFB-A01756337677} = {F488EDCA-7311-4B19-8F18-24B9961336D4}
+		{545FD0F0-C203-4600-AD7F-4600F7907B89} = {F488EDCA-7311-4B19-8F18-24B9961336D4}
+		{707FA1AF-9276-42CA-87FC-1382164270B3} = {F488EDCA-7311-4B19-8F18-24B9961336D4}
+		{A7A4F65C-61C0-42DA-A457-2558090657A3} = {F488EDCA-7311-4B19-8F18-24B9961336D4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {EF2D1A87-E352-493B-9E27-E74CF6F65FE4}
