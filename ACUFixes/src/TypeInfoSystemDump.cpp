@@ -164,53 +164,109 @@ private:
         {
             ss << GetTypeNameAndBasesFromTypeInfo(*ti)
                 << ", size: 0x" << std::hex << GetStructSizeFromTypeInfo(*ti)
+                << ", hash: 0x" << std::hex << (uintptr_t)ti->lookupInTypeInfoSystem_mb
                 << ", ti: " << (uintptr_t)ti
                 << ", create: " << (uintptr_t)ti->Create
+                << ", deserialize: " << (uintptr_t)ti->DeserializeIfNoVTBL
                 << '\n';
         }
         writeToClipboard(ss.str());
     }
+    // Some of the game types I can't even construct, because the Create() function crashes immediately.
+    // I inspected these types manually and I exclude them from the automated dumping process.
+    struct ManuallyInspectedType
+    {
+        const std::string_view name;
+        uintptr_t vtbl;
+        uintptr_t deserializeVirtual;
+    };
     void ToFileLog_AttemptToConstructAllObjects(size_t startFrom, size_t howManyAtMost)
     {
         //safetyhook::ThreadFreezer holdIt;
-        std::set<std::string> toSkip =
-        {
-            "CameraManager",
-            "CameraProxy",
-            "NetPartyManager",
+        std::vector<ManuallyInspectedType> toSkip = {
+            ManuallyInspectedType{ "CameraManager", 0x14304D800, 0x141EF08E0 },
+            ManuallyInspectedType{ "CameraProxy", 0x143040D10, 0x141E6D4E0 },
+            ManuallyInspectedType{ "NetPartyManager", 0x143011920, 0x141E6D4E0 },
         };
         size_t howManyDone = 0;
         for (size_t i = startFrom; i < std::min(startFrom + howManyAtMost, foundTIs.size()); i++)
         {
             TypeInfo& ti = *foundTIs[i];
             ImGui::LogToFile();
-            ImGui::LogText("%4d: %s, size: 0x%X, ti: %llX, create: %llX, vtbl: ", i, GetTypeNameAndBasesFromTypeInfo(ti).c_str(), ti.structSize, (uintptr_t)&ti, (uintptr_t)ti.Create);
-            if (toSkip.find(ti.typeName) != toSkip.end())
+            ImGui::LogText(
+                "%4d: %s, size: 0x%X, hash: 0x%X, ti: %llX, create: %llX, vtbl: "
+                , i
+                , GetTypeNameAndBasesFromTypeInfo(ti).c_str()
+                , ti.structSize
+                , ti.lookupInTypeInfoSystem_mb
+                , (uintptr_t)&ti
+                , (uintptr_t)ti.Create
+            );
+            uintptr_t vtbl = 0;
+            bool isHasNoCreateFunc = false;
             {
-                ImGui::LogText("VTBL-SkippedToAvoidCrash");
-            }
-            else
-            {
-                bool hasCreateFuncAndIsConstructed = TryToConstruct(ti);
-                if (hasCreateFuncAndIsConstructed)
+                bool isThisTypeSkipped = false;
+                for (const ManuallyInspectedType& skippedType : toSkip)
                 {
-                    using vtbl_t = unsigned __int64;
-                    vtbl_t vtbl = (vtbl_t&)m_constructedObject.value().bytes[0];
+                    if (skippedType.name == ti.typeName)
+                    {
+                        isThisTypeSkipped = true;
+                        vtbl = skippedType.vtbl;
+                        break;
+                    }
+                }
+                if (!isThisTypeSkipped)
+                {
+                    bool hasCreateFuncAndIsConstructed = TryToConstruct(ti);
+                    if (hasCreateFuncAndIsConstructed)
+                    {
+                        vtbl = (uintptr_t&)m_constructedObject.value().bytes[0];
+                    }
+                    else
+                    {
+                        isHasNoCreateFunc = true;
+                    }
+                }
+            }
+            {
+                if (isHasNoCreateFunc)
+                {
+                    ImGui::LogText("VTBL-NoCreateFunc");
+                }
+                else
+                {
                     constexpr uintptr_t gameModuleStart = 0x140000000;
                     constexpr uintptr_t gameModuleEnd = 0x147825000;
-                    if (vtbl < gameModuleStart || vtbl >= gameModuleEnd)
+                    // Many types have this pointer at the start, but it's not a VTBL,
+                    // just an empty shared pointer.
+                    constexpr uintptr_t gameModuleEmptySharedBlock = 0x14525BB58;
+                    if (vtbl == gameModuleEmptySharedBlock)
+                    {
+                        ImGui::LogText("VTBL-DefinitelyNone");
+                        vtbl = 0;
+                    }
+                    else if (vtbl < gameModuleStart || vtbl >= gameModuleEnd)
                     {
                         ImGui::LogText("VTBL-NoneOrOutsideGameModule");
+                        vtbl = 0;
                     }
                     else
                     {
                         ImGui::LogText("%llX", vtbl);
                     }
                 }
-                else
-                {
-                    ImGui::LogText("VTBL-NoCreateFunc");
-                }
+            }
+            ImGui::LogText(", deser-static: ");
+            ImGui::LogText("%llX", (uintptr_t)ti.DeserializeIfNoVTBL);
+            ImGui::LogText(", deser-virt: ");
+            if (!vtbl)
+            {
+                ImGui::LogText("DESER-NoVTBL");
+            }
+            else
+            {
+                uintptr_t deserializeVirtual = ((uintptr_t*)vtbl)[2];
+                ImGui::LogText("%llX", deserializeVirtual);
             }
             ImGui::LogFinish();
         }

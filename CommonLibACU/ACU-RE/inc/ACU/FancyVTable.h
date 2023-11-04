@@ -77,7 +77,7 @@ The usage of these tables in the player's state machine is very different.
 class FancyVFunction
 {
 public:
-    uint32 hash; //0x0000
+    uint32 nameHash; //0x0000
     uint32 staticIdx; //0x0004
     uint32 nestedness; //0x0008
     char pad_000C[4]; //0x000C

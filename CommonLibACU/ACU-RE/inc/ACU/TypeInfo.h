@@ -2,6 +2,8 @@
 
 #include "basic_types.h"
 
+class DeserializationState;
+
 class TypeInfo
 {
 public:
@@ -17,16 +19,20 @@ public:
     uint16 word_4C; //0x004C
     uint16 word_4E; //0x004E
     void* (__fastcall* Create)(void* createAtAddr); //0x0050
-    char pad_0058[56]; //0x0058
+    char pad_0058[24]; //0x0058
+    void* (__fastcall* DeserializeIfNoVTBL)(void* thisObject, DeserializationState* deserializationStream); //0x0070
+    char pad_0078[24]; //0x0078
     void* Destroy; //0x0090
     void* fn98; //0x0098
     char pad_00A0[4]; //0x00A0
     unsigned char byte_a4; //0x00A4
-    char pad_00A5[27]; //0x00A5
-}; //Size: 0x00C0
+    char pad_00A5[11]; //0x00A5
+}; //Size: 0x00B0
 assert_offsetof(TypeInfo, typeName, 0x18);
 assert_offsetof(TypeInfo, structSize, 0x28);
 assert_offsetof(TypeInfo, Create, 0x50);
+assert_offsetof(TypeInfo, DeserializeIfNoVTBL, 0x70);
+assert_sizeof(TypeInfo, 0xB0);
 
 inline bool IsSubclass(TypeInfo& what, TypeInfo& ofWhat)
 {

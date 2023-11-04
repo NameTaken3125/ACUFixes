@@ -142,6 +142,10 @@ struct ParkourAction_FancyVTable
 {
     std::array<FancyVFunction, 0x78> fancyVirtuals;
 };
+// FancyVFunctions in `ParkourAction_EnterWindow.fancyVtable8`:
+#define DEFINE_FANCY_VF(idx, name, nameHashed, fnType)
+
+DEFINE_FANCY_VF(0x18, "GetDistance", 0x8EB3C7D3, float (*)(AvailableParkourAction*));
 class AvailableParkourAction
 {
 public:
