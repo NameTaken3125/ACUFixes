@@ -179,6 +179,7 @@
     <ClInclude Include="src\PresentHookOuter.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\CrashLog.cpp" />
     <ClCompile Include="src\DisableIntegrityChecks.cpp" />
     <ClCompile Include="src\dllmain.cpp" />
     <ClCompile Include="src\InputHook.cpp" />

@@ -389,10 +389,13 @@ void DrawPluginsEvenWhenMenuIsClosed()
 }
 
 void PluginLoader_VariousHooks_Start();
+void InstallCrashLog();
+
 static void PluginLoader_MainThread(HMODULE thisDLLModule)
 {
     Base::Data::thisDLLModule = thisDLLModule;
     MyLogFileLifetime _log{ AbsolutePathInMyDirectory("ACUFixes-PluginLoader.log") };
+    InstallCrashLog();
     WaitUntilGameIsInitializedEnoughSoThatTheMainIntegrityCheckCanBeDisabled();
     PluginLoaderConfig::FindAndLoadConfigFileOrCreateDefault();
     DisableMainIntegrityCheck();
