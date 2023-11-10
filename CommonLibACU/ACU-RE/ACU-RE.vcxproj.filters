@@ -135,6 +135,8 @@
     <ClInclude Include="inc\ACU\Skeleton.h" />
     <ClInclude Include="inc\ACU\SoftBodySettings.h" />
     <ClInclude Include="inc\ACU\Bone.h" />
+    <ClInclude Include="inc\ACU\ButtonComponent.h" />
+    <ClInclude Include="inc\ACU\AvatarGear.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />

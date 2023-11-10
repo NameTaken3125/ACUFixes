@@ -166,7 +166,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="inc\ACU\AllManagedObjects.h" />
+    <ClInclude Include="inc\ACU\AvatarGear.h" />
     <ClInclude Include="inc\ACU\Bone.h" />
+    <ClInclude Include="inc\ACU\ButtonComponent.h" />
     <ClInclude Include="inc\ACU\Event.h" />
     <ClInclude Include="inc\ACU\GearPage.h" />
     <ClInclude Include="inc\ACU\Material.h" />

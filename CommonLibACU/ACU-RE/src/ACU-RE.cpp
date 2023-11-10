@@ -61,12 +61,14 @@
 #include "ACU/HUDQuickSelectModule.h"
 
 #include "ACU/DataBindingComponent.h"
+#include "ACU/ButtonComponent.h"
 #include "ACU/HUDQuickSelectComponent.h"
 #include "ACU/QuickSelectButtonComponent.h"
 
 #include "ACU/UIString.h"
 #include "ACU/InventoryItemSettings.h"
 #include "ACU/AvatarGearModifierStats.h"
+#include "ACU/AvatarGear.h"
 #include "ACU/AvatarGearManager.h"
 
 #include "ACU/WhenHighlightedNPCChanges.h"

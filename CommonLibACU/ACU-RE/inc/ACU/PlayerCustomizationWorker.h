@@ -5,6 +5,7 @@
 
 class AvatarGear;
 class Entity;
+class SpawningSpecification;
 
 class PlayerCustomizationWorker : public ManagedObject
 {
@@ -13,7 +14,11 @@ public:
 	uint8 byte_1A8; //0x01A8
 	char pad_01A9[23]; //0x01A9
 	PlayerCustomizationItems currentCustomizationItems; //0x01C0
-	char pad_0248[16]; //0x0248
+	char pad_0248[1]; //0x0248
+	uint8 byte_249; //0x0249
+	uint8 byte_24A; //0x024A
+	char pad_024B[5]; //0x024B
+	SpawningSpecification* spawningSpecification; //0x0250
 	SharedPtrNew<Entity>* shared_fakePlayer_mb; //0x0258
 	AvatarGear* newHighlightedGear; //0x0260
 	char pad_0268[8]; //0x0268
