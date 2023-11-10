@@ -26,7 +26,7 @@
 #include "Hack_NoWaitForUnsafeEject.h"
 #include "Hack_AllowCustomizeEquipment.h"
 #include "Hack_GunRange.h"
-#include "Hack_PreventAutomaticReequipPistol.h"
+#include "Hack_UnequipPistol.h"
 
 #include "Hack_LookbehindButton.h"
 #include "Hack_WhistleAbility.h"
@@ -71,7 +71,7 @@ public:
     AutoAssembleWrapper<NoWaitForUnsafeEject> noWaitForUnsafeEject;
     AutoAssembleWrapper<AllowCustomizeEquipment> allowCustomizeEquipmentOnLedges;
     AutoAssembleWrapper<GuillotineGunRange> guillotineGunRange;
-    AutoAssembleWrapper<PreventAutomaticReequipPistol> preventAutomaticReequipPistol;
+    AutoAssembleWrapper<UnequipPistol> allowUnequipPistol;
 
     // Unused and unfinished
     AutoAssembleWrapper<PlayWithFOV> fovGames;
@@ -274,12 +274,21 @@ public:
         }
         ImGui::DrawCheckboxForHack(allowCustomizeEquipmentOnLedges, "Allow to open equipment customization when sitting on ledges");
         ImGui::DrawCheckboxForHack(guillotineGunRange, "Slightly greater Guillotine Gun quickshot range");
-        ImGui::DrawCheckboxForHack(preventAutomaticReequipPistol, "Don't automatically reequip the pistol after switching from a rifle");
+        //ImGui::DrawCheckboxForHack(preventAutomaticReequipPistol, "Don't automatically reequip the pistol after switching from a rifle");
+        //if (ImGui::IsItemHovered())
+        //{
+        //    ImGui::SetTooltip(
+        //        "If you want to play without the pistol equipped,"
+        //        "this is not as good as an \"Unequip\" button, but it's something."
+        //    );
+        //}
+        ImGui::DrawCheckboxForHack(allowUnequipPistol, "Allow to unequip pistol");
         if (ImGui::IsItemHovered())
         {
             ImGui::SetTooltip(
-                "If you want to play without the pistol equipped,"
-                "this is not as good as an \"Unequip\" button, but it's something."
+                "Go to Pause Menu -> Character Customization -> Gear Loadout -> Weapons -> Pistols."
+                "\nSelect the currently equipped pistol (highlighted yellow), then press Enter/Equip"
+                "\nto unequip it."
             );
         }
         ImGui::DrawCheckboxForHack(lookbehindButton, "Lookbehind button");
@@ -472,7 +481,7 @@ public:
         noWaitForUnsafeEject.Toggle(hacksSection->noWaitForUnsafeEject);
         allowCustomizeEquipmentOnLedges.Toggle(hacksSection->allowCustomizeEquipmentOnLedges);
         guillotineGunRange.Toggle(hacksSection->slightlyGreaterGuillotineGunQuickshotRange);
-        preventAutomaticReequipPistol.Toggle(hacksSection->preventAutomaticReequipPistol);
+        allowUnequipPistol.Toggle(hacksSection->allowUnequipPistol);
 
         auto& cheatsSection = cfg.cheats;
         dontDecreaseRemainingAmmo.Toggle(cheatsSection->infiniteAmmo);
@@ -503,7 +512,7 @@ public:
         hacksSection->noWaitForUnsafeEject = noWaitForUnsafeEject.IsActive();
         hacksSection->allowCustomizeEquipmentOnLedges = allowCustomizeEquipmentOnLedges.IsActive();
         hacksSection->slightlyGreaterGuillotineGunQuickshotRange = guillotineGunRange.IsActive();
-        hacksSection->preventAutomaticReequipPistol = preventAutomaticReequipPistol.IsActive();
+        hacksSection->allowUnequipPistol = allowUnequipPistol.IsActive();
 
         auto& cheatsSection = cfg.cheats;
         cheatsSection->infiniteAmmo = dontDecreaseRemainingAmmo.IsActive();
