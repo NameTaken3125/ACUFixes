@@ -149,3 +149,6 @@
 #include "ACU/SoftBodySettings.h"
 #include "ACU/Skeleton.h"
 #include "ACU/Bone.h"
+
+#include "ACU/HasWorld.h"
+#include "ACU/HasSwapchain.h"
