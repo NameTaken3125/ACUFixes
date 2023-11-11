@@ -9,7 +9,7 @@ class MissionRoot;
 class MissionHistory;
 class MissionGroup;
 class Mission;
-class MissionStepGroup;
+class MissionStep;
 class DataLayer;
 
 
@@ -47,8 +47,8 @@ public:
 	SmallArray<Mission*> missions23C_acceptable; //0x023C
 	SmallArray<Mission*> missions248_active_mb; //0x0248
 	SmallArray<Mission*> missions254_completedAll_mb; //0x0254
-	SmallArray<MissionStepGroup*> missionStepGroups260; //0x0260
-	SmallArray<MissionStepGroup*> missionStepGroups26C; //0x026C
+	SmallArray<MissionStep*> missionSteps260; //0x0260
+	SmallArray<MissionStep*> missionSteps26C; //0x026C
 	char pad_0278[0xC]; //0x0278
 	SmallArray<SharedPtrNew<DataLayer>*> dataLayers; //0x0284
 	char pad_0290[96]; //0x0290

@@ -29,3 +29,12 @@ SharedBlock& FindOrMakeSharedBlockByHandleAndIncrementStrongRefcount(uint64 hand
     foundShared = AllManagedObjects__FindOrMakeSharedBlockByHandle_StrongRef(&AllManagedObjects_mb::GetSingleton(), handle, nullptr);
     return *foundShared;
 }
+
+SharedBlock& FindSharedBlockByObjectAndIncrementWeakrefcount(ManagedObject& manObj)
+{
+    return *AllManagedObjects__FindOrMakeSharedBlockByHandle_WeakRef(&AllManagedObjects_mb::GetSingleton(), 0, &manObj);
+}
+SharedBlock& FindSharedBlockByObjectAndIncrementStrongRefcount(ManagedObject& manObj)
+{
+    return *AllManagedObjects__FindOrMakeSharedBlockByHandle_StrongRef(&AllManagedObjects_mb::GetSingleton(), 0, &manObj);
+}

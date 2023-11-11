@@ -131,10 +131,12 @@
 #include "ACU/Mission.h"
 #include "ACU/MissionGroup.h"
 #include "ACU/MissionStep.h"
+#include "ACU/MissionStepGroup.h"
 #include "ACU/MissionHistory.h"
 #include "ACU/MissionSaveData.h"
 #include "ACU/MissionStepSaveData.h"
 #include "ACU/MissionRoot.h"
+#include "ACU/MissionCategory.h"
 #include "ACU/MissionContext.h"
 #include "ACU/MissionManager.h"
 

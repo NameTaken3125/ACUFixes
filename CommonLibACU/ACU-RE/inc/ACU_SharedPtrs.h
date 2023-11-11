@@ -6,3 +6,5 @@
 
 SharedBlock& FindOrMakeSharedBlockByHandleAndIncrementWeakrefcount(uint64 handle);
 SharedBlock& FindOrMakeSharedBlockByHandleAndIncrementStrongRefcount(uint64 handle);
+SharedBlock& FindSharedBlockByObjectAndIncrementWeakrefcount(ManagedObject& manObj);
+SharedBlock& FindSharedBlockByObjectAndIncrementStrongRefcount(ManagedObject& manObj);

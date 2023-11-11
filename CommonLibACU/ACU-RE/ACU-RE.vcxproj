@@ -175,6 +175,8 @@
     <ClInclude Include="inc\ACU\Material.h" />
     <ClInclude Include="inc\ACU\MenuManager.h" />
     <ClInclude Include="inc\ACU\MenuPage.h" />
+    <ClInclude Include="inc\ACU\MissionCategory.h" />
+    <ClInclude Include="inc\ACU\MissionStepGroup.h" />
     <ClInclude Include="inc\ACU\Skeleton.h" />
     <ClInclude Include="inc\ACU\SkeletonComponent.h" />
     <ClInclude Include="inc\ACU\SoftBodySettings.h" />
@@ -319,6 +321,7 @@
     <ClCompile Include="src\Human.cpp" />
     <ClCompile Include="src\HumanStatesHolder.cpp" />
     <ClCompile Include="src\LocalizationManager.cpp" />
+    <ClCompile Include="src\MissionRoot.cpp" />
     <ClCompile Include="src\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

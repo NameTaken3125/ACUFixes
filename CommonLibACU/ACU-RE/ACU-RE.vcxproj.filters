@@ -138,6 +138,8 @@
     <ClInclude Include="inc\ACU\ButtonComponent.h" />
     <ClInclude Include="inc\ACU\AvatarGear.h" />
     <ClInclude Include="inc\ACU\HasWorld.h" />
+    <ClInclude Include="inc\ACU\MissionStepGroup.h" />
+    <ClInclude Include="inc\ACU\MissionCategory.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />
@@ -162,5 +164,6 @@
     <ClCompile Include="src\LocalizationManager.cpp" />
     <ClCompile Include="vmath\vmath\vmath.cpp" />
     <ClCompile Include="src\ACU_SharedPtrs.cpp" />
+    <ClCompile Include="src\MissionRoot.cpp" />
   </ItemGroup>
 </Project>
