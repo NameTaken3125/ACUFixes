@@ -172,7 +172,6 @@
     <ClInclude Include="src\Enum_VirtualKeys.h" />
     <ClInclude Include="src\Hack_GameRawInputHook.h" />
     <ClInclude Include="src\ImGuiConfigUtils.h" />
-    <ClInclude Include="src\ImGuiCTX.h" />
     <ClInclude Include="src\MyLog.h" />
     <ClInclude Include="src\pch.h" />
     <ClInclude Include="src\PluginLoaderConfig.h" />

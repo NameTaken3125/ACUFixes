@@ -30,9 +30,6 @@
     <ClInclude Include="src\Enum_VirtualKeys.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\ImGuiCTX.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\ImGuiConfigUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>

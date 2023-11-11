@@ -277,6 +277,7 @@ void MyPluginLoader::LoadAllFoundNonloadedPlugins()
         LoadAndStartPlugin(*plugin);
     }
 }
+extern ImGuiContext* GImGui;
 void MyPluginLoader::DrawPluginListControls()
 {
     ImGui::Text("Found plugins: %d", dllResults.size());
@@ -295,6 +296,9 @@ void MyPluginLoader::DrawPluginListControls()
         UnloadAllPlugins();
     }
     std::string buf;
+
+    ImGuiShared imguiShared{ *GImGui };
+    ImGui::GetAllocatorFunctions(&imguiShared.alloc_func, &imguiShared.free_func, &imguiShared.user_data);
     for (size_t i = 0; i < dllResults.size(); i++)
     {
         std::unique_ptr<MyPluginResult>& plugin = dllResults[i];
@@ -302,12 +306,45 @@ void MyPluginLoader::DrawPluginListControls()
         ImGui::PushID(&plugin);
         if (plugin->m_successfulLoad)
         {
-            ImGui::Text(buf.c_str());
-            ImGui::SameLine();
-            if (ImGui::Button("Toggle menu"))
+            auto DrawSuccessfullyLoadedPlugin = [&]()
             {
-                plugin->m_successfulLoad->m_isMenuOpen = !plugin->m_successfulLoad->m_isMenuOpen;
-            }
+                auto* menuCallback = plugin->m_successfulLoad->m_pluginInterface->m_EveryFrameWhenMenuIsOpen;
+                if (!menuCallback)
+                {
+                    ImGui::Text(buf.c_str());
+                    return;
+                }
+                bool& isSeparateMenu = plugin->m_successfulLoad->m_isMenuOpen;
+                //ImGui::AlignTextToFramePadding();
+                //ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(50.f, 50.f));
+                //bool treeopen = ImGui::TreeNodeEx(buf.c_str(), ImGuiTreeNodeFlags_FramePadding);
+                //ImGui::PopStyleVar();
+                ImGuiTreeNodeFlags treeflags = ImGuiTreeNodeFlags_FramePadding;
+                bool isMightBeExpanded = true;
+                if (isSeparateMenu)
+                {
+                    treeflags |= ImGuiTreeNodeFlags_Leaf;
+                    isMightBeExpanded = false;
+                }
+                bool treeopen = ImGui::TreeNodeEx(
+                    buf.c_str(),
+                    treeflags
+                );
+                ImGui::SameLine();
+                if (ImGui::Button("Toggle menu"))
+                {
+                    isSeparateMenu = !isSeparateMenu;
+                }
+                if (treeopen) {
+                    if (isMightBeExpanded) {
+                        ImGui::Separator();
+                        menuCallback(imguiShared);
+                        ImGui::Separator();
+                    }
+                    ImGui::TreePop();
+                }
+            };
+            DrawSuccessfullyLoadedPlugin();
         }
         else
         {
@@ -322,7 +359,6 @@ void MyPluginLoader::DrawPluginListControls()
         buf.clear();
     }
 }
-extern ImGuiContext* GImGui;
 void MyPluginLoader::DrawImGuiForPlugins_WhenMenuIsOpened()
 {
     ImGuiShared imguiShared{ *GImGui };

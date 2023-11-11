@@ -60,6 +60,7 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
     ImGui::SetNextWindowSize(ImVec2(500, 500), ImGuiCond_FirstUseEver);
     if (ImGuiCTX::Window _mainWindow{ "ACU Plugin Loader" })
     {
+        DrawPluginsWhenMenuOpen();
         if (ImGuiCTX::TabBar _tabbar{ "MainWindowTabs" })
         {
             if (ImGuiCTX::Tab _mainTab{ "Main Tab" })
@@ -67,7 +68,6 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
                 if (ImGuiCTX::WindowChild _{ "MainTabChild" })
                 {
                     DrawPluginListControls();
-                    DrawPluginsWhenMenuOpen();
                 }
             }
             if (ImGuiCTX::Tab _extraoptions{ "Extra" })
