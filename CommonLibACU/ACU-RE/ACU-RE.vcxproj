@@ -169,6 +169,7 @@
     <ClInclude Include="inc\ACU\AvatarGear.h" />
     <ClInclude Include="inc\ACU\Bone.h" />
     <ClInclude Include="inc\ACU\ButtonComponent.h" />
+    <ClInclude Include="inc\ACU\CameraSelectorNode.h" />
     <ClInclude Include="inc\ACU\Event.h" />
     <ClInclude Include="inc\ACU\GearPage.h" />
     <ClInclude Include="inc\ACU\HasWorld.h" />

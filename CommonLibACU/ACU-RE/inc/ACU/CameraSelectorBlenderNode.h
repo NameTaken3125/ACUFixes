@@ -1,22 +1,6 @@
 #pragma once
 
-#include "ACU/ManagedObject.h"
-#include <ACU/SmallArray.h>
-
-class BooleanRuleCondition;
-class CameraData;
-class TransitionInfoHolder;
-
-class CameraSelectorNode : public ManagedObject
-{
-public:
-    char pad_0010[8]; //0x0010
-    BooleanRuleCondition* ruleCondition; //0x0018
-    CameraData* cameraData; //0x0020
-    TransitionInfoHolder** transitionInfoHolders; //0x0028
-    char pad_0030[32]; //0x0030
-}; //Size: 0x0050
-assert_sizeof(CameraSelectorNode, 0x50);
+#include "CameraSelectorNode.h"
 
 class BlenderParam;
 class CameraSelectorBlenderNode : public CameraSelectorNode

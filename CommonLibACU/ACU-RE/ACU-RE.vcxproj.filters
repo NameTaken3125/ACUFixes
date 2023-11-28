@@ -140,6 +140,7 @@
     <ClInclude Include="inc\ACU\HasWorld.h" />
     <ClInclude Include="inc\ACU\MissionStepGroup.h" />
     <ClInclude Include="inc\ACU\MissionCategory.h" />
+    <ClInclude Include="inc\ACU\CameraSelectorNode.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />

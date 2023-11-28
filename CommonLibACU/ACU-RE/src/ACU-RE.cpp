@@ -35,6 +35,7 @@
 
 #include "ACU/TypeInfo.h"
 
+#include "ACU/CameraSelectorNode.h"
 #include "ACU/CameraSelectorBlenderNode.h"
 #include "ACU/CameraData.h"
 #include "ACU/CurvePoints.h"
