@@ -155,3 +155,10 @@
 
 #include "ACU/HasWorld.h"
 #include "ACU/HasSwapchain.h"
+
+#include "ACU/AtomNodeID.h"
+#include "ACU/AtomGraphNode.h"
+#include "ACU/AtomGraphStateNode.h"
+#include "ACU/AtomStateNode.h"
+#include "ACU/AtomStateMachineNode.h"
+#include "ACU/AtomGraph.h"

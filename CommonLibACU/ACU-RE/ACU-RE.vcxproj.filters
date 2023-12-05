@@ -141,6 +141,12 @@
     <ClInclude Include="inc\ACU\MissionStepGroup.h" />
     <ClInclude Include="inc\ACU\MissionCategory.h" />
     <ClInclude Include="inc\ACU\CameraSelectorNode.h" />
+    <ClInclude Include="inc\ACU\AtomGraph.h" />
+    <ClInclude Include="inc\ACU\AtomStateNode.h" />
+    <ClInclude Include="inc\ACU\AtomStateMachineNode.h" />
+    <ClInclude Include="inc\ACU\AtomGraphStateNode.h" />
+    <ClInclude Include="inc\ACU\AtomGraphNode.h" />
+    <ClInclude Include="inc\ACU\AtomNodeID.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />

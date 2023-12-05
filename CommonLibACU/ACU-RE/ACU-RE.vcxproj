@@ -166,6 +166,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="inc\ACU\AllManagedObjects.h" />
+    <ClInclude Include="inc\ACU\AtomGraph.h" />
+    <ClInclude Include="inc\ACU\AtomGraphNode.h" />
+    <ClInclude Include="inc\ACU\AtomGraphStateNode.h" />
+    <ClInclude Include="inc\ACU\AtomNodeID.h" />
+    <ClInclude Include="inc\ACU\AtomStateMachineNode.h" />
+    <ClInclude Include="inc\ACU\AtomStateNode.h" />
     <ClInclude Include="inc\ACU\AvatarGear.h" />
     <ClInclude Include="inc\ACU\Bone.h" />
     <ClInclude Include="inc\ACU\ButtonComponent.h" />
