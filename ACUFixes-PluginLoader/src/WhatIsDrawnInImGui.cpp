@@ -21,11 +21,10 @@ void DrawSuccessfulInjectionIndicatorOverlay()
     if (ImGui::Begin("Always enabled overlay", nullptr, window_flags))
     {
         ImGui::Text(
-            "Press %s to open ImGui menu, press %s to unload the mod."
-            "\nThese hotkeys can be changed in the menu or in the config file (the default INSERT/END will still work)."
+            "Press %s to open ImGui menu."
+            "\nThe hotkeys can be changed in the menu or in the config file."
             "\nThis text can be disabled in the Extra tab of the menu. See `ACUFixes-readme.txt`."
             , enum_reflection<VirtualKeys>::GetString(g_PluginLoaderConfig.hotkey_ToggleMenu)
-            , enum_reflection<VirtualKeys>::GetString(g_PluginLoaderConfig.hotkey_UnloadMod)
             );
     }
     ImGui::End();
@@ -44,7 +43,6 @@ void DrawModMenuControls()
         system(("explorer \"" + GetThisDLLAbsolutePath().parent_path().string() + "\"").c_str());
     }
     ImGui::DrawEnumPicker("Mod menu hotkey", g_PluginLoaderConfig.hotkey_ToggleMenu.get(), ImGuiComboFlags_HeightLarge);
-    ImGui::DrawEnumPicker("Unload mod hotkey", g_PluginLoaderConfig.hotkey_UnloadMod.get(), ImGuiComboFlags_HeightLarge);
 }
 
 void DrawPluginListControls();
@@ -72,16 +70,41 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
             }
             if (ImGuiCTX::Tab _extraoptions{ "Extra" })
             {
+                if (ImGui::Button("Save Plugin Loader config"))
+                {
+                    PluginLoaderConfig::WriteToFile();
+                }
                 DrawModMenuControls();
                 ImGui::Separator();
                 ImGui::Checkbox("Show the text in the top left corner", &g_PluginLoaderConfig.imgui_showSuccessfulInjectionIndicator.get());
                 ImGui::Separator();
                 ImGui::Checkbox("Show ImGui Demo Window", &enableDemoWindow);
+                ImGui::Separator();
+                ImGui::Checkbox("Show developer options", &g_PluginLoaderConfig.developerOptions->isActive.get());
+                if (g_PluginLoaderConfig.developerOptions->isActive)
+                {
+                    ImGui::Checkbox("Allow uninject the PluginLoader", &g_PluginLoaderConfig.developerOptions->canUninjectPluginLoader->isActive.get());
+                    if (g_PluginLoaderConfig.developerOptions->canUninjectPluginLoader->isActive)
+                    {
+                        ImGuiCTX::Indent _ind;
+                        ImGui::DrawEnumPicker(
+                            "Hotkey: Uninject everything"
+                            , g_PluginLoaderConfig.developerOptions->canUninjectPluginLoader->hotkey_UninjectPluginLoader.get()
+                            , ImGuiComboFlags_HeightLarge);
+                        if (ImGui::IsItemHovered(0))
+                        {
+                            ImGui::SetTooltip("You can use this to unload all the plugins and the plugin loader itself.");
+                        }
+                    }
+                }
             }
-            //if (ImGuiCTX::Tab _typeInfosTab{ "DX11-BaseHook variables" })
-            //{
-            //    Base::ImGuiDrawBasehookDebug();
-            //}
+            if (g_PluginLoaderConfig.developerOptions->isActive)
+            {
+                if (ImGuiCTX::Tab _typeInfosTab{ "DX11-BaseHook variables" })
+                {
+                    Base::ImGuiDrawBasehookDebug();
+                }
+            }
         }
     }
 }

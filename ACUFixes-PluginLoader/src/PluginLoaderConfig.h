@@ -20,6 +20,17 @@ struct ConfigTop : YAConfigSection {
     YACSTOR(ConfigTop);
     ACM(imgui_showSuccessfulInjectionIndicator, bool, BooleanAdapter, true);
     ACM(hotkey_ToggleMenu, VirtualKeys, EnumAdapter_template<VirtualKeys>, VirtualKeys::KEYBOARD_INSERT);
-    ACM(hotkey_UnloadMod, VirtualKeys, EnumAdapter_template<VirtualKeys>, VirtualKeys::KEYBOARD_END);
+    struct YACS_DeveloperOptions : YAConfigSection {
+        YACSTOR(YACS_DeveloperOptions);
+        ACM(isActive, bool, BooleanAdapter, false);
+        struct YACS_UninjectPluginLoader : YAConfigSection {
+            YACSTOR(YACS_UninjectPluginLoader);
+            ACM(isActive, bool, BooleanAdapter, false);
+            ACM(hotkey_UninjectPluginLoader, VirtualKeys, EnumAdapter_template<VirtualKeys>, VirtualKeys::KEYBOARD_END);
+        };
+        ACM(canUninjectPluginLoader, YACS_UninjectPluginLoader, YAConfigSectionAdapter, );
+        ACM(hotkey_UnloadMod, VirtualKeys, EnumAdapter_template<VirtualKeys>, VirtualKeys::KEYBOARD_END);
+    };
+    ACM(developerOptions, YACS_DeveloperOptions, YAConfigSectionAdapter, );
 };
 extern ConfigTop g_PluginLoaderConfig;

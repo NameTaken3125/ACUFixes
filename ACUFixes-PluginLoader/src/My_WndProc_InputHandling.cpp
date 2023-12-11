@@ -28,8 +28,11 @@ LRESULT CALLBACK WndProc_HackControls(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
                     ImGui::GetIO().MouseDrawCursor = Base::Data::ShowMenu;
                 }
             }
-            else if (keyCode == Base::Data::Keys::DetachDll
-                || keyCode == (UINT)g_PluginLoaderConfig.hotkey_UnloadMod.get())
+            else if (
+                g_PluginLoaderConfig.developerOptions->isActive
+                && g_PluginLoaderConfig.developerOptions->canUninjectPluginLoader->isActive
+                && keyCode == (UINT)g_PluginLoaderConfig.developerOptions->canUninjectPluginLoader->hotkey_UninjectPluginLoader.get()
+                )
             {
                 Base::Detach();
             }

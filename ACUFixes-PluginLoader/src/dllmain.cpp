@@ -290,11 +290,11 @@ void MyPluginLoader::DrawPluginListControls()
     {
         LoadAllFoundNonloadedPlugins();
     }
-    ImGui::SameLine();
-    if (ImGui::Button("Unload all"))
-    {
-        UnloadAllPlugins();
-    }
+    //ImGui::SameLine();
+    //if (ImGui::Button("Unload all"))
+    //{
+    //    UnloadAllPlugins();
+    //}
     std::string buf;
 
     ImGuiShared imguiShared{ *GImGui };
