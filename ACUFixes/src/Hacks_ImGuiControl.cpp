@@ -457,6 +457,7 @@ public:
                 ImGuiCTX::Indent _ind2;
                 ImGui::DrawEnumPicker("Dive helper hotkey", g_Config.personalRequests->parkourHelper->diveHelper->hotkey.get(), ImGuiComboFlags_HeightLarge);
             }
+            ImGui::Checkbox("Can rise on ledge immediately after Ledge Assassination", &g_Config.personalRequests->parkourHelper->canRiseOnLedgeAfterLedgeAssassination.get());
         }
     }
     void ReadConfig(ConfigTop& cfg)

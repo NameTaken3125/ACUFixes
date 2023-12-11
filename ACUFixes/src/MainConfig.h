@@ -105,6 +105,7 @@ struct ConfigTop : YAConfigSection {
                 ACM(hotkey, BindableKeyCode, EnumAdapter_template<BindableKeyCode>, BindableKeyCode::MOUSE_X5);
             };
             ACM(diveHelper, YACS_DiveHelper, YAConfigSectionAdapter, );
+            ACM(canRiseOnLedgeAfterLedgeAssassination, bool, BooleanAdapter, true);
         };
         ACM(parkourHelper, YACS_ParkourHelper, YAConfigSectionAdapter, );
         struct YACS_FreezeFOV : YAConfigSection {

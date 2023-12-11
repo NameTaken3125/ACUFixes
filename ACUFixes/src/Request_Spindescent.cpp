@@ -368,6 +368,20 @@ int SelectBestMatchingMoveIdx_ExtraProcessing(AllRegisters* params)
         *(__int64*)(params->GetRSP() + 8 * 7),
         &availableParkourActions
         );
+    if (g_Config.personalRequests->parkourHelper->canRiseOnLedgeAfterLedgeAssassination)
+    {
+        if (bestMatchIdxAfterNativeSorting == -1 && availableParkourActions.size > 0)
+        {
+            const bool allTheActionsAreTryingToRiseOnLedge = std::all_of(availableParkourActions.begin(), availableParkourActions.end(), [](AvailableParkourAction* action)
+                {
+                    return (uint64)action->fancyVTable == 0x1439F41C0;
+                });
+            if (allTheActionsAreTryingToRiseOnLedge)
+            {
+                bestMatchIdxAfterNativeSorting = 0;
+            }
+        }
+    }
     auto [selectedDiveMove, selectedDiveMoveIdx] = SelectBestMatchingMoveIdx_ExtraProcessing_CustomSelection_DiveMove(availableParkourActions);
 
     if (selectedDiveMove)
