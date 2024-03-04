@@ -96,6 +96,10 @@ struct Vector2fAdapter : public JSONAdapter<Vector2f, JSON::Class::Array>
 	{
 		return TryParseJSON_NumericArray(obj, (float*)&source, k_NumElements);
 	}
+	JSON ToJSON()
+	{
+		return json::Array(source.x, source.y);
+	}
 };
 struct Vector3fAdapter : public JSONAdapter<Vector3f, JSON::Class::Array>
 {
@@ -105,6 +109,10 @@ struct Vector3fAdapter : public JSONAdapter<Vector3f, JSON::Class::Array>
 	bool FromJSON(const JSON& obj)
 	{
 		return TryParseJSON_NumericArray(obj, (float*)&source, k_NumElements);
+	}
+	JSON ToJSON()
+	{
+		return json::Array(source.x, source.y, source.z);
 	}
 };
 struct Vector4fAdapter : public JSONAdapter<Vector4f, JSON::Class::Array>

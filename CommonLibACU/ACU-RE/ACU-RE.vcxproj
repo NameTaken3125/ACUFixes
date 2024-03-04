@@ -166,12 +166,24 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="inc\ACU\AllManagedObjects.h" />
+    <ClInclude Include="inc\ACU\Animation.h" />
+    <ClInclude Include="inc\ACU\AtomAnimationDataBaseNode.h" />
+    <ClInclude Include="inc\ACU\AtomAnimationDataNode.h" />
+    <ClInclude Include="inc\ACU\AtomAnimationRootNode.h" />
+    <ClInclude Include="inc\ACU\AtomCondition.h" />
+    <ClInclude Include="inc\ACU\AtomConditionExpression.h" />
+    <ClInclude Include="inc\ACU\AtomCustomTransitionSystem.h" />
     <ClInclude Include="inc\ACU\AtomGraph.h" />
     <ClInclude Include="inc\ACU\AtomGraphNode.h" />
     <ClInclude Include="inc\ACU\AtomGraphStateNode.h" />
+    <ClInclude Include="inc\ACU\AtomLayeringStateNode.h" />
     <ClInclude Include="inc\ACU\AtomNodeID.h" />
+    <ClInclude Include="inc\ACU\AtomNullStateNode.h" />
+    <ClInclude Include="inc\ACU\AtomPlayCustomActionNode.h" />
     <ClInclude Include="inc\ACU\AtomStateMachineNode.h" />
     <ClInclude Include="inc\ACU\AtomStateNode.h" />
+    <ClInclude Include="inc\ACU\AtomStateTransitionTarget.h" />
+    <ClInclude Include="inc\ACU\AtomTransitionCellDescription.h" />
     <ClInclude Include="inc\ACU\AvatarGear.h" />
     <ClInclude Include="inc\ACU\Bone.h" />
     <ClInclude Include="inc\ACU\ButtonComponent.h" />
@@ -184,6 +196,7 @@
     <ClInclude Include="inc\ACU\MenuPage.h" />
     <ClInclude Include="inc\ACU\MissionCategory.h" />
     <ClInclude Include="inc\ACU\MissionStepGroup.h" />
+    <ClInclude Include="inc\ACU\SeamlessCinematicOutroTransitionOperatorData.h" />
     <ClInclude Include="inc\ACU\Skeleton.h" />
     <ClInclude Include="inc\ACU\SkeletonComponent.h" />
     <ClInclude Include="inc\ACU\SoftBodySettings.h" />

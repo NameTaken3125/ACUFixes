@@ -19,8 +19,37 @@ public:
     auto rend() { return std::reverse_iterator(arr); }
 
     T& operator[](int idx) { return arr[idx]; }
+
+    SmallArray() : arr(nullptr), capacityAndFlags(0), size(0) {}
+    SmallArray(const SmallArray& rhs) = delete;
+    SmallArray& operator=(const SmallArray& rhs) = delete;
+    SmallArray(SmallArray&& rhs) noexcept;
+    SmallArray& operator=(SmallArray&& rhs) noexcept;
 }; // Size: 0xC
 #pragma pack(pop)
+
+template<typename T>
+SmallArray<T>::SmallArray(SmallArray<T>&& rhs) noexcept
+    : arr(rhs.arr)
+    , capacityAndFlags(rhs.capacityAndFlags)
+    , size(rhs.size)
+{
+    rhs.arr = nullptr;
+    rhs.capacityAndFlags = 0;
+    rhs.size = 0;
+}
+
+template<typename T>
+SmallArray<T>& SmallArray<T>::operator=(SmallArray<T>&& rhs) noexcept
+{
+    arr = rhs.arr;
+    capacityAndFlags = rhs.capacityAndFlags;
+    size = rhs.size;
+    rhs.arr = nullptr;
+    rhs.capacityAndFlags = 0;
+    rhs.size = 0;
+    return *this;
+}
 
 namespace {
     using TEST_SmallArray = SmallArray<float>;

@@ -222,7 +222,7 @@ void DrawPersistent3DMarkersControls()
     {
         m_LocationsWithID.clear();
     }
-    ImGui::SliderFloat("g_WireModelGlobalSizeMultiplier", &g_WireModelGlobalSizeMultiplier, 0.1f, 3.0f);
+    ImGui::SliderFloat("g_WireModelGlobalSizeMultiplier", &g_WireModelGlobalSizeMultiplier, 0.01f, 3.0f);
     OptionToDrawMultipleVector3fFromClipboard();
 
     static std::optional<MarkerID_t> lastSelectedMarkerIDforPopup;

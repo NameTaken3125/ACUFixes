@@ -147,6 +147,19 @@
     <ClInclude Include="inc\ACU\AtomGraphStateNode.h" />
     <ClInclude Include="inc\ACU\AtomGraphNode.h" />
     <ClInclude Include="inc\ACU\AtomNodeID.h" />
+    <ClInclude Include="inc\ACU\Animation.h" />
+    <ClInclude Include="inc\ACU\SeamlessCinematicOutroTransitionOperatorData.h" />
+    <ClInclude Include="inc\ACU\AtomLayeringStateNode.h" />
+    <ClInclude Include="inc\ACU\AtomAnimationDataNode.h" />
+    <ClInclude Include="inc\ACU\AtomAnimationDataBaseNode.h" />
+    <ClInclude Include="inc\ACU\AtomPlayCustomActionNode.h" />
+    <ClInclude Include="inc\ACU\AtomTransitionCellDescription.h" />
+    <ClInclude Include="inc\ACU\AtomCustomTransitionSystem.h" />
+    <ClInclude Include="inc\ACU\AtomStateTransitionTarget.h" />
+    <ClInclude Include="inc\ACU\AtomConditionExpression.h" />
+    <ClInclude Include="inc\ACU\AtomCondition.h" />
+    <ClInclude Include="inc\ACU\AtomAnimationRootNode.h" />
+    <ClInclude Include="inc\ACU\AtomNullStateNode.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />

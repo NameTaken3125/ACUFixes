@@ -2,6 +2,8 @@
 
 #include "ACU/ACUGetSingletons.h"
 #include "ACU/ACUPlayerCameraComponent.h"
+#include "ACU/SkeletonComponent.h"
+#include "ACU/AtomAnimComponent.h"
 #include "ACU/Entity.h"
 #include "ACU/BhvAssassin.h"
 #include "ACU/World.h"
@@ -55,6 +57,23 @@ namespace ACU {
         if (!hsc) return nullptr;
         if (!hsc->toSwapchain) return nullptr;
         return hsc->toSwapchain->swapchain;
+    }
+
+    SkeletonComponent* GetPlayerCpnt_SkeletonComponent()
+    {
+        Entity* player = ACU::GetPlayer();
+        if (!player) { return nullptr; }
+        constexpr uint64 vtbl_SkeletonComponent = 0x142E76630;
+        SkeletonComponent* skeletonCpnt = static_cast<SkeletonComponent*>(player->FindComponentByVTBL(vtbl_SkeletonComponent));
+        return skeletonCpnt;
+    }
+    AtomAnimComponent* GetPlayerCpnt_AtomAnimComponent()
+    {
+        Entity* player = ACU::GetPlayer();
+        if (!player) { return nullptr; }
+        constexpr uint64 vtbl_SkeletonComponent = 0x142E7F780;
+        AtomAnimComponent* skeletonCpnt = static_cast<AtomAnimComponent*>(player->FindComponentByVTBL(vtbl_SkeletonComponent));
+        return skeletonCpnt;
     }
 
 }

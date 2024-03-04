@@ -6,6 +6,8 @@
 #include "SmallArray.h"
 #include "Enum_EquipmentType.h"
 
+#include "SeamlessCinematicOutroTransitionOperatorData.h"
+
 class BallisticProjectileAimingProcess_190
 {
 public:
@@ -253,7 +255,13 @@ public:
     BallisticProjectileAimingProcess aimingDefault; //0x1570
     BallisticProjectileAimingProcess aiming_equip19_1770; //0x1770
     BallisticProjectileAimingProcess aimingGuillotineGun; //0x1970
-    char pad_1B70[280]; //0x1B70
+    char pad_1B70[8]; //0x1B70
+    uint8 byte_1B78; //0x1B78
+    char pad_1B79[7]; //0x1B79
+    Timer timer_disallowSprintAndAimBombAfterLastAimBomb; //0x1B80
+    char pad_1BA8[40]; //0x1BA8
+    SeamlessCinematicOutroTransitionOperatorData cinematicOutroData_mb; //0x1BD0
+    char pad_1C58[48]; //0x1C58
     Entity* ownerEntity; //0x1C88
     AtomAnimComponent* atomAnimCpnt; //0x1C90
     char pad_1C98[56]; //0x1C98

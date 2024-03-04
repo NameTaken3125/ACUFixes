@@ -102,6 +102,7 @@
 #include "ACU/DominoScriptExecutionContext.h"
 #include "ACU/DominoOperatorData.h"
 #include "ACU/AIActionEntityOperatorData.h"
+#include "ACU/SeamlessCinematicOutroTransitionOperatorData.h"
 #include "ACU/ActionAbilitySet.h"
 
 #include "ACU/LanterndlcComponent.h"
@@ -158,7 +159,22 @@
 
 #include "ACU/AtomNodeID.h"
 #include "ACU/AtomGraphNode.h"
-#include "ACU/AtomGraphStateNode.h"
+#include "ACU/AtomAnimationDataBaseNode.h"
+#include "ACU/AtomAnimationDataNode.h"
+#include "ACU/AtomAnimationRootNode.h"
+#include "ACU/AtomPlayCustomActionNode.h"
+
+#include "ACU/AtomCondition.h"
+#include "ACU/AtomConditionExpression.h"
+#include "ACU/AtomStateTransitionTarget.h"
+
 #include "ACU/AtomStateNode.h"
+#include "ACU/AtomNullStateNode.h"
 #include "ACU/AtomStateMachineNode.h"
+#include "ACU/AtomLayeringStateNode.h"
+#include "ACU/AtomGraphStateNode.h"
+
+#include "ACU/AtomCustomTransitionSystem.h"
+#include "ACU/AtomTransitionCellDescription.h"
 #include "ACU/AtomGraph.h"
+#include "ACU/Animation.h"

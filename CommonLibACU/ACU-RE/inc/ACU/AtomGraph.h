@@ -32,22 +32,47 @@ class AtomNullStateNode;
 class AtomRTCPDescriptor;
 class AtomCustomTransitionSystem;
 
-class AtomAnimComponent_D0_678;
+#include "ACUHashmap.h"
+class AtomGraph_RTCP
+{
+public:
+    char pad_0000[32]; //0x0000
+    SmallArray<byte> graphVarsBuffer; //0x0020
+    char pad_002C[164]; //0x002C
+    SmallArray<uint32> graphVarsOffsets; //0x00D0
+    SmallArray<uint32> graphVarHashes; //0x00DC
+    ACUHashmap<uint32, uint32> atomGraphVarsHashmap; //0x00E8
+    char pad_00F0[16]; //0x00F0
+}; //Size: 0x0110
+assert_offsetof(AtomGraph_RTCP, graphVarsOffsets, 0xD0);
+assert_offsetof(AtomGraph_RTCP, atomGraphVarsHashmap, 0xE8);
+assert_sizeof(AtomGraph_RTCP, 0x100);
+
+
+class AtomGraph_98
+{
+public:
+    char pad_0000[24]; //0x0000
+    uint64 hashmapOfSkeletonCombinations_mb; //0x0018
+    char pad_0020[48]; //0x0020
+}; //Size: 0x0050
 
 class AtomGraph : public AtomRawFile
 {
 public:
-    AtomStateMachineNode* stateMachineNode; //0x0010
+    AtomStateMachineNode* RootStateMachine; //0x0010
     AtomGraphStateNode* graphNode; //0x0018
     AtomNullStateNode* AtomNullStateNode_; //0x0020
     SmallArray<AtomRTCPDescriptor> rtcpDescriptors; //0x0028
     char pad_0034[4]; //0x0034
     AtomStateDescriptor stateDescriptor; //0x0038
     AtomCustomTransitionSystem* AtomCustomTransitionSystem_; //0x0060
-    char pad_0068[12]; //0x0068
+    uint32 RTCPDataSize; //0x0068
+    uint32 numRtcpDescriptors_6C; //0x006C
+    uint32 numNodes_mb; //0x0070
     ExternalIdMap ExternalIdMap_; //0x0074
     char pad_008C[4]; //0x008C
-    AtomAnimComponent_D0_678* p90; //0x0090
-    char pad_0098[8]; //0x0098
+    AtomGraph_RTCP* rtcp; //0x0090
+    AtomGraph_98* p98; //0x0098
 }; //Size: 0x00A0
 assert_sizeof(AtomGraph, 0xA0);

@@ -3351,6 +3351,14 @@ public:
 	}
 
 	/**
+	 *
+	 */
+	Quaternion<T> conjugated() const
+	{
+		return Quaternion<T>(w, -v.x, -v.y, -v.z);
+	}
+
+	/**
 	 * Linear interpolation of two quaternions
 	 * @param fact Factor of interpolation. For translation from position
 	 * of this vector to quaternion rhs, values of factor goes from 0.0 to 1.0.
