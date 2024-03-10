@@ -120,6 +120,7 @@ void DrawModMenuControls()
 }
 
 void RequestUnloadThisPlugin();
+void DrawAnimationExperiments();
 #include "MainConfig.h"
 bool g_showDevExtraOptions = false;
 bool g_DrawImGui3DifDevExtrasEnabled = true;
@@ -141,6 +142,25 @@ void ImGuiLayer_WhenMenuIsOpen()
                 if (ImGuiCTX::WindowChild _{ "WeatherTabChild" })
                 {
                     DrawWeatherControls();
+                }
+            }
+            if (ImGuiCTX::Tab _mainTab{ "Animtools" })
+            {
+                if (ImGuiCTX::WindowChild _{ "animschild" })
+                {
+                    if (ImGui::Button("Go to top of Bastille"))
+                    {
+                        if (Entity* player = ACU::GetPlayer())
+                        {
+                            player->GetPosition() = Vector3f(1200.23f, 150.99f, 39.00f);
+                        }
+                    }
+                    ImGui::SameLine();
+                    if (ImGui::Button("Unload this plugin"))
+                    {
+                        RequestUnloadThisPlugin();
+                    }
+                    DrawAnimationExperiments();
                 }
             }
             if (ImGuiCTX::Tab _extraoptions{ "Extra" })
@@ -208,8 +228,10 @@ void ImGuiLayer_WhenMenuIsOpen()
 }
 void DoSlowMotionTrick();
 void DoManualHoodControls();
+#include "AnimationTools/MyAnimationPlayer.h"
 void ImGuiLayer_EvenWhenMenuIsClosed()
 {
+    g_MyAnimationPlayer.UpdateAnimations();
     DoSlowMotionTrick();
     DoManualHoodControls();
     bool drawImGui3D = g_showDevExtraOptions && g_DrawImGui3DifDevExtrasEnabled;

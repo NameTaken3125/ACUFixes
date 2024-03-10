@@ -41,7 +41,7 @@
 #include "Request_Spindescent.h"
 #include "Request_FreezeFOV.h"
 
-
+#include "AnimationTools/AnimationGraphEvaluationPatches.h"
 
 void DrawSlowMotionControls();
 void DrawSlowMotionTrickControls();
@@ -79,8 +79,11 @@ public:
     AutoAssembleWrapper<WhistleAbility> whistleAbility;
     AutoAssembleWrapper<BetterAimingFromBehindCover> moreConsistentAimBombFromBehindCover;
 
+    AutoAssembleWrapper<AnimationGraphEvaluationPatches> animationGraphEvaluationPatches;
+
     void DrawControls()
     {
+        ImGui::DrawCheckboxForHack(animationGraphEvaluationPatches, "animationGraphEvaluationPatches");
         if (ImGui::Button("Save config file"))
         {
             WriteConfig(g_Config);

@@ -173,7 +173,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\AnimationTools\ACUAllocs.cpp" />
+    <ClCompile Include="src\AnimationTools\AnimationEditor.cpp" />
+    <ClCompile Include="src\AnimationTools\AnimationPicker.cpp" />
+    <ClCompile Include="src\AnimationTools\AnimGraphMods.cpp" />
+    <ClCompile Include="src\AnimationTools\Animtools_ImGui.cpp" />
     <ClCompile Include="src\Cheat_WeatherControls.cpp" />
+    <ClCompile Include="src\AnimationTools\DumpAnimationGraph.cpp" />
     <ClCompile Include="src\Hack_AllowCustomizeEquipment.cpp" />
     <ClCompile Include="src\Hack_DontRandomlyTurn180Degrees.cpp" />
     <ClCompile Include="src\Hack_GunRange.cpp" />
@@ -207,10 +213,18 @@
     <ClCompile Include="src\Hack_SlowMotionTrick.cpp" />
     <ClCompile Include="src\Hack_UnequipPistol.cpp" />
     <ClCompile Include="src\Hack_WhistleAbility.cpp" />
+    <ClCompile Include="src\Handles.cpp" />
     <ClCompile Include="src\ImGui3D.cpp" />
     <ClCompile Include="src\ImGui3DRenderer.cpp" />
+    <ClCompile Include="src\AnimationTools\imGuIZMO.quat\imGuIZMOquat.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\MainConfig.cpp" />
+    <ClCompile Include="src\AnimationTools\MyAnimationPlayer.cpp" />
     <ClCompile Include="src\MyLog.cpp" />
     <ClCompile Include="src\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -224,6 +238,15 @@
     <ClCompile Include="src\WhatIsDrawnInImGui.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\AnimationTools\ACUAllocs.h" />
+    <ClInclude Include="src\AnimationTools\AnimationEditor.h" />
+    <ClInclude Include="src\AnimationTools\AnimationGraphEvaluationPatches.h" />
+    <ClInclude Include="src\AnimationTools\AnimationPicker.h" />
+    <ClInclude Include="src\AnimationTools\AnimGraphMods.h" />
+    <ClInclude Include="src\AnimationTools\AtomGraphControls.h" />
+    <ClInclude Include="src\AnimationTools\SkeletonDumper.h" />
+    <ClInclude Include="src\AnimationTools\UsefulHandles.h" />
+    <ClInclude Include="src\Experimental_StrongPtr.h" />
     <ClInclude Include="src\Hack_AllowCustomizeEquipment.h" />
     <ClInclude Include="src\Hack_DontRandomlyTurn180Degrees.h" />
     <ClInclude Include="src\Hack_GunRange.h" />
@@ -253,11 +276,18 @@
     <ClInclude Include="src\Hack_SlowMenacingWalkAndAutowalk.h" />
     <ClInclude Include="src\Hack_UnequipPistol.h" />
     <ClInclude Include="src\Hack_WhistleAbility.h" />
+    <ClInclude Include="src\Handles.h" />
     <ClInclude Include="src\ImGui3D.h" />
     <ClInclude Include="src\ImGui3DRenderer.h" />
     <ClInclude Include="src\ImGuiConfigUtils.h" />
+    <ClInclude Include="src\AnimationTools\imGuIZMO.quat\imGuIZMOquat.h" />
+    <ClInclude Include="src\AnimationTools\imGuIZMO.quat\vgConfig.h" />
+    <ClInclude Include="src\AnimationTools\imGuIZMO.quat\vGizmo.h" />
+    <ClInclude Include="src\AnimationTools\imGuIZMO.quat\vGizmoMath.h" />
+    <ClInclude Include="src\AnimationTools\imGuIZMO.quat\vgMath.h" />
     <ClInclude Include="src\MainConfig.h" />
     <ClInclude Include="src\MovabilityUtils.h" />
+    <ClInclude Include="src\AnimationTools\MyAnimationPlayer.h" />
     <ClInclude Include="src\MyLog.h" />
     <ClInclude Include="src\MyVariousHacks.h" />
     <ClInclude Include="src\pch.h" />
