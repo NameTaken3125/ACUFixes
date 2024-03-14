@@ -1180,10 +1180,6 @@ void DrawAtomGraphDumper()
     DrawGraphVariable<bool>("Sneak", *graphEvaluation, 0x8af229cb, notifyTheGraphWhenModifying);
     DrawGraphVariable<bool>(g_newGraphVar.varname, *graphEvaluation, g_newGraphVar.varnameHash, notifyTheGraphWhenModifying);
 
-    if (ImGui::Button("Patch Player's Animation graph"))
-    {
-        LetsDoSomePlayerGraphMods(*animCpnt->shared_AtomGraph_NewDemo_DEV->GetPtr());
-    }
     //if (ImGui::Button("Clear bone layering cache"))
     //{
     //    ClearBoneLayeringCache(*animCpnt->shared_AtomGraph_NewDemo_DEV->GetPtr());
