@@ -33,6 +33,8 @@ enum class AtomCondition_ConditionType : uint16
 enum class AtomCondition_ConditionalOperator : uint16
 {
 	EQUALS = 0,
+	LESS_THAN_mb = 3,
+	GREATER_THAN_mb = 5,
 };
 
 enum class AtomCondition_ConjunctionOperator : uint16

@@ -3,11 +3,22 @@
 #include "AnimationTools/AnimGraphMods.h"
 #include "AnimationTools/AtomGraphModsCommon.h"
 
-namespace AnimGraphMods::BasicLayer
-{
-AtomAnimationDataNode* CreateAnimationDataNode()
+AtomAnimationDataNode& GraphStateNode_PushAnimationDataNode(AtomGraphStateNode& graphStateNode, uint64 animHandle)
 {
     AtomAnimationDataNode* node_animData = ACUAllocate<AtomAnimationDataNode>();
+
+    node_animData->AnimationProviderID = graphStateNode.NumberOfAnimationProviders;
+    graphStateNode.NumberOfAnimationProviders += 1;
+    node_animData->reverseGraphNodeIdxInGraph = graphStateNode.Nodes.size;
+    SmallArrayInsert(graphStateNode.Nodes, static_cast<AtomGraphNode*>(node_animData), 0);
+    graphStateNode.InstanceDataSize += 16;
+
+    node_animData->word_66 = node_animData->AnimationProviderID;
+    // Not always the same, See AtomGraphStateNode ({16,128,0,240,128,0,128,0,128,0,128,0,128,32}, 0) [[[[[[[[[[[[[[[[[[[[[[[[[[14521AAD0]+40]]+10]+60]+218]+0]+c8]+710]+1c90]+d0]+670]+10]+80]+0]+b8+38]+80]+0]+80]+0]+80]+0]+80]+0]+80]+20]
+    // In that graphStateNode, all 4 animation providers have `word_68 == word_66+1`
+    node_animData->word_68 = node_animData->word_66;
+    node_animData->word_6A = node_animData->word_68;
+
     SmallArray_GameType_Reserve(node_animData->InputPorts, 4);
     AtomInputPort* port0 = CreateInputPort(*node_animData, 4, 0);
     AtomInputPort* port1 = CreateInputPort(*node_animData, 4, 0);
@@ -15,16 +26,24 @@ AtomAnimationDataNode* CreateAnimationDataNode()
     AtomInputPort* port3 = CreateInputPort(*node_animData, 4, 0);
     AtomOutputPort& defaultOutputPort = node_animData->OutputPorts[0];
     defaultOutputPort.graphNode = node_animData;
-    node_animData->AnimationProviderID = 0;
-    node_animData->word_66 = 0;
-    node_animData->word_68 = 0;
-    node_animData->word_6A = 0;
-    node_animData->shared_Animation = &static_cast<SharedPtrNew<Animation>&>(FindOrMakeSharedBlockByHandleAndIncrementStrongRefcount(handle_invalidAnimation));
-    return node_animData;
+    node_animData->shared_Animation = &static_cast<SharedPtrNew<Animation>&>(FindOrMakeSharedBlockByHandleAndIncrementStrongRefcount(animHandle));
+
+    const uint32 outputDataOffset = graphStateNode.InstanceDataSize - 16 + 10;
+
+    defaultOutputPort.InstanceDataOffset = outputDataOffset;
+    node_animData->outputDataOffsetMinus10 = outputDataOffset - 10;
+    node_animData->outputDataOffsetMinus6 = outputDataOffset - 6;
+    node_animData->outputDataOffsetMinus2 = outputDataOffset - 2;
+    return *node_animData;
 }
-AtomAnimationRootNode* CreateAnimationRootNode()
+AtomAnimationRootNode& GraphStateNode_PushAnimationRootNode(AtomGraphStateNode& graphStateNode)
 {
     AtomAnimationRootNode* node_animRoot = ACUAllocate<AtomAnimationRootNode>();
+
+    node_animRoot->reverseGraphNodeIdxInGraph = graphStateNode.Nodes.size;
+    SmallArrayInsert(graphStateNode.Nodes, static_cast<AtomGraphNode*>(node_animRoot), 0);
+    graphStateNode.InstanceDataSize += 32;
+
     SmallArray_GameType_Reserve(node_animRoot->InputPorts, 5);
     AtomInputPort* port0 = CreateInputPort(*node_animRoot, 9, 0);
     AtomInputPort* port1 = CreateInputPort(*node_animRoot, 3, 0);
@@ -38,45 +57,29 @@ AtomAnimationRootNode* CreateAnimationRootNode()
     node_animRoot->dword_50 = 8;
     node_animRoot->dword_68 = 4;
     node_animRoot->dword_6C = 28;
-    return node_animRoot;
+    defaultOutputPort.InstanceDataOffset = node_animRoot->outputInstanceDataOffset_mb = 0;
+    return *node_animRoot;
 }
-AtomGraphStateNode* CreateTheSingularDefaultState()
+void AnimationRootNode_SetAnimationInput(AtomAnimationRootNode& animRoot, AtomAnimationDataBaseNode& animationInput)
 {
-    AtomGraphStateNode* theSingularDefaultState = ACUAllocate<AtomGraphStateNode>();
-
-    AtomAnimationDataNode* node_animData = CreateAnimationDataNode();
-    AtomAnimationRootNode* node_animRoot = CreateAnimationRootNode();
-    node_animRoot->InputPorts[0].BindingType = 9;
-    node_animRoot->InputPorts[0].outputPortIfTypeEq9_graphVarIdxIfEq0 = &node_animData->OutputPorts[0];
-    node_animRoot->OutputPorts[0].InstanceDataOffset = node_animRoot->outputInstanceDataOffset_mb = 0;
-    node_animData->OutputPorts[0].InstanceDataOffset = node_animData->outputInstanceDataOffset_mb = 42;
-    node_animData->outputDataOffsetMinus10 = 42 - 10;
-    node_animData->outputDataOffsetMinus6 = 42 - 6;
-    node_animData->outputDataOffsetMinus2 = 42 - 2;
-
-
-    node_animData->reverseGraphNodeIdxInGraph = 1;
-    node_animRoot->reverseGraphNodeIdxInGraph = 0;
-
-    SmallArrayAppend<AtomGraphNode*>(theSingularDefaultState->Nodes, node_animData);
-    SmallArrayAppend<AtomGraphNode*>(theSingularDefaultState->Nodes, node_animRoot);
-
-    theSingularDefaultState->NumberOfAnimationProviders = 1;
-    theSingularDefaultState->InstanceDataSize = 48;
-
-    theSingularDefaultState->word_A2 = 1;
-    theSingularDefaultState->word_A4 = 1;
-    theSingularDefaultState->word_A6 = 1;
-    theSingularDefaultState->word_A8 = 2;
-    theSingularDefaultState->dword_98 = 0xFFFFFFFF;
-
-    return theSingularDefaultState;
+    animRoot.InputPorts[0].BindingType = 9;
+    animRoot.InputPorts[0].outputPortIfTypeEq9_graphVarIdxIfEq0 = &animationInput.OutputPorts[0];
 }
-void SetupStateMachineDefaultInitialState(AtomStateMachineNode& stateMachineNode)
+AtomGraphStateNode& CreateGraphState_SimpleAnimation(uint64 animationHandle)
 {
-    AtomInitialState* defaultInitialState = SmallArray_GameType_Append(stateMachineNode.InitialStates);
-    AtomConditionExpression* defaultConditionExpression = ACUAllocate<AtomConditionExpression>();
-    defaultInitialState->conditionExpression = defaultConditionExpression;
+    AtomGraphStateNode* newGraphState = ACUAllocate<AtomGraphStateNode>();
+
+    AtomAnimationRootNode* node_animRoot = &GraphStateNode_PushAnimationRootNode(*newGraphState);
+    AtomAnimationDataNode* node_animData = &GraphStateNode_PushAnimationDataNode(*newGraphState, animationHandle);
+    AnimationRootNode_SetAnimationInput(*node_animRoot, *node_animData);
+
+    newGraphState->numberOfAnimationProviders_alsoMb = newGraphState->NumberOfAnimationProviders;
+    newGraphState->word_A4 = 1;
+    newGraphState->word_A6 = 1;
+    newGraphState->numNodes_mb = 2;
+    newGraphState->dword_98 = 0xFFFFFFFF;
+
+    return *newGraphState;
 }
 void SetupTheWeirdCondition(AtomCondition& cond)
 {
@@ -135,17 +138,27 @@ AtomConditionExpression* CreateConditionExpression_PlaybackFinished()
     }
     return condExpr;
 }
-AtomStateMachineNode* SetupTheNewLayersStateMachine()
+void StateMachine_PushState(AtomStateMachineNode& stateMachine, AtomStateNode& newState)
 {
-    AtomStateMachineNode& newLayerStateMachine = *ACUAllocate<AtomStateMachineNode>();
+    newState.parentNode_mb = &stateMachine;
+    SmallArrayAppend<AtomStateNode*>(stateMachine.States, &newState);
+}
 
-    AtomNullStateNode* theNullState = ACUAllocate<AtomNullStateNode>();
-    theNullState->parentNode_mb = &newLayerStateMachine;
-    SmallArrayAppend<AtomStateNode*>(newLayerStateMachine.States, theNullState);
-
-    AtomGraphStateNode* theSingularDefaultState = CreateTheSingularDefaultState();
-    theSingularDefaultState->parentNode_mb = &newLayerStateMachine;
-    SmallArrayAppend<AtomStateNode*>(newLayerStateMachine.States, theSingularDefaultState);
+namespace AnimGraphMods::BasicLayer
+{
+void SetupStateMachineDefaultInitialState(AtomStateMachineNode& stateMachineNode)
+{
+    AtomInitialState* defaultInitialState = SmallArray_GameType_Append(stateMachineNode.InitialStates);
+    defaultInitialState->TargetStateIndex = 0;
+    AtomConditionExpression* defaultConditionExpression = ACUAllocate<AtomConditionExpression>();
+    defaultInitialState->conditionExpression = defaultConditionExpression;
+}
+void SetupTheNewLayersStateMachine(AtomStateMachineNode& newLayerStateMachine)
+{
+    AtomNullStateNode& defaultNullState = *ACUAllocate<AtomNullStateNode>();
+    AtomGraphStateNode& theSingularState = CreateGraphState_SimpleAnimation(handle_invalidAnimation);
+    StateMachine_PushState(newLayerStateMachine, defaultNullState);
+    StateMachine_PushState(newLayerStateMachine, theSingularState);
 
     SetupStateMachineDefaultInitialState(newLayerStateMachine);
 
@@ -171,13 +184,10 @@ AtomStateMachineNode* SetupTheNewLayersStateMachine()
 
     SmallArrayAppend(newLayerStateMachine.transitionTargets_98, transitionFromNullStateIfMyVariableIsSet);
     SmallArrayAppend(newLayerStateMachine.transitionTargets_98, transitionToNullState);
-
-    return &newLayerStateMachine;
 }
 void SetupTheNewLayer(AtomLayeringInfo& newLayer)
 {
-    AtomStateMachineNode* newStateMachineNode = SetupTheNewLayersStateMachine();
-    newLayer.stateNode38 = newStateMachineNode;
+    SetupTheNewLayersStateMachine(*static_cast<AtomStateMachineNode*>(newLayer.stateNode38));
 
     // If `0 <= dword_50 <= 10`, then all the nearby NPCs are affected.
     // In the "main layering state", all the layers have this value at `20`,
@@ -190,14 +200,16 @@ void SetupTheNewLayer(AtomLayeringInfo& newLayer)
     //newBoneWeight->BoneID = 1806956327;
     //newBoneWeight->WeightF8 = 0xff;
     //newLayer.BlendType = 0;
-
-    SmallArrayAppend(newLayer.arr0, (uint32)0xFFFFFFFF);
-    SmallArrayAppend(newLayer.arr0, (uint32)0xFFFFFFFF);
 }
-AtomLayeringInfo& LayeringState_CreateNewLayer(AtomLayeringStateNode& layeringState)
+// In the player's AtomGraph, the `stateNode38` of every `AtomLayeringStateNode` seems to always be
+// an instance of `AtomStateMachineNode` and not any other subclass of `AtomStateNode`.
+AtomLayeringInfo& LayeringState_CreateNewLayerWithStateMachine(AtomLayeringStateNode& layeringState)
 {
     AtomLayeringInfo* newLayer = SmallArray_GameType_Append(layeringState.layeringInfos);
+    newLayer->stateNode38 = ACUAllocate<AtomStateMachineNode>();
     newLayer->stateNode38->parentNode_mb = &layeringState;
+    SmallArrayAppend(newLayer->arr0, (uint32)0xFFFFFFFF);
+    SmallArrayAppend(newLayer->arr0, (uint32)0xFFFFFFFF);
     CreateInputPort(*layeringState.someGraphNodesRelatedToExtraLayers[0], 3, 1.0f);
     CreateInputPort(*layeringState.someGraphNodesRelatedToExtraLayers[0], 3, 1.0f);
     return *newLayer;
@@ -206,7 +218,11 @@ void ApplyMod(AtomGraph& atomGraph)
 {
     AddMyNewRTCPVariable(atomGraph);
     auto* mainLayeringState = static_cast<AtomLayeringStateNode*>(atomGraph.RootStateMachine->States[0]);
-    AtomLayeringInfo& newLayer = LayeringState_CreateNewLayer(*mainLayeringState);
+    AtomLayeringInfo& newLayer = LayeringState_CreateNewLayerWithStateMachine(*mainLayeringState);
     SetupTheNewLayer(newLayer);
 }
+}
+void AnimGraphMods_BasicLayer_ApplyMod(AtomGraph& atomGraph)
+{
+    AnimGraphMods::BasicLayer::ApplyMod(atomGraph);
 }

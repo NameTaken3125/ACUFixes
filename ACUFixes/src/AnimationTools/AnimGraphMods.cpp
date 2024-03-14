@@ -8,15 +8,13 @@ MyNewRTCPVariable g_newGraphVar;
 
 #include "AnimationTools/UsefulHandles.h"
 
-namespace AnimGraphMods::BasicLayer {
-void ApplyMod(AtomGraph& graph);
-}
+void AnimGraphMods_BasicLayer_ApplyMod(AtomGraph& graph);
 
 void LetsDoSomePlayerGraphMods()
 {
     ACUSharedPtr_Strong<AtomGraph> shared_playerAtomGraph(handle_PlayerAtomGraph);
     if (AtomGraph* atomGraph = shared_playerAtomGraph.GetPtr())
     {
-        AnimGraphMods::BasicLayer::ApplyMod(*atomGraph);
+        AnimGraphMods_BasicLayer_ApplyMod(*atomGraph);
     }
 }
