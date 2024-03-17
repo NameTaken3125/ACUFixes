@@ -177,6 +177,7 @@
     <ClCompile Include="src\AnimationTools\AnimationEditor.cpp" />
     <ClCompile Include="src\AnimationTools\AnimationPicker.cpp" />
     <ClCompile Include="src\AnimationTools\AnimGraphMods.cpp" />
+    <ClCompile Include="src\AnimationTools\AnimGraphMods_BasicLayer.cpp" />
     <ClCompile Include="src\AnimationTools\Animtools_ImGui.cpp" />
     <ClCompile Include="src\Cheat_WeatherControls.cpp" />
     <ClCompile Include="src\AnimationTools\DumpAnimationGraph.cpp" />
@@ -244,6 +245,7 @@
     <ClInclude Include="src\AnimationTools\AnimationPicker.h" />
     <ClInclude Include="src\AnimationTools\AnimGraphMods.h" />
     <ClInclude Include="src\AnimationTools\AtomGraphControls.h" />
+    <ClInclude Include="src\AnimationTools\AtomGraphModsCommon.h" />
     <ClInclude Include="src\AnimationTools\SkeletonDumper.h" />
     <ClInclude Include="src\AnimationTools\UsefulHandles.h" />
     <ClInclude Include="src\Experimental_StrongPtr.h" />

@@ -94,9 +94,9 @@ void SetupTheWeirdCondition(AtomCondition& cond)
 void SetupTwoFirstWeirdConditions(AtomConditionExpression& conditionExpr)
 {
     AtomCondition* cond1 = SmallArray_GameType_Append(conditionExpr.Conditions);
-    AtomCondition* cond2 = SmallArray_GameType_Append(conditionExpr.Conditions);
+    //AtomCondition* cond2 = SmallArray_GameType_Append(conditionExpr.Conditions);
     SetupTheWeirdCondition(*cond1);
-    SetupTheWeirdCondition(*cond2);
+    //SetupTheWeirdCondition(*cond2);
 }
 AtomConditionExpression* CreateConditionExpression_TwoFirstWeirdConditions()
 {
@@ -138,6 +138,25 @@ AtomConditionExpression* CreateConditionExpression_PlaybackFinished()
     }
     return condExpr;
 }
+AtomConditionExpression* CreateConditionExpression_SomeWeirdIntegerSignal()
+{
+    //Check out transition conditions in nodes at:
+    //[[[[[[[[[[[[[[[[[[[14521AAD0]+40]]+10]+60]+218]+0]+c8]+710]+1c90]+d0]+670]+10]+80]+0]+80]+660+38]+80]+0]
+    //[[[[[[[[[[[[[[[[[[[14521AAD0]+40]]+10]+60]+218]+0]+c8]+710]+1c90]+d0]+670]+10]+80]+0]+80]+660+38]+80]+20]
+    AtomConditionExpression* condExpr = CreateConditionExpression_TwoFirstWeirdConditions();
+    {
+        AtomCondition* weirdSignal = SmallArray_GameType_Append(condExpr->Conditions);
+        weirdSignal->ConditionType = AtomCondition_ConditionType::UNK_4;
+        weirdSignal->ConditionalOperator = AtomCondition_ConditionalOperator::EQUALS;
+        weirdSignal->ConjunctionOperator = AtomCondition_ConjunctionOperator::AND;
+        weirdSignal->MarkUpQueryScope = 2;
+        weirdSignal->ValueToTestReferenceID = 0x800042; // 0x800040, 0x800041, 0x800042
+        weirdSignal->ComparisonValue.DataType_0bool1float2int4xy5xyz6quat = AtomDataContainerWrapper_DataType::Weird_Datatype_In_Weird_Conditions;
+        (float&)weirdSignal->ComparisonValue.value = 0;
+        weirdSignal->word_C = 0;
+    }
+    return condExpr;
+}
 void StateMachine_PushState(AtomStateMachineNode& stateMachine, AtomStateNode& newState)
 {
     newState.parentNode_mb = &stateMachine;
@@ -155,10 +174,14 @@ void SetupStateMachineDefaultInitialState(AtomStateMachineNode& stateMachineNode
 }
 void SetupTheNewLayersStateMachine(AtomStateMachineNode& newLayerStateMachine)
 {
-    AtomNullStateNode& defaultNullState = *ACUAllocate<AtomNullStateNode>();
-    AtomGraphStateNode& theSingularState = CreateGraphState_SimpleAnimation(handle_invalidAnimation);
-    StateMachine_PushState(newLayerStateMachine, defaultNullState);
-    StateMachine_PushState(newLayerStateMachine, theSingularState);
+    AtomNullStateNode& nullState1 = *ACUAllocate<AtomNullStateNode>();
+    AtomGraphStateNode& playbackState1 = CreateGraphState_SimpleAnimation(handle_invalidAnimation);
+    AtomNullStateNode& nullState2 = *ACUAllocate<AtomNullStateNode>();
+    AtomGraphStateNode& playbackState2 = CreateGraphState_SimpleAnimation(handle_invalidAnimation);
+    StateMachine_PushState(newLayerStateMachine, nullState1);
+    StateMachine_PushState(newLayerStateMachine, playbackState1);
+    StateMachine_PushState(newLayerStateMachine, nullState2);
+    StateMachine_PushState(newLayerStateMachine, playbackState2);
 
     SetupStateMachineDefaultInitialState(newLayerStateMachine);
 
@@ -172,18 +195,56 @@ void SetupTheNewLayersStateMachine(AtomStateMachineNode& newLayerStateMachine)
         AtomConditionExpression* condExpr = CreateConditionExpression_SingleVariableEqualsTo(539, true);
         transitionFromNullStateIfMyVariableIsSet->conditionExpression = condExpr;
     }
-    AtomStateTransitionTarget* transitionToNullState = ACUAllocate<AtomStateTransitionTarget>();
+    AtomStateTransitionTarget* transitionTo2ndNullState = ACUAllocate<AtomStateTransitionTarget>();
     {
-        transitionToNullState->TargetStateIndex = 0;
-        transitionToNullState->TransitionTime = 0.5f;
-        transitionToNullState->BlendType = 1;
+        transitionTo2ndNullState->TargetStateIndex = 2;
+        transitionTo2ndNullState->TransitionTime = 0.5f;
+        transitionTo2ndNullState->BlendType = 1;
+        //AtomConditionExpression* condExpr = CreateConditionExpression_SingleVariableEqualsTo(539, false);
+        AtomConditionExpression* condExpr = CreateConditionExpression_PlaybackFinished();
+        transitionTo2ndNullState->conditionExpression = condExpr;
+    }
+    AtomStateTransitionTarget* transitionFrom2ndNullStateIfMyVariableIsUNSET = ACUAllocate<AtomStateTransitionTarget>();
+    {
+        transitionFrom2ndNullStateIfMyVariableIsUNSET->TargetStateIndex = 3;
+        transitionFrom2ndNullStateIfMyVariableIsUNSET->TransitionTime = 0.5f;
+        transitionFrom2ndNullStateIfMyVariableIsUNSET->BlendType = 1;
         AtomConditionExpression* condExpr = CreateConditionExpression_SingleVariableEqualsTo(539, false);
-        //AtomConditionExpression* condExpr = CreateConditionExpression_PlaybackFinished();
-        transitionToNullState->conditionExpression = condExpr;
+        transitionFrom2ndNullStateIfMyVariableIsUNSET->conditionExpression = condExpr;
+    }
+    AtomStateTransitionTarget* transitionTo1stNullState = ACUAllocate<AtomStateTransitionTarget>();
+    {
+        transitionTo1stNullState->TargetStateIndex = 0;
+        transitionTo1stNullState->TransitionTime = 0.5f;
+        transitionTo1stNullState->BlendType = 1;
+        AtomConditionExpression* condExpr = CreateConditionExpression_PlaybackFinished();
+        transitionTo1stNullState->conditionExpression = condExpr;
+    }
+    AtomStateTransitionTarget* resetPlayback1 = ACUAllocate<AtomStateTransitionTarget>();
+    {
+        resetPlayback1->TargetStateIndex = 3;
+        resetPlayback1->TransitionTime = 0.25f;
+        resetPlayback1->BlendType = 1;
+        AtomConditionExpression* condExpr = CreateConditionExpression_SingleVariableEqualsTo(539, false);
+        resetPlayback1->conditionExpression = condExpr;
+    }
+    AtomStateTransitionTarget* resetPlayback2 = ACUAllocate<AtomStateTransitionTarget>();
+    {
+        resetPlayback2->TargetStateIndex = 1;
+        resetPlayback2->TransitionTime = 0.25f;
+        resetPlayback2->BlendType = 1;
+        AtomConditionExpression* condExpr = CreateConditionExpression_SingleVariableEqualsTo(539, true);
+        resetPlayback2->conditionExpression = condExpr;
     }
 
-    SmallArrayAppend(newLayerStateMachine.transitionTargets_98, transitionFromNullStateIfMyVariableIsSet);
-    SmallArrayAppend(newLayerStateMachine.transitionTargets_98, transitionToNullState);
+    //SmallArrayAppend(newLayerStateMachine.transitionTargets_98, transitionFromNullStateIfMyVariableIsSet);
+    //SmallArrayAppend(newLayerStateMachine.transitionTargets_98, transitionToNullState);
+    SmallArrayAppend(nullState1.base8.Transitions, transitionFromNullStateIfMyVariableIsSet);
+    SmallArrayAppend(nullState2.base8.Transitions, transitionFrom2ndNullStateIfMyVariableIsUNSET);
+    SmallArrayAppend(playbackState1.base8.Transitions, transitionTo2ndNullState);
+    SmallArrayAppend(playbackState1.base8.Transitions, resetPlayback1);
+    SmallArrayAppend(playbackState2.base8.Transitions, transitionTo1stNullState);
+    SmallArrayAppend(playbackState2.base8.Transitions, resetPlayback2);
 }
 void SetupTheNewLayer(AtomLayeringInfo& newLayer)
 {

@@ -184,6 +184,7 @@
     <ClInclude Include="inc\ACU\AtomStateNode.h" />
     <ClInclude Include="inc\ACU\AtomStateTransitionTarget.h" />
     <ClInclude Include="inc\ACU\AtomTransitionCellDescription.h" />
+    <ClInclude Include="inc\ACU\AtomWriteParamNode.h" />
     <ClInclude Include="inc\ACU\AvatarGear.h" />
     <ClInclude Include="inc\ACU\Bone.h" />
     <ClInclude Include="inc\ACU\ButtonComponent.h" />

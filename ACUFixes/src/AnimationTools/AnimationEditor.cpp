@@ -539,7 +539,7 @@ public:
             SmallArrayAppend(keyframeTimes, Frame);
             SmallArrayAppend(keyframeValues, Int);
         }
-        uint8 codecType = 1;
+        uint8 codecType = 58;
         NativeAnimationTrackdataCodec& codec = *GetAnimationTrackdataCodecs()[codecType];
         byte* newTrackdata = codec.Unk_088_AllocateTrackdata(keyframeTimes);
         codec.Unk_050_CompressAndSetKeyframeValues(newTrackdata, keyframeValues.arr, numKeyframes);

@@ -163,6 +163,7 @@
 #include "ACU/AtomAnimationDataNode.h"
 #include "ACU/AtomAnimationRootNode.h"
 #include "ACU/AtomPlayCustomActionNode.h"
+#include "ACU/AtomWriteParamNode.h"
 
 #include "ACU/AtomCondition.h"
 #include "ACU/AtomConditionExpression.h"

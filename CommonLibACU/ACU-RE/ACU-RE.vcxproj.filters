@@ -160,6 +160,7 @@
     <ClInclude Include="inc\ACU\AtomCondition.h" />
     <ClInclude Include="inc\ACU\AtomAnimationRootNode.h" />
     <ClInclude Include="inc\ACU\AtomNullStateNode.h" />
+    <ClInclude Include="inc\ACU\AtomWriteParamNode.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />

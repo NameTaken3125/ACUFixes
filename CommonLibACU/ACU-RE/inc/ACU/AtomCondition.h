@@ -29,6 +29,7 @@ enum class AtomCondition_ConditionType : uint16
 	GRAPH_VARIABLE = 0,
 	WEIRD_CONDITION = 2,
 	PLAYBACK_PERCENTAGE_mb = 3,
+	UNK_4 = 4,
 };
 enum class AtomCondition_ConditionalOperator : uint16
 {
