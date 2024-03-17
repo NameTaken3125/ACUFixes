@@ -27,6 +27,7 @@ assert_sizeof(AtomDataContainerWrapper, 0x20);
 enum class AtomCondition_ConditionType : uint16
 {
 	GRAPH_VARIABLE = 0,
+	UNK_1 = 1,
 	WEIRD_CONDITION = 2,
 	PLAYBACK_PERCENTAGE_mb = 3,
 	UNK_4 = 4,
@@ -34,8 +35,11 @@ enum class AtomCondition_ConditionType : uint16
 enum class AtomCondition_ConditionalOperator : uint16
 {
 	EQUALS = 0,
-	LESS_THAN_mb = 3,
-	GREATER_THAN_mb = 5,
+	GREATER_THAN = 1,
+	GREATER_EQUAL = 2,
+	LESS_THAN = 3,
+	LESS_EQUAL = 4,
+	NOT_EQUAL = 5,
 };
 
 enum class AtomCondition_ConjunctionOperator : uint16
@@ -54,9 +58,9 @@ public:
 	AtomCondition_ConditionalOperator ConditionalOperator : 4;
 	AtomCondition_ConjunctionOperator ConjunctionOperator : 2;
 	uint16 MarkUpQueryScope : 2;
-	uint16 bit_8_11_prop0xEB645155 : 1;
+	uint16 isComparisonValueAnAnotherRTCPVarIndex : 1; // Take a look at 14009EEA4
 	uint16 bit_padding_12_15 : 4;
-	uint16 word_A; //0x000A
+	uint16 word_A; //0x000A // It's usually ==0xFFFF, but maybe can be the index of an "entityref" RTCP variable whose GraphEvaluation is supposed to be used?
 	uint16 word_C; //0x000C
 	char pad_000E[2]; //0x000E
 	AtomDataContainerWrapper ComparisonValue; //0x0010

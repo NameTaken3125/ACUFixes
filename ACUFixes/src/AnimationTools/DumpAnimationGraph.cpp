@@ -821,20 +821,11 @@ public:
             , trTarget.TransitionTime
         );
         ImGui::LogText(
-            "%s referencedGraphVars: %d.:\n"
+            "%s conditionExpression:\n"
             , m_currentIndent.c_str()
-            , trTarget.conditionExpression->referencedGraphVarsIndices.size
         );
-        for (uint32 graphVarIdx : trTarget.conditionExpression->referencedGraphVarsIndices)
-        {
-            auto _ind = IndentScoped();
-            ImGui::LogText(
-                "%s GraphVar: %d== %s\n"
-                , m_currentIndent.c_str()
-                , graphVarIdx
-                , graphVariables_NewDemo_DEV[graphVarIdx]
-            );
-        }
+        auto _ind = IndentScoped();
+        DumpConditionExpression(*trTarget.conditionExpression);
     }
     void DumpStateMachineInitialState(AtomInitialState& initState)
     {
@@ -844,20 +835,11 @@ public:
             , initState.TargetStateIndex
         );
         ImGui::LogText(
-            "%s referencedGraphVars: %d:\n"
+            "%s conditionExpression:\n"
             , m_currentIndent.c_str()
-            , initState.conditionExpression->referencedGraphVarsIndices.size
         );
-        for (uint32 graphVarIdx : initState.conditionExpression->referencedGraphVarsIndices)
-        {
-            auto _ind = IndentScoped();
-            ImGui::LogText(
-                "%s GraphVar: %d== %s\n"
-                , m_currentIndent.c_str()
-                , graphVarIdx
-                , graphVariables_NewDemo_DEV[graphVarIdx]
-            );
-        }
+        auto _ind = IndentScoped();
+        DumpConditionExpression(*initState.conditionExpression);
     }
     template<>
     void DumpStateNodeDetails<AtomStateMachineNode>(AtomStateMachineNode& stateMachineNode)
@@ -1013,9 +995,218 @@ public:
             DumpStateNodeDetails(static_cast<AtomGraphStateNode&>(stateNode));
         }
     }
+    void DumpConditionExpression(AtomConditionExpression& condExpr)
+    {
+        ImGui::LogText(
+            "%s referencedGraphVars: %d:\n"
+            , m_currentIndent.c_str()
+            , condExpr.referencedGraphVarsIndices.size
+        );
+        for (uint32 graphVarIdx : condExpr.referencedGraphVarsIndices)
+        {
+            auto _ind = IndentScoped();
+            ImGui::LogText(
+                "%s GraphVar: %d== %s\n"
+                , m_currentIndent.c_str()
+                , graphVarIdx
+                , graphVariables_NewDemo_DEV[graphVarIdx]
+            );
+        }
+        ImGui::LogText(
+            "%s conditions: %d\n"
+            , m_currentIndent.c_str()
+            , condExpr.Conditions.size
+        );
+        if (condExpr.Conditions.size < 2) {
+            return;
+        }
+        auto _ind = IndentScoped();
+        uint16 topmostGroupSize = condExpr.Conditions[0].word_C;
+        AtomCondition* first = &condExpr.Conditions[1];
+        ImGui::LogText(m_currentIndent.c_str());
+        DumpConditionChain(first, topmostGroupSize);
+        ImGui::LogText("\n");
+    }
+    void SkipConditionsChain(AtomCondition*& condInOut)
+    {
+        AtomCondition* in = condInOut;
+        condInOut++;
+        for (size_t i = 0; i < in->word_C; i++)
+        {
+            SkipConditionsChain(condInOut);
+        }
+    }
+    void DumpCondition_GraphVariable(AtomCondition* currentCond)
+    {
+        if (currentCond->word_A != 0xFFFF)
+        {
+            ImGui::LogText("ENTITYREFSMTH");
+            return;
+        }
+        uint16 graphVarIdx = currentCond->ValueToTestReferenceID;
+        const char* graphVarName = graphVariables_NewDemo_DEV[graphVarIdx];
+        AtomDataContainerWrapper_DataType datatype = currentCond->ComparisonValue.DataType_0bool1float2int4xy5xyz6quat;
+        const char* graphVarType = "UNKTYPE";
+        switch (datatype)
+        {
+        case AtomDataContainerWrapper_DataType::Bool:
+            graphVarType = "bool";
+            break;
+        case AtomDataContainerWrapper_DataType::Float:
+            graphVarType = "float";
+            break;
+        case AtomDataContainerWrapper_DataType::Int:
+            graphVarType = "int";
+            break;
+        case AtomDataContainerWrapper_DataType::XY:
+            graphVarType = "Vec2";
+            break;
+        case AtomDataContainerWrapper_DataType::XYZ:
+            graphVarType = "Vec3";
+            break;
+        case AtomDataContainerWrapper_DataType::XYZW:
+            graphVarType = "Vec4";
+            break;
+        default:
+            break;
+        }
+        const char* condOpText = "UNKCONDOP";
+        auto condop = currentCond->ConditionalOperator;
+        switch (condop)
+        {
+        case AtomCondition_ConditionalOperator::EQUALS:
+            condOpText = "==";
+            break;
+        case AtomCondition_ConditionalOperator::GREATER_THAN:
+            condOpText = ">";
+            break;
+        case AtomCondition_ConditionalOperator::GREATER_EQUAL:
+            condOpText = ">=";
+            break;
+        case AtomCondition_ConditionalOperator::LESS_THAN:
+            condOpText = "<";
+            break;
+        case AtomCondition_ConditionalOperator::LESS_EQUAL:
+            condOpText = "<=";
+            break;
+        case AtomCondition_ConditionalOperator::NOT_EQUAL:
+            condOpText = "!=";
+            break;
+        default:
+            break;
+        }
+        static ImGuiTextBuffer valueToText;
+        valueToText.clear();
+        if (currentCond->isComparisonValueAnAnotherRTCPVarIndex)
+        {
+            uint16 rhsGraphVarIdx = (uint16&)currentCond->ComparisonValue.value;
+            const char* rhsGraphVarName = graphVariables_NewDemo_DEV[rhsGraphVarIdx];
+            valueToText.appendf("(%s)%s", graphVarType, rhsGraphVarName);
+        }
+        else
+        {
+            switch (datatype)
+            {
+            case AtomDataContainerWrapper_DataType::Bool:
+                valueToText.appendf("%d", (bool&)currentCond->ComparisonValue.value);
+                break;
+            case AtomDataContainerWrapper_DataType::Float:
+                valueToText.appendf("%f", (float&)currentCond->ComparisonValue.value);
+                break;
+            case AtomDataContainerWrapper_DataType::Int:
+                valueToText.appendf("%d", (int&)currentCond->ComparisonValue.value);
+                break;
+            case AtomDataContainerWrapper_DataType::XY:
+                valueToText.appendf("(%f, %f)"
+                    , ((float*)&currentCond->ComparisonValue.value)[0]
+                    , ((float*)&currentCond->ComparisonValue.value)[1]
+                );
+                break;
+            case AtomDataContainerWrapper_DataType::XYZ:
+                valueToText.appendf("(%f, %f, %f)"
+                    , ((float*)&currentCond->ComparisonValue.value)[0]
+                    , ((float*)&currentCond->ComparisonValue.value)[1]
+                    , ((float*)&currentCond->ComparisonValue.value)[2]
+                );
+                break;
+            case AtomDataContainerWrapper_DataType::XYZW:
+                valueToText.appendf("(%f, %f, %f, %f)"
+                    , ((float*)&currentCond->ComparisonValue.value)[0]
+                    , ((float*)&currentCond->ComparisonValue.value)[1]
+                    , ((float*)&currentCond->ComparisonValue.value)[2]
+                    , ((float*)&currentCond->ComparisonValue.value)[3]
+                );
+                break;
+            case AtomDataContainerWrapper_DataType::Weird_Datatype_In_Weird_Conditions:
+                break;
+            default:
+                break;
+            }
+        }
+        ImGui::LogText(
+            "((%s)%s %s %s)"
+            , graphVarType
+            , graphVarName
+            , condOpText
+            , valueToText.c_str()
+        );
+    }
+    void DumpConditionChain(AtomCondition* firstInChain, uint16 chainSize)
+    {
+        ImGui::LogText("(");
+        uint16 remainingChainSize = chainSize;
+        AtomCondition* currentCond = firstInChain;
+        for (size_t i = 0; i < remainingChainSize; i++)
+        {
+            switch (currentCond->ConditionType)
+            {
+            case AtomCondition_ConditionType::PLAYBACK_PERCENTAGE_mb:
+                ImGui::LogText("PlaybackPercentage(%f)", (float&)currentCond->ComparisonValue.value);
+                break;
+            case AtomCondition_ConditionType::GRAPH_VARIABLE:
+                DumpCondition_GraphVariable(currentCond);
+                break;
+            case AtomCondition_ConditionType::WEIRD_CONDITION:
+                DumpConditionChain(currentCond + 1, currentCond->word_C);
+                break;
+            case AtomCondition_ConditionType::UNK_1:
+            case AtomCondition_ConditionType::UNK_4:
+                ImGui::LogText("COND%d(%X, %d)", currentCond->ConditionType, currentCond->ValueToTestReferenceID, currentCond->word_C);
+                break;
+            default:
+                ImGui::LogText("UNKCONDTYPE");
+                break;
+            }
+            if (i != remainingChainSize - 1)
+            {
+                AtomCondition_ConjunctionOperator conjop = currentCond->ConjunctionOperator;
+                const char* conjunctionOpText = "UNKCONJOP";
+                switch (conjop)
+                {
+                case AtomCondition_ConjunctionOperator::AND:
+                    conjunctionOpText = "AND";
+                    break;
+                case AtomCondition_ConjunctionOperator::OR:
+                    conjunctionOpText = "OR";
+                    break;
+                default:
+                    break;
+                }
+                ImGui::LogText(" %s ", conjunctionOpText);
+            }
+            SkipConditionsChain(currentCond);
+            //uint16 subchainSizeToSkip = currentCond->word_C;
+            //currentCond++;
+            //for (size_t i = 0; i < subchainSizeToSkip; i++)
+            //{
+            //    SkipConditionsChain(currentCond);
+            //}
+        }
+        ImGui::LogText(")");
+    }
     void DumpAtomGraph(AtomGraph& atomGraph)
     {
-        ImGui::LogToClipboard();
+        ImGui::LogToFile(-1, "AtomGraphDump.txt");
         {
             ImGui::LogText(
                 "%s RootStateMachine:\n"
@@ -1106,6 +1297,21 @@ void DrawGraphVariable<bool>(const char* label, GraphEvaluation& graphEvaluation
             SetGraphVariable<bool>(graphEvaluation, varnameHash, *v);
     }
 }
+template<>
+void DrawGraphVariable<int>(const char* label, GraphEvaluation& graphEvaluation, uint32 varnameHash, bool doNotifyIfSet)
+{
+    int* v = GetGraphVariable<int>(graphEvaluation, varnameHash);
+    if (!v)
+    {
+        ImGui::Text("Variable `%s` not found in graph", label);
+        return;
+    }
+    if (ImGui::InputInt(label, v))
+    {
+        if (doNotifyIfSet)
+            SetGraphVariable<int>(graphEvaluation, varnameHash, *v);
+    }
+}
 DEFINE_GAME_FUNCTION(FreeHashmap_mb, 0x14277A8A0, signed __int64, __fastcall, (uint64 hashmap, uint64 p_errorOut_mb));
 void ClearBoneLayeringCache(AtomGraph& atomGraph)
 {
@@ -1178,6 +1384,21 @@ void DrawAtomGraphDumper()
     DrawGraphVariable<bool>("Pilotis", *graphEvaluation, 0x800e25a6, notifyTheGraphWhenModifying);
     // bool Sneak; // 0x8af229cb/2331126219
     DrawGraphVariable<bool>("Sneak", *graphEvaluation, 0x8af229cb, notifyTheGraphWhenModifying);
+    // bool Child; // 0xe3727b2d/3815930669
+    DrawGraphVariable<bool>("Child", *graphEvaluation, 0xe3727b2d, notifyTheGraphWhenModifying);
+    // bool Hungover; // 0xad5e408f/2908635279
+    DrawGraphVariable<bool>("Hungover", *graphEvaluation, 0xad5e408f, notifyTheGraphWhenModifying);
+    // bool Hurt; // 0x67bfab24/1740614436
+    DrawGraphVariable<bool>("Hurt", *graphEvaluation, 0x67bfab24, notifyTheGraphWhenModifying);
+    // bool HighClass; // 0xcf930fb/217657595
+    DrawGraphVariable<bool>("HighClass", *graphEvaluation, 0xcf930fb, notifyTheGraphWhenModifying);
+    // bool ProudWalk; // 0x3c6ab8b1/1013627057
+    DrawGraphVariable<bool>("ProudWalk", *graphEvaluation, 0x3c6ab8b1, notifyTheGraphWhenModifying);
+    // int GeneralState; //0xdf85463d/3750053437
+    // In Syndicate the values are:
+    // 39 == dodge bullet; 32 == pick up body; 33 == kidnap; 36 == ragdoll; 29 == cut alarm bell; 28 == pick door lock; 27 == pick chest lock;
+    // 23 == weird bird flight; 22 == aim pistol; 19 == shoved; 16 == massive stumble; 11 == milling arms freefall; 9 == swimming
+    DrawGraphVariable<int>("GeneralState", *graphEvaluation, 0xdf85463d, notifyTheGraphWhenModifying);
     DrawGraphVariable<bool>(g_newGraphVar.varname, *graphEvaluation, g_newGraphVar.varnameHash, notifyTheGraphWhenModifying);
 
     //if (ImGui::Button("Clear bone layering cache"))

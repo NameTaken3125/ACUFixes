@@ -2,6 +2,9 @@
 
 #include "AnimationTools/AnimGraphMods.h"
 #include "AnimationTools/AtomGraphModsCommon.h"
+#include "Common_Plugins/Common_PluginSide.h"
+#include "MyAnimationPlayer.h"
+namespace fs = std::filesystem;
 
 AtomAnimationDataNode& GraphStateNode_PushAnimationDataNode(AtomGraphStateNode& graphStateNode, uint64 animHandle)
 {
@@ -81,6 +84,22 @@ AtomGraphStateNode& CreateGraphState_SimpleAnimation(uint64 animationHandle)
 
     return *newGraphState;
 }
+AtomGraphStateNode& CreateGraphState_SimpleAnimationImported(const fs::path& jsonAnimFilepath)
+{
+    AtomGraphStateNode* newGraphState = ACUAllocate<AtomGraphStateNode>();
+    ACUSharedPtr_Strong<Animation> loadedAnim = g_NewAnimationsFactory.LoadNewAnimationFromFile(jsonAnimFilepath);
+    AtomAnimationRootNode* node_animRoot = &GraphStateNode_PushAnimationRootNode(*newGraphState);
+    AtomAnimationDataNode* node_animData = &GraphStateNode_PushAnimationDataNode(*newGraphState, loadedAnim.GetSharedBlock().handle);
+    AnimationRootNode_SetAnimationInput(*node_animRoot, *node_animData);
+
+    newGraphState->numberOfAnimationProviders_alsoMb = newGraphState->NumberOfAnimationProviders;
+    newGraphState->word_A4 = 1;
+    newGraphState->word_A6 = 1;
+    newGraphState->numNodes_mb = 2;
+    newGraphState->dword_98 = 0xFFFFFFFF;
+
+    return *newGraphState;
+}
 void SetupTheWeirdCondition(AtomCondition& cond)
 {
     cond.ConditionType = AtomCondition_ConditionType::WEIRD_CONDITION;
@@ -94,9 +113,9 @@ void SetupTheWeirdCondition(AtomCondition& cond)
 void SetupTwoFirstWeirdConditions(AtomConditionExpression& conditionExpr)
 {
     AtomCondition* cond1 = SmallArray_GameType_Append(conditionExpr.Conditions);
-    //AtomCondition* cond2 = SmallArray_GameType_Append(conditionExpr.Conditions);
+    AtomCondition* cond2 = SmallArray_GameType_Append(conditionExpr.Conditions);
     SetupTheWeirdCondition(*cond1);
-    //SetupTheWeirdCondition(*cond2);
+    SetupTheWeirdCondition(*cond2);
 }
 AtomConditionExpression* CreateConditionExpression_TwoFirstWeirdConditions()
 {
@@ -134,7 +153,28 @@ AtomConditionExpression* CreateConditionExpression_PlaybackFinished()
         animationIsFinished->ValueToTestReferenceID = 0;
         animationIsFinished->ComparisonValue.DataType_0bool1float2int4xy5xyz6quat = AtomDataContainerWrapper_DataType::Float;
         (float&)animationIsFinished->ComparisonValue.value = 1.0f;
-        animationIsFinished->word_C = 1;
+        // Appears to represent something related to "parentheses" within the `AtomConditionExpression`.
+        // Like, how many of the conditions that follow this one need to be "skipped".
+        // If so, then it would make sense that the last condition in an expression should have this value at 0.
+        animationIsFinished->word_C = 0;
+    }
+    return condExpr;
+}
+AtomConditionExpression* CreateConditionExpression_PlaybackPercentage(const float inRange0_1)
+{
+    AtomConditionExpression* condExpr = CreateConditionExpression_TwoFirstWeirdConditions();
+    {
+        AtomCondition* animationIsFinished = SmallArray_GameType_Append(condExpr->Conditions);
+        animationIsFinished->ConditionType = AtomCondition_ConditionType::PLAYBACK_PERCENTAGE_mb;
+        animationIsFinished->ConditionalOperator = AtomCondition_ConditionalOperator::EQUALS;
+        animationIsFinished->ConjunctionOperator = AtomCondition_ConjunctionOperator::AND;
+        animationIsFinished->ValueToTestReferenceID = 0;
+        animationIsFinished->ComparisonValue.DataType_0bool1float2int4xy5xyz6quat = AtomDataContainerWrapper_DataType::Float;
+        (float&)animationIsFinished->ComparisonValue.value = inRange0_1;
+        // Appears to represent something related to "parentheses" within the `AtomConditionExpression`.
+        // Like, how many of the conditions that follow this one need to be "skipped".
+        // If so, then it would make sense that the last condition in an expression should have this value at 0.
+        animationIsFinished->word_C = 0;
     }
     return condExpr;
 }
@@ -175,9 +215,10 @@ void SetupStateMachineDefaultInitialState(AtomStateMachineNode& stateMachineNode
 void SetupTheNewLayersStateMachine(AtomStateMachineNode& newLayerStateMachine)
 {
     AtomNullStateNode& nullState1 = *ACUAllocate<AtomNullStateNode>();
-    AtomGraphStateNode& playbackState1 = CreateGraphState_SimpleAnimation(handle_invalidAnimation);
+    AtomGraphStateNode& playbackState1 = CreateGraphState_SimpleAnimationImported(AbsolutePathInThisDLLDirectory("NewAnimations/ACVI_xy_UpperBody_Hood_tr_Hat.anim.json"));
     AtomNullStateNode& nullState2 = *ACUAllocate<AtomNullStateNode>();
-    AtomGraphStateNode& playbackState2 = CreateGraphState_SimpleAnimation(handle_invalidAnimation);
+    AtomGraphStateNode& playbackState2 = CreateGraphState_SimpleAnimationImported(AbsolutePathInThisDLLDirectory("NewAnimations/ACVI_xy_UpperBody_Hat_tr_Hood.anim.json"));
+    //AtomGraphStateNode& playbackState2 = CreateGraphState_SimpleAnimation(handle_anim_Quickdrop);
     StateMachine_PushState(newLayerStateMachine, nullState1);
     StateMachine_PushState(newLayerStateMachine, playbackState1);
     StateMachine_PushState(newLayerStateMachine, nullState2);
@@ -201,7 +242,7 @@ void SetupTheNewLayersStateMachine(AtomStateMachineNode& newLayerStateMachine)
         transitionTo2ndNullState->TransitionTime = 0.5f;
         transitionTo2ndNullState->BlendType = 1;
         //AtomConditionExpression* condExpr = CreateConditionExpression_SingleVariableEqualsTo(539, false);
-        AtomConditionExpression* condExpr = CreateConditionExpression_PlaybackFinished();
+        AtomConditionExpression* condExpr = CreateConditionExpression_PlaybackPercentage(0.65f);
         transitionTo2ndNullState->conditionExpression = condExpr;
     }
     AtomStateTransitionTarget* transitionFrom2ndNullStateIfMyVariableIsUNSET = ACUAllocate<AtomStateTransitionTarget>();
@@ -217,7 +258,7 @@ void SetupTheNewLayersStateMachine(AtomStateMachineNode& newLayerStateMachine)
         transitionTo1stNullState->TargetStateIndex = 0;
         transitionTo1stNullState->TransitionTime = 0.5f;
         transitionTo1stNullState->BlendType = 1;
-        AtomConditionExpression* condExpr = CreateConditionExpression_PlaybackFinished();
+        AtomConditionExpression* condExpr = CreateConditionExpression_PlaybackPercentage(0.65f);
         transitionTo1stNullState->conditionExpression = condExpr;
     }
     AtomStateTransitionTarget* resetPlayback1 = ACUAllocate<AtomStateTransitionTarget>();
@@ -257,10 +298,15 @@ void SetupTheNewLayer(AtomLayeringInfo& newLayer)
     //newLayer.dword_54 = 1;
     //newLayer.dword_58 = 743623600;
 
-    //BoneWeight* newBoneWeight = SmallArray_GameType_Append(newLayer.BoneWeights);
-    //newBoneWeight->BoneID = 1806956327;
-    //newBoneWeight->WeightF8 = 0xff;
-    //newLayer.BlendType = 0;
+    BoneWeight* boneWeight_upperTorso = SmallArray_GameType_Append(newLayer.BoneWeights);
+    //boneWeight_upperTorso->BoneID = 1806956327;
+    //boneWeight_upperTorso->BoneID = 1393476043; //"Spine"
+    boneWeight_upperTorso->BoneID = 372288500; //"Spine2"
+    boneWeight_upperTorso->WeightF8 = 0xFF;
+    BoneWeight* boneWeight_leftShoulder = SmallArray_GameType_Append(newLayer.BoneWeights);
+    boneWeight_leftShoulder->BoneID = 3097015817; //left shoulder
+    boneWeight_leftShoulder->WeightF8 = 0;
+    newLayer.BlendType = 0;
 }
 // In the player's AtomGraph, the `stateNode38` of every `AtomLayeringStateNode` seems to always be
 // an instance of `AtomStateMachineNode` and not any other subclass of `AtomStateNode`.

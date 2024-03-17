@@ -227,6 +227,18 @@ bool IsToggleHoodSoundEnabled()
 {
     return true;
 }
+#include "ACU/AtomAnimComponent.h"
+#include "AnimationTools/AtomGraphControls.h"
+#include "AnimationTools/AnimGraphMods.h"
+void PlayHoodAnimation(bool doPutHoodOn)
+{
+    AtomAnimComponent* animCpnt = ACU::GetPlayerCpnt_AtomAnimComponent();
+    if (!animCpnt) { return; }
+    GraphEvaluation* graphEvaluation = animCpnt->pD0;
+    if (!graphEvaluation) { return; }
+    bool* v = GetGraphVariable<bool>(*graphEvaluation, g_newGraphVar.varnameHash);
+    SetGraphVariable<bool>(*graphEvaluation, g_newGraphVar.varnameHash, !doPutHoodOn);
+}
 void ToggleHood()
 {
     Entity* player = ACU::GetPlayer();
@@ -234,6 +246,7 @@ void ToggleHood()
     CurrentHoodState currentHood = FindCurrentHoodVariation(*player);
     if (!currentHood.m_currentHood) { return; }
     ToggleHoodVisuals(*currentHood.m_currentHood, !currentHood.m_isHoodOn);
+    PlayHoodAnimation(!currentHood.m_isHoodOn);
     if (IsToggleHoodSoundEnabled())
         PlaySound_ToggleHood(*player, !currentHood.m_isHoodOn);
 }
