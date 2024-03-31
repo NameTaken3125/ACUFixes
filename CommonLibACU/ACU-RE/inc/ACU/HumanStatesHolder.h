@@ -114,65 +114,75 @@ class AtomAnimComponent;
 class Entity;
 class UsedDuringCrouch;
 class UsedDuringDisguiseParent_b_UsedDuringCrouch;
-class UsedDuringQuickshot_40
+class UsedDuringQuickshot_SignalReceiver
 {
 public:
     // @members
-    uint32 dword_0; //0x0000
-    uint8 byte_4_isChanged_mb; //0x0004
+    uint32 animationSignalValue; //0x0000
+    uint8 isSignalPositiveNow_mb; //0x0004
     char pad_0005[3]; //0x0005
     uint32 dword_8; //0x0008
     uint8 byte_C; //0x000C
     char pad_000D[3]; //0x000D
-    uint32 dword_10_isPlaying_mb; //0x0010
+    uint32 numListenersToThisSignal; //0x0010
     uint32 dword_14; //0x0014
-    uint8 byte_18; //0x0018
-    uint8 byte_19_isJustStarted_mb; //0x0019
+    uint8 isChanged; //0x0018
+    uint8 isReceiverJustStarted; //0x0019
     char pad_001A[2]; //0x001A
     uint32 dword_1C_startFrame_mb; //0x001C
 
     // @helper_functions
-    UsedDuringQuickshot_40()
-        : dword_0(-1)
-        , byte_4_isChanged_mb(0)
+    UsedDuringQuickshot_SignalReceiver()
+        : animationSignalValue(-1)
+        , isSignalPositiveNow_mb(0)
         , dword_8(0)
         , byte_C(1)
-        , dword_10_isPlaying_mb(0)
+        , numListenersToThisSignal(0)
         , dword_14(0)
-        , byte_18(0)
-        , byte_19_isJustStarted_mb(0)
+        , isChanged(0)
+        , isReceiverJustStarted(0)
         , dword_1C_startFrame_mb(0)
+        , pad_0005{ 0 }
+        , pad_000D{ 0 }
+        , pad_001A{ 0 }
     {}
-    UsedDuringQuickshot_40(uint32 animationSignalInt)
-        : dword_0(animationSignalInt)
-        , byte_4_isChanged_mb(0)
+    UsedDuringQuickshot_SignalReceiver(uint32 animationSignalInt)
+        : animationSignalValue(animationSignalInt)
+        , isSignalPositiveNow_mb(0)
         , dword_8(0)
         , byte_C(1)
-        , dword_10_isPlaying_mb(0)
+        , numListenersToThisSignal(0)
         , dword_14(0)
-        , byte_18(0)
-        , byte_19_isJustStarted_mb(0)
+        , isChanged(0)
+        , isReceiverJustStarted(0)
         , dword_1C_startFrame_mb(0)
+        , pad_0005{ 0 }
+        , pad_000D{ 0 }
+        , pad_001A{ 0 }
     {}
 }; //Size: 0x0020
-assert_sizeof(UsedDuringQuickshot_40, 0x20);
+assert_sizeof(UsedDuringQuickshot_SignalReceiver, 0x20);
 class HumanStatesHolder;
-class UsedDuringQuickshot
+class ManagerOfAnimationSignalsReceivers_10;
+class ManagerOfAnimationSignalsReceivers
 {
 public:
-    char pad_0000[32]; //0x0000
+    char pad_0000[16]; //0x0000
+    SmallArray<ManagerOfAnimationSignalsReceivers_10> arrSmthWithIKGraphVars; //0x0010
+    char pad_001C[4]; //0x001C
     uint64 qword_20; //0x0020
     HumanStatesHolder* humanStates; //0x0028
     Entity* player; //0x0030
     AtomAnimComponent* atomAnimCpnt; //0x0038
-    SmallArray<UsedDuringQuickshot_40> animEvents_mb; //0x0040
+    SmallArray<UsedDuringQuickshot_SignalReceiver> integerSignalReceivers; //0x0040
     char pad_004C[2]; //0x004C
-    uint8 byte_4E_isChanged_mb; //0x004E
+    uint8 isPendingUpdatesFromSignalReceivers; //0x004E
     char pad_004F[1]; //0x004F
     float flt_50; //0x0050
-    char pad_0054[4]; //0x0054
+    uint8 byte_54; //0x0054
+    char pad_0055[3]; //0x0055
 }; //Size: 0x0058
-assert_sizeof(UsedDuringQuickshot, 0x58);
+assert_sizeof(ManagerOfAnimationSignalsReceivers, 0x58);
 class CallbackWithReceiver
 {
 public:
@@ -290,7 +300,7 @@ public:
     Entity* ownerEntity; //0x1C88
     AtomAnimComponent* atomAnimCpnt; //0x1C90
     char pad_1C98[56]; //0x1C98
-    UsedDuringQuickshot* hasAnimationEventsData_mb; //0x1CD0
+    ManagerOfAnimationSignalsReceivers* integerSignalReceiversManager; //0x1CD0
     char pad_1CD8[288]; //0x1CD8
     SharedPtrNew<Entity>* shared_quickshotTarget_mb; //0x1DF8
     char pad_1E00[160]; //0x1E00

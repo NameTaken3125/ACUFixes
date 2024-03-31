@@ -90,7 +90,7 @@ public:
     void RegisterSignal(SignalID_t signalInt);
     void WhenSignalChangeDispatched(HumanStatesHolder* receivingEntityHumanStates, SignalID_t signalInt, bool isSignalOn);
 public:
-    void Hook_WhenInitializingArrayOfIntegerSignalReceivers(UsedDuringQuickshot& integerSignalReceiversManager);
+    void Hook_WhenInitializingArrayOfIntegerSignalReceivers(ManagerOfAnimationSignalsReceivers& integerSignalReceiversManager);
 private:
     std::vector<CustomReactionToAnimationSignals*> m_CustomReactions;
 public:
@@ -113,25 +113,25 @@ void DatabaseOfCustomReactionsToAnimationSignals::WhenSignalChangeDispatched(Hum
         customReaction->OnSignalChangeDispatched(receivingEntityHumanStates, signalInt, isSignalOn);
     }
 }
-void DatabaseOfCustomReactionsToAnimationSignals::Hook_WhenInitializingArrayOfIntegerSignalReceivers(UsedDuringQuickshot& integerSignalReceiversManager)
+void DatabaseOfCustomReactionsToAnimationSignals::Hook_WhenInitializingArrayOfIntegerSignalReceivers(ManagerOfAnimationSignalsReceivers& integerSignalReceiversManager)
 {
     for (SignalID_t signalInt : m_AppendedNewSignalReceiversInHumanStates)
     {
-        SmallArrayAppend(integerSignalReceiversManager.animEvents_mb, UsedDuringQuickshot_40(signalInt));
-        UsedDuringQuickshot_40& signalReceiver = integerSignalReceiversManager.animEvents_mb[integerSignalReceiversManager.animEvents_mb.size - 1];
-        signalReceiver.dword_10_isPlaying_mb++;
+        SmallArrayAppend(integerSignalReceiversManager.integerSignalReceivers, UsedDuringQuickshot_SignalReceiver(signalInt));
+        UsedDuringQuickshot_SignalReceiver& signalReceiver = integerSignalReceiversManager.integerSignalReceivers[integerSignalReceiversManager.integerSignalReceivers.size - 1];
+        signalReceiver.numListenersToThisSignal++;
         // "quickdrop" signal has `byte_C == 1`, while "unholster" and "shot fired" have it at `0`. idk.
         signalReceiver.byte_C = 1;
         signalReceiver.dword_8 = 0xFFFFFFFF;
     }
 }
-void WhenInitializingArrayOfIntegerSignalReceivers_FinishedBuildingDefaultSignalReceivers_AddCustomSignals(UsedDuringQuickshot& integerSignalReceiversManager)
+void WhenInitializingArrayOfIntegerSignalReceivers_FinishedBuildingDefaultSignalReceivers_AddCustomSignals(ManagerOfAnimationSignalsReceivers& integerSignalReceiversManager)
 {
     g_DatabaseOfCustomReactionsToAnimationSignals.Hook_WhenInitializingArrayOfIntegerSignalReceivers(integerSignalReceiversManager);
 }
 void WhenInitializingArrayOfIntegerSignalReceivers_FinishedBuildingDefaultSignalReceivers_AddCustomSignals(AllRegisters* params)
 {
-    UsedDuringQuickshot* integerSignalReceiversManager = (UsedDuringQuickshot*)params->rsi_;
+    ManagerOfAnimationSignalsReceivers* integerSignalReceiversManager = (ManagerOfAnimationSignalsReceivers*)params->rsi_;
     g_DatabaseOfCustomReactionsToAnimationSignals.Hook_WhenInitializingArrayOfIntegerSignalReceivers(*integerSignalReceiversManager);
 }
 void WhenEnabledSignalReceiverHasReceivedAChange_DispatchToCustomSubscribers(AllRegisters* params)
@@ -139,8 +139,8 @@ void WhenEnabledSignalReceiverHasReceivedAChange_DispatchToCustomSubscribers(All
     auto* humanStates = (HumanStatesHolder*)params->rcx_;
     const uint16 idxOfRegisteredIntegerSignal = (uint16&)params->rdx_;
     const bool isSignalOn = (bool&)params->r8_;
-    UsedDuringQuickshot_40& integerSignalReceiver = humanStates->hasAnimationEventsData_mb->animEvents_mb[idxOfRegisteredIntegerSignal];
-    SignalID_t signalInt = integerSignalReceiver.dword_0;
+    UsedDuringQuickshot_SignalReceiver& integerSignalReceiver = humanStates->integerSignalReceiversManager->integerSignalReceivers[idxOfRegisteredIntegerSignal];
+    SignalID_t signalInt = integerSignalReceiver.animationSignalValue;
     g_DatabaseOfCustomReactionsToAnimationSignals.WhenSignalChangeDispatched(
         humanStates,
         signalInt,

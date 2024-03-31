@@ -7,14 +7,14 @@
 DEFINE_GAME_FUNCTION(HumanStatesHolder__OnThrowBomb_P, 0x141988870, void, __fastcall, (HumanStatesHolder* a1, __m128* a2, char a3));
 bool WhenAimAndThrowBombAnimationExits_IsShouldForceSpawnBombNow(HumanStatesHolder& humanStates)
 {
-    auto hasAnimationEventsData_mb = humanStates.hasAnimationEventsData_mb;
-    if (!hasAnimationEventsData_mb)
+    auto integerSignalReceiversManager = humanStates.integerSignalReceiversManager;
+    if (!integerSignalReceiversManager)
     {
         return false;
     }
     constexpr int idx_BombThrowAnimationEvent_mb = 24;
-    auto& dataOfBombThrowAnim = hasAnimationEventsData_mb->animEvents_mb[idx_BombThrowAnimationEvent_mb];
-    const bool isThrowAnimationPlayingButNotYetFinished = dataOfBombThrowAnim.dword_10_isPlaying_mb == 1;
+    auto& dataOfBombThrowAnim = integerSignalReceiversManager->integerSignalReceivers[idx_BombThrowAnimationEvent_mb];
+    const bool isThrowAnimationPlayingButNotYetFinished = dataOfBombThrowAnim.numListenersToThisSignal == 1;
     if (isThrowAnimationPlayingButNotYetFinished)
     {
         return true;
