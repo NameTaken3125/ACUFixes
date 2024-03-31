@@ -1086,7 +1086,7 @@ template<class Keyframe_t>
 void SpoofAnimationRawTrackData(Animation& anim, const MyAnimTrackdata<Keyframe_t>& myTrackdata)
 {
     std::vector<byte> trackRawData = ConvertKeyframesToRawTrackBytes(myTrackdata.m_keyframes);
-    byte* trackRawDataDetached = new byte[trackRawData.size()];
+    byte* trackRawDataDetached = ACUAllocateBytes((uint32)trackRawData.size(), 0x10);
     std::memcpy(trackRawDataDetached, &trackRawData[0], trackRawData.size());
 
     auto FindWhereToPutNewTrackInSortedArray = [](uint32 newTrackID, SmallArray<AnimTrackDataMapping>& tracksArray)
@@ -1128,6 +1128,12 @@ ACUSharedPtr_Strong<Animation> NewAnimationsFactory::AllocateNewAnimation()
     // Managed objects lock is unnecessarily released here.
     TypeInfo& ti = TargetType::GetTI();
     TargetType* newManObj = static_cast<TargetType*>(UsesTypeInfoCreate(newHandle, 0, &ti));
+
+    {
+        const uint32 animationKey_shouldBeUniqueToAvoidCachingProblemsButIdkHowItsGenerated = newHandle & 0xFFFFFFFF;
+        newManObj->AnimationKey = animationKey_shouldBeUniqueToAvoidCachingProblemsButIdkHowItsGenerated;
+    }
+
     JoinManagedObjectAndHandle_mb(newHandle, newManObj);
     return sharedAnim;
 }
@@ -1320,7 +1326,107 @@ MySpoofAnimation::MySpoofAnimation(uint64 handle)
         }
     }
 }
+constexpr uint32 boneID_Reference = 743623600;
+std::optional<ACUSharedPtr_Strong<Animation>> CreatePosingAnimation(const std::vector<Skeleton*>& skels)
+{
+    ACUSharedPtr_Strong<Animation> newAnim = g_NewAnimationsFactory.AllocateNewAnimation();
+    Animation& thisAnim = *newAnim.GetPtr();
+
+    uint8 framesLength = 0xf0;
+
+    thisAnim.Length = (framesLength + 1) / 60.0f;
+
+    AnimTrackData* newAnimTrackData = (AnimTrackData*)ACUAllocateBytes(sizeof(AnimTrackData), 0x10);
+    std::memset(newAnimTrackData, 0, sizeof(AnimTrackData));
+    AnimTrackData__ctor(newAnimTrackData);
+    thisAnim.AnimTrackData_ = newAnimTrackData;
+
+    for (Skeleton* skel : skels)
+    {
+        for (Bone* bone : skel->Bones)
+        {
+            if (bone->BoneID_boneNameHash == boneID_Reference)
+            {
+                continue;
+            }
+            const bool isThisBoneIDTrackAlreadyAdded =  std::find_if(newAnimTrackData->AnimTrackDataMapping_.begin(), newAnimTrackData->AnimTrackDataMapping_.end(), [bone](AnimTrackDataMapping& tdMapp)
+                {
+                    return tdMapp.TrackID == bone->BoneID_boneNameHash;
+                }) != newAnimTrackData->AnimTrackDataMapping_.end();
+            if (isThisBoneIDTrackAlreadyAdded)
+            {
+                continue;
+            }
+            MyAnimTrackdata<MyKeyframe_FullblastQuaternion_0x1_u16> rotation{
+                bone->BoneID_boneNameHash,
+                {
+                    MyKeyframe_FullblastQuaternion_0x1_u16{0x00,bone->LocalRotation },
+                    MyKeyframe_FullblastQuaternion_0x1_u16{0x30,bone->LocalRotation },
+                    MyKeyframe_FullblastQuaternion_0x1_u16{0x60,Vector4f(0, 0, 0, 1) },
+                    MyKeyframe_FullblastQuaternion_0x1_u16{0x90,Vector4f(0, 0, 0, 1) },
+                    MyKeyframe_FullblastQuaternion_0x1_u16{0xC0,bone->LocalRotation },
+                    MyKeyframe_FullblastQuaternion_0x1_u16{0xF0,bone->LocalRotation },
+                }
+            };
+            MyAnimTrackdata<MyKeyframe_Translation> translation{
+                bone->BoneID_boneNameHash,
+                {
+                    MyKeyframe_Translation{0x00,(Vector3f&)bone->LocalPosition },
+                    MyKeyframe_Translation{0x30,(Vector3f&)bone->LocalPosition },
+                    MyKeyframe_Translation{0x60,Vector3f() },
+                    MyKeyframe_Translation{0x90,Vector3f() },
+                    MyKeyframe_Translation{0xC0,(Vector3f&)bone->LocalPosition },
+                    MyKeyframe_Translation{0xF0,(Vector3f&)bone->LocalPosition },
+                }
+            };
+            SpoofAnimationRawTrackData(thisAnim, translation);
+            SpoofAnimationRawTrackData(thisAnim, rotation);
+        }
+    }
+    return newAnim;
+}
 NewAnimationsFactory g_NewAnimationsFactory;
+void DrawConfigurationPopupForSkeletonPoser(SkeletonComponent& skelCpnt)
+{
+    static ImGuiTextBuffer buf;
+    auto FormatHandle = [&](SharedBlock& sharedBlock)
+    {
+        buf.clear();
+        buf.appendf("%llu => %s", sharedBlock.handle, ACU::Handles::HandleToText(sharedBlock.handle));
+    };
+    static std::map<uint64, bool> checkboxByHandle;
+    static std::vector<Skeleton*> skels;
+    skels.clear();
+    skels.reserve(1 + skelCpnt.AddonSkeletons.size);
+
+    ImGui::Text("MainSkeleton:");
+    {
+        SharedPtrNew<Skeleton>* sharedSkel = skelCpnt.MainSkeleton;
+
+        FormatHandle(*sharedSkel);
+        bool* pIsThisSkelEnabled = &checkboxByHandle[sharedSkel->handle];
+        ImGui::Checkbox(buf.c_str(), pIsThisSkelEnabled);
+        if (*pIsThisSkelEnabled) { skels.push_back(sharedSkel->GetPtr()); }
+    }
+    ImGui::Separator();
+    ImGui::Text("AddonSkeletons:");
+    for (SharedPtrNew<Skeleton>* sharedSkel : skelCpnt.AddonSkeletons)
+    {
+        FormatHandle(*sharedSkel);
+        bool* pIsThisSkelEnabled = &checkboxByHandle[sharedSkel->handle];
+        ImGui::Checkbox(buf.c_str(), pIsThisSkelEnabled);
+        if (*pIsThisSkelEnabled) { skels.push_back(sharedSkel->GetPtr()); }
+    }
+    if (ImGui::Button("Create and play the \"posing animation\" for these skeletons"))
+    {
+        static ACUSharedPtr_Strong<Animation> posingAnim;
+        if (std::optional<ACUSharedPtr_Strong<Animation>> recreatedAnim = CreatePosingAnimation(skels))
+        {
+            posingAnim = *recreatedAnim;
+            g_MyAnimationPlayer.StartAnimation(posingAnim);
+        }
+    }
+}
 void DrawSpoofAnimationExperiments()
 {
     uint64 spoofHandle = 31096122264; // +1 from "Game Bootstrap Settings/xx_Invalid_Animation.Animation"
@@ -1328,6 +1434,17 @@ void DrawSpoofAnimationExperiments()
     {
         static MySpoofAnimation spoof(spoofHandle);
         g_MyAnimationPlayer.StartAnimation(spoof.GetAnim());
+    }
+    if (ImGui::Button("Create and start posing animation"))
+    {
+        ImGui::OpenPopup("SkeletonPoserPopup");
+    }
+    if (ImGuiCTX::Popup _skeletonPoserWindow{ "SkeletonPoserPopup" })
+    {
+        if (SkeletonComponent* skelCpnt = ACU::GetPlayerCpnt_SkeletonComponent())
+        {
+            DrawConfigurationPopupForSkeletonPoser(*skelCpnt);
+        }
     }
     if (ImGui::Button("Load JSON animation and start"))
     {

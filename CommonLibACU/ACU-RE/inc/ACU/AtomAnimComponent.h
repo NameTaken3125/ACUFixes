@@ -57,7 +57,7 @@ public:
 	char pad_0018[8]; //0x0018
 }; //Size: 0x0020
 
-
+class GraphEvaluation;
 class AtomAnimComponent_D0_400
 {
 public:
@@ -74,7 +74,7 @@ public:
 	uint32 dword_24C; //0x024C
 	uint32 dword_250; //0x0250
 	uint32 frameIdx_mb; //0x0254
-	char pad_0258[8]; //0x0258
+	GraphEvaluation* graphEval; //0x0258
 	SmallArray<uint8> arr260; //0x0260
 	char pad_026C[4]; //0x026C
 }; //Size: 0x0270

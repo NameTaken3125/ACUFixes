@@ -59,7 +59,33 @@ Visual* FindVisualCpnt(Entity& entity, uint64 lodSelectorHandle)
 
 #include "ACU_DefineNativeFunction.h"
 DEFINE_GAME_FUNCTION(Visual__ToggleVisibility, 0x1421F4DD0, int, __fastcall, (Visual* a1, unsigned char a2));
-//DEFINE_GAME_FUNCTION(Visual__ToggleVisibility_P, 0x141CE1440, int, __fastcall, (Visual* a1, unsigned char a2));
+DEFINE_GAME_FUNCTION(Visual__ToggleVisibility_P, 0x141CE1440, int, __fastcall, (Visual* a1, unsigned char a2));
+inline void ToggleVisualCpntVisibility(Visual& vis, bool doEnable)
+{
+    // WARNING!
+    // The "hood toggle" basically works by turning parts of the player's visuals (on/off versions of the hood
+    // as well as hair) on and off.
+    // In the old version I used to toggle the visibility instantly
+    // right in the context of the thread that executes the Swapchain::Present().
+    // I know that this version works perfectly fine with the game's function at 0x1421F4DD0.
+    // It also allows me to forcibly toggle hood in cutscenes, while using the function at 0x141CE1440
+    // would result in cutscenes overwriting my decision.
+    // But in the "animated" version of the Hood Toggle, I receive two different "animation signals" that indicate
+    // the moment that the visibility of the visual components needs to be toggled on or off (just when Arno's hand
+    // "touches his hood").
+    // The signals are received in a different context (in a different thread?).
+    // Now picture this:
+    // Receiving the "put hood on" signal works OK. The "hood off" visual gets hidden, the hair gets hidden,
+    // the "hood on" visual gets turned on.
+    // But THEN! Receiving the "take hood off" does __the_exact_same_thing__ with the visuals.
+    // Meaning, the "hood on" still stays "on". I __literally__ see the passed boolean argument being different in the debugger,
+    // yet the result is exactly opposite in the __stable_50%_of_cases__.
+    // Because of this, what might be the most unbelievable bug I've ever had to deal with,
+    // I need to use the 0x141CE1440 function in this context.
+    // (The reason, I think, is some bullcrap with the global thread locks or whatever, causing the state of the Visuals
+    // to be refreshed instead of changed, see critical section at 1421F4E80).
+    Visual__ToggleVisibility_P(&vis, doEnable);
+}
 void EnableVisibilityForVisualCpnt(Entity& entity, uint64 lodSelectorHandle, bool doEnable)
 {
     for (Component* cpnt : entity.cpnts_mb)
@@ -69,7 +95,7 @@ void EnableVisibilityForVisualCpnt(Entity& entity, uint64 lodSelectorHandle, boo
             Visual* vis = static_cast<Visual*>(cpnt);
             if (vis->shared_LODSelector->handle == lodSelectorHandle)
             {
-                Visual__ToggleVisibility(vis, doEnable);
+                ToggleVisualCpntVisibility(*vis, doEnable);
                 // In unmodded game, there should only be a single matching `Visual`,
                 // but some Forge Mods can result in player's entity having duplicate `Visual`s.
                 // If I don't toggle their visibility accordingly, I'll end up with hair on top of hood.
@@ -239,14 +265,48 @@ void PlayHoodAnimation(bool doPutHoodOn)
     bool* v = GetGraphVariable<bool>(*graphEvaluation, g_newGraphVar.varnameHash);
     SetGraphVariable<bool>(*graphEvaluation, g_newGraphVar.varnameHash, !doPutHoodOn);
 }
+void RemovableHood_ReactToAnimationSignal(bool truePutOnFalseTakeOff)
+{
+    Entity* player = ACU::GetPlayer();
+    if (!player) { return; }
+    CurrentHoodState currentHood = FindCurrentHoodVariation(*player);
+    if (!currentHood.m_currentHood) { return; }
+    ToggleHoodVisuals(*currentHood.m_currentHood, truePutOnFalseTakeOff);
+}
+bool IsHoodToggleShouldBeInstant()
+{
+    AtomAnimComponent* animCpnt = ACU::GetPlayerCpnt_AtomAnimComponent();
+    if (!animCpnt) { return true; }
+    GraphEvaluation* graphEvaluation = animCpnt->pD0;
+    if (!graphEvaluation) { return true; }
+    // bool IsActing; // 0x1f156dfb/521498107
+    // bool IsPlayingSpecificAnimation; // 0xf9324be6/4180823014
+    bool isInNormalGameplayState = true;
+    if (*GetGraphVariable<bool>(*graphEvaluation, 0x1f156dfb)
+        || *GetGraphVariable<bool>(*graphEvaluation, 0xf9324be6))
+    {
+        isInNormalGameplayState = false;
+    }
+    if (!isInNormalGameplayState)
+    {
+        return true;
+    }
+    return false;
+}
 void ToggleHood()
 {
     Entity* player = ACU::GetPlayer();
     if (!player) { return; }
     CurrentHoodState currentHood = FindCurrentHoodVariation(*player);
     if (!currentHood.m_currentHood) { return; }
-    ToggleHoodVisuals(*currentHood.m_currentHood, !currentHood.m_isHoodOn);
-    PlayHoodAnimation(!currentHood.m_isHoodOn);
+    if (IsHoodToggleShouldBeInstant())
+    {
+        ToggleHoodVisuals(*currentHood.m_currentHood, !currentHood.m_isHoodOn);
+    }
+    else
+    {
+        PlayHoodAnimation(!currentHood.m_isHoodOn);
+    }
     if (IsToggleHoodSoundEnabled())
         PlaySound_ToggleHood(*player, !currentHood.m_isHoodOn);
 }

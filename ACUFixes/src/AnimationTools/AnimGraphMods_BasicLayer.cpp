@@ -203,6 +203,120 @@ void StateMachine_PushState(AtomStateMachineNode& stateMachine, AtomStateNode& n
     SmallArrayAppend<AtomStateNode*>(stateMachine.States, &newState);
 }
 
+
+
+
+
+class MyCondition
+{
+public:
+    virtual ~MyCondition() {}
+};
+union ComparisonValue_t
+{
+    bool bool_;
+    int int_;
+    float float_;
+    __m128 xyzw;
+    ComparisonValue_t(int int_) : xyzw{ 0 } { this->int_ = int_; }
+    ComparisonValue_t(bool bool_) : xyzw{ 0 } { this->bool_ = bool_; }
+    ComparisonValue_t(float float_) : xyzw{ 0 } { this->float_ = float_; }
+};
+class MyCondition_GraphVariable : public MyCondition
+{
+public:
+    MyCondition_GraphVariable(AtomCondition_ConditionalOperator comparisonOp, uint32 rtcpVarIdx, AtomDataContainerWrapper_DataType varType, ComparisonValue_t value)
+        : comparisonOp(comparisonOp)
+        , rtcpVarIdx(rtcpVarIdx)
+        , varType(varType)
+        , value(value)
+    {}
+    AtomCondition_ConditionalOperator comparisonOp;
+    uint32 rtcpVarIdx;
+    AtomDataContainerWrapper_DataType varType;
+    ComparisonValue_t value;
+};
+class MyCondition_PlaybackPercentage : public MyCondition
+{
+public:
+    MyCondition_PlaybackPercentage(float inRange0_1) : playbackPercentageInRange0_1(inRange0_1) {}
+    float playbackPercentageInRange0_1;
+};
+using Subconditions_t = std::vector<std::shared_ptr<MyCondition>>;
+class MyCondition_Group : public MyCondition
+{
+public:
+    MyCondition_Group(AtomCondition_ConjunctionOperator conjunctionOp, Subconditions_t&& subconditions)
+        : conjunctionOp(conjunctionOp)
+        , subconditions(std::move(subconditions))
+    {}
+    AtomCondition_ConjunctionOperator conjunctionOp;
+    Subconditions_t subconditions;
+};
+void AppendConditionGroup(AtomConditionExpression& condExpr, const MyCondition_Group& conditionGroup)
+{
+    {
+        AtomCondition& cond = *SmallArray_GameType_Append(condExpr.Conditions);
+        cond.ConditionType = AtomCondition_ConditionType::WEIRD_CONDITION;
+        cond.ConditionalOperator = AtomCondition_ConditionalOperator::EQUALS;
+        cond.ConjunctionOperator = AtomCondition_ConjunctionOperator::AND;
+        cond.word_C = (uint16)conditionGroup.subconditions.size();
+    }
+
+    for (const auto& subcondition : conditionGroup.subconditions)
+    {
+        if (auto* condGraphVar = dynamic_cast<MyCondition_GraphVariable*>(subcondition.get()))
+        {
+            AtomCondition& cond = *SmallArray_GameType_Append(condExpr.Conditions);
+            cond.ConditionType = AtomCondition_ConditionType::GRAPH_VARIABLE;
+            cond.word_A = 0xFFFF;
+            cond.word_C = 0;
+            cond.ValueToTestReferenceID = condGraphVar->rtcpVarIdx;
+            cond.ComparisonValue.DataType_0bool1float2int4xy5xyz6quat = condGraphVar->varType;
+            (ComparisonValue_t&)cond.ComparisonValue.value = condGraphVar->value;
+
+            cond.ConjunctionOperator = conditionGroup.conjunctionOp;
+        }
+        else if (auto* condPlaybackPercentage = dynamic_cast<MyCondition_PlaybackPercentage*>(subcondition.get()))
+        {
+            AtomCondition* animationReachedPercentage = SmallArray_GameType_Append(condExpr.Conditions);
+            animationReachedPercentage->ConditionType = AtomCondition_ConditionType::PLAYBACK_PERCENTAGE_mb;
+            animationReachedPercentage->ConditionalOperator = AtomCondition_ConditionalOperator::EQUALS;
+            animationReachedPercentage->ConjunctionOperator = AtomCondition_ConjunctionOperator::AND;
+            animationReachedPercentage->ValueToTestReferenceID = 0;
+            animationReachedPercentage->ComparisonValue.DataType_0bool1float2int4xy5xyz6quat = AtomDataContainerWrapper_DataType::Float;
+            (float&)animationReachedPercentage->ComparisonValue.value = condPlaybackPercentage->playbackPercentageInRange0_1;
+            animationReachedPercentage->word_C = 0;
+        }
+        else if (auto* condGroup = dynamic_cast<MyCondition_Group*>(subcondition.get()))
+        {
+            AppendConditionGroup(condExpr, *condGroup);
+        }
+    }
+}
+AtomConditionExpression& BuildConditionExpression(const MyCondition_Group& conditionGroup)
+{
+    auto& condExpr = *ACUAllocate<AtomConditionExpression>();
+
+    AppendConditionGroup(condExpr, conditionGroup);
+
+    return condExpr;
+}
+void BuildCETest()
+{
+    AtomConditionExpression* condExpr = &BuildConditionExpression(MyCondition_Group(
+        AtomCondition_ConjunctionOperator::OR,
+        Subconditions_t{
+            std::make_shared<MyCondition_GraphVariable>(AtomCondition_ConditionalOperator::EQUALS, 539, AtomDataContainerWrapper_DataType::Bool, ComparisonValue_t(true)),
+            std::make_shared<MyCondition_PlaybackPercentage>(0.75f),
+        }
+    ));
+    int nop = 0;
+}
+
+
+
+
 namespace AnimGraphMods::BasicLayer
 {
 void SetupStateMachineDefaultInitialState(AtomStateMachineNode& stateMachineNode)
@@ -323,7 +437,8 @@ AtomLayeringInfo& LayeringState_CreateNewLayerWithStateMachine(AtomLayeringState
 }
 void ApplyMod(AtomGraph& atomGraph)
 {
-    AddMyNewRTCPVariable(atomGraph);
+    static MyNewerRTCPVariable hoodControlBool("MyNewBoolGraphVariable", 91818771, false);
+    AddMyNewerRTCPVariable(atomGraph, hoodControlBool);
     auto* mainLayeringState = static_cast<AtomLayeringStateNode*>(atomGraph.RootStateMachine->States[0]);
     AtomLayeringInfo& newLayer = LayeringState_CreateNewLayerWithStateMachine(*mainLayeringState);
     SetupTheNewLayer(newLayer);

@@ -1342,6 +1342,7 @@ void CloneAtomGraphExperiment()
     }
 }
 #include "AnimationTools/AnimGraphMods.h"
+void BuildCETest();
 void DrawAtomGraphDumper()
 {
     if (ImGui::Button("Dump Player's Animation graph"))
@@ -1405,6 +1406,10 @@ void DrawAtomGraphDumper()
     //{
     //    ClearBoneLayeringCache(*animCpnt->shared_AtomGraph_NewDemo_DEV->GetPtr());
     //}
+    if (ImGui::Button("Build ConditionExpression test"))
+    {
+        BuildCETest();
+    }
     CloneAtomGraphExperiment();
 
 }

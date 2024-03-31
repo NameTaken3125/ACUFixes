@@ -117,6 +117,7 @@ class UsedDuringDisguiseParent_b_UsedDuringCrouch;
 class UsedDuringQuickshot_40
 {
 public:
+    // @members
     uint32 dword_0; //0x0000
     uint8 byte_4_isChanged_mb; //0x0004
     char pad_0005[3]; //0x0005
@@ -129,6 +130,30 @@ public:
     uint8 byte_19_isJustStarted_mb; //0x0019
     char pad_001A[2]; //0x001A
     uint32 dword_1C_startFrame_mb; //0x001C
+
+    // @helper_functions
+    UsedDuringQuickshot_40()
+        : dword_0(-1)
+        , byte_4_isChanged_mb(0)
+        , dword_8(0)
+        , byte_C(1)
+        , dword_10_isPlaying_mb(0)
+        , dword_14(0)
+        , byte_18(0)
+        , byte_19_isJustStarted_mb(0)
+        , dword_1C_startFrame_mb(0)
+    {}
+    UsedDuringQuickshot_40(uint32 animationSignalInt)
+        : dword_0(animationSignalInt)
+        , byte_4_isChanged_mb(0)
+        , dword_8(0)
+        , byte_C(1)
+        , dword_10_isPlaying_mb(0)
+        , dword_14(0)
+        , byte_18(0)
+        , byte_19_isJustStarted_mb(0)
+        , dword_1C_startFrame_mb(0)
+    {}
 }; //Size: 0x0020
 assert_sizeof(UsedDuringQuickshot_40, 0x20);
 class HumanStatesHolder;

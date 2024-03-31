@@ -55,8 +55,7 @@ void* AddMyNewRTCPVariable_generic(AtomGraph& atomGraph, uint8 varAlignment, uin
     const uint16 newVarIdx = oldNumNormalVars;
     uint32 numRtcpDescriptorsWithoutFixedOffset = rtcpCached->graphVarHashes.size - oldNumNormalVars;
     uint16 newNumOffsets = newNumHashes - numRtcpDescriptorsWithoutFixedOffset;
-    // TODO: Insert, not append.
-    atomGraph.numRtcpDescriptors_6C = newNumOffsets;
+    atomGraph.numNonentityrefRTCPVars = newNumOffsets;
 
     SmallArrayReserve(rtcpCached->graphVarsBuffer, newRTCPDataSize);
     rtcpCached->graphVarsBuffer.size = newRTCPDataSize;
@@ -69,17 +68,44 @@ void* AddMyNewRTCPVariable_generic(AtomGraph& atomGraph, uint8 varAlignment, uin
     (*rtcpCached->atomGraphVarsHashmap.Get(0xe35d816d))++;
     return (void*)&rtcpCached->graphVarsBuffer[positionInVarsBuffer];
 }
-void AddMyNewRTCPVariable_float(AtomGraph& atomGraph, uint32 varnameHash, float initialValue)
+class AtomGraphPatchesDatabase
 {
-    *(float*)AddMyNewRTCPVariable_generic(atomGraph, 4, 4, varnameHash) = initialValue;
+public:
+    void AddRTCPVariable(AtomGraph& graph, const MyNewerRTCPVariable& newVarDescriptor);
+    std::map<AtomGraph*, uint32> m_numAddedNewVarsByGraph;
+};
+AtomGraphPatchesDatabase g_GraphPatches;
+void AtomGraphPatchesDatabase::AddRTCPVariable(AtomGraph& atomGraph, const MyNewerRTCPVariable& newVarDescriptor)
+{
+    AtomGraph_RTCP* rtcpCached = atomGraph.rtcp;
+    if (uint32* pAlreadyPresentVarIdx = rtcpCached->atomGraphVarsHashmap.Get(newVarDescriptor.varnameHash))
+    {
+        return;
+    }
+    switch (newVarDescriptor.vartype)
+    {
+    case RTCPVariableType::Bool:
+        *(bool*)AddMyNewRTCPVariable_generic(atomGraph, 1, 1, newVarDescriptor.varnameHash) = newVarDescriptor.bool_;
+        break;
+    case RTCPVariableType::Float:
+        *(float*)AddMyNewRTCPVariable_generic(atomGraph, 4, 4, newVarDescriptor.varnameHash) = newVarDescriptor.float_;
+        break;
+    default:
+        break;
+    }
+    m_numAddedNewVarsByGraph[&atomGraph]++;
 }
-void AddMyNewRTCPVariable_bool(AtomGraph& atomGraph, uint32 varnameHash, bool initialValue)
+//uint32 AdjustGraphvarIndexForEntityrefVars(uint32 graphVarIdx, AtomGraph& graph)
+//{
+//    return graphVarIdx + 1;
+//}
+uint32 AdjustGraphvarIndexForEntityrefVars(uint32 graphVarIdx, AtomGraph& graph)
 {
-    *(bool*)AddMyNewRTCPVariable_generic(atomGraph, 1, 1, varnameHash) = initialValue;
+    return graphVarIdx + g_GraphPatches.m_numAddedNewVarsByGraph[&graph];
 }
-void AddMyNewRTCPVariable(AtomGraph& atomGraph)
+void AddMyNewerRTCPVariable(AtomGraph& atomGraph, const MyNewerRTCPVariable& newVarDescriptor)
 {
-    AddMyNewRTCPVariable_bool(atomGraph, g_newGraphVar.varnameHash, 0);
+    g_GraphPatches.AddRTCPVariable(atomGraph, newVarDescriptor);
 }
 AtomOutputPort* CreateOutputPort(AtomGraphNode& graphNode)
 {

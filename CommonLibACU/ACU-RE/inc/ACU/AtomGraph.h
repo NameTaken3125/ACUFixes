@@ -42,7 +42,8 @@ public:
     SmallArray<uint32> graphVarsOffsets; //0x00D0
     SmallArray<uint32> graphVarHashes; //0x00DC
     ACUHashmap<uint32, uint32> atomGraphVarsHashmap; //0x00E8
-    char pad_00F0[16]; //0x00F0
+    AtomGraph* atomGraph; //0x00F0
+    char pad_00F8[8]; //0x00F8
 }; //Size: 0x0110
 assert_offsetof(AtomGraph_RTCP, graphVarsOffsets, 0xD0);
 assert_offsetof(AtomGraph_RTCP, atomGraphVarsHashmap, 0xE8);
@@ -68,7 +69,7 @@ public:
     AtomStateDescriptor stateDescriptor; //0x0038
     AtomCustomTransitionSystem* AtomCustomTransitionSystem_; //0x0060
     uint32 RTCPDataSize; //0x0068
-    uint32 numRtcpDescriptors_6C; //0x006C
+    uint32 numNonentityrefRTCPVars; //0x006C
     uint32 numNodes_mb; //0x0070
     ExternalIdMap ExternalIdMap_; //0x0074
     char pad_008C[4]; //0x008C

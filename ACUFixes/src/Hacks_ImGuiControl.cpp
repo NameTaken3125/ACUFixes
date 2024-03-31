@@ -43,6 +43,25 @@
 
 #include "AnimationTools/AnimationGraphEvaluationPatches.h"
 
+#include "AutoAssemblerKinda/AutoAssemblerKinda.h"
+
+struct HookAnimationSignalsThatHumansReceive : AutoAssemblerCodeHolder_Base
+{
+    HookAnimationSignalsThatHumansReceive();
+};
+void WhenRegisteredAnimationSignalHasSentAnUpdate(AllRegisters* params)
+{
+    uint32 animationSignalReceiverIndex = (uint32&)params->rdx_;
+    HumanStatesHolder* humanStates = (HumanStatesHolder*)params->rcx_;
+    uint8 isSignalPositiveNow = (uint8&)params->r8_;
+}
+HookAnimationSignalsThatHumansReceive::HookAnimationSignalsThatHumansReceive()
+{
+    uintptr_t whenRegisteredAnimationSignalHasSentAnUpdate = 0x141942CB0;
+    PresetScript_CCodeInTheMiddle(whenRegisteredAnimationSignalHasSentAnUpdate, 5,
+        WhenRegisteredAnimationSignalHasSentAnUpdate, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
+}
+
 void DrawSlowMotionControls();
 void DrawSlowMotionTrickControls();
 void DrawHoodControls();

@@ -66,8 +66,9 @@ class NewAnimationsFactory
 {
 public:
     ACUSharedPtr_Strong<Animation> LoadNewAnimationFromFile(const std::filesystem::path& filepath);
-private:
+public:
     ACUSharedPtr_Strong<Animation> AllocateNewAnimation();
+private:
     uint64 m_NextFreeHandle = handle_MaximumInACU + 1;
 };
 extern NewAnimationsFactory g_NewAnimationsFactory;

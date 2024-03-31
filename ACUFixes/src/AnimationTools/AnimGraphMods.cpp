@@ -1,7 +1,7 @@
 #include "pch.h"
 
 #include "AnimationTools/AnimGraphMods.h"
-MyNewRTCPVariable g_newGraphVar;
+MyNewerRTCPVariable g_newGraphVar("MyNewBoolGraphVariable", 91818771, false);
 
 #include "ACU/AtomGraph.h"
 #include "Experimental_StrongPtr.h"
