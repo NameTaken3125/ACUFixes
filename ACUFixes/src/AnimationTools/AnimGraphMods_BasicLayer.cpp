@@ -126,22 +126,8 @@ AtomConditionExpression* CreateConditionExpression_TwoFirstWeirdConditions()
     }
     return condExpr;
 }
-AtomConditionExpression* CreateConditionExpression_SingleVariableEqualsTo(uint32 rtcpVarIdx, bool value)
-{
-    AtomConditionExpression* condExpr = CreateConditionExpression_TwoFirstWeirdConditions();
-    {
-        AtomCondition* myVarEqualsTo1 = SmallArray_GameType_Append(condExpr->Conditions);
-        myVarEqualsTo1->ConditionType = AtomCondition_ConditionType::GRAPH_VARIABLE;
-        myVarEqualsTo1->ConditionalOperator = AtomCondition_ConditionalOperator::EQUALS;
-        myVarEqualsTo1->ConjunctionOperator = AtomCondition_ConjunctionOperator::AND;
-        myVarEqualsTo1->ValueToTestReferenceID = rtcpVarIdx;
-        myVarEqualsTo1->ComparisonValue.DataType_0bool1float2int4xy5xyz6quat = AtomDataContainerWrapper_DataType::Bool;
-        myVarEqualsTo1->ComparisonValue.value = value;
-
-        SmallArrayAppend(condExpr->referencedGraphVarsIndices, rtcpVarIdx);
-    }
-    return condExpr;
-}
+AtomConditionExpression* CreateConditionExpression_SingleVariableEqualsTo(uint32 rtcpVarIdx, bool value);
+AtomConditionExpression* CreateConditionExpression_PlaybackPercentage(const float inRange0_1);
 AtomConditionExpression* CreateConditionExpression_PlaybackFinished()
 {
     AtomConditionExpression* condExpr = CreateConditionExpression_TwoFirstWeirdConditions();
@@ -153,24 +139,6 @@ AtomConditionExpression* CreateConditionExpression_PlaybackFinished()
         animationIsFinished->ValueToTestReferenceID = 0;
         animationIsFinished->ComparisonValue.DataType_0bool1float2int4xy5xyz6quat = AtomDataContainerWrapper_DataType::Float;
         (float&)animationIsFinished->ComparisonValue.value = 1.0f;
-        // Appears to represent something related to "parentheses" within the `AtomConditionExpression`.
-        // Like, how many of the conditions that follow this one need to be "skipped".
-        // If so, then it would make sense that the last condition in an expression should have this value at 0.
-        animationIsFinished->word_C = 0;
-    }
-    return condExpr;
-}
-AtomConditionExpression* CreateConditionExpression_PlaybackPercentage(const float inRange0_1)
-{
-    AtomConditionExpression* condExpr = CreateConditionExpression_TwoFirstWeirdConditions();
-    {
-        AtomCondition* animationIsFinished = SmallArray_GameType_Append(condExpr->Conditions);
-        animationIsFinished->ConditionType = AtomCondition_ConditionType::PLAYBACK_PERCENTAGE_mb;
-        animationIsFinished->ConditionalOperator = AtomCondition_ConditionalOperator::EQUALS;
-        animationIsFinished->ConjunctionOperator = AtomCondition_ConjunctionOperator::AND;
-        animationIsFinished->ValueToTestReferenceID = 0;
-        animationIsFinished->ComparisonValue.DataType_0bool1float2int4xy5xyz6quat = AtomDataContainerWrapper_DataType::Float;
-        (float&)animationIsFinished->ComparisonValue.value = inRange0_1;
         // Appears to represent something related to "parentheses" within the `AtomConditionExpression`.
         // Like, how many of the conditions that follow this one need to be "skipped".
         // If so, then it would make sense that the last condition in an expression should have this value at 0.
@@ -225,7 +193,7 @@ union ComparisonValue_t
 class MyCondition_GraphVariable : public MyCondition
 {
 public:
-    MyCondition_GraphVariable(AtomCondition_ConditionalOperator comparisonOp, uint32 rtcpVarIdx, AtomDataContainerWrapper_DataType varType, ComparisonValue_t value)
+    MyCondition_GraphVariable(uint32 rtcpVarIdx, AtomCondition_ConditionalOperator comparisonOp, AtomDataContainerWrapper_DataType varType, ComparisonValue_t value)
         : comparisonOp(comparisonOp)
         , rtcpVarIdx(rtcpVarIdx)
         , varType(varType)
@@ -253,6 +221,27 @@ public:
     AtomCondition_ConjunctionOperator conjunctionOp;
     Subconditions_t subconditions;
 };
+void SortedSetInsert(SmallArray<uint32>& sortedArrayOfRtcpVarIndices, uint32 rtcpIdxToAdd)
+{
+    std::optional<uint16> whereToInsert = sortedArrayOfRtcpVarIndices.size;
+    for (uint16 i = 0; i < sortedArrayOfRtcpVarIndices.size; i++)
+    {
+        if (sortedArrayOfRtcpVarIndices[i] > rtcpIdxToAdd)
+        {
+            whereToInsert = i;
+            break;
+        }
+        else if (sortedArrayOfRtcpVarIndices[i] == rtcpIdxToAdd)
+        {
+            whereToInsert.reset();
+            break;
+        }
+    }
+    if (whereToInsert)
+    {
+        SmallArrayInsert(sortedArrayOfRtcpVarIndices, rtcpIdxToAdd, *whereToInsert);
+    }
+}
 void AppendConditionGroup(AtomConditionExpression& condExpr, const MyCondition_Group& conditionGroup)
 {
     {
@@ -276,6 +265,8 @@ void AppendConditionGroup(AtomConditionExpression& condExpr, const MyCondition_G
             (ComparisonValue_t&)cond.ComparisonValue.value = condGraphVar->value;
 
             cond.ConjunctionOperator = conditionGroup.conjunctionOp;
+
+            SortedSetInsert(condExpr.referencedGraphVarsIndices, condGraphVar->rtcpVarIdx);
         }
         else if (auto* condPlaybackPercentage = dynamic_cast<MyCondition_PlaybackPercentage*>(subcondition.get()))
         {
@@ -302,12 +293,58 @@ AtomConditionExpression& BuildConditionExpression(const MyCondition_Group& condi
 
     return condExpr;
 }
+AtomConditionExpression* CreateConditionExpression_SingleVariableEqualsTo(uint32 rtcpVarIdx, bool value)
+{
+    //AtomConditionExpression* condExpr = CreateConditionExpression_TwoFirstWeirdConditions();
+    //{
+    //    AtomCondition* myVarEqualsTo1 = SmallArray_GameType_Append(condExpr->Conditions);
+    //    myVarEqualsTo1->ConditionType = AtomCondition_ConditionType::GRAPH_VARIABLE;
+    //    myVarEqualsTo1->ConditionalOperator = AtomCondition_ConditionalOperator::EQUALS;
+    //    myVarEqualsTo1->ConjunctionOperator = AtomCondition_ConjunctionOperator::AND;
+    //    myVarEqualsTo1->ValueToTestReferenceID = rtcpVarIdx;
+    //    myVarEqualsTo1->ComparisonValue.DataType_0bool1float2int4xy5xyz6quat = AtomDataContainerWrapper_DataType::Bool;
+    //    myVarEqualsTo1->ComparisonValue.value = value;
+
+    //    SmallArrayAppend(condExpr->referencedGraphVarsIndices, rtcpVarIdx);
+    //}
+    //return condExpr;
+    return &BuildConditionExpression(MyCondition_Group(
+        AtomCondition_ConjunctionOperator::AND,
+        Subconditions_t{
+            std::make_shared<MyCondition_GraphVariable>(rtcpVarIdx, AtomCondition_ConditionalOperator::EQUALS, AtomDataContainerWrapper_DataType::Bool, ComparisonValue_t(value)),
+        }
+    ));
+}
+AtomConditionExpression* CreateConditionExpression_PlaybackPercentage(const float inRange0_1)
+{
+    //AtomConditionExpression* condExpr = CreateConditionExpression_TwoFirstWeirdConditions();
+    //{
+    //    AtomCondition* animationIsFinished = SmallArray_GameType_Append(condExpr->Conditions);
+    //    animationIsFinished->ConditionType = AtomCondition_ConditionType::PLAYBACK_PERCENTAGE_mb;
+    //    animationIsFinished->ConditionalOperator = AtomCondition_ConditionalOperator::EQUALS;
+    //    animationIsFinished->ConjunctionOperator = AtomCondition_ConjunctionOperator::AND;
+    //    animationIsFinished->ValueToTestReferenceID = 0;
+    //    animationIsFinished->ComparisonValue.DataType_0bool1float2int4xy5xyz6quat = AtomDataContainerWrapper_DataType::Float;
+    //    (float&)animationIsFinished->ComparisonValue.value = inRange0_1;
+    //    // Appears to represent something related to "parentheses" within the `AtomConditionExpression`.
+    //    // Like, how many of the conditions that follow this one need to be "skipped".
+    //    // If so, then it would make sense that the last condition in an expression should have this value at 0.
+    //    animationIsFinished->word_C = 0;
+    //}
+    //return condExpr;
+    return &BuildConditionExpression(MyCondition_Group(
+        AtomCondition_ConjunctionOperator::AND,
+        Subconditions_t{
+            std::make_shared<MyCondition_PlaybackPercentage>(inRange0_1),
+        }
+    ));
+}
 void BuildCETest()
 {
     AtomConditionExpression* condExpr = &BuildConditionExpression(MyCondition_Group(
         AtomCondition_ConjunctionOperator::OR,
         Subconditions_t{
-            std::make_shared<MyCondition_GraphVariable>(AtomCondition_ConditionalOperator::EQUALS, 539, AtomDataContainerWrapper_DataType::Bool, ComparisonValue_t(true)),
+            std::make_shared<MyCondition_GraphVariable>(539, AtomCondition_ConditionalOperator::EQUALS, AtomDataContainerWrapper_DataType::Bool, ComparisonValue_t(true)),
             std::make_shared<MyCondition_PlaybackPercentage>(0.75f),
         }
     ));
@@ -347,53 +384,44 @@ void SetupTheNewLayersStateMachine(AtomStateMachineNode& newLayerStateMachine)
         transitionFromNullStateIfMyVariableIsSet->TargetStateIndex = 1;
         transitionFromNullStateIfMyVariableIsSet->TransitionTime = 0.5f;
         transitionFromNullStateIfMyVariableIsSet->BlendType = 1;
-        AtomConditionExpression* condExpr = CreateConditionExpression_SingleVariableEqualsTo(539, true);
-        transitionFromNullStateIfMyVariableIsSet->conditionExpression = condExpr;
+        transitionFromNullStateIfMyVariableIsSet->conditionExpression = CreateConditionExpression_SingleVariableEqualsTo(539, true);
     }
     AtomStateTransitionTarget* transitionTo2ndNullState = ACUAllocate<AtomStateTransitionTarget>();
     {
         transitionTo2ndNullState->TargetStateIndex = 2;
         transitionTo2ndNullState->TransitionTime = 0.5f;
         transitionTo2ndNullState->BlendType = 1;
-        //AtomConditionExpression* condExpr = CreateConditionExpression_SingleVariableEqualsTo(539, false);
-        AtomConditionExpression* condExpr = CreateConditionExpression_PlaybackPercentage(0.65f);
-        transitionTo2ndNullState->conditionExpression = condExpr;
+        transitionTo2ndNullState->conditionExpression = CreateConditionExpression_PlaybackPercentage(0.65f);
     }
     AtomStateTransitionTarget* transitionFrom2ndNullStateIfMyVariableIsUNSET = ACUAllocate<AtomStateTransitionTarget>();
     {
         transitionFrom2ndNullStateIfMyVariableIsUNSET->TargetStateIndex = 3;
         transitionFrom2ndNullStateIfMyVariableIsUNSET->TransitionTime = 0.5f;
         transitionFrom2ndNullStateIfMyVariableIsUNSET->BlendType = 1;
-        AtomConditionExpression* condExpr = CreateConditionExpression_SingleVariableEqualsTo(539, false);
-        transitionFrom2ndNullStateIfMyVariableIsUNSET->conditionExpression = condExpr;
+        transitionFrom2ndNullStateIfMyVariableIsUNSET->conditionExpression = CreateConditionExpression_SingleVariableEqualsTo(539, false);
     }
     AtomStateTransitionTarget* transitionTo1stNullState = ACUAllocate<AtomStateTransitionTarget>();
     {
         transitionTo1stNullState->TargetStateIndex = 0;
         transitionTo1stNullState->TransitionTime = 0.5f;
         transitionTo1stNullState->BlendType = 1;
-        AtomConditionExpression* condExpr = CreateConditionExpression_PlaybackPercentage(0.65f);
-        transitionTo1stNullState->conditionExpression = condExpr;
+        transitionTo1stNullState->conditionExpression = CreateConditionExpression_PlaybackPercentage(0.65f);
     }
     AtomStateTransitionTarget* resetPlayback1 = ACUAllocate<AtomStateTransitionTarget>();
     {
         resetPlayback1->TargetStateIndex = 3;
         resetPlayback1->TransitionTime = 0.25f;
         resetPlayback1->BlendType = 1;
-        AtomConditionExpression* condExpr = CreateConditionExpression_SingleVariableEqualsTo(539, false);
-        resetPlayback1->conditionExpression = condExpr;
+        resetPlayback1->conditionExpression = CreateConditionExpression_SingleVariableEqualsTo(539, false);
     }
     AtomStateTransitionTarget* resetPlayback2 = ACUAllocate<AtomStateTransitionTarget>();
     {
         resetPlayback2->TargetStateIndex = 1;
         resetPlayback2->TransitionTime = 0.25f;
         resetPlayback2->BlendType = 1;
-        AtomConditionExpression* condExpr = CreateConditionExpression_SingleVariableEqualsTo(539, true);
-        resetPlayback2->conditionExpression = condExpr;
+        resetPlayback2->conditionExpression = CreateConditionExpression_SingleVariableEqualsTo(539, true);
     }
 
-    //SmallArrayAppend(newLayerStateMachine.transitionTargets_98, transitionFromNullStateIfMyVariableIsSet);
-    //SmallArrayAppend(newLayerStateMachine.transitionTargets_98, transitionToNullState);
     SmallArrayAppend(nullState1.base8.Transitions, transitionFromNullStateIfMyVariableIsSet);
     SmallArrayAppend(nullState2.base8.Transitions, transitionFrom2ndNullStateIfMyVariableIsUNSET);
     SmallArrayAppend(playbackState1.base8.Transitions, transitionTo2ndNullState);
