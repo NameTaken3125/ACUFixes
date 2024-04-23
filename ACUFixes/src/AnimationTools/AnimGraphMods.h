@@ -9,6 +9,7 @@ enum class RTCPVariableType
 {
     Bool = 0,
     Float = 1,
+    Int = 2,
 };
 struct MyNewerRTCPVariable
 {
@@ -19,12 +20,16 @@ struct MyNewerRTCPVariable
     {
         bool bool_;
         float float_;
+        int int_;
     };
-    MyNewerRTCPVariable(const char* varname, uint32 varnameHash, bool bool_)
+    explicit MyNewerRTCPVariable(const char* varname, uint32 varnameHash, bool bool_)
         : varname(varname), varnameHash(varnameHash), bool_(bool_), vartype(RTCPVariableType::Bool)
     {}
-    MyNewerRTCPVariable(const char* varname, uint32 varnameHash, float float_)
+    explicit MyNewerRTCPVariable(const char* varname, uint32 varnameHash, float float_)
         : varname(varname), varnameHash(varnameHash), float_(float_), vartype(RTCPVariableType::Float)
+    {}
+    explicit MyNewerRTCPVariable(const char* varname, uint32 varnameHash, int int_)
+        : varname(varname), varnameHash(varnameHash), int_(int_), vartype(RTCPVariableType::Int)
     {}
 };
 extern MyNewerRTCPVariable g_newGraphVar;

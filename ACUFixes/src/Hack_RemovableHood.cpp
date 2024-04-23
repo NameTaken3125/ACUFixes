@@ -256,14 +256,44 @@ bool IsToggleHoodSoundEnabled()
 #include "ACU/AtomAnimComponent.h"
 #include "AnimationTools/AtomGraphControls.h"
 #include "AnimationTools/AnimGraphMods.h"
+#include "AnimationTools/Hack_RemovableHood_Animations.h"
 void PlayHoodAnimation(bool doPutHoodOn)
 {
     AtomAnimComponent* animCpnt = ACU::GetPlayerCpnt_AtomAnimComponent();
     if (!animCpnt) { return; }
     GraphEvaluation* graphEvaluation = animCpnt->pD0;
     if (!graphEvaluation) { return; }
-    bool* v = GetGraphVariable<bool>(*graphEvaluation, g_newGraphVar.varnameHash);
-    SetGraphVariable<bool>(*graphEvaluation, g_newGraphVar.varnameHash, !doPutHoodOn);
+    int* v = GetGraphVariable<int>(*graphEvaluation, g_newGraphVar.varnameHash);
+
+    const int currentRTCPValue = *v;
+    int newRTCPValue = !doPutHoodOn;
+    if (doPutHoodOn)
+    {
+        switch (currentRTCPValue)
+        {
+        case PutHoodOn_normalpath:
+        case TakeHoodOff_ALTpath:
+            newRTCPValue = PutHoodOn_ALTpath;
+            break;
+        default:
+            newRTCPValue = PutHoodOn_normalpath;
+            break;
+        }
+    }
+    else
+    {
+        switch (currentRTCPValue)
+        {
+        case TakeHoodOff_normalpath:
+        case PutHoodOn_ALTpath:
+            newRTCPValue = TakeHoodOff_ALTpath;
+            break;
+        default:
+            newRTCPValue = TakeHoodOff_normalpath;
+            break;
+        }
+    }
+    SetGraphVariable<int>(*graphEvaluation, g_newGraphVar.varnameHash, newRTCPValue);
 }
 void RemovableHood_ReactToAnimationSignal(bool truePutOnFalseTakeOff)
 {
@@ -275,6 +305,7 @@ void RemovableHood_ReactToAnimationSignal(bool truePutOnFalseTakeOff)
 }
 bool IsHoodToggleShouldBeInstant()
 {
+    return false;
     AtomAnimComponent* animCpnt = ACU::GetPlayerCpnt_AtomAnimComponent();
     if (!animCpnt) { return true; }
     GraphEvaluation* graphEvaluation = animCpnt->pD0;

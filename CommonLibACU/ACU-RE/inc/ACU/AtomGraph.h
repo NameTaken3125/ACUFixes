@@ -61,6 +61,7 @@ public:
 class AtomGraph : public AtomRawFile
 {
 public:
+    // @members
     AtomStateMachineNode* RootStateMachine; //0x0010
     AtomGraphStateNode* graphNode; //0x0018
     AtomNullStateNode* AtomNullStateNode_; //0x0020
@@ -75,5 +76,8 @@ public:
     char pad_008C[4]; //0x008C
     AtomGraph_RTCP* rtcp; //0x0090
     AtomGraph_98* p98; //0x0098
+
+    // @members
+    static TypeInfo& GetTI() { return *(TypeInfo*)0x1439D88E0; }
 }; //Size: 0x00A0
 assert_sizeof(AtomGraph, 0xA0);

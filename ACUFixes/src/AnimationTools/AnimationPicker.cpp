@@ -43,6 +43,7 @@ std::vector<MyPlayableAnim> g_myAnimations = {
     {151418108049, "DataAI_GroupBehavior_Couple_TakeAway/xx_FreeAim_Pistol_Chambering.Animation"},
 
     {31096122263, "Game Bootstrap Settings/xx_Invalid_Animation.Animation"},
+    {195022897882, "xx_HiddenBlade_MeduIdle/xx_HiddenBlade_MeduIdle.Animation"},
     {2999967198, "Game Bootstrap Settings/Ghost_mode_skiprope_sideways.Animation"},
     {2999967798, "Game Bootstrap Settings/Ghost_mode_skiprope_cross_start.Animation"},
     {2999967803, "Game Bootstrap Settings/Ghost_mode_skiprope_cross_cylce.Animation"},

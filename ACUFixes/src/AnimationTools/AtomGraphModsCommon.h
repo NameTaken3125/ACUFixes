@@ -90,6 +90,9 @@ void AtomGraphPatchesDatabase::AddRTCPVariable(AtomGraph& atomGraph, const MyNew
     case RTCPVariableType::Float:
         *(float*)AddMyNewRTCPVariable_generic(atomGraph, 4, 4, newVarDescriptor.varnameHash) = newVarDescriptor.float_;
         break;
+    case RTCPVariableType::Int:
+        *(int*)AddMyNewRTCPVariable_generic(atomGraph, 4, 4, newVarDescriptor.varnameHash) = newVarDescriptor.int_;
+        break;
     default:
         break;
     }

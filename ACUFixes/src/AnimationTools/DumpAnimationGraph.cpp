@@ -1400,7 +1400,7 @@ void DrawAtomGraphDumper()
     // 39 == dodge bullet; 32 == pick up body; 33 == kidnap; 36 == ragdoll; 29 == cut alarm bell; 28 == pick door lock; 27 == pick chest lock;
     // 23 == weird bird flight; 22 == aim pistol; 19 == shoved; 16 == massive stumble; 11 == milling arms freefall; 9 == swimming
     DrawGraphVariable<int>("GeneralState", *graphEvaluation, 0xdf85463d, notifyTheGraphWhenModifying);
-    DrawGraphVariable<bool>(g_newGraphVar.varname, *graphEvaluation, g_newGraphVar.varnameHash, notifyTheGraphWhenModifying);
+    DrawGraphVariable<int>(g_newGraphVar.varname, *graphEvaluation, g_newGraphVar.varnameHash, notifyTheGraphWhenModifying);
 
     //if (ImGui::Button("Clear bone layering cache"))
     //{
