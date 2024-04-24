@@ -380,7 +380,7 @@ I. Layering my animation on top of normal gameplay.
 I take the "normal gameplay layering state" (that's `NewDemo_DEV.AtomGraph->RootStateMachine->States[0]`).
 I add another layer to it. This new layer will contain a state machine for the new hood animations.
 By adding some BoneWeights to the new layer, I limited the animations to the upper torso excluding the left arm
-(because I figured it's already occupied by pistols and bombs).
+(because I figured it's already occupied by the hidden blade, phantom blade, pistols and bombs).
 
 II. The "hood animations" state machine.
 High-level view of what I'm trying to achieve here:
@@ -478,6 +478,8 @@ before the second tap on the "hood toggle button" will actually interrupt the an
 */
 void SetupTheNewLayersStateMachine(AtomStateMachineNode& newLayerStateMachine)
 {
+    SetupStateMachineDefaultInitialState(newLayerStateMachine);
+
     AtomNullStateNode& nullState1 = *ACUAllocate<AtomNullStateNode>();
     AtomGraphStateNode& playbackState1 = CreateGraphState_SimpleAnimationImported(AbsolutePathInThisDLLDirectory("NewAnimations/ACVI_xy_UpperBody_Hood_tr_Hat.anim.json"));
     AtomNullStateNode& nullState2 = *ACUAllocate<AtomNullStateNode>();
@@ -487,17 +489,17 @@ void SetupTheNewLayersStateMachine(AtomStateMachineNode& newLayerStateMachine)
     StateMachine_PushState(newLayerStateMachine, nullState2);
     StateMachine_PushState(newLayerStateMachine, playbackState2);
 
-    SetupStateMachineDefaultInitialState(newLayerStateMachine);
-
-    AtomStateTransitionTarget* transitionFromNullStateIfMyVariableIsSet = ACUAllocate<AtomStateTransitionTarget>();
+    // Normal path (defaultNullState->playback1->theOtherNullState->playback2->defaultNullState->...). Uses HoodControlValue in {TakeHoodOff_normalpath, PutHoodOn_normalpath}.
     {
+        AtomStateTransitionTarget* transitionFromNullStateIfMyVariableIsSet = ACUAllocate<AtomStateTransitionTarget>();
         transitionFromNullStateIfMyVariableIsSet->TargetStateIndex = 1;
         transitionFromNullStateIfMyVariableIsSet->TransitionTime = 0.5f;
         transitionFromNullStateIfMyVariableIsSet->BlendType = 1;
         transitionFromNullStateIfMyVariableIsSet->conditionExpression = CreateConditionExpression_SingleVariableEqualsTo(539, TakeHoodOff_normalpath);
+        SmallArrayAppend(nullState1.base8.Transitions, transitionFromNullStateIfMyVariableIsSet);
     }
-    AtomStateTransitionTarget* transitionTo2ndNullState = ACUAllocate<AtomStateTransitionTarget>();
     {
+        AtomStateTransitionTarget* transitionTo2ndNullState = ACUAllocate<AtomStateTransitionTarget>();
         transitionTo2ndNullState->TargetStateIndex = 2;
         transitionTo2ndNullState->TransitionTime = 0.5f;
         transitionTo2ndNullState->BlendType = 1;
@@ -508,16 +510,18 @@ void SetupTheNewLayersStateMachine(AtomStateMachineNode& newLayerStateMachine)
                 std::make_shared<MyCondition_GraphVariable>(539, AtomCondition_ConditionalOperator::EQUALS, AtomDataContainerWrapper_DataType::Int, ComparisonValue_t(TakeHoodOff_normalpath))
             }
         ));
+        SmallArrayAppend(playbackState1.base8.Transitions, transitionTo2ndNullState);
     }
-    AtomStateTransitionTarget* transitionFrom2ndNullStateIfMyVariableIsUNSET = ACUAllocate<AtomStateTransitionTarget>();
     {
+        AtomStateTransitionTarget* transitionFrom2ndNullStateIfMyVariableIsUNSET = ACUAllocate<AtomStateTransitionTarget>();
         transitionFrom2ndNullStateIfMyVariableIsUNSET->TargetStateIndex = 3;
         transitionFrom2ndNullStateIfMyVariableIsUNSET->TransitionTime = 0.5f;
         transitionFrom2ndNullStateIfMyVariableIsUNSET->BlendType = 1;
-        transitionFrom2ndNullStateIfMyVariableIsUNSET->conditionExpression = CreateConditionExpression_SingleVariableEqualsTo(539, 0);
+        transitionFrom2ndNullStateIfMyVariableIsUNSET->conditionExpression = CreateConditionExpression_SingleVariableEqualsTo(539, PutHoodOn_normalpath);
+        SmallArrayAppend(nullState2.base8.Transitions, transitionFrom2ndNullStateIfMyVariableIsUNSET);
     }
-    AtomStateTransitionTarget* transitionTo1stNullState = ACUAllocate<AtomStateTransitionTarget>();
     {
+        AtomStateTransitionTarget* transitionTo1stNullState = ACUAllocate<AtomStateTransitionTarget>();
         transitionTo1stNullState->TargetStateIndex = 0;
         transitionTo1stNullState->TransitionTime = 0.5f;
         transitionTo1stNullState->BlendType = 1;
@@ -528,29 +532,9 @@ void SetupTheNewLayersStateMachine(AtomStateMachineNode& newLayerStateMachine)
                 std::make_shared<MyCondition_GraphVariable>(539, AtomCondition_ConditionalOperator::EQUALS, AtomDataContainerWrapper_DataType::Int, ComparisonValue_t(PutHoodOn_normalpath))
             }
         ));
+        SmallArrayAppend(playbackState2.base8.Transitions, transitionTo1stNullState);
     }
-    AtomStateTransitionTarget* interruptByOppositeAnimation1 = ACUAllocate<AtomStateTransitionTarget>();
-    {
-        interruptByOppositeAnimation1->TargetStateIndex = 3;
-        interruptByOppositeAnimation1->TransitionTime = 0.25f;
-        interruptByOppositeAnimation1->BlendType = 1;
-        interruptByOppositeAnimation1->conditionExpression = CreateConditionExpression_SingleVariableEqualsTo(539, PutHoodOn_normalpath);
-    }
-    AtomStateTransitionTarget* interruptByOppositeAnimation2 = ACUAllocate<AtomStateTransitionTarget>();
-    {
-        interruptByOppositeAnimation2->TargetStateIndex = 1;
-        interruptByOppositeAnimation2->TransitionTime = 0.25f;
-        interruptByOppositeAnimation2->BlendType = 1;
-        interruptByOppositeAnimation2->conditionExpression = CreateConditionExpression_SingleVariableEqualsTo(539, TakeHoodOff_normalpath);
-    }
-
-    SmallArrayAppend(nullState1.base8.Transitions, transitionFromNullStateIfMyVariableIsSet);
-    SmallArrayAppend(nullState2.base8.Transitions, transitionFrom2ndNullStateIfMyVariableIsUNSET);
-    SmallArrayAppend(playbackState1.base8.Transitions, transitionTo2ndNullState);
-    SmallArrayAppend(playbackState1.base8.Transitions, interruptByOppositeAnimation1);
-    SmallArrayAppend(playbackState2.base8.Transitions, transitionTo1stNullState);
-    SmallArrayAppend(playbackState2.base8.Transitions, interruptByOppositeAnimation2);
-
+    // "Alternate" path (theOtherNullState->playback1->defaultNullState->playback2->theOtherNullState->...). Uses HoodControlValue in {TakeHoodOff_ALTpath, PutHoodOn_ALTpath}.
     {
         AtomStateTransitionTarget* tr = ACUAllocate<AtomStateTransitionTarget>();
         tr->TargetStateIndex = 3;
@@ -595,21 +579,36 @@ void SetupTheNewLayersStateMachine(AtomStateMachineNode& newLayerStateMachine)
         ));
         SmallArrayAppend(playbackState2.base8.Transitions, tr);
     }
+    // Immediately interrupt animation by an "opposite" one.
     {
-        AtomStateTransitionTarget* tr = ACUAllocate<AtomStateTransitionTarget>();
-        tr->TargetStateIndex = 3;
-        tr->TransitionTime = 0.25f;
-        tr->BlendType = 1;
-        tr->conditionExpression = CreateConditionExpression_SingleVariableEqualsTo(539, PutHoodOn_ALTpath);
-        SmallArrayAppend(playbackState1.base8.Transitions, tr);
+        AtomStateTransitionTarget* interruptByOppositeAnimation1 = ACUAllocate<AtomStateTransitionTarget>();
+        interruptByOppositeAnimation1->TargetStateIndex = 3;
+        interruptByOppositeAnimation1->TransitionTime = 0.25f;
+        interruptByOppositeAnimation1->BlendType = 1;
+        //interruptByOppositeAnimation1->conditionExpression = CreateConditionExpression_SingleVariableEqualsTo(539, PutHoodOn_normalpath);
+        interruptByOppositeAnimation1->conditionExpression = &BuildConditionExpression(MyCondition_Group(
+            AtomCondition_ConjunctionOperator::OR,
+            Subconditions_t{
+                std::make_shared<MyCondition_GraphVariable>(539, AtomCondition_ConditionalOperator::EQUALS, AtomDataContainerWrapper_DataType::Int, PutHoodOn_normalpath),
+                std::make_shared<MyCondition_GraphVariable>(539, AtomCondition_ConditionalOperator::EQUALS, AtomDataContainerWrapper_DataType::Int, PutHoodOn_ALTpath),
+            }
+        ));
+        SmallArrayAppend(playbackState1.base8.Transitions, interruptByOppositeAnimation1);
     }
     {
-        AtomStateTransitionTarget* tr = ACUAllocate<AtomStateTransitionTarget>();
-        tr->TargetStateIndex = 1;
-        tr->TransitionTime = 0.25f;
-        tr->BlendType = 1;
-        tr->conditionExpression = CreateConditionExpression_SingleVariableEqualsTo(539, TakeHoodOff_ALTpath);
-        SmallArrayAppend(playbackState2.base8.Transitions, tr);
+        AtomStateTransitionTarget* interruptByOppositeAnimation2 = ACUAllocate<AtomStateTransitionTarget>();
+        interruptByOppositeAnimation2->TargetStateIndex = 1;
+        interruptByOppositeAnimation2->TransitionTime = 0.25f;
+        interruptByOppositeAnimation2->BlendType = 1;
+        //interruptByOppositeAnimation2->conditionExpression = CreateConditionExpression_SingleVariableEqualsTo(539, TakeHoodOff_normalpath);
+        interruptByOppositeAnimation2->conditionExpression = &BuildConditionExpression(MyCondition_Group(
+            AtomCondition_ConjunctionOperator::OR,
+            Subconditions_t{
+                std::make_shared<MyCondition_GraphVariable>(539, AtomCondition_ConditionalOperator::EQUALS, AtomDataContainerWrapper_DataType::Int, TakeHoodOff_normalpath),
+                std::make_shared<MyCondition_GraphVariable>(539, AtomCondition_ConditionalOperator::EQUALS, AtomDataContainerWrapper_DataType::Int, TakeHoodOff_ALTpath),
+            }
+        ));
+        SmallArrayAppend(playbackState2.base8.Transitions, interruptByOppositeAnimation2);
     }
 }
 void AddBoneWeight(AtomLayeringInfo& layer, uint32 boneID, uint8 weightF8)
