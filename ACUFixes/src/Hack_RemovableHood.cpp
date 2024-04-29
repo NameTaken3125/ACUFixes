@@ -263,7 +263,7 @@ void PlayHoodAnimation(bool doPutHoodOn)
     if (!animCpnt) { return; }
     GraphEvaluation* graphEvaluation = animCpnt->pD0;
     if (!graphEvaluation) { return; }
-    int* v = GetGraphVariable<int>(*graphEvaluation, g_newGraphVar.varnameHash);
+    int* v = GetGraphVariable<int>(*graphEvaluation, g_rtcpDesc_HoodControlValue.varnameHash);
 
     const int currentRTCPValue = *v;
     int newRTCPValue = !doPutHoodOn;
@@ -293,7 +293,7 @@ void PlayHoodAnimation(bool doPutHoodOn)
             break;
         }
     }
-    SetGraphVariable<int>(*graphEvaluation, g_newGraphVar.varnameHash, newRTCPValue);
+    SetGraphVariable<int>(*graphEvaluation, g_rtcpDesc_HoodControlValue.varnameHash, newRTCPValue);
 }
 void RemovableHood_ReactToAnimationSignal(bool truePutOnFalseTakeOff)
 {

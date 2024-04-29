@@ -8,7 +8,6 @@
 struct AnimationGraphEvaluationPatches : AutoAssemblerCodeHolder_Base
 {
     AnimationGraphEvaluationPatches();
-    virtual void OnBeforeActivate() override;
 };
 uint32 AdjustGraphvarIndexForEntityrefVars(uint32 graphVarIdx, AtomGraph& graph);
 void WhenResolvingEntityrefGraphVarIndex_2_adjustIndex(AllRegisters* params)
@@ -35,11 +34,6 @@ void WhenResolvingEntityrefGraphVarIndex_3_adjustIndex(AllRegisters* params)
 //    const uint16 resolvedEntityrefVarIndex = ResolveEntityrefVarIndex(entityrefGraphvarIndexToResolve);
 //    params->rsi_ = resolvedEntityrefVarIndex;
 //}
-void LetsDoSomePlayerGraphMods();
-void AnimationGraphEvaluationPatches::OnBeforeActivate()
-{
-    LetsDoSomePlayerGraphMods();
-}
 
 using SignalID_t = uint32;
 constexpr SignalID_t signal_RangedWeaponShotFired = 0x800023;

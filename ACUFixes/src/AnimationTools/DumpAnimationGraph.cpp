@@ -1021,7 +1021,7 @@ public:
             return;
         }
         auto _ind = IndentScoped();
-        uint16 topmostGroupSize = condExpr.Conditions[0].word_C;
+        uint16 topmostGroupSize = condExpr.Conditions[0].groupSizeIfDescribesConditionGroup;
         AtomCondition* first = &condExpr.Conditions[1];
         ImGui::LogText(m_currentIndent.c_str());
         DumpConditionChain(first, topmostGroupSize);
@@ -1031,7 +1031,7 @@ public:
     {
         AtomCondition* in = condInOut;
         condInOut++;
-        for (size_t i = 0; i < in->word_C; i++)
+        for (size_t i = 0; i < in->groupSizeIfDescribesConditionGroup; i++)
         {
             SkipConditionsChain(condInOut);
         }
@@ -1137,7 +1137,7 @@ public:
                     , ((float*)&currentCond->ComparisonValue.value)[3]
                 );
                 break;
-            case AtomDataContainerWrapper_DataType::Weird_Datatype_In_Weird_Conditions:
+            case AtomDataContainerWrapper_DataType::NoData_mb:
                 break;
             default:
                 break;
@@ -1166,12 +1166,12 @@ public:
             case AtomCondition_ConditionType::GRAPH_VARIABLE:
                 DumpCondition_GraphVariable(currentCond);
                 break;
-            case AtomCondition_ConditionType::WEIRD_CONDITION:
-                DumpConditionChain(currentCond + 1, currentCond->word_C);
+            case AtomCondition_ConditionType::CONDITION_GROUP:
+                DumpConditionChain(currentCond + 1, currentCond->groupSizeIfDescribesConditionGroup);
                 break;
             case AtomCondition_ConditionType::UNK_1:
             case AtomCondition_ConditionType::UNK_4:
-                ImGui::LogText("COND%d(%X, %d)", currentCond->ConditionType, currentCond->ValueToTestReferenceID, currentCond->word_C);
+                ImGui::LogText("COND%d(%X, %d)", currentCond->ConditionType, currentCond->ValueToTestReferenceID, currentCond->groupSizeIfDescribesConditionGroup);
                 break;
             default:
                 ImGui::LogText("UNKCONDTYPE");
@@ -1195,7 +1195,7 @@ public:
                 ImGui::LogText(" %s ", conjunctionOpText);
             }
             SkipConditionsChain(currentCond);
-            //uint16 subchainSizeToSkip = currentCond->word_C;
+            //uint16 subchainSizeToSkip = currentCond->groupSizeIfDescribesConditionGroup;
             //currentCond++;
             //for (size_t i = 0; i < subchainSizeToSkip; i++)
             //{
@@ -1342,7 +1342,6 @@ void CloneAtomGraphExperiment()
     }
 }
 #include "AnimationTools/AnimGraphMods.h"
-void BuildCETest();
 void DrawAtomGraphDumper()
 {
     if (ImGui::Button("Dump Player's Animation graph"))
@@ -1400,16 +1399,12 @@ void DrawAtomGraphDumper()
     // 39 == dodge bullet; 32 == pick up body; 33 == kidnap; 36 == ragdoll; 29 == cut alarm bell; 28 == pick door lock; 27 == pick chest lock;
     // 23 == weird bird flight; 22 == aim pistol; 19 == shoved; 16 == massive stumble; 11 == milling arms freefall; 9 == swimming
     DrawGraphVariable<int>("GeneralState", *graphEvaluation, 0xdf85463d, notifyTheGraphWhenModifying);
-    DrawGraphVariable<int>(g_newGraphVar.varname, *graphEvaluation, g_newGraphVar.varnameHash, notifyTheGraphWhenModifying);
+    DrawGraphVariable<int>(g_rtcpDesc_HoodControlValue.varname, *graphEvaluation, g_rtcpDesc_HoodControlValue.varnameHash, notifyTheGraphWhenModifying);
 
     //if (ImGui::Button("Clear bone layering cache"))
     //{
     //    ClearBoneLayeringCache(*animCpnt->shared_AtomGraph_NewDemo_DEV->GetPtr());
     //}
-    if (ImGui::Button("Build ConditionExpression test"))
-    {
-        BuildCETest();
-    }
     CloneAtomGraphExperiment();
 
 }

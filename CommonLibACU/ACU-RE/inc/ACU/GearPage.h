@@ -1,7 +1,7 @@
 #pragma once
 
 #include "StandardPage.h"
-#include "PlayerCustomizationItems.h"
+#include "AvatarLoadout.h"
 #include "PlayerCustomizationWorker.h"
 #include "SharedPtr.h"
 

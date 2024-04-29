@@ -186,6 +186,7 @@
     <ClInclude Include="inc\ACU\AtomTransitionCellDescription.h" />
     <ClInclude Include="inc\ACU\AtomWriteParamNode.h" />
     <ClInclude Include="inc\ACU\AvatarGear.h" />
+    <ClInclude Include="inc\ACU\AvatarLoadout.h" />
     <ClInclude Include="inc\ACU\Bone.h" />
     <ClInclude Include="inc\ACU\ButtonComponent.h" />
     <ClInclude Include="inc\ACU\CameraSelectorNode.h" />
@@ -286,7 +287,6 @@
     <ClInclude Include="inc\ACU\MissionStepSaveData.h" />
     <ClInclude Include="inc\ACU\Parkour_PotentialWindowEntry.h" />
     <ClInclude Include="inc\ACU\Parkour_WhileOnWallSystem.h" />
-    <ClInclude Include="inc\ACU\PlayerCustomizationItems.h" />
     <ClInclude Include="inc\ACU\PlayerCustomizationWorker.h" />
     <ClInclude Include="inc\ACU\PlayerProgressionManager.h" />
     <ClInclude Include="inc\ACU\QuickSelectButtonComponent.h" />

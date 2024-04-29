@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ManagedObject.h"
-#include "PlayerCustomizationItems.h"
+#include "AvatarLoadout.h"
 
 class AvatarGear;
 class Entity;
@@ -13,7 +13,7 @@ public:
 	char pad_0010[408]; //0x0010
 	uint8 byte_1A8; //0x01A8
 	char pad_01A9[23]; //0x01A9
-	PlayerCustomizationItems currentCustomizationItems; //0x01C0
+	AvatarLoadout currentCustomizationItems; //0x01C0
 	char pad_0248[1]; //0x0248
 	uint8 byte_249; //0x0249
 	uint8 byte_24A; //0x024A

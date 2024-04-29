@@ -102,12 +102,12 @@ AtomGraphStateNode& CreateGraphState_SimpleAnimationImported(const fs::path& jso
 }
 void SetupTheWeirdCondition(AtomCondition& cond)
 {
-    cond.ConditionType = AtomCondition_ConditionType::WEIRD_CONDITION;
+    cond.ConditionType = AtomCondition_ConditionType::CONDITION_GROUP;
     cond.ConditionalOperator = AtomCondition_ConditionalOperator::EQUALS;
     cond.ConjunctionOperator = AtomCondition_ConjunctionOperator::AND;
-    cond.word_C = 1;
+    cond.groupSizeIfDescribesConditionGroup = 1;
 
-    cond.ComparisonValue.DataType_0bool1float2int4xy5xyz6quat = AtomDataContainerWrapper_DataType::Weird_Datatype_In_Weird_Conditions;
+    cond.ComparisonValue.DataType_0bool1float2int4xy5xyz6quat = AtomDataContainerWrapper_DataType::NoData_mb;
     std::memset(&cond.ComparisonValue.value, 0, 0x10);
 }
 void SetupTwoFirstWeirdConditions(AtomConditionExpression& conditionExpr)
@@ -139,10 +139,7 @@ AtomConditionExpression* CreateConditionExpression_PlaybackFinished()
         animationIsFinished->ValueToTestReferenceID = 0;
         animationIsFinished->ComparisonValue.DataType_0bool1float2int4xy5xyz6quat = AtomDataContainerWrapper_DataType::Float;
         (float&)animationIsFinished->ComparisonValue.value = 1.0f;
-        // Appears to represent something related to "parentheses" within the `AtomConditionExpression`.
-        // Like, how many of the conditions that follow this one need to be "skipped".
-        // If so, then it would make sense that the last condition in an expression should have this value at 0.
-        animationIsFinished->word_C = 0;
+        animationIsFinished->groupSizeIfDescribesConditionGroup = 0;
     }
     return condExpr;
 }
@@ -159,9 +156,9 @@ AtomConditionExpression* CreateConditionExpression_SomeWeirdIntegerSignal()
         weirdSignal->ConjunctionOperator = AtomCondition_ConjunctionOperator::AND;
         weirdSignal->MarkUpQueryScope = 2;
         weirdSignal->ValueToTestReferenceID = 0x800042; // 0x800040, 0x800041, 0x800042
-        weirdSignal->ComparisonValue.DataType_0bool1float2int4xy5xyz6quat = AtomDataContainerWrapper_DataType::Weird_Datatype_In_Weird_Conditions;
+        weirdSignal->ComparisonValue.DataType_0bool1float2int4xy5xyz6quat = AtomDataContainerWrapper_DataType::NoData_mb;
         (float&)weirdSignal->ComparisonValue.value = 0;
-        weirdSignal->word_C = 0;
+        weirdSignal->groupSizeIfDescribesConditionGroup = 0;
     }
     return condExpr;
 }
@@ -246,10 +243,10 @@ void AppendConditionGroup(AtomConditionExpression& condExpr, const MyCondition_G
 {
     {
         AtomCondition& cond = *SmallArray_GameType_Append(condExpr.Conditions);
-        cond.ConditionType = AtomCondition_ConditionType::WEIRD_CONDITION;
+        cond.ConditionType = AtomCondition_ConditionType::CONDITION_GROUP;
         cond.ConditionalOperator = AtomCondition_ConditionalOperator::EQUALS;
         cond.ConjunctionOperator = AtomCondition_ConjunctionOperator::AND;
-        cond.word_C = (uint16)conditionGroup.subconditions.size();
+        cond.groupSizeIfDescribesConditionGroup = (uint16)conditionGroup.subconditions.size();
     }
 
     for (const auto& subcondition : conditionGroup.subconditions)
@@ -259,7 +256,7 @@ void AppendConditionGroup(AtomConditionExpression& condExpr, const MyCondition_G
             AtomCondition& cond = *SmallArray_GameType_Append(condExpr.Conditions);
             cond.ConditionType = AtomCondition_ConditionType::GRAPH_VARIABLE;
             cond.word_A = 0xFFFF;
-            cond.word_C = 0;
+            cond.groupSizeIfDescribesConditionGroup = 0;
             cond.ValueToTestReferenceID = condGraphVar->rtcpVarIdx;
             cond.ComparisonValue.DataType_0bool1float2int4xy5xyz6quat = condGraphVar->varType;
             (ComparisonValue_t&)cond.ComparisonValue.value = condGraphVar->value;
@@ -277,7 +274,7 @@ void AppendConditionGroup(AtomConditionExpression& condExpr, const MyCondition_G
             animationReachedPercentage->ValueToTestReferenceID = 0;
             animationReachedPercentage->ComparisonValue.DataType_0bool1float2int4xy5xyz6quat = AtomDataContainerWrapper_DataType::Float;
             (float&)animationReachedPercentage->ComparisonValue.value = condPlaybackPercentage->playbackPercentageInRange0_1;
-            animationReachedPercentage->word_C = 0;
+            animationReachedPercentage->groupSizeIfDescribesConditionGroup = 0;
         }
         else if (auto* condGroup = dynamic_cast<MyCondition_Group*>(subcondition.get()))
         {
@@ -338,7 +335,7 @@ AtomConditionExpression* CreateConditionExpression_PlaybackPercentage(const floa
     //    // Appears to represent something related to "parentheses" within the `AtomConditionExpression`.
     //    // Like, how many of the conditions that follow this one need to be "skipped".
     //    // If so, then it would make sense that the last condition in an expression should have this value at 0.
-    //    animationIsFinished->word_C = 0;
+    //    animationIsFinished->groupSizeIfDescribesConditionGroup = 0;
     //}
     //return condExpr;
     return &BuildConditionExpression(MyCondition_Group(
@@ -348,18 +345,6 @@ AtomConditionExpression* CreateConditionExpression_PlaybackPercentage(const floa
         }
     ));
 }
-void BuildCETest()
-{
-    AtomConditionExpression* condExpr = &BuildConditionExpression(MyCondition_Group(
-        AtomCondition_ConjunctionOperator::OR,
-        Subconditions_t{
-            std::make_shared<MyCondition_GraphVariable>(539, AtomCondition_ConditionalOperator::EQUALS, AtomDataContainerWrapper_DataType::Bool, ComparisonValue_t(true)),
-            std::make_shared<MyCondition_PlaybackPercentage>(0.75f),
-        }
-    ));
-    int nop = 0;
-}
-
 
 
 #include "Hack_RemovableHood_Animations.h"
@@ -647,7 +632,7 @@ AtomLayeringInfo& LayeringState_CreateNewLayerWithStateMachine(AtomLayeringState
 }
 void ApplyMod(AtomGraph& atomGraph)
 {
-    AddMyNewerRTCPVariable(atomGraph, g_newGraphVar);
+    AddNewRTCPVariableIfNotPresent(atomGraph, g_rtcpDesc_HoodControlValue);
     auto* mainLayeringState = static_cast<AtomLayeringStateNode*>(atomGraph.RootStateMachine->States[0]);
     {
         AtomLayeringInfo& newLayer = LayeringState_CreateNewLayerWithStateMachine(*mainLayeringState);

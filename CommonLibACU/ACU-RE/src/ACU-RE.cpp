@@ -91,7 +91,7 @@
 #include "ACU/UISounds.h"
 #include "ACU/AssassinSoundSettings.h"
 
-#include "ACU/PlayerCustomizationItems.h"
+#include "ACU/AvatarLoadout.h"
 #include "ACU/PlayerCustomizationWorker.h"
 
 #include "ACU/AIAction.h"

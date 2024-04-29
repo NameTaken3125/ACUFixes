@@ -9,6 +9,7 @@ class InventoryItemSettings;
 
 class TextureMapSpec;
 class AvatarGearModifier;
+class Animation;
 
 class AvatarGear : public Object
 {
@@ -17,7 +18,8 @@ public:
     uint32 subtypeIfMeleePistolOrLantern; //0x000C
     SharedPtrNew<InventoryItemSettings>* inventoryItemSettings; //0x0010
     SharedPtrNew<InventoryItemSettings>* invItemSett_18; //0x0018
-    char pad_0020[16]; //0x0020
+    char pad_0020[8]; //0x0020
+    SharedPtrNew<Animation>* Animation; //0x0028 The custom animation that will be played when this gear is viewed in Equipment menu.
     SharedPtrNew<TextureMapSpec>* shared_textureMapSpec; //0x0030
     SmallArray<AvatarGearModifier*> gearModifiers_38; //0x0038
     SmallArray<AvatarGearModifier*> gearModifiers_44; //0x0044

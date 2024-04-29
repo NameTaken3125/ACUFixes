@@ -3,7 +3,7 @@
 /*
 * Thank you, kamzik123, for the AnvilToolKit and its FileLists.
 
-To convert the 8-byte handles into readable strings, this utilizes an external "handles map" file
+To convert the 8-byte handles into readable strings, this module utilizes an external "handles map" file
 that was created from the File Lists that AnvilToolKit provides (thank you, kamzik123).
 The "handles map" file is a binary file optimized for binary searching through the handles.
 Its structure is simply as follows:
@@ -31,7 +31,6 @@ class HandlesMap
 public:
     std::string FindNameForHandle(uint64 handle) { return FindNameForHandle_binsearchinmemory(handle); }
     std::string FindNameForHandle_binsearchinmemory(uint64 handle);
-    std::string FindNameForHandle_fromfile(uint64 handle);
     static HandlesMap& GetSingleton() {
         static HandlesMap singleton;
         return singleton;
@@ -44,58 +43,77 @@ HandleString HandleToText(uint64 handle)
     memcpy_s(&result.m_buffer[0], result.m_buffer.size(), foundText.c_str(), foundText.size() + 1);
     return result;
 }
-}
+} // namespace ACU::Handles
 namespace ACU::Handles
 {
+#pragma pack(push, 1)
+struct HandleDescriptor
+{
+    uint64 handle;
+    uint32 offsetInFileWhereCorrespondingStringStarts;
+};
+#pragma pack(pop)
+assert_sizeof(HandleDescriptor, 12);
+struct HandlesMapInfo
+{
+    std::vector<char> m_fileContents;
+    uint32 numHandles;
+    HandleDescriptor* whereHandlesStart;
+    HandlesMapInfo(std::vector<char>&& fileContents)
+        : m_fileContents(std::move(fileContents))
+    {
+        numHandles = (uint32&)m_fileContents[0];
+        whereHandlesStart = (HandleDescriptor*)(&m_fileContents[0 + sizeof(numHandles)]);
+    }
+};
+static std::optional<HandlesMapInfo> g_LoadedHandlesmap;
+void LoadHandlesmapFile()
+{
+    std::vector<char> resultWholeFile;
+    fs::path filepath = AbsolutePathInThisDLLDirectory(g_HandlesMapFilename);
+    std::ifstream infile(filepath, std::ios_base::binary);
+    if (!infile)
+    {
+        return;
+    }
+    infile.seekg(0, infile.end);
+    auto filesize = infile.tellg();
+    resultWholeFile.resize(filesize);
+    infile.seekg(0, infile.beg);
+    infile.read(&resultWholeFile[0], filesize);
+
+    g_LoadedHandlesmap.emplace(std::move(resultWholeFile));
+};
+std::string MakeHandleString_HandlesmapNotLoaded(uint64 handle)
+{
+    return "";
+}
+std::string MakeHandleString_HandleNotRecognized(uint64 handle)
+{
+    return "";
+}
 std::string HandlesMap::FindNameForHandle_binsearchinmemory(uint64 handle)
 {
-#pragma pack(push, 1)
-    struct HandleDescriptor
+    if (!g_LoadedHandlesmap)
     {
-        uint64 handle;
-        uint32 offsetInFileWhereCorrespondingStringStarts;
-    };
-#pragma pack(pop)
-    assert_sizeof(HandleDescriptor, 12);
-    struct HandlesMapInfo
-    {
-        std::vector<char> m_fileContents;
-        uint32 numHandles;
-        HandleDescriptor* whereHandlesStart;
-        HandlesMapInfo(std::vector<char>&& fileContents)
-            : m_fileContents(std::move(fileContents))
+        LoadHandlesmapFile();
+        if (!g_LoadedHandlesmap)
         {
-            numHandles = (uint32&)m_fileContents[0];
-            whereHandlesStart = (HandleDescriptor*)(&m_fileContents[0 + sizeof(numHandles)]);
+            return MakeHandleString_HandlesmapNotLoaded(handle);
         }
-    };
-    static HandlesMapInfo wholeFile = []()
-    {
-        std::vector<char> resultWholeFile;
-        fs::path filepath = AbsolutePathInThisDLLDirectory(g_HandlesMapFilename);
-        std::ifstream infile(filepath, std::ios_base::binary);
-        infile.seekg(0, infile.end);
-        auto filesize = infile.tellg();
-        resultWholeFile.resize(filesize);
-        infile.seekg(0, infile.beg);
-        infile.read(&resultWholeFile[0], filesize);
-
-        HandlesMapInfo result(std::move(resultWholeFile));
-
-        return result;
-    }();
+    }
     auto FindStringForHandleInFile = [&]() -> std::string
     {
         std::string result;
         int left = 0;
-        int right = wholeFile.numHandles;
+        int right = g_LoadedHandlesmap->numHandles;
         while (left <= right)
         {
             uint32 mid = (left + right) / 2;
-            const HandleDescriptor& curHandle = wholeFile.whereHandlesStart[mid];
+            const HandleDescriptor& curHandle = g_LoadedHandlesmap->whereHandlesStart[mid];
             if (curHandle.handle == handle)
             {
-                char* whereCorrespondingStringStarts = &wholeFile.m_fileContents[curHandle.offsetInFileWhereCorrespondingStringStarts];
+                char* whereCorrespondingStringStarts = &g_LoadedHandlesmap->m_fileContents[curHandle.offsetInFileWhereCorrespondingStringStarts];
                 result = whereCorrespondingStringStarts;
                 return result;
             }
@@ -115,53 +133,7 @@ std::string HandlesMap::FindNameForHandle_binsearchinmemory(uint64 handle)
     {
         return foundName;
     }
-    return "";
-}
-std::string HandlesMap::FindNameForHandle_fromfile(uint64 handle)
-{
-    fs::path filepath = AbsolutePathInThisDLLDirectory("cppmap.handlesmap2");
-    auto FindStringForHandleInFile = [&]() -> std::string
-    {
-        std::string result;
-        std::ifstream infile(filepath, std::ios_base::binary);
-        uint32 numHandles;
-        infile.read(reinterpret_cast<char*>(&numHandles), sizeof(numHandles));
-        uint32 whereHandlesStart = 0 + sizeof(numHandles);
-        uint32 sizeOfHandleDescriptor = 8 + 4; // handle (8 bytes) + offsetInFileWhereTheCorrespondingStringStarts (4 bytes)
-        uint32 whereStringsStart = whereHandlesStart + numHandles * sizeOfHandleDescriptor;
-        uint32 left = 0;
-        uint32 right = numHandles;
-        while (left < right)
-        {
-            uint32 mid = (left + right) / 2;
-            infile.seekg(whereHandlesStart + mid * sizeOfHandleDescriptor);
-            uint64 curHandle;
-            infile.read(reinterpret_cast<char*>(&curHandle), sizeof(curHandle));
-            if (curHandle == handle)
-            {
-                uint32 offsetInFileWhereTheCorrespondingStringStarts;
-                infile.read(reinterpret_cast<char*>(&offsetInFileWhereTheCorrespondingStringStarts), sizeof(offsetInFileWhereTheCorrespondingStringStarts));
-                infile.seekg(offsetInFileWhereTheCorrespondingStringStarts);
-                std::getline(infile, result, '\0');
-                return result;
-            }
-            if (curHandle < handle)
-            {
-                left = mid;
-            }
-            else
-            {
-                right = mid;
-            }
-        }
-        return result;
-    };
-    std::string foundName = FindStringForHandleInFile();
-    if (!foundName.empty())
-    {
-        return foundName;
-    }
-    return "";
+    return MakeHandleString_HandleNotRecognized(handle);
 }
 
-}
+} // namespace ACU::Handles

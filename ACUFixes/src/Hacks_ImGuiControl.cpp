@@ -568,6 +568,7 @@ void DrawHacksControls()
 void MyVariousHacks::Start()
 {
     g_MyHacks.emplace();
+    g_MyHacks->animationGraphEvaluationPatches.Activate();
     g_MyHacks->ReadConfig(g_Config);
     g_MyHacks->WriteConfig(g_Config);
     MainConfig::WriteToFile();

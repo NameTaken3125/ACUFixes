@@ -131,7 +131,7 @@ public:
 }; //Size: 0x0018
 assert_sizeof(LogicalInventory, 0x18);
 
-#include "PlayerCustomizationItems.h"
+#include "AvatarLoadout.h"
 
 
 class PlayerProgressionCharacterCustomization;
@@ -153,12 +153,12 @@ public:
 	uint64 avatarSkillTree60; //0x0120
 	uint64 avatarSkillTree68; //0x0128
 	char pad_0130[96]; //0x0130
-	PlayerCustomizationItems stru_190; //0x0190
+	AvatarLoadout loadout; //0x0190
 	char pad_0218[12]; //0x0218
 	uint32 spentSkillPoints_mb; //0x0224
 	char pad_0228[24]; //0x0228
 }; //Size: 0x0240
-assert_offsetof(PlayerProgressionCharacterData, stru_190, 0x190);
+assert_offsetof(PlayerProgressionCharacterData, loadout, 0x190);
 assert_sizeof(PlayerProgressionCharacterData, 0x240);
 
 

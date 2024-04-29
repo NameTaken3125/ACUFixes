@@ -106,7 +106,7 @@ uint32 AdjustGraphvarIndexForEntityrefVars(uint32 graphVarIdx, AtomGraph& graph)
 {
     return graphVarIdx + g_GraphPatches.m_numAddedNewVarsByGraph[&graph];
 }
-void AddMyNewerRTCPVariable(AtomGraph& atomGraph, const MyNewerRTCPVariable& newVarDescriptor)
+void AddNewRTCPVariableIfNotPresent(AtomGraph& atomGraph, const MyNewerRTCPVariable& newVarDescriptor)
 {
     g_GraphPatches.AddRTCPVariable(atomGraph, newVarDescriptor);
 }

@@ -219,7 +219,7 @@ void WhenUnsheatheLanternAndPlaySound_FixBatlampNoise(AllRegisters* params)
 #include "ACU/GamePlaySettings.h"
 #include "ACU/AvatarGearManager.h"
 #include "ACU_DefineNativeFunction.h"
-DEFINE_GAME_FUNCTION(AddAvatarGear, 0x140D2B370, void, __fastcall, (PlayerCustomizationItems* a1, AvatarGear* p_avatarGear));
+DEFINE_GAME_FUNCTION(AddAvatarGear, 0x140D2B370, void, __fastcall, (AvatarLoadout* a1, AvatarGear* p_avatarGear));
 void TryAddLanternManually()
 {
     auto* ppm = PlayerProgressionManager::GetSingleton();
@@ -230,7 +230,7 @@ void TryAddLanternManually()
     if (!agm) { return; }
     AvatarGear* foundLanternGear = FindMagicalLanternGear(*agm);
     if (!foundLanternGear) { return; }
-    AddAvatarGear(&ppm->papPlayerProgressionCharacterData_1C8[0]->stru_190, foundLanternGear);
+    AddAvatarGear(&ppm->papPlayerProgressionCharacterData_1C8[0]->loadout, foundLanternGear);
 }
 BatlampOfFrancide::BatlampOfFrancide()
 {

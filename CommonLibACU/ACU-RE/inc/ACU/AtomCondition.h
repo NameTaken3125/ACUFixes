@@ -11,7 +11,7 @@ enum class AtomDataContainerWrapper_DataType : uint32
 	XYZ = 5,
 	XYZW = 6,
 
-	Weird_Datatype_In_Weird_Conditions = 10,
+	NoData_mb = 10,
 };
 
 class AtomDataContainerWrapper
@@ -28,7 +28,7 @@ enum class AtomCondition_ConditionType : uint16
 {
 	GRAPH_VARIABLE = 0,
 	UNK_1 = 1,
-	WEIRD_CONDITION = 2,
+	CONDITION_GROUP = 2,
 	PLAYBACK_PERCENTAGE_mb = 3,
 	UNK_4 = 4,
 };
@@ -61,7 +61,11 @@ public:
 	uint16 isComparisonValueAnAnotherRTCPVarIndex : 1; // Take a look at 14009EEA4
 	uint16 bit_padding_12_15 : 4;
 	uint16 word_A; //0x000A // It's usually ==0xFFFF, but maybe can be the index of an "entityref" RTCP variable whose GraphEvaluation is supposed to be used?
-	uint16 word_C; //0x000C
+    // 0x000C
+	// Appears to represent something related to "parentheses" within the `AtomConditionExpression`.
+    // Like, how many of the conditions that follow this one need to be "skipped".
+    // If so, then it would make sense that the last condition in an expression should have this value at 0.
+	uint16 groupSizeIfDescribesConditionGroup;
 	char pad_000E[2]; //0x000E
 	AtomDataContainerWrapper ComparisonValue; //0x0010
 

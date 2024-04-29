@@ -4,7 +4,7 @@
 
 class AtomGraph;
 
-void LetsDoSomePlayerGraphMods(AtomGraph& atomGraph);
+void ApplyAnimationGraphMods(AtomGraph& atomGraph);
 enum class RTCPVariableType
 {
     Bool = 0,
@@ -32,4 +32,4 @@ struct MyNewerRTCPVariable
         : varname(varname), varnameHash(varnameHash), int_(int_), vartype(RTCPVariableType::Int)
     {}
 };
-extern MyNewerRTCPVariable g_newGraphVar;
+extern MyNewerRTCPVariable g_rtcpDesc_HoodControlValue;
