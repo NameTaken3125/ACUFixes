@@ -175,6 +175,7 @@
   <ItemGroup>
     <ClCompile Include="src\AnimationTools\ACUAllocs.cpp" />
     <ClCompile Include="src\AnimationTools\AnimationEditor.cpp" />
+    <ClCompile Include="src\AnimationTools\AnimationGraphEvaluationPatches.cpp" />
     <ClCompile Include="src\AnimationTools\AnimationPicker.cpp" />
     <ClCompile Include="src\AnimationTools\AnimGraphMods.cpp" />
     <ClCompile Include="src\AnimationTools\AnimGraphMods_BasicLayer.cpp" />
@@ -247,6 +248,7 @@
     <ClInclude Include="src\AnimationTools\AtomGraphControls.h" />
     <ClInclude Include="src\AnimationTools\AtomGraphModsCommon.h" />
     <ClInclude Include="src\AnimationTools\Hack_RemovableHood_Animations.h" />
+    <ClInclude Include="src\AnimationTools\ReactToAnimationSignals.h" />
     <ClInclude Include="src\AnimationTools\SkeletonDumper.h" />
     <ClInclude Include="src\AnimationTools\UsefulHandles.h" />
     <ClInclude Include="src\Experimental_StrongPtr.h" />

@@ -2,6 +2,8 @@
 
 #include "AnimationTools/AnimGraphMods.h"
 #include "AnimationTools/AtomGraphModsCommon.h"
+#include "AnimationTools/ReactToAnimationSignals.h"
+#include "AnimationTools/AnimationGraphEvaluationPatches.h"
 #include "Common_Plugins/Common_PluginSide.h"
 #include "MyAnimationPlayer.h"
 namespace fs = std::filesystem;
@@ -348,6 +350,7 @@ AtomConditionExpression* CreateConditionExpression_PlaybackPercentage(const floa
 
 
 #include "Hack_RemovableHood_Animations.h"
+void RemovableHood_ReactToAnimationSignal(bool truePutOnFalseTakeOff);
 namespace AnimGraphMods::BasicLayer
 {
 void SetupStateMachineDefaultInitialState(AtomStateMachineNode& stateMachineNode)
@@ -630,24 +633,61 @@ AtomLayeringInfo& LayeringState_CreateNewLayerWithStateMachine(AtomLayeringState
     CreateInputPort(*layeringState.someGraphNodesRelatedToExtraLayers[0], 3, 1.0f);
     return *newLayer;
 }
-void ApplyMod(AtomGraph& atomGraph)
-{
-    AddNewRTCPVariableIfNotPresent(atomGraph, g_rtcpDesc_HoodControlValue);
-    auto* mainLayeringState = static_cast<AtomLayeringStateNode*>(atomGraph.RootStateMachine->States[0]);
-    {
-        AtomLayeringInfo& newLayer = LayeringState_CreateNewLayerWithStateMachine(*mainLayeringState);
-        SetupTheNewLayer(newLayer);
-    }
 
-    auto* cinematicState = static_cast<AtomStateMachineNode*>(atomGraph.RootStateMachine->States[1]);
-    auto* cinematicLayeringState = static_cast<AtomLayeringStateNode*>(cinematicState->States[0]);
+constexpr SignalID_t signal_HoodPutOn = 0x800177;
+constexpr SignalID_t signal_HoodTakeOff = 0x800077;
+class ReactToAnimationHoodOnOff : public CustomReactionToAnimationSignals
+{
+public:
+    virtual void OnSignalChangeDispatched(HumanStatesHolder* receivingEntityHumanStates, SignalID_t signalInt, bool isSignalOn) override
     {
-        AtomLayeringInfo& newLayer = LayeringState_CreateNewLayerWithStateMachine(*cinematicLayeringState);
-        SetupTheNewLayer(newLayer);
+        if (signalInt == signal_HoodPutOn)
+        {
+            if (isSignalOn)
+            {
+                RemovableHood_ReactToAnimationSignal(true);
+            }
+        }
+        else if (signalInt == signal_HoodTakeOff)
+        {
+            if (isSignalOn)
+            {
+                RemovableHood_ReactToAnimationSignal(false);
+            }
+        }
     }
-}
+};
+class AnimationGraphMod_HoodControls
+{
+    ReactToAnimationHoodOnOff m_SignalReaction_HoodVisibility;
+public:
+    AnimationGraphMod_HoodControls(AtomGraph& atomGraph)
+    {
+        AddNewRTCPVariableIfNotPresent(atomGraph, g_rtcpDesc_HoodControlValue);
+        auto* mainLayeringState = static_cast<AtomLayeringStateNode*>(atomGraph.RootStateMachine->States[0]);
+        {
+            AtomLayeringInfo& newLayer = LayeringState_CreateNewLayerWithStateMachine(*mainLayeringState);
+            SetupTheNewLayer(newLayer);
+        }
+
+        auto* cinematicState = static_cast<AtomStateMachineNode*>(atomGraph.RootStateMachine->States[1]);
+        auto* cinematicLayering = static_cast<AtomLayeringStateNode*>(cinematicState->States[0]);
+        {
+            AtomLayeringInfo& newLayer = LayeringState_CreateNewLayerWithStateMachine(*cinematicLayering);
+            SetupTheNewLayer(newLayer);
+        }
+        AnimationTools::Signals::RegisterCustomReaction(m_SignalReaction_HoodVisibility);
+        AnimationTools::Signals::RegisterSignal(signal_HoodPutOn);
+        AnimationTools::Signals::RegisterSignal(signal_HoodTakeOff);
+    }
+    ~AnimationGraphMod_HoodControls()
+    {
+        AnimationTools::Signals::UnregisterCustomReaction(m_SignalReaction_HoodVisibility);
+    }
+};
+std::optional<AnimationGraphMod_HoodControls> g_HoodMod;
 }
 void AnimGraphMods_BasicLayer_ApplyMod(AtomGraph& atomGraph)
 {
-    AnimGraphMods::BasicLayer::ApplyMod(atomGraph);
+    AnimGraphMods::BasicLayer::g_HoodMod.emplace(atomGraph);
 }

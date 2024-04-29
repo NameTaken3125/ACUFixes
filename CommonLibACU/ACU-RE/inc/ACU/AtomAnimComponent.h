@@ -2,6 +2,7 @@
 
 #include "Component.h"
 #include "SharedPtr.h"
+#include "SmallArray.h"
 
 class Human;
 
