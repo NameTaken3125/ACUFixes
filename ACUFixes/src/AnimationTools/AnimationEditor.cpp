@@ -3,7 +3,7 @@
 #include "AnimationTools/AnimationEditor.h"
 #include "AnimationTools/MyAnimationPlayer.h"
 #include "AnimationTools/AnimationPicker.h"
-#include "AnimationTools/ACUAllocs.h"
+#include "Common_Plugins/ACUAllocs.h"
 
 #include "vmath/vmath.h"
 #include "SimpleJSON/json.hpp"

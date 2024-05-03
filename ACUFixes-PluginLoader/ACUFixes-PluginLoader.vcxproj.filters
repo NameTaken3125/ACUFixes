@@ -33,7 +33,10 @@
     <ClInclude Include="src\ImGuiConfigUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Hack_GameRawInputHook.h">
+    <ClInclude Include="src\PluginLoader_VariousHooks\Input\Hack_GameRawInputHook.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PluginLoader_VariousHooks\Animation\AnimationGraphEvaluationPatches.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -62,10 +65,22 @@
     <ClCompile Include="src\WhatIsDrawnInImGui.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\InputHook.cpp">
+    <ClCompile Include="src\PluginLoader_VariousHooks\Input\InputHook.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\CrashLog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PluginLoader_VariousHooks\Animation\AnimationGraphEvaluationPatches.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PluginLoader_VariousHooks\VariousHooks.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PluginLoader_VariousHooks\Animation\AnimationModdingInterface_impl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SharedToPlugins.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

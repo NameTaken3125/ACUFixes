@@ -1341,7 +1341,7 @@ void CloneAtomGraphExperiment()
         }
     }
 }
-#include "AnimationTools/AnimGraphMods.h"
+#include "Hack_RemovableHood_Animations.h"
 void DrawAtomGraphDumper()
 {
     if (ImGui::Button("Dump Player's Animation graph"))

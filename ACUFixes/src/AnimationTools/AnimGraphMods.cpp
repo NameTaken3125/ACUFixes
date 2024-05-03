@@ -1,8 +1,7 @@
 #include "pch.h"
 
-#include "AnimationTools/AnimGraphMods.h"
+#include "Common_Plugins/AnimationGraphMods/RTCPVariableDescriptor.h"
 #include "AnimationTools/Hack_RemovableHood_Animations.h"
-MyNewerRTCPVariable g_rtcpDesc_HoodControlValue("HoodControlValue", 2751097728, int(ValueOfHoodControl::PutHoodOn_normalpath));
 
 #include "ACU/AtomGraph.h"
 #include "Experimental_StrongPtr.h"

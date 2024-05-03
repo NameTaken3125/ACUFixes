@@ -255,7 +255,7 @@ bool IsToggleHoodSoundEnabled()
 }
 #include "ACU/AtomAnimComponent.h"
 #include "AnimationTools/AtomGraphControls.h"
-#include "AnimationTools/AnimGraphMods.h"
+#include "Common_Plugins/AnimationGraphMods/RTCPVariableDescriptor.h"
 #include "AnimationTools/Hack_RemovableHood_Animations.h"
 void PlayHoodAnimation(bool doPutHoodOn)
 {

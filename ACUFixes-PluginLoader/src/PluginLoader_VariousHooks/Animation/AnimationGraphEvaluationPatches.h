@@ -11,10 +11,7 @@ struct AnimationGraphEvaluationPatches : AutoAssemblerCodeHolder_Base
     AnimationGraphEvaluationPatches();
 };
 
-#include "ReactToAnimationSignals.h"
-constexpr SignalID_t signal_RangedWeaponShotFired = 0x800023;
-constexpr SignalID_t signal_RangedWeaponUnholster = 0x80005A;
-constexpr SignalID_t signal_EnteredHidespotCloset = 0x800024;
+#include "Common_Plugins/AnimationGraphMods/ReactToAnimationSignals.h"
 
 class DatabaseOfCustomReactionsToAnimationSignals
 {

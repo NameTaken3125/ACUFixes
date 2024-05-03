@@ -1,6 +1,11 @@
 #pragma once
 
+#include "ACU/basic_types.h"
+
 using SignalID_t = uint32;
+//constexpr SignalID_t signal_RangedWeaponShotFired = 0x800023;
+//constexpr SignalID_t signal_RangedWeaponUnholster = 0x80005A;
+//constexpr SignalID_t signal_EnteredHidespotCloset = 0x800024;
 class HumanStatesHolder;
 
 class CustomReactionToAnimationSignals

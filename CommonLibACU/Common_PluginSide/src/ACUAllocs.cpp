@@ -1,9 +1,6 @@
 #include "pch.h"
 
-#include "ACUAllocs.h"
-
-#include "ACU_DefineNativeFunction.h"
-
+#include "Common_Plugins/ACUAllocs.h"
 
 DEFINE_GAME_FUNCTION(Allocate_mb, 0x1426F3760, void*, __fastcall, (__int64 p_numBytes, __int64 p_alignment_mb, void* currentHeap_mb));
 DEFINE_GAME_FUNCTION(AllocString_mb_orBytes, 0x140004510, void*, __fastcall, (__int64 p_numBytes, __int64 p_alignment_mb, void* resultOf0x1426F3760));

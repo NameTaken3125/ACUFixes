@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Common_Plugins/AnimationGraphMods/RTCPVariableDescriptor.h"
+
 enum ValueOfHoodControl : int
 {
     TakeHoodOff_normalpath = 1,
@@ -7,3 +9,5 @@ enum ValueOfHoodControl : int
     PutHoodOn_normalpath = 0,
     PutHoodOn_ALTpath = 2,
 };
+
+extern RTCPVariableDescriptor g_rtcpDesc_HoodControlValue;

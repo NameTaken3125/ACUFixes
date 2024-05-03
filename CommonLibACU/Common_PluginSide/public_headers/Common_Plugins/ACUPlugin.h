@@ -8,14 +8,17 @@ constexpr uint64 g_CurrentPluginAPIversion = MAKE_PLUGIN_LOADER_VERSION(0, 8, 0,
 
 
 class ACUPluginLoaderSharedGlobals;
-struct ACUPluginLoaderInterface
+class ACUPluginLoaderInterface
 {
+public:
 	uint64 m_PluginLoaderVersion = g_CurrentPluginAPIversion;
     // Call this if you want the PluginLoader to unload this DLL.
     void (*RequestUnloadPlugin)(HMODULE dllHandle) = nullptr;
 	// Can be used for very basic interaction between plugins.
 	HMODULE (*GetPluginIfLoaded)(const wchar_t* pluginName) = nullptr;
 	ACUPluginLoaderSharedGlobals* m_ImplementationSharedVariables = nullptr;
+
+	ACUPluginLoaderInterface(); // Defined in PluginLoader project.
 };
 assert_offsetof(ACUPluginLoaderInterface, m_PluginLoaderVersion, 0);
 assert_offsetof(ACUPluginLoaderInterface, RequestUnloadPlugin, 8);

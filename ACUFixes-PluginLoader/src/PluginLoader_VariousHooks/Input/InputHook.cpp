@@ -89,16 +89,3 @@ GameRawInputHook::GameRawInputHook()
         beforeActionKeysAreUpdatedFromScancodes, 6,
         BeforeActionKeysAreUpdatedFromScancodes_RunRawInputHooks, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
 }
-
-
-class VariousHooksContainer
-{
-public:
-    AutoAssembleWrapper<GameRawInputHook> m_GameRawInputHook;
-};
-std::optional<VariousHooksContainer> g_VariousHooks;
-void PluginLoader_VariousHooks_Start()
-{
-    g_VariousHooks.emplace();
-    g_VariousHooks->m_GameRawInputHook.Activate();
-}

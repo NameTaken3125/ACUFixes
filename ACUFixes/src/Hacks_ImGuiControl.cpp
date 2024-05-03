@@ -41,8 +41,6 @@
 #include "Request_Spindescent.h"
 #include "Request_FreezeFOV.h"
 
-#include "AnimationTools/AnimationGraphEvaluationPatches.h"
-
 #include "AutoAssemblerKinda/AutoAssemblerKinda.h"
 
 struct HookAnimationSignalsThatHumansReceive : AutoAssemblerCodeHolder_Base
@@ -98,11 +96,8 @@ public:
     AutoAssembleWrapper<WhistleAbility> whistleAbility;
     AutoAssembleWrapper<BetterAimingFromBehindCover> moreConsistentAimBombFromBehindCover;
 
-    AutoAssembleWrapper<AnimationGraphEvaluationPatches> animationGraphEvaluationPatches;
-
     void DrawControls()
     {
-        ImGui::DrawCheckboxForHack(animationGraphEvaluationPatches, "animationGraphEvaluationPatches");
         if (ImGui::Button("Save config file"))
         {
             WriteConfig(g_Config);
@@ -568,7 +563,6 @@ void DrawHacksControls()
 void MyVariousHacks::Start()
 {
     g_MyHacks.emplace();
-    g_MyHacks->animationGraphEvaluationPatches.Activate();
     g_MyHacks->ReadConfig(g_Config);
     g_MyHacks->WriteConfig(g_Config);
     MainConfig::WriteToFile();

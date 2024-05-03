@@ -47,13 +47,9 @@ struct MyPluginResult
     };
     std::optional<SuccessfulLoad> m_successfulLoad;
 };
-void PluginLoader_RequestUnloadPlugin(HMODULE dllHandle);
-HMODULE PluginLoader_GetPluginIfLoaded(const wchar_t* pluginName);
 using PluginLoaderResults = std::vector<std::unique_ptr<MyPluginResult>>;
 class MyPluginLoader
 {
-public:
-    MyPluginLoader();
 public:
     void UpdateListOfAvailablePlugins();
     void LoadAllFoundNonloadedPlugins();
@@ -74,25 +70,16 @@ private:
     bool m_IsRequestedToUnloadPlugin = false;
     ACUPluginLoaderInterface m_PluginLoaderInterfaces;
 } g_MyPluginLoader;
-#include "Common_Plugins_impl/PluginLoaderSharedGlobals.h"
-#include "Common_Plugins_impl/InputHooks.h"
-extern ACU::Input::InputHooks g_InputHooks;
-ACUPluginLoaderSharedGlobals g_SharedVariables;
-ACUPluginLoaderSharedGlobals::ACUPluginLoaderSharedGlobals()
-    : m_InputHooks(g_InputHooks)
-{}
-MyPluginLoader::MyPluginLoader()
-{
-    m_PluginLoaderInterfaces.RequestUnloadPlugin = ::PluginLoader_RequestUnloadPlugin;
-    m_PluginLoaderInterfaces.GetPluginIfLoaded = ::PluginLoader_GetPluginIfLoaded;
-    m_PluginLoaderInterfaces.m_ImplementationSharedVariables = &g_SharedVariables;
-}
 bool IsPluginAPIversionCompatible(uint64 pluginLoaderVersion, uint64 pluginVersion)
 {
     // If the pluginloader updates introduce changes that would break old plugins,
     // I can list the breaking versions right here.
     return pluginLoaderVersion >= pluginVersion;
 }
+#define PLUGIN_API_VERSION_GET_MAJOR(version) ((version >> 24) & 0xFF)
+#define PLUGIN_API_VERSION_GET_MINOR(version) ((version >> 16) & 0xFF)
+#define PLUGIN_API_VERSION_GET_MINORER(version) ((version >> 8) & 0xFF)
+#define PLUGIN_API_VERSION_GET_MINOREST(version) (version & 0xFF)
 void MyPluginLoader::LoadAndStartPlugin(MyPluginResult& pluginRecord)
 {
     const auto* pluginFilepath = pluginRecord.m_filepath.c_str();
@@ -122,10 +109,6 @@ void MyPluginLoader::LoadAndStartPlugin(MyPluginResult& pluginRecord)
         FreeLibrary(moduleHandle);
         return;
     }
-#define PLUGIN_API_VERSION_GET_MAJOR(version) ((version >> 24) & 0xFF)
-#define PLUGIN_API_VERSION_GET_MINOR(version) ((version >> 16) & 0xFF)
-#define PLUGIN_API_VERSION_GET_MINORER(version) ((version >> 8) & 0xFF)
-#define PLUGIN_API_VERSION_GET_MINOREST(version) (version & 0xFF)
     LOG_DEBUG(L"[*] Plugin %s: `ACUPluginStart()` returned `true`. Plugin API version: %d.%d.%d.%d. Plugin's version: 0x%llX.\n"
         , pluginName
         , PLUGIN_API_VERSION_GET_MAJOR(pluginInfo->m_PluginAPIVersion)
@@ -165,6 +148,10 @@ void MyPluginLoader::LoadAndStartPlugin(MyPluginResult& pluginRecord)
     LOG_DEBUG(L"[+] Plugin %s: Successfully loaded.\n", pluginName);
     pluginRecord.m_successfulLoad.emplace(moduleHandle, std::move(pluginInfo));
 }
+#undef PLUGIN_API_VERSION_GET_MAJOR
+#undef PLUGIN_API_VERSION_GET_MINOR
+#undef PLUGIN_API_VERSION_GET_MINORER
+#undef PLUGIN_API_VERSION_GET_MINOREST
 void MyPluginLoader::UnloadAllPlugins()
 {
     for (std::unique_ptr<MyPluginResult>& dll : dllResults)
@@ -277,6 +264,7 @@ void MyPluginLoader::LoadAllFoundNonloadedPlugins()
         LoadAndStartPlugin(*plugin);
     }
 }
+#include "Common_Plugins_impl/PluginLoaderSharedGlobals.h"
 extern ImGuiContext* GImGui;
 void MyPluginLoader::DrawPluginListControls()
 {
@@ -290,11 +278,6 @@ void MyPluginLoader::DrawPluginListControls()
     {
         LoadAllFoundNonloadedPlugins();
     }
-    //ImGui::SameLine();
-    //if (ImGui::Button("Unload all"))
-    //{
-    //    UnloadAllPlugins();
-    //}
     std::string buf;
 
     ImGuiShared imguiShared{ *GImGui };
@@ -315,10 +298,6 @@ void MyPluginLoader::DrawPluginListControls()
                     return;
                 }
                 bool& isSeparateMenu = plugin->m_successfulLoad->m_isMenuOpen;
-                //ImGui::AlignTextToFramePadding();
-                //ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(50.f, 50.f));
-                //bool treeopen = ImGui::TreeNodeEx(buf.c_str(), ImGuiTreeNodeFlags_FramePadding);
-                //ImGui::PopStyleVar();
                 ImGuiTreeNodeFlags treeflags = ImGuiTreeNodeFlags_FramePadding;
                 bool isMightBeExpanded = true;
                 if (isSeparateMenu)

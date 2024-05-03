@@ -26,11 +26,13 @@ void RequestUnloadThisPlugin()
 }
 #include "Common_Plugins_impl/InputHooks.h"
 #include "Common_Plugins_impl/PluginLoaderSharedGlobals.h"
+#include "Common_Plugins_impl/AnimationModdingInterface.h"
 void GrabPluginLoaderGlobalVariables(ACUPluginLoaderInterface& pluginLoader)
 {
     RequestUnloadThisPlugin_fnptr = pluginLoader.RequestUnloadPlugin;
     GetPluginIfLoaded_fnptr = pluginLoader.GetPluginIfLoaded;
     ACU::Input::g_InputHooksSingletonPtr = &pluginLoader.m_ImplementationSharedVariables->m_InputHooks;
+    g_AnimationModdingInterface = &pluginLoader.m_ImplementationSharedVariables->m_AnimationModding;
 }
 
 

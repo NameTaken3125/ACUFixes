@@ -1,8 +1,8 @@
 #include "pch.h"
 
 #include "AnimationGraphEvaluationPatches.h"
-#include "AnimGraphMods.h"
-#include "ACUAllocs.h"
+#include "Common_Plugins/AnimationGraphMods/RTCPVariableDescriptor.h"
+#include "Common_Plugins/ACUAllocs.h"
 
 DatabaseOfCustomReactionsToAnimationSignals g_DatabaseOfCustomReactionsToAnimationSignals;
 #include "ACU_DefineNativeFunction.h"
@@ -52,11 +52,11 @@ void* AddMyNewRTCPVariable_generic(AtomGraph& atomGraph, uint8 varAlignment, uin
 class AtomGraphPatchesDatabase
 {
 public:
-    void AddRTCPVariable(AtomGraph& graph, const MyNewerRTCPVariable& newVarDescriptor);
+    void AddRTCPVariable(AtomGraph& graph, const RTCPVariableDescriptor& newVarDescriptor);
     std::map<AtomGraph*, uint32> m_numAddedNewVarsByGraph;
 };
 AtomGraphPatchesDatabase g_GraphPatches;
-void AtomGraphPatchesDatabase::AddRTCPVariable(AtomGraph& atomGraph, const MyNewerRTCPVariable& newVarDescriptor)
+void AtomGraphPatchesDatabase::AddRTCPVariable(AtomGraph& atomGraph, const RTCPVariableDescriptor& newVarDescriptor)
 {
     AtomGraph_RTCP* rtcpCached = atomGraph.rtcp;
     if (uint32* pAlreadyPresentVarIdx = rtcpCached->atomGraphVarsHashmap.Get(newVarDescriptor.varnameHash))
@@ -83,7 +83,7 @@ static uint32 AdjustGraphvarIndexForEntityrefVars(uint32 graphVarIdx, AtomGraph&
 {
     return graphVarIdx + g_GraphPatches.m_numAddedNewVarsByGraph[&graph];
 }
-void AddNewRTCPVariableIfNotPresent(AtomGraph& atomGraph, const MyNewerRTCPVariable& newVarDescriptor)
+void AddNewRTCPVariableIfNotPresent_impl(AtomGraph& atomGraph, const RTCPVariableDescriptor& newVarDescriptor)
 {
     g_GraphPatches.AddRTCPVariable(atomGraph, newVarDescriptor);
 }
@@ -101,23 +101,20 @@ void DatabaseOfCustomReactionsToAnimationSignals::UnregisterCustomReaction(Custo
 {
     m_CustomReactions.erase(std::remove(m_CustomReactions.begin(), m_CustomReactions.end(), &reactionToRemove), m_CustomReactions.end());
 }
-namespace AnimationTools::Signals
-{
-void RegisterCustomReaction(CustomReactionToAnimationSignals& newCustomReaction)
+void RegisterCustomReaction_impl(CustomReactionToAnimationSignals& newCustomReaction)
 {
     g_DatabaseOfCustomReactionsToAnimationSignals.RegisterCustomReaction(newCustomReaction);
 }
-void UnregisterCustomReaction(CustomReactionToAnimationSignals& reactionToRemove)
+void UnregisterCustomReaction_impl(CustomReactionToAnimationSignals& reactionToRemove)
 {
     g_DatabaseOfCustomReactionsToAnimationSignals.UnregisterCustomReaction(reactionToRemove);
 }
-void RegisterSignal(SignalID_t signalInt)
+void RegisterSignal_impl(SignalID_t signalInt)
 {
     g_DatabaseOfCustomReactionsToAnimationSignals.RegisterSignal(signalInt);
 }
-} // namespace AnimationTools::Signals
 
-#include "ACUAllocs.h"
+
 void DatabaseOfCustomReactionsToAnimationSignals::WhenSignalChangeDispatched(HumanStatesHolder* receivingEntityHumanStates, SignalID_t signalInt, bool isSignalOn)
 {
     for (CustomReactionToAnimationSignals* customReaction : m_CustomReactions)

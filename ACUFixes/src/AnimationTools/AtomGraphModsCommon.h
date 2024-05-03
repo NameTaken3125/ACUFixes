@@ -22,12 +22,12 @@
 #include "ACU_SharedPtrs.h"
 #include "Experimental_StrongPtr.h"
 
-#include "ACUAllocs.h"
+#include "Common_Plugins/AnimationGraphMods/RTCPVariableDescriptor.h"
 
 #include "AnimationTools/UsefulHandles.h"
 
 
-void AddNewRTCPVariableIfNotPresent(AtomGraph& atomGraph, const MyNewerRTCPVariable& newVarDescriptor);
+void AddNewRTCPVariableIfNotPresent(AtomGraph& atomGraph, const RTCPVariableDescriptor& newVarDescriptor);
 AtomOutputPort* CreateOutputPort(AtomGraphNode& graphNode)
 {
     AtomOutputPort* defaultOutputPort = SmallArray_GameType_Append(graphNode.OutputPorts);

@@ -14,7 +14,6 @@
 #include "ACU/SkeletonComponent.h"
 #include "ACU/Bone.h"
 #include "ACU_SharedPtrs.h"
-#include "ACU_DefineNativeFunction.h"
 
 
 #include "Handles.h"
@@ -23,7 +22,7 @@
 #include "Serialization/NumericAdapters.h"
 #include "ImGuiCTX.h"
 
-#include "ACUAllocs.h"
+#include "Common_Plugins/ACUAllocs.h"
 #include "AtomGraphControls.h"
 
 

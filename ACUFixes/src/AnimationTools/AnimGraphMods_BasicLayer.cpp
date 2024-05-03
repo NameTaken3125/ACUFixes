@@ -1,13 +1,14 @@
 #include "pch.h"
 
-#include "AnimationTools/AnimGraphMods.h"
+#include "Common_Plugins/ACUAllocs.h"
 #include "AnimationTools/AtomGraphModsCommon.h"
-#include "AnimationTools/ReactToAnimationSignals.h"
-#include "AnimationTools/AnimationGraphEvaluationPatches.h"
+#include "Common_Plugins/AnimationGraphMods/ReactToAnimationSignals.h"
 #include "Common_Plugins/Common_PluginSide.h"
 #include "MyAnimationPlayer.h"
 namespace fs = std::filesystem;
 
+namespace AnimationTools
+{
 AtomAnimationDataNode& GraphStateNode_PushAnimationDataNode(AtomGraphStateNode& graphStateNode, uint64 animHandle)
 {
     AtomAnimationDataNode* node_animData = ACUAllocate<AtomAnimationDataNode>();
@@ -347,12 +348,6 @@ AtomConditionExpression* CreateConditionExpression_PlaybackPercentage(const floa
         }
     ));
 }
-
-
-#include "Hack_RemovableHood_Animations.h"
-void RemovableHood_ReactToAnimationSignal(bool truePutOnFalseTakeOff);
-namespace AnimGraphMods::BasicLayer
-{
 void SetupStateMachineDefaultInitialState(AtomStateMachineNode& stateMachineNode)
 {
     AtomInitialState* defaultInitialState = SmallArray_GameType_Append(stateMachineNode.InitialStates);
@@ -360,6 +355,22 @@ void SetupStateMachineDefaultInitialState(AtomStateMachineNode& stateMachineNode
     AtomConditionExpression* defaultConditionExpression = ACUAllocate<AtomConditionExpression>();
     defaultInitialState->conditionExpression = defaultConditionExpression;
 }
+void AddBoneWeight(AtomLayeringInfo& layer, uint32 boneID, uint8 weightF8)
+{
+    BoneWeight* boneWeight = SmallArray_GameType_Append(layer.BoneWeights);
+    boneWeight->BoneID = boneID;
+    boneWeight->WeightF8 = weightF8;
+}
+}
+using namespace AnimationTools;
+
+
+#include "Hack_RemovableHood_Animations.h"
+
+RTCPVariableDescriptor g_rtcpDesc_HoodControlValue("HoodControlValue", 2751097728, int(ValueOfHoodControl::PutHoodOn_normalpath));
+void RemovableHood_ReactToAnimationSignal(bool truePutOnFalseTakeOff);
+namespace AnimGraphMods::BasicLayer
+{
 
 /*
 How the HoodControls animations work in the animation graph.
@@ -598,12 +609,6 @@ void SetupTheNewLayersStateMachine(AtomStateMachineNode& newLayerStateMachine)
         ));
         SmallArrayAppend(playbackState2.base8.Transitions, interruptByOppositeAnimation2);
     }
-}
-void AddBoneWeight(AtomLayeringInfo& layer, uint32 boneID, uint8 weightF8)
-{
-    BoneWeight* boneWeight = SmallArray_GameType_Append(layer.BoneWeights);
-    boneWeight->BoneID = boneID;
-    boneWeight->WeightF8 = weightF8;
 }
 void SetupTheNewLayer(AtomLayeringInfo& newLayer)
 {

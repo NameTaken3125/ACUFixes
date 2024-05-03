@@ -1,10 +1,13 @@
 #pragma once
 
 #include "Common_Plugins_impl/InputHooks.h"
+class AnimationModdingInterface;
 class ACUPluginLoaderSharedGlobals
 {
 public:
     ACU::Input::InputHooks& m_InputHooks;
+    AnimationModdingInterface& m_AnimationModding;
+
     ACUPluginLoaderSharedGlobals(); // Defined in PluginLoader project.
 };
 class ImGuiShared
