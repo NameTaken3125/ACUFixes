@@ -192,6 +192,8 @@
     <ClInclude Include="inc\ACU\CameraSelectorNode.h" />
     <ClInclude Include="inc\ACU\Event.h" />
     <ClInclude Include="inc\ACU\GearPage.h" />
+    <ClInclude Include="inc\ACU\GearUIInfo.h" />
+    <ClInclude Include="inc\ACU\GearUIInfoContainer.h" />
     <ClInclude Include="inc\ACU\HasWorld.h" />
     <ClInclude Include="inc\ACU\Material.h" />
     <ClInclude Include="inc\ACU\MenuManager.h" />
@@ -203,6 +205,9 @@
     <ClInclude Include="inc\ACU\SkeletonComponent.h" />
     <ClInclude Include="inc\ACU\SoftBodySettings.h" />
     <ClInclude Include="inc\ACU\StandardPage.h" />
+    <ClInclude Include="inc\ACU\TagRules.h" />
+    <ClInclude Include="inc\ACU\UniverseTagRules.h" />
+    <ClInclude Include="inc\ACU\WorldTagRules.h" />
     <ClInclude Include="inc\ACU_DefineNativeFunction.h" />
     <ClInclude Include="inc\ACU\ActionAbilitySet.h" />
     <ClInclude Include="inc\ACU\ActionKeyStates.h" />
@@ -354,6 +359,7 @@
     <ClCompile Include="src\VanishingManager.cpp" />
     <ClCompile Include="src\WeaponComponent.cpp" />
     <ClCompile Include="src\World.cpp" />
+    <ClCompile Include="src\WorldTagRules.cpp" />
     <ClCompile Include="vmath\vmath\vmath.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>

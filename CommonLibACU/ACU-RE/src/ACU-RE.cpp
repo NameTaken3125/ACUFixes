@@ -129,6 +129,10 @@
 #include "ACU/BuildTags.h"
 #include "ACU/BuildTable.h"
 
+#include "ACU/TagRules.h"
+#include "ACU/WorldTagRules.h"
+#include "ACU/UniverseTagRules.h"
+
 #include "ACU/MissionReplicationPack.h"
 #include "ACU/Mission.h"
 #include "ACU/MissionGroup.h"
@@ -149,6 +153,9 @@
 #include "ACU/StandardPage.h"
 #include "ACU/GearPage.h"
 #include "ACU/MenuManager.h"
+
+#include "ACU/GearUIInfo.h"
+#include "ACU/GearUIInfoContainer.h"
 
 #include "ACU/SoftBodySettings.h"
 #include "ACU/Skeleton.h"

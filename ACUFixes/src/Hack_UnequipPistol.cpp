@@ -68,19 +68,7 @@ GearPage* DynamicCast_GearPage(void* obj)
     return nullptr;
 }
 
-class GearUIModifier;
-class GearUIInfo : public ManagedObject
-{
-public:
-    char pad_0010[24]; //0x0010
-    GearPage* gearPage; //0x0028
-    AvatarGear* gear; //0x0030
-    SmallArray<GearUIModifier*> gearUIModifiers; //0x0038
-    char pad_0044[12]; //0x0044
-    void* shared_textureMapSpec_mb; //0x0050
-    char pad_0058[192]; //0x0058
-}; //Size: 0x0118
-assert_sizeof(GearUIInfo, 0x118);
+#include "ACU/GearUIInfo.h"
 DEFINE_GAME_FUNCTION(CastTo_GearUIInfo, 0x14086E030, GearUIInfo*, __fastcall, (ManagedObject* obj));
 static bool IsGearUIInfoCorrespondingToAPistol(GearUIInfo& gearInfo)
 {

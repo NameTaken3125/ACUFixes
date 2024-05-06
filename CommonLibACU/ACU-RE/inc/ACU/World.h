@@ -21,6 +21,7 @@ class VanishingManager;
 class TimeOfDayManager;
 class GameplayCoordinatorWorldComponent;
 class RiftWorldManager;
+class WorldTagRules;
 class Entity;
 class World : public BaseWorld
 {
@@ -54,7 +55,9 @@ public:
     UIWorldComponent* uiWorldComponent; //0x09C8
     char pad_09D0[24]; //0x09D0
     RiftWorldManager* riftWorldManager; //0x09E8
-    char pad_09F0[120]; //0x09F0
+    char pad_09F0[16]; //0x09F0
+    WorldTagRules* worldTagRules; //0x0A00
+    char pad_0A08[96]; //0x0A08
 
     // @helper_functions
     static World* GetSingleton();
