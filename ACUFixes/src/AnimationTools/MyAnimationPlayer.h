@@ -59,16 +59,13 @@ extern MyAnimationPlayer g_MyAnimationPlayer;
 
 
 
+#include "NewHandlesFactory.h"
 
-#include "Experimental_StrongPtr.h"
-constexpr uint64 handle_MaximumInACU = 272054823035; // => LargeMesh_LV_Ground_07A_LOD0_Chunk_0047_MeshShape/LargeMesh_LV_Ground_07A_LOD0_Chunk_0047_MeshShape.MeshShape
 class NewAnimationsFactory
 {
 public:
     ACUSharedPtr_Strong<Animation> LoadNewAnimationFromFile(const std::filesystem::path& filepath);
 public:
     ACUSharedPtr_Strong<Animation> AllocateNewAnimation();
-private:
-    uint64 m_NextFreeHandle = handle_MaximumInACU + 1;
 };
 extern NewAnimationsFactory g_NewAnimationsFactory;

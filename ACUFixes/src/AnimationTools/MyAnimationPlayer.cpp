@@ -274,8 +274,6 @@ public:
 };
 
 DEFINE_GAME_FUNCTION(FindManagedObjectByHandle, 0x1426F5950, ManagedObject*, __fastcall, (SmthDuringDeserializeManagedObj* a1, unsigned __int64 p_handle));
-DEFINE_GAME_FUNCTION(UsesTypeInfoCreate, 0x1426EB1A0, ManagedObject*, __fastcall, (__int64 p_handle, __int64 a2, TypeInfo* a3));
-DEFINE_GAME_FUNCTION(JoinManagedObjectAndHandle_mb, 0x142714230, ManagedObject*, __fastcall, (__int64 p_handle, ManagedObject* p_manObj));
 Animation* CreateManagedAnimationByHandle(uint64 handle)
 {
     using TargetType = Animation;
@@ -1113,28 +1111,15 @@ constexpr uint64 handle_skeleton_BaseMale = 28540328525; // => NEW_SDN_CN_U_Armo
 constexpr uint64 handle_skeleton_HiddenBlade = 87332257962; // => CN_P_LegacyAvatar_ThomasCarneillon_Base/ACU_U_Arno_IconicWeapon.Skeleton
 namespace fs = std::filesystem;
 #include "Serialization/ToFromFile/ToFromFile.h"
+
+NewHandlesFactory g_NewHandlesFactory;
 ACUSharedPtr_Strong<Animation> NewAnimationsFactory::AllocateNewAnimation()
 {
-    using TargetType = Animation;
-
-    uint64 newHandle;
-    ACUSharedPtr_Strong<TargetType> sharedAnim;
-    do
-    {
-        newHandle = m_NextFreeHandle++;
-        sharedAnim = ACUSharedPtr_Strong<TargetType>(newHandle);
-    } while (sharedAnim.GetSharedBlock().manObj); // Handle already taken.
-    // Managed objects lock is unnecessarily released here.
-    TypeInfo& ti = TargetType::GetTI();
-    TargetType* newManObj = static_cast<TargetType*>(UsesTypeInfoCreate(newHandle, 0, &ti));
-
-    {
+    auto InitializeNewAnimation = [](Animation& newManObj, uint64 newHandle) {
         const uint32 animationKey_shouldBeUniqueToAvoidCachingProblemsButIdkHowItsGenerated = newHandle & 0xFFFFFFFF;
-        newManObj->AnimationKey = animationKey_shouldBeUniqueToAvoidCachingProblemsButIdkHowItsGenerated;
-    }
-
-    JoinManagedObjectAndHandle_mb(newHandle, newManObj);
-    return sharedAnim;
+        newManObj.AnimationKey = animationKey_shouldBeUniqueToAvoidCachingProblemsButIdkHowItsGenerated;
+    };
+    return g_NewHandlesFactory.CreateNewManagedObject<Animation>(InitializeNewAnimation);
 }
 MySpoofAnimation::MySpoofAnimation(uint64 handle)
     : m_handle(handle)

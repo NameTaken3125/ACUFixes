@@ -243,6 +243,7 @@
     <ClInclude Include="src\AnimationTools\AtomGraphControls.h" />
     <ClInclude Include="src\AnimationTools\AtomGraphModsCommon.h" />
     <ClInclude Include="src\AnimationTools\Hack_RemovableHood_Animations.h" />
+    <ClInclude Include="src\AnimationTools\NewHandlesFactory.h" />
     <ClInclude Include="src\AnimationTools\SkeletonDumper.h" />
     <ClInclude Include="src\AnimationTools\UsefulHandles.h" />
     <ClInclude Include="src\Experimental_StrongPtr.h" />

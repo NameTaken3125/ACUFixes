@@ -21,6 +21,7 @@ public:
 public:
     ManagedObjectSubcls* GetPtr() { return static_cast<ManagedObjectSubcls*>(m_SharedBlock.get().GetPtr()); }
     SharedPtrNew<ManagedObjectSubcls>& GetSharedBlock() { return (SharedPtrNew<ManagedObjectSubcls>&)m_SharedBlock.get(); }
+    SharedPtrNew<ManagedObjectSubcls>& Release() { auto& freeSharedBlock = GetSharedBlock(); m_SharedBlock = *g_emptySharedBlock; return freeSharedBlock; }
     void Reset();
 private:
     // In the game, the pointer to a shared block is never a `nullptr`.
