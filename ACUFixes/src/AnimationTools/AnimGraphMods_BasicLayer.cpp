@@ -662,24 +662,42 @@ public:
         }
     }
 };
+AtomLayeringStateNode* PlayerAtomGraph_GetNormalGameplayLayeringState(AtomGraph& playerGraph)
+{
+    auto* mainLayeringState = static_cast<AtomLayeringStateNode*>(playerGraph.RootStateMachine->States[0]);
+    return mainLayeringState;
+}
+AtomLayeringStateNode* PlayerAtomGraph_GetCinematicLayeringState(AtomGraph& playerGraph)
+{
+    auto* cinematicState = static_cast<AtomStateMachineNode*>(playerGraph.RootStateMachine->States[1]);
+    auto* cinematicLayering = static_cast<AtomLayeringStateNode*>(cinematicState->States[0]);
+    return cinematicLayering;
+}
+bool IsHoodControlsModAlreadyApplied(AtomGraph& playerGraph)
+{
+    AtomLayeringStateNode* mainLayeringState = PlayerAtomGraph_GetNormalGameplayLayeringState(playerGraph);
+    return mainLayeringState->layeringInfos.size > 14;
+}
 class AnimationGraphMod_HoodControls
 {
     ReactToAnimationHoodOnOff m_SignalReaction_HoodVisibility;
 public:
     AnimationGraphMod_HoodControls(AtomGraph& atomGraph)
     {
-        AddNewRTCPVariableIfNotPresent(atomGraph, g_rtcpDesc_HoodControlValue);
-        auto* mainLayeringState = static_cast<AtomLayeringStateNode*>(atomGraph.RootStateMachine->States[0]);
+        if (!IsHoodControlsModAlreadyApplied(atomGraph))
         {
-            AtomLayeringInfo& newLayer = LayeringState_CreateNewLayerWithStateMachine(*mainLayeringState);
-            SetupTheNewLayer(newLayer);
-        }
+            AddNewRTCPVariableIfNotPresent(atomGraph, g_rtcpDesc_HoodControlValue);
+            AtomLayeringStateNode* mainLayeringState = PlayerAtomGraph_GetNormalGameplayLayeringState(atomGraph);
+            {
+                AtomLayeringInfo& newLayer = LayeringState_CreateNewLayerWithStateMachine(*mainLayeringState);
+                SetupTheNewLayer(newLayer);
+            }
 
-        auto* cinematicState = static_cast<AtomStateMachineNode*>(atomGraph.RootStateMachine->States[1]);
-        auto* cinematicLayering = static_cast<AtomLayeringStateNode*>(cinematicState->States[0]);
-        {
-            AtomLayeringInfo& newLayer = LayeringState_CreateNewLayerWithStateMachine(*cinematicLayering);
-            SetupTheNewLayer(newLayer);
+            AtomLayeringStateNode* cinematicLayering = PlayerAtomGraph_GetCinematicLayeringState(atomGraph);
+            {
+                AtomLayeringInfo& newLayer = LayeringState_CreateNewLayerWithStateMachine(*cinematicLayering);
+                SetupTheNewLayer(newLayer);
+            }
         }
         AnimationTools::Signals::RegisterCustomReaction(m_SignalReaction_HoodVisibility);
         AnimationTools::Signals::RegisterSignal(signal_HoodPutOn);
