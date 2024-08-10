@@ -107,6 +107,7 @@ namespace json {
 
 template<typename StringKey_t, typename Value_t>
 using map = ordered_map<StringKey_t, Value_t>;
+using int_type = long long;
 //using std::map;
 using std::deque;
 using std::string;
@@ -139,7 +140,7 @@ class JSON
 {
     union BackingData {
         BackingData( double d ) : Float( d ){}
-        BackingData( long   l ) : Int( l ){}
+        BackingData( int_type l ) : Int( l ){}
         BackingData( bool   b ) : Bool( b ){}
         BackingData( string s ) : String( new string( s ) ){}
         BackingData()           : Int( 0 ){}
@@ -148,7 +149,7 @@ class JSON
         map<string,JSON>   *Map;
         string             *String;
         double              Float;
-        long                Int;
+        int_type            Int;
         bool                Bool;
     } Internal;
 
@@ -278,7 +279,7 @@ class JSON
         JSON( T b, typename enable_if<is_same<T,bool>::value>::type* = 0 ) : Internal( b ), Type( Class::Boolean ){}
 
         template <typename T>
-        JSON( T i, typename enable_if<is_integral<T>::value && !is_same<T,bool>::value>::type* = 0 ) : Internal( (long)i ), Type( Class::Integral ){}
+        JSON( T i, typename enable_if<is_integral<T>::value && !is_same<T,bool>::value>::type* = 0 ) : Internal( (int_type)i ), Type( Class::Integral ){}
 
         template <typename T>
         JSON( T f, typename enable_if<is_floating_point<T>::value>::type* = 0 ) : Internal( (double)f ), Type( Class::Floating ){}
@@ -409,8 +410,8 @@ class JSON
             return ok ? Internal.Float : 0.0;
         }
 
-        long ToInt() const { bool b; return ToInt( b ); }
-        long ToInt( bool &ok ) const {
+        int_type ToInt() const { bool b; return ToInt( b ); }
+        int_type ToInt( bool &ok ) const {
             ok = (Type == Class::Integral);
             return ok ? Internal.Int : 0;
         }
@@ -784,9 +785,9 @@ namespace {
             Number = std::stod( val ) * std::pow( 10, exp );
         else {
             if( !exp_str.empty() )
-                Number = std::stol( val ) * std::pow( 10, exp );
+                Number = std::stoll( val ) * std::pow( 10, exp );
             else
-                Number = std::stol( val );
+                Number = std::stoll( val );
         }
         return std::move( Number );
     }

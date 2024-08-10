@@ -264,6 +264,10 @@ void PlayHoodAnimation(bool doPutHoodOn)
     GraphEvaluation* graphEvaluation = animCpnt->pD0;
     if (!graphEvaluation) { return; }
     int* v = GetGraphVariable<int>(*graphEvaluation, g_rtcpDesc_HoodControlValue.varnameHash);
+    if (!v)
+    {
+        return;
+    }
 
     const int currentRTCPValue = *v;
     int newRTCPValue = !doPutHoodOn;

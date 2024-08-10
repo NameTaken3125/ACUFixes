@@ -132,21 +132,21 @@ void ImGuiLayer_WhenMenuIsOpen()
         {
             if (ImGuiCTX::Tab _mainTab{ "Main Tab" })
             {
-                if (ImGuiCTX::WindowChild _{ "MainTabChild" })
+                if (ImGuiCTX::WindowChild _{ "MainTabChild", ImVec2(0, 0), true })
                 {
                     DrawHacksControls();
                 }
             }
             if (ImGuiCTX::Tab _mainTab{ "Weather" })
             {
-                if (ImGuiCTX::WindowChild _{ "WeatherTabChild" })
+                if (ImGuiCTX::WindowChild _{ "WeatherTabChild", ImVec2(0, 0), true })
                 {
                     DrawWeatherControls();
                 }
             }
             if (ImGuiCTX::Tab _mainTab{ "Animtools" })
             {
-                if (ImGuiCTX::WindowChild _{ "animschild" })
+                if (ImGuiCTX::WindowChild _{ "animschild", ImVec2(0, 0), true })
                 {
                     if (ImGui::Button("Go to top of Bastille"))
                     {

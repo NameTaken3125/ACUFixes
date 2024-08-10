@@ -7,6 +7,13 @@
 
 byte* ACUAllocateBytes(uint32 numBytes, uint32 alignment);
 void ACUDeallocateBytes(byte* allocated); // I think an implementation can be seen at `CString::Alloc()` at 0x14250D050.
+inline char* ACUAllocateString(std::string_view s)
+{
+    char* cstring = reinterpret_cast<char*>(ACUAllocateBytes((uint32)s.size() + 1, 1));
+    std::memcpy(cstring, s.data(), s.size());
+    cstring[s.size()] = 0;
+    return cstring;
+}
 
 DEFINE_GAME_FUNCTION(SmallArray_generic__AllocateSeparateBuffer, 0x14271F780, void*, __fastcall, (void* p_smallArray, int p_newCap, unsigned int p_align_mb, int p_elementSize, int a5, void* p_heap_mb));
 DEFINE_GAME_FUNCTION(SmallArray_generic__SetNewBuffer, 0x1427260D0, void, __fastcall, (void* p_smallArray, void* p_newBuffer, int p_numElems, __int16 p_capacity, int p_align, char a6, char a7, char a8, char a9));
