@@ -25,6 +25,8 @@ public:
     SmallArray& operator=(const SmallArray& rhs) = delete;
     SmallArray(SmallArray&& rhs) noexcept;
     SmallArray& operator=(SmallArray&& rhs) noexcept;
+
+    void erase(iterator fromWhere, iterator toWhere);
 }; // Size: 0xC
 #pragma pack(pop)
 
@@ -49,6 +51,17 @@ SmallArray<T>& SmallArray<T>::operator=(SmallArray<T>&& rhs) noexcept
     rhs.capacityAndFlags = 0;
     rhs.size = 0;
     return *this;
+}
+
+template<typename T>
+void SmallArray<T>::erase(iterator fromWhere, iterator toWhere)
+{
+    while (fromWhere != toWhere)
+    {
+        fromWhere->~T();
+        fromWhere++;
+        this->size--;
+    }
 }
 
 namespace {

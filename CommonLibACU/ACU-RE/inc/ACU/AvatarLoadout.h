@@ -8,15 +8,15 @@ class AvatarLoadout
 {
 public:
 	SharedPtrNew<InventoryItemSettings>* WaistSlot; //0x0000
-	SharedPtrNew<InventoryItemSettings>* shared_invItemSett_Chest; //0x0008
-	SharedPtrNew<InventoryItemSettings>* shared_invItemSett_Forearms; //0x0010
+	SharedPtrNew<InventoryItemSettings>* ChestSlot; //0x0008
+	SharedPtrNew<InventoryItemSettings>* ForearmsSlot; //0x0010
 	SharedPtrNew<InventoryItemSettings>* HeadSlot; //0x0018
 	SharedPtrNew<InventoryItemSettings>* LegsSlot; //0x0020
 	SharedPtrNew<InventoryItemSettings>* MeleeWeaponSlot; //0x0028
 	SharedPtrNew<InventoryItemSettings>* RangedWeaponSlot; //0x0030
 	SharedPtrNew<InventoryItemSettings>* shared_invItemSett_LanternDLC; //0x0038
-	char pad_0040[8]; //0x0040
-	SharedPtrNew<InventoryItemSettings>* shared_invItemSett_Colorset; //0x0048
+	SharedPtrNew<InventoryItemSettings>* OutfitSlot; //0x0040
+	SharedPtrNew<InventoryItemSettings>* ColorSlot; //0x0048
 	uint32 dword_50; //0x0050
 	char pad_0054[4]; //0x0054
 	SharedPtrNew<InventoryItemSettings>* boosterSlot; //0x0058

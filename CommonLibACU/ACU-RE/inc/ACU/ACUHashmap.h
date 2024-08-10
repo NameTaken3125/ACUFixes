@@ -21,6 +21,7 @@ public:
     {
         return (uint64)this & 7;
     }
+    ACUHashmapGeneric() : dataPtrWith3LowestBitsAbused(nullptr) {}
 };
 assert_sizeof(ACUHashmapGeneric, 8);
 

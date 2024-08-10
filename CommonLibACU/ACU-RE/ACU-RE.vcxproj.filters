@@ -166,6 +166,12 @@
     <ClInclude Include="inc\ACU\UniverseTagRules.h" />
     <ClInclude Include="inc\ACU\TagRules.h" />
     <ClInclude Include="inc\ACU\WorldTagRules.h" />
+    <ClInclude Include="inc\ACU\PlayerProgressionCharacterCustomization.h" />
+    <ClInclude Include="inc\ACU\TagDictionnaries.h" />
+    <ClInclude Include="inc\ACU\TagDescriptor.h" />
+    <ClInclude Include="inc\ACU\InventoryItemContainer.h" />
+    <ClInclude Include="inc\ACU\ForgeManager.h" />
+    <ClInclude Include="inc\ACU\BigArray.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />
@@ -192,5 +198,6 @@
     <ClCompile Include="src\ACU_SharedPtrs.cpp" />
     <ClCompile Include="src\MissionRoot.cpp" />
     <ClCompile Include="src\WorldTagRules.cpp" />
+    <ClCompile Include="src\ForgeManager.cpp" />
   </ItemGroup>
 </Project>

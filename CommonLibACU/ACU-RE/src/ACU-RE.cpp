@@ -68,6 +68,7 @@
 
 #include "ACU/UIString.h"
 #include "ACU/InventoryItemSettings.h"
+#include "ACU/InventoryItemContainer.h"
 #include "ACU/AvatarGearModifierStats.h"
 #include "ACU/AvatarGear.h"
 #include "ACU/AvatarGearManager.h"
@@ -95,6 +96,7 @@
 #include "ACU/PlayerCustomizationWorker.h"
 
 #include "ACU/AIAction.h"
+#include "ACU/PlayerProgressionCharacterCustomization.h"
 #include "ACU/PlayerProgressionManager.h"
 #include "ACU/AssassinAbilitySet.h"
 
@@ -186,3 +188,9 @@
 #include "ACU/AtomTransitionCellDescription.h"
 #include "ACU/AtomGraph.h"
 #include "ACU/Animation.h"
+
+#include "ACU/BigArray.h"
+#include "ACU/ForgeManager.h"
+
+#include "ACU/TagDescriptor.h"
+#include "ACU/TagDictionnaries.h"
