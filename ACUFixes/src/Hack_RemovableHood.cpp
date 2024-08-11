@@ -309,6 +309,10 @@ void RemovableHood_ReactToAnimationSignal(bool truePutOnFalseTakeOff)
 }
 bool IsHoodToggleShouldBeInstant()
 {
+    if (!IsHoodAnimationsLoaded())
+    {
+        return true;
+    }
     return false;
     AtomAnimComponent* animCpnt = ACU::GetPlayerCpnt_AtomAnimComponent();
     if (!animCpnt) { return true; }

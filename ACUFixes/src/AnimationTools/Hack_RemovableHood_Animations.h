@@ -11,3 +11,5 @@ enum ValueOfHoodControl : int
 };
 
 extern RTCPVariableDescriptor g_rtcpDesc_HoodControlValue;
+
+bool IsHoodAnimationsLoaded();

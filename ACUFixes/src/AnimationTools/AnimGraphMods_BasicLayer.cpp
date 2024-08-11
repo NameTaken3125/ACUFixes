@@ -475,18 +475,43 @@ to the "opposite" playback state if the "HoodControlValue" is one of the "opposi
 you actually need to wait until the hood Visuals get switched (about halfway through the animation)
 before the second tap on the "hood toggle button" will actually interrupt the animation with the opposite one).
 */
+struct RequiredLoadedCustomResources
+{
+    ACUSharedPtr_Strong<Animation> m_AnimPutHoodOn;
+    ACUSharedPtr_Strong<Animation> m_AnimTakeHoodOff;
+    bool LoadAllRequiredResources()
+    {
+        fs::path resPath_animPutHoodOn = AbsolutePathInThisDLLDirectory("NewAnimations/ACVI_xy_UpperBody_Hat_tr_Hood.anim.json");
+        fs::path resPath_animTakeHoodOff = AbsolutePathInThisDLLDirectory("NewAnimations/ACVI_xy_UpperBody_Hood_tr_Hat.anim.json");
+        const bool resourcesArePresent =
+            fs::exists(resPath_animPutHoodOn)
+            && fs::exists(resPath_animTakeHoodOff);
+        if (!resourcesArePresent)
+        {
+            return false;
+        }
+        m_AnimPutHoodOn = g_NewAnimationsFactory.LoadNewAnimationFromFile(resPath_animPutHoodOn);
+        m_AnimTakeHoodOff = g_NewAnimationsFactory.LoadNewAnimationFromFile(resPath_animTakeHoodOff);
+        return true;
+    }
+};
+RequiredLoadedCustomResources m_RequiredResources;
+bool g_IsDoingCinematicLayersNow = false;
 void SetupTheNewLayersStateMachine(AtomStateMachineNode& newLayerStateMachine)
 {
     SetupStateMachineDefaultInitialState(newLayerStateMachine);
 
     AtomNullStateNode& nullState1 = *ACUAllocate<AtomNullStateNode>();
-    AtomGraphStateNode& playbackState1 = CreateGraphState_SimpleAnimationImported(AbsolutePathInThisDLLDirectory("NewAnimations/ACVI_xy_UpperBody_Hood_tr_Hat.anim.json"));
+    AtomGraphStateNode& playbackState1 = CreateGraphState_SimpleAnimation(m_RequiredResources.m_AnimTakeHoodOff.GetSharedBlock().handle);
     AtomNullStateNode& nullState2 = *ACUAllocate<AtomNullStateNode>();
-    AtomGraphStateNode& playbackState2 = CreateGraphState_SimpleAnimationImported(AbsolutePathInThisDLLDirectory("NewAnimations/ACVI_xy_UpperBody_Hat_tr_Hood.anim.json"));
+    AtomGraphStateNode& playbackState2 = CreateGraphState_SimpleAnimation(m_RequiredResources.m_AnimPutHoodOn.GetSharedBlock().handle);
     StateMachine_PushState(newLayerStateMachine, nullState1);
     StateMachine_PushState(newLayerStateMachine, playbackState1);
     StateMachine_PushState(newLayerStateMachine, nullState2);
     StateMachine_PushState(newLayerStateMachine, playbackState2);
+
+    const float animTransitionTime = g_IsDoingCinematicLayersNow ? 1.5f : 0.5f;
+    const float animTransitionStartAtPercentage = g_IsDoingCinematicLayersNow ? .5f : 0.65f;
 
     // Normal path (defaultNullState->playback1->theOtherNullState->playback2->defaultNullState->...). Uses HoodControlValue in {TakeHoodOff_normalpath, PutHoodOn_normalpath}.
     {
@@ -500,12 +525,12 @@ void SetupTheNewLayersStateMachine(AtomStateMachineNode& newLayerStateMachine)
     {
         AtomStateTransitionTarget* transitionTo2ndNullState = ACUAllocate<AtomStateTransitionTarget>();
         transitionTo2ndNullState->TargetStateIndex = 2;
-        transitionTo2ndNullState->TransitionTime = 0.5f;
+        transitionTo2ndNullState->TransitionTime = animTransitionTime;
         transitionTo2ndNullState->BlendType = 1;
         transitionTo2ndNullState->conditionExpression = &BuildConditionExpression(MyCondition_Group(
             AtomCondition_ConjunctionOperator::AND,
             Subconditions_t{
-                std::make_shared<MyCondition_PlaybackPercentage>(0.65f),
+                std::make_shared<MyCondition_PlaybackPercentage>(animTransitionStartAtPercentage),
                 std::make_shared<MyCondition_GraphVariable>(539, AtomCondition_ConditionalOperator::EQUALS, AtomDataContainerWrapper_DataType::Int, ComparisonValue_t(TakeHoodOff_normalpath))
             }
         ));
@@ -522,12 +547,12 @@ void SetupTheNewLayersStateMachine(AtomStateMachineNode& newLayerStateMachine)
     {
         AtomStateTransitionTarget* transitionTo1stNullState = ACUAllocate<AtomStateTransitionTarget>();
         transitionTo1stNullState->TargetStateIndex = 0;
-        transitionTo1stNullState->TransitionTime = 0.5f;
+        transitionTo1stNullState->TransitionTime = animTransitionTime;
         transitionTo1stNullState->BlendType = 1;
         transitionTo1stNullState->conditionExpression = &BuildConditionExpression(MyCondition_Group(
             AtomCondition_ConjunctionOperator::AND,
             Subconditions_t{
-                std::make_shared<MyCondition_PlaybackPercentage>(0.65f),
+                std::make_shared<MyCondition_PlaybackPercentage>(animTransitionStartAtPercentage),
                 std::make_shared<MyCondition_GraphVariable>(539, AtomCondition_ConditionalOperator::EQUALS, AtomDataContainerWrapper_DataType::Int, ComparisonValue_t(PutHoodOn_normalpath))
             }
         ));
@@ -553,12 +578,12 @@ void SetupTheNewLayersStateMachine(AtomStateMachineNode& newLayerStateMachine)
     {
         AtomStateTransitionTarget* tr = ACUAllocate<AtomStateTransitionTarget>();
         tr->TargetStateIndex = 0;
-        tr->TransitionTime = 0.5f;
+        tr->TransitionTime = animTransitionTime;
         tr->BlendType = 1;
         tr->conditionExpression = &BuildConditionExpression(MyCondition_Group(
             AtomCondition_ConjunctionOperator::AND,
             Subconditions_t{
-                std::make_shared<MyCondition_PlaybackPercentage>(0.65f),
+                std::make_shared<MyCondition_PlaybackPercentage>(animTransitionStartAtPercentage),
                 std::make_shared<MyCondition_GraphVariable>(539, AtomCondition_ConditionalOperator::EQUALS, AtomDataContainerWrapper_DataType::Int, ComparisonValue_t(TakeHoodOff_ALTpath))
             }
         ));
@@ -567,12 +592,12 @@ void SetupTheNewLayersStateMachine(AtomStateMachineNode& newLayerStateMachine)
     {
         AtomStateTransitionTarget* tr = ACUAllocate<AtomStateTransitionTarget>();
         tr->TargetStateIndex = 2;
-        tr->TransitionTime = 0.5f;
+        tr->TransitionTime = animTransitionTime;
         tr->BlendType = 1;
         tr->conditionExpression = &BuildConditionExpression(MyCondition_Group(
             AtomCondition_ConjunctionOperator::AND,
             Subconditions_t{
-                std::make_shared<MyCondition_PlaybackPercentage>(0.65f),
+                std::make_shared<MyCondition_PlaybackPercentage>(animTransitionStartAtPercentage),
                 std::make_shared<MyCondition_GraphVariable>(539, AtomCondition_ConditionalOperator::EQUALS, AtomDataContainerWrapper_DataType::Int, ComparisonValue_t(PutHoodOn_ALTpath))
             }
         ));
@@ -629,7 +654,8 @@ void SetupTheNewLayer(AtomLayeringInfo& newLayer)
 // an instance of `AtomStateMachineNode` and not any other subclass of `AtomStateNode`.
 AtomLayeringInfo& LayeringState_CreateNewLayerWithStateMachine(AtomLayeringStateNode& layeringState)
 {
-    AtomLayeringInfo* newLayer = SmallArray_GameType_Append(layeringState.layeringInfos);
+    uint16 layerIdx = g_IsDoingCinematicLayersNow ? 0 : layeringState.layeringInfos.size;
+    AtomLayeringInfo* newLayer = SmallArray_GameType_Insert(layeringState.layeringInfos, layerIdx);
     newLayer->stateNode38 = ACUAllocate<AtomStateMachineNode>();
     newLayer->stateNode38->parentNode_mb = &layeringState;
     SmallArrayAppend(newLayer->arr0, (uint32)0xFFFFFFFF);
@@ -678,6 +704,11 @@ bool IsHoodControlsModAlreadyApplied(AtomGraph& playerGraph)
     AtomLayeringStateNode* mainLayeringState = PlayerAtomGraph_GetNormalGameplayLayeringState(playerGraph);
     return mainLayeringState->layeringInfos.size > 14;
 }
+
+class EResourcesNotFound : public std::exception
+{
+public:
+};
 class AnimationGraphMod_HoodControls
 {
     ReactToAnimationHoodOnOff m_SignalReaction_HoodVisibility;
@@ -686,6 +717,10 @@ public:
     {
         if (!IsHoodControlsModAlreadyApplied(atomGraph))
         {
+            if (!m_RequiredResources.LoadAllRequiredResources())
+            {
+                throw EResourcesNotFound();
+            }
             AddNewRTCPVariableIfNotPresent(atomGraph, g_rtcpDesc_HoodControlValue);
             AtomLayeringStateNode* mainLayeringState = PlayerAtomGraph_GetNormalGameplayLayeringState(atomGraph);
             {
@@ -693,6 +728,7 @@ public:
                 SetupTheNewLayer(newLayer);
             }
 
+            g_IsDoingCinematicLayersNow = true;
             AtomLayeringStateNode* cinematicLayering = PlayerAtomGraph_GetCinematicLayeringState(atomGraph);
             {
                 AtomLayeringInfo& newLayer = LayeringState_CreateNewLayerWithStateMachine(*cinematicLayering);
@@ -710,7 +746,18 @@ public:
 };
 std::optional<AnimationGraphMod_HoodControls> g_HoodMod;
 }
+bool IsHoodAnimationsLoaded()
+{
+    return AnimGraphMods::BasicLayer::g_HoodMod.has_value();
+}
 void AnimGraphMods_BasicLayer_ApplyMod(AtomGraph& atomGraph)
 {
-    AnimGraphMods::BasicLayer::g_HoodMod.emplace(atomGraph);
+    try
+    {
+        AnimGraphMods::BasicLayer::g_HoodMod.emplace(atomGraph);
+    }
+    catch (const AnimGraphMods::BasicLayer::EResourcesNotFound&)
+    {
+
+    }
 }

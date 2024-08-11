@@ -101,6 +101,18 @@ GameTypeWithTypeInfo* SmallArray_GameType_Append(SmallArray<GameTypeWithTypeInfo
     arrInOut.size = newSize;
     return &arrInOut.arr[newSize - 1];
 }
+template<typename GameTypeWithTypeInfo>
+GameTypeWithTypeInfo* SmallArray_GameType_Insert(SmallArray<GameTypeWithTypeInfo>& arrInOut, uint16 idx)
+{
+    GameTypeWithTypeInfo* newEnd = SmallArray_GameType_Append(arrInOut);
+    GameTypeWithTypeInfo* targetPlace = &arrInOut[idx];
+    for (GameTypeWithTypeInfo* elem = newEnd - 1; elem >= targetPlace; elem--)
+    {
+        *(elem + 1) = std::move(*elem);
+    }
+    ACUConstruct(*targetPlace);
+    return targetPlace;
+}
 template<typename ElementType>
 void SmallArrayAppend(SmallArray<ElementType>& arrInOut, const ElementType& newElem)
 {

@@ -2,7 +2,6 @@
   "Length" : 1.333333,
   "Tracks" : [{
       "TrackID" : "0",
-      "type" : 27,
       "codec" : 27,
       "infotype" : 3,
       "Keyframes" : [{
@@ -11,7 +10,6 @@
         }]
     }, {
       "TrackID" : "0",
-      "type" : 15,
       "codec" : 15,
       "infotype" : 0,
       "Keyframes" : [{
@@ -20,12 +18,10 @@
         }]
     }, {
       "TrackID" : "1",
-      "type" : 48,
       "codec" : 48,
       "infotype" : 4
     }, {
       "TrackID" : "18935669",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -64,7 +60,6 @@
         }]
     }, {
       "TrackID" : "93034205",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -73,7 +68,6 @@
         }]
     }, {
       "TrackID" : "101577729",
-      "type" : 15,
       "codec" : 15,
       "infotype" : 0,
       "Keyframes" : [{
@@ -82,7 +76,6 @@
         }]
     }, {
       "TrackID" : "130111906",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -124,7 +117,6 @@
         }]
     }, {
       "TrackID" : "135719797",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -175,12 +167,10 @@
         }]
     }, {
       "TrackID" : "165998699",
-      "type" : 45,
       "codec" : 45,
       "infotype" : 4
     }, {
       "TrackID" : "165998699",
-      "type" : 29,
       "codec" : 29,
       "infotype" : 3,
       "Keyframes" : [{
@@ -231,7 +221,6 @@
         }]
     }, {
       "TrackID" : "165998699",
-      "type" : 14,
       "codec" : 14,
       "infotype" : 0,
       "Keyframes" : [{
@@ -282,7 +271,6 @@
         }]
     }, {
       "TrackID" : "171258289",
-      "type" : 27,
       "codec" : 27,
       "infotype" : 3,
       "Keyframes" : [{
@@ -291,7 +279,6 @@
         }]
     }, {
       "TrackID" : "171258289",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -300,12 +287,10 @@
         }]
     }, {
       "TrackID" : "243872882",
-      "type" : 45,
       "codec" : 45,
       "infotype" : 4
     }, {
       "TrackID" : "243872882",
-      "type" : 29,
       "codec" : 29,
       "infotype" : 3,
       "Keyframes" : [{
@@ -356,7 +341,6 @@
         }]
     }, {
       "TrackID" : "243872882",
-      "type" : 14,
       "codec" : 14,
       "infotype" : 0,
       "Keyframes" : [{
@@ -380,7 +364,6 @@
         }]
     }, {
       "TrackID" : "266304610",
-      "type" : 27,
       "codec" : 27,
       "infotype" : 3,
       "Keyframes" : [{
@@ -389,7 +372,6 @@
         }]
     }, {
       "TrackID" : "266304610",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -398,7 +380,6 @@
         }]
     }, {
       "TrackID" : "280273055",
-      "type" : 6,
       "codec" : 6,
       "infotype" : 0,
       "Keyframes" : [{
@@ -416,12 +397,10 @@
         }]
     }, {
       "TrackID" : "285196586",
-      "type" : 45,
       "codec" : 45,
       "infotype" : 4
     }, {
       "TrackID" : "285196586",
-      "type" : 29,
       "codec" : 29,
       "infotype" : 3,
       "Keyframes" : [{
@@ -472,7 +451,6 @@
         }]
     }, {
       "TrackID" : "285196586",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -481,7 +459,6 @@
         }]
     }, {
       "TrackID" : "343651039",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -562,7 +539,6 @@
         }]
     }, {
       "TrackID" : "366708758",
-      "type" : 27,
       "codec" : 27,
       "infotype" : 3,
       "Keyframes" : [{
@@ -571,7 +547,6 @@
         }]
     }, {
       "TrackID" : "366708758",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -580,7 +555,6 @@
         }]
     }, {
       "TrackID" : "372288500",
-      "type" : 15,
       "codec" : 15,
       "infotype" : 0,
       "Keyframes" : [{
@@ -589,7 +563,6 @@
         }]
     }, {
       "TrackID" : "392266736",
-      "type" : 15,
       "codec" : 15,
       "infotype" : 0,
       "Keyframes" : [{
@@ -598,12 +571,10 @@
         }]
     }, {
       "TrackID" : "395445555",
-      "type" : 45,
       "codec" : 45,
       "infotype" : 4
     }, {
       "TrackID" : "395445555",
-      "type" : 29,
       "codec" : 29,
       "infotype" : 3,
       "Keyframes" : [{
@@ -654,7 +625,6 @@
         }]
     }, {
       "TrackID" : "395445555",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -663,7 +633,6 @@
         }]
     }, {
       "TrackID" : "447253648",
-      "type" : 6,
       "codec" : 6,
       "infotype" : 0,
       "Keyframes" : [{
@@ -690,7 +659,6 @@
         }]
     }, {
       "TrackID" : "455966938",
-      "type" : 27,
       "codec" : 27,
       "infotype" : 3,
       "Keyframes" : [{
@@ -699,7 +667,6 @@
         }]
     }, {
       "TrackID" : "455966938",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -762,7 +729,6 @@
         }]
     }, {
       "TrackID" : "510107344",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -816,7 +782,6 @@
         }]
     }, {
       "TrackID" : "546284571",
-      "type" : 27,
       "codec" : 27,
       "infotype" : 3,
       "Keyframes" : [{
@@ -825,7 +790,6 @@
         }]
     }, {
       "TrackID" : "546284571",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -834,12 +798,10 @@
         }]
     }, {
       "TrackID" : "583639976",
-      "type" : 45,
       "codec" : 45,
       "infotype" : 4
     }, {
       "TrackID" : "583639976",
-      "type" : 29,
       "codec" : 29,
       "infotype" : 3,
       "Keyframes" : [{
@@ -890,7 +852,6 @@
         }]
     }, {
       "TrackID" : "583639976",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -899,12 +860,10 @@
         }]
     }, {
       "TrackID" : "631531441",
-      "type" : 45,
       "codec" : 45,
       "infotype" : 4
     }, {
       "TrackID" : "631531441",
-      "type" : 29,
       "codec" : 29,
       "infotype" : 3,
       "Keyframes" : [{
@@ -955,7 +914,6 @@
         }]
     }, {
       "TrackID" : "631531441",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -964,7 +922,6 @@
         }]
     }, {
       "TrackID" : "743623600",
-      "type" : 27,
       "codec" : 27,
       "infotype" : 3,
       "Keyframes" : [{
@@ -973,7 +930,6 @@
         }]
     }, {
       "TrackID" : "743623600",
-      "type" : 15,
       "codec" : 15,
       "infotype" : 0,
       "Keyframes" : [{
@@ -982,7 +938,6 @@
         }]
     }, {
       "TrackID" : "905467113",
-      "type" : 6,
       "codec" : 6,
       "infotype" : 0,
       "Keyframes" : [{
@@ -1000,7 +955,6 @@
         }]
     }, {
       "TrackID" : "1028532707",
-      "type" : 6,
       "codec" : 6,
       "infotype" : 0,
       "Keyframes" : [{
@@ -1021,7 +975,6 @@
         }]
     }, {
       "TrackID" : "1068652261",
-      "type" : 27,
       "codec" : 27,
       "infotype" : 3,
       "Keyframes" : [{
@@ -1030,7 +983,6 @@
         }]
     }, {
       "TrackID" : "1068652261",
-      "type" : 15,
       "codec" : 15,
       "infotype" : 0,
       "Keyframes" : [{
@@ -1039,7 +991,6 @@
         }]
     }, {
       "TrackID" : "1124033663",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -1102,7 +1053,6 @@
         }]
     }, {
       "TrackID" : "1162106738",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -1180,7 +1130,6 @@
         }]
     }, {
       "TrackID" : "1187664249",
-      "type" : 27,
       "codec" : 27,
       "infotype" : 3,
       "Keyframes" : [{
@@ -1189,7 +1138,6 @@
         }]
     }, {
       "TrackID" : "1187664249",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -1198,7 +1146,6 @@
         }]
     }, {
       "TrackID" : "1246304629",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -1252,7 +1199,6 @@
         }]
     }, {
       "TrackID" : "1270033459",
-      "type" : 27,
       "codec" : 27,
       "infotype" : 3,
       "Keyframes" : [{
@@ -1261,7 +1207,6 @@
         }]
     }, {
       "TrackID" : "1270033459",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -1324,12 +1269,10 @@
         }]
     }, {
       "TrackID" : "1270376038",
-      "type" : 45,
       "codec" : 45,
       "infotype" : 4
     }, {
       "TrackID" : "1270376038",
-      "type" : 29,
       "codec" : 29,
       "infotype" : 3,
       "Keyframes" : [{
@@ -1380,7 +1323,6 @@
         }]
     }, {
       "TrackID" : "1270376038",
-      "type" : 14,
       "codec" : 14,
       "infotype" : 0,
       "Keyframes" : [{
@@ -1431,7 +1373,6 @@
         }]
     }, {
       "TrackID" : "1316994670",
-      "type" : 27,
       "codec" : 27,
       "infotype" : 3,
       "Keyframes" : [{
@@ -1440,7 +1381,6 @@
         }]
     }, {
       "TrackID" : "1316994670",
-      "type" : 21,
       "codec" : 21,
       "infotype" : 0,
       "Keyframes" : [{
@@ -1449,12 +1389,10 @@
         }]
     }, {
       "TrackID" : "1386436391",
-      "type" : 45,
       "codec" : 45,
       "infotype" : 4
     }, {
       "TrackID" : "1386436391",
-      "type" : 29,
       "codec" : 29,
       "infotype" : 3,
       "Keyframes" : [{
@@ -1505,7 +1443,6 @@
         }]
     }, {
       "TrackID" : "1386436391",
-      "type" : 23,
       "codec" : 23,
       "infotype" : 0,
       "Keyframes" : [{
@@ -1538,7 +1475,6 @@
         }]
     }, {
       "TrackID" : "1393476043",
-      "type" : 15,
       "codec" : 15,
       "infotype" : 0,
       "Keyframes" : [{
@@ -1547,7 +1483,6 @@
         }]
     }, {
       "TrackID" : "1417925499",
-      "type" : 27,
       "codec" : 27,
       "infotype" : 3,
       "Keyframes" : [{
@@ -1556,7 +1491,6 @@
         }]
     }, {
       "TrackID" : "1417925499",
-      "type" : 21,
       "codec" : 21,
       "infotype" : 0,
       "Keyframes" : [{
@@ -1565,12 +1499,10 @@
         }]
     }, {
       "TrackID" : "1439601470",
-      "type" : 45,
       "codec" : 45,
       "infotype" : 4
     }, {
       "TrackID" : "1439601470",
-      "type" : 29,
       "codec" : 29,
       "infotype" : 3,
       "Keyframes" : [{
@@ -1621,7 +1553,6 @@
         }]
     }, {
       "TrackID" : "1439601470",
-      "type" : 23,
       "codec" : 23,
       "infotype" : 0,
       "Keyframes" : [{
@@ -1645,7 +1576,6 @@
         }]
     }, {
       "TrackID" : "1486391408",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -1654,7 +1584,6 @@
         }]
     }, {
       "TrackID" : "1602714039",
-      "type" : 27,
       "codec" : 27,
       "infotype" : 3,
       "Keyframes" : [{
@@ -1663,7 +1592,6 @@
         }]
     }, {
       "TrackID" : "1602714039",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -1726,12 +1654,10 @@
         }]
     }, {
       "TrackID" : "1620391333",
-      "type" : 45,
       "codec" : 45,
       "infotype" : 4
     }, {
       "TrackID" : "1620391333",
-      "type" : 29,
       "codec" : 29,
       "infotype" : 3,
       "Keyframes" : [{
@@ -1782,7 +1708,6 @@
         }]
     }, {
       "TrackID" : "1620391333",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -1791,7 +1716,6 @@
         }]
     }, {
       "TrackID" : "1675137348",
-      "type" : 15,
       "codec" : 15,
       "infotype" : 0,
       "Keyframes" : [{
@@ -1800,7 +1724,6 @@
         }]
     }, {
       "TrackID" : "1722978338",
-      "type" : 27,
       "codec" : 27,
       "infotype" : 3,
       "Keyframes" : [{
@@ -1809,7 +1732,6 @@
         }]
     }, {
       "TrackID" : "1722978338",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -1887,7 +1809,6 @@
         }]
     }, {
       "TrackID" : "1739821065",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -1932,12 +1853,10 @@
         }]
     }, {
       "TrackID" : "1744368060",
-      "type" : 45,
       "codec" : 45,
       "infotype" : 4
     }, {
       "TrackID" : "1744368060",
-      "type" : 29,
       "codec" : 29,
       "infotype" : 3,
       "Keyframes" : [{
@@ -1988,7 +1907,6 @@
         }]
     }, {
       "TrackID" : "1744368060",
-      "type" : 14,
       "codec" : 14,
       "infotype" : 0,
       "Keyframes" : [{
@@ -2015,7 +1933,6 @@
         }]
     }, {
       "TrackID" : "1806956327",
-      "type" : 15,
       "codec" : 15,
       "infotype" : 0,
       "Keyframes" : [{
@@ -2144,7 +2061,6 @@
         }]
     }, {
       "TrackID" : "1840233478",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -2198,7 +2114,6 @@
         }]
     }, {
       "TrackID" : "1918345642",
-      "type" : 15,
       "codec" : 15,
       "infotype" : 0,
       "Keyframes" : [{
@@ -2318,7 +2233,6 @@
         }]
     }, {
       "TrackID" : "1971262097",
-      "type" : 15,
       "codec" : 15,
       "infotype" : 0,
       "Keyframes" : [{
@@ -2327,7 +2241,6 @@
         }]
     }, {
       "TrackID" : "1978348701",
-      "type" : 27,
       "codec" : 27,
       "infotype" : 3,
       "Keyframes" : [{
@@ -2336,7 +2249,6 @@
         }]
     }, {
       "TrackID" : "1978348701",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -2345,7 +2257,6 @@
         }]
     }, {
       "TrackID" : "1979272496",
-      "type" : 15,
       "codec" : 15,
       "infotype" : 0,
       "Keyframes" : [{
@@ -2471,7 +2382,6 @@
         }]
     }, {
       "TrackID" : "1982324707",
-      "type" : 6,
       "codec" : 6,
       "infotype" : 0,
       "Keyframes" : [{
@@ -2489,7 +2399,6 @@
         }]
     }, {
       "TrackID" : "2029314476",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -2546,12 +2455,10 @@
         }]
     }, {
       "TrackID" : "2039350500",
-      "type" : 45,
       "codec" : 45,
       "infotype" : 4
     }, {
       "TrackID" : "2039350500",
-      "type" : 29,
       "codec" : 29,
       "infotype" : 3,
       "Keyframes" : [{
@@ -2602,7 +2509,6 @@
         }]
     }, {
       "TrackID" : "2039350500",
-      "type" : 23,
       "codec" : 23,
       "infotype" : 0,
       "Keyframes" : [{
@@ -2653,7 +2559,6 @@
         }]
     }, {
       "TrackID" : "2124280720",
-      "type" : 27,
       "codec" : 27,
       "infotype" : 3,
       "Keyframes" : [{
@@ -2662,7 +2567,6 @@
         }]
     }, {
       "TrackID" : "2124280720",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -2671,12 +2575,10 @@
         }]
     }, {
       "TrackID" : "2128855293",
-      "type" : 45,
       "codec" : 45,
       "infotype" : 4
     }, {
       "TrackID" : "2128855293",
-      "type" : 29,
       "codec" : 29,
       "infotype" : 3,
       "Keyframes" : [{
@@ -2727,7 +2629,6 @@
         }]
     }, {
       "TrackID" : "2128855293",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -2736,7 +2637,6 @@
         }]
     }, {
       "TrackID" : "2131876835",
-      "type" : 6,
       "codec" : 6,
       "infotype" : 0,
       "Keyframes" : [{
@@ -2760,7 +2660,6 @@
         }]
     }, {
       "TrackID" : "2143265492",
-      "type" : 27,
       "codec" : 27,
       "infotype" : 3,
       "Keyframes" : [{
@@ -2769,7 +2668,6 @@
         }]
     }, {
       "TrackID" : "2143265492",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -2778,7 +2676,6 @@
         }]
     }, {
       "TrackID" : "2149808493",
-      "type" : 15,
       "codec" : 15,
       "infotype" : 0,
       "Keyframes" : [{
@@ -2817,12 +2714,10 @@
         }]
     }, {
       "TrackID" : "2151734459",
-      "type" : 45,
       "codec" : 45,
       "infotype" : 4
     }, {
       "TrackID" : "2151734459",
-      "type" : 29,
       "codec" : 29,
       "infotype" : 3,
       "Keyframes" : [{
@@ -2873,7 +2768,6 @@
         }]
     }, {
       "TrackID" : "2151734459",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -2882,7 +2776,6 @@
         }]
     }, {
       "TrackID" : "2252147196",
-      "type" : 15,
       "codec" : 15,
       "infotype" : 0,
       "Keyframes" : [{
@@ -2891,7 +2784,6 @@
         }]
     }, {
       "TrackID" : "2272186218",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -2939,7 +2831,6 @@
         }]
     }, {
       "TrackID" : "2310617728",
-      "type" : 15,
       "codec" : 15,
       "infotype" : 0,
       "Keyframes" : [{
@@ -3068,12 +2959,10 @@
         }]
     }, {
       "TrackID" : "2314637456",
-      "type" : 45,
       "codec" : 45,
       "infotype" : 4
     }, {
       "TrackID" : "2314637456",
-      "type" : 29,
       "codec" : 29,
       "infotype" : 3,
       "Keyframes" : [{
@@ -3124,7 +3013,6 @@
         }]
     }, {
       "TrackID" : "2314637456",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -3133,7 +3021,6 @@
         }]
     }, {
       "TrackID" : "2373116773",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -3193,12 +3080,10 @@
         }]
     }, {
       "TrackID" : "2392544393",
-      "type" : 45,
       "codec" : 45,
       "infotype" : 4
     }, {
       "TrackID" : "2392544393",
-      "type" : 29,
       "codec" : 29,
       "infotype" : 3,
       "Keyframes" : [{
@@ -3249,7 +3134,6 @@
         }]
     }, {
       "TrackID" : "2392544393",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -3258,7 +3142,6 @@
         }]
     }, {
       "TrackID" : "2402941518",
-      "type" : 15,
       "codec" : 15,
       "infotype" : 0,
       "Keyframes" : [{
@@ -3267,12 +3150,10 @@
         }]
     }, {
       "TrackID" : "2431492561",
-      "type" : 45,
       "codec" : 45,
       "infotype" : 4
     }, {
       "TrackID" : "2431492561",
-      "type" : 29,
       "codec" : 29,
       "infotype" : 3,
       "Keyframes" : [{
@@ -3323,7 +3204,6 @@
         }]
     }, {
       "TrackID" : "2431492561",
-      "type" : 14,
       "codec" : 14,
       "infotype" : 0,
       "Keyframes" : [{
@@ -3371,7 +3251,6 @@
         }]
     }, {
       "TrackID" : "2434775759",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -3431,7 +3310,6 @@
         }]
     }, {
       "TrackID" : "2532999296",
-      "type" : 6,
       "codec" : 6,
       "infotype" : 0,
       "Keyframes" : [{
@@ -3449,12 +3327,10 @@
         }]
     }, {
       "TrackID" : "2541774280",
-      "type" : 45,
       "codec" : 45,
       "infotype" : 4
     }, {
       "TrackID" : "2541774280",
-      "type" : 29,
       "codec" : 29,
       "infotype" : 3,
       "Keyframes" : [{
@@ -3505,7 +3381,6 @@
         }]
     }, {
       "TrackID" : "2541774280",
-      "type" : 14,
       "codec" : 14,
       "infotype" : 0,
       "Keyframes" : [{
@@ -3556,7 +3431,6 @@
         }]
     }, {
       "TrackID" : "2552872655",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -3616,12 +3490,10 @@
         }]
     }, {
       "TrackID" : "2572938746",
-      "type" : 45,
       "codec" : 45,
       "infotype" : 4
     }, {
       "TrackID" : "2572938746",
-      "type" : 29,
       "codec" : 29,
       "infotype" : 3,
       "Keyframes" : [{
@@ -3672,7 +3544,6 @@
         }]
     }, {
       "TrackID" : "2572938746",
-      "type" : 14,
       "codec" : 14,
       "infotype" : 0,
       "Keyframes" : [{
@@ -3723,7 +3594,6 @@
         }]
     }, {
       "TrackID" : "2601793068",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -3732,7 +3602,6 @@
         }]
     }, {
       "TrackID" : "2670348273",
-      "type" : 27,
       "codec" : 27,
       "infotype" : 3,
       "Keyframes" : [{
@@ -3741,7 +3610,6 @@
         }]
     }, {
       "TrackID" : "2670348273",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -3750,12 +3618,10 @@
         }]
     }, {
       "TrackID" : "2780170058",
-      "type" : 45,
       "codec" : 45,
       "infotype" : 4
     }, {
       "TrackID" : "2780170058",
-      "type" : 29,
       "codec" : 29,
       "infotype" : 3,
       "Keyframes" : [{
@@ -3806,7 +3672,6 @@
         }]
     }, {
       "TrackID" : "2780170058",
-      "type" : 14,
       "codec" : 14,
       "infotype" : 0,
       "Keyframes" : [{
@@ -3857,7 +3722,6 @@
         }]
     }, {
       "TrackID" : "2841710851",
-      "type" : 27,
       "codec" : 27,
       "infotype" : 3,
       "Keyframes" : [{
@@ -3866,7 +3730,6 @@
         }]
     }, {
       "TrackID" : "2841710851",
-      "type" : 15,
       "codec" : 15,
       "infotype" : 0,
       "Keyframes" : [{
@@ -3875,7 +3738,6 @@
         }]
     }, {
       "TrackID" : "2873767518",
-      "type" : 6,
       "codec" : 6,
       "infotype" : 0,
       "Keyframes" : [{
@@ -3905,7 +3767,6 @@
         }]
     }, {
       "TrackID" : "2921927686",
-      "type" : 27,
       "codec" : 27,
       "infotype" : 3,
       "Keyframes" : [{
@@ -3914,7 +3775,6 @@
         }]
     }, {
       "TrackID" : "2921927686",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -3992,12 +3852,10 @@
         }]
     }, {
       "TrackID" : "2994126393",
-      "type" : 45,
       "codec" : 45,
       "infotype" : 4
     }, {
       "TrackID" : "2994126393",
-      "type" : 29,
       "codec" : 29,
       "infotype" : 3,
       "Keyframes" : [{
@@ -4048,7 +3906,6 @@
         }]
     }, {
       "TrackID" : "2994126393",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -4057,7 +3914,6 @@
         }]
     }, {
       "TrackID" : "3061183340",
-      "type" : 15,
       "codec" : 15,
       "infotype" : 0,
       "Keyframes" : [{
@@ -4186,7 +4042,6 @@
         }]
     }, {
       "TrackID" : "3097015817",
-      "type" : 15,
       "codec" : 15,
       "infotype" : 0,
       "Keyframes" : [{
@@ -4285,7 +4140,6 @@
         }]
     }, {
       "TrackID" : "3136220041",
-      "type" : 27,
       "codec" : 27,
       "infotype" : 3,
       "Keyframes" : [{
@@ -4294,7 +4148,6 @@
         }]
     }, {
       "TrackID" : "3136220041",
-      "type" : 21,
       "codec" : 21,
       "infotype" : 0,
       "Keyframes" : [{
@@ -4303,12 +4156,10 @@
         }]
     }, {
       "TrackID" : "3149984274",
-      "type" : 45,
       "codec" : 45,
       "infotype" : 4
     }, {
       "TrackID" : "3149984274",
-      "type" : 29,
       "codec" : 29,
       "infotype" : 3,
       "Keyframes" : [{
@@ -4359,7 +4210,6 @@
         }]
     }, {
       "TrackID" : "3149984274",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -4368,7 +4218,6 @@
         }]
     }, {
       "TrackID" : "3160275048",
-      "type" : 27,
       "codec" : 27,
       "infotype" : 3,
       "Keyframes" : [{
@@ -4377,7 +4226,6 @@
         }]
     }, {
       "TrackID" : "3160275048",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -4440,12 +4288,10 @@
         }]
     }, {
       "TrackID" : "3165468171",
-      "type" : 45,
       "codec" : 45,
       "infotype" : 4
     }, {
       "TrackID" : "3165468171",
-      "type" : 29,
       "codec" : 29,
       "infotype" : 3,
       "Keyframes" : [{
@@ -4496,7 +4342,6 @@
         }]
     }, {
       "TrackID" : "3165468171",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -4505,7 +4350,6 @@
         }]
     }, {
       "TrackID" : "3222266173",
-      "type" : 27,
       "codec" : 27,
       "infotype" : 3,
       "Keyframes" : [{
@@ -4514,7 +4358,6 @@
         }]
     }, {
       "TrackID" : "3222266173",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -4634,7 +4477,6 @@
         }]
     }, {
       "TrackID" : "3294869080",
-      "type" : 27,
       "codec" : 27,
       "infotype" : 3,
       "Keyframes" : [{
@@ -4643,7 +4485,6 @@
         }]
     }, {
       "TrackID" : "3294869080",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -4727,12 +4568,10 @@
         }]
     }, {
       "TrackID" : "3312553647",
-      "type" : 45,
       "codec" : 45,
       "infotype" : 4
     }, {
       "TrackID" : "3312553647",
-      "type" : 29,
       "codec" : 29,
       "infotype" : 3,
       "Keyframes" : [{
@@ -4783,7 +4622,6 @@
         }]
     }, {
       "TrackID" : "3312553647",
-      "type" : 14,
       "codec" : 14,
       "infotype" : 0,
       "Keyframes" : [{
@@ -4834,12 +4672,10 @@
         }]
     }, {
       "TrackID" : "3416917661",
-      "type" : 45,
       "codec" : 45,
       "infotype" : 4
     }, {
       "TrackID" : "3416917661",
-      "type" : 29,
       "codec" : 29,
       "infotype" : 3,
       "Keyframes" : [{
@@ -4890,7 +4726,6 @@
         }]
     }, {
       "TrackID" : "3416917661",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -4899,12 +4734,10 @@
         }]
     }, {
       "TrackID" : "3435643524",
-      "type" : 45,
       "codec" : 45,
       "infotype" : 4
     }, {
       "TrackID" : "3435643524",
-      "type" : 29,
       "codec" : 29,
       "infotype" : 3,
       "Keyframes" : [{
@@ -4955,7 +4788,6 @@
         }]
     }, {
       "TrackID" : "3435643524",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -4964,7 +4796,6 @@
         }]
     }, {
       "TrackID" : "3495420892",
-      "type" : 27,
       "codec" : 27,
       "infotype" : 3,
       "Keyframes" : [{
@@ -4973,7 +4804,6 @@
         }]
     }, {
       "TrackID" : "3495420892",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -5051,12 +4881,10 @@
         }]
     }, {
       "TrackID" : "3534829532",
-      "type" : 45,
       "codec" : 45,
       "infotype" : 4
     }, {
       "TrackID" : "3534829532",
-      "type" : 29,
       "codec" : 29,
       "infotype" : 3,
       "Keyframes" : [{
@@ -5107,7 +4935,6 @@
         }]
     }, {
       "TrackID" : "3534829532",
-      "type" : 14,
       "codec" : 14,
       "infotype" : 0,
       "Keyframes" : [{
@@ -5158,7 +4985,6 @@
         }]
     }, {
       "TrackID" : "3544205519",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -5212,7 +5038,6 @@
         }]
     }, {
       "TrackID" : "3690345925",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -5284,7 +5109,6 @@
         }]
     }, {
       "TrackID" : "3696035528",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -5350,7 +5174,6 @@
         }]
     }, {
       "TrackID" : "3724011336",
-      "type" : 27,
       "codec" : 27,
       "infotype" : 3,
       "Keyframes" : [{
@@ -5359,7 +5182,6 @@
         }]
     }, {
       "TrackID" : "3724011336",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -5368,7 +5190,6 @@
         }]
     }, {
       "TrackID" : "3728671136",
-      "type" : 27,
       "codec" : 27,
       "infotype" : 3,
       "Keyframes" : [{
@@ -5377,7 +5198,6 @@
         }]
     }, {
       "TrackID" : "3728671136",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -5386,7 +5206,6 @@
         }]
     }, {
       "TrackID" : "3738240529",
-      "type" : 15,
       "codec" : 15,
       "infotype" : 0,
       "Keyframes" : [{
@@ -5395,12 +5214,10 @@
         }]
     }, {
       "TrackID" : "3766965598",
-      "type" : 45,
       "codec" : 45,
       "infotype" : 4
     }, {
       "TrackID" : "3766965598",
-      "type" : 29,
       "codec" : 29,
       "infotype" : 3,
       "Keyframes" : [{
@@ -5451,7 +5268,6 @@
         }]
     }, {
       "TrackID" : "3766965598",
-      "type" : 23,
       "codec" : 23,
       "infotype" : 0,
       "Keyframes" : [{
@@ -5502,7 +5318,6 @@
         }]
     }, {
       "TrackID" : "3791499286",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -5535,7 +5350,6 @@
         }]
     }, {
       "TrackID" : "3843952398",
-      "type" : 27,
       "codec" : 27,
       "infotype" : 3,
       "Keyframes" : [{
@@ -5544,7 +5358,6 @@
         }]
     }, {
       "TrackID" : "3843952398",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -5553,7 +5366,6 @@
         }]
     }, {
       "TrackID" : "3847670206",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -5562,12 +5374,10 @@
         }]
     }, {
       "TrackID" : "3890909511",
-      "type" : 45,
       "codec" : 45,
       "infotype" : 4
     }, {
       "TrackID" : "3890909511",
-      "type" : 29,
       "codec" : 29,
       "infotype" : 3,
       "Keyframes" : [{
@@ -5618,7 +5428,6 @@
         }]
     }, {
       "TrackID" : "3890909511",
-      "type" : 23,
       "codec" : 23,
       "infotype" : 0,
       "Keyframes" : [{
@@ -5669,7 +5478,6 @@
         }]
     }, {
       "TrackID" : "3951233754",
-      "type" : 15,
       "codec" : 15,
       "infotype" : 0,
       "Keyframes" : [{
@@ -5798,12 +5606,10 @@
         }]
     }, {
       "TrackID" : "3999063404",
-      "type" : 45,
       "codec" : 45,
       "infotype" : 4
     }, {
       "TrackID" : "3999063404",
-      "type" : 29,
       "codec" : 29,
       "infotype" : 3,
       "Keyframes" : [{
@@ -5854,7 +5660,6 @@
         }]
     }, {
       "TrackID" : "3999063404",
-      "type" : 23,
       "codec" : 23,
       "infotype" : 0,
       "Keyframes" : [{
@@ -5905,7 +5710,6 @@
         }]
     }, {
       "TrackID" : "4033478652",
-      "type" : 6,
       "codec" : 6,
       "infotype" : 0,
       "Keyframes" : [{
@@ -5926,7 +5730,6 @@
         }]
     }, {
       "TrackID" : "4035918989",
-      "type" : 27,
       "codec" : 27,
       "infotype" : 3,
       "Keyframes" : [{
@@ -5935,7 +5738,6 @@
         }]
     }, {
       "TrackID" : "4035918989",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -5944,7 +5746,6 @@
         }]
     }, {
       "TrackID" : "4104580540",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -6001,12 +5802,10 @@
         }]
     }, {
       "TrackID" : "4148685869",
-      "type" : 45,
       "codec" : 45,
       "infotype" : 4
     }, {
       "TrackID" : "4148685869",
-      "type" : 29,
       "codec" : 29,
       "infotype" : 3,
       "Keyframes" : [{
@@ -6057,7 +5856,6 @@
         }]
     }, {
       "TrackID" : "4148685869",
-      "type" : 14,
       "codec" : 14,
       "infotype" : 0,
       "Keyframes" : [{
@@ -6108,12 +5906,10 @@
         }]
     }, {
       "TrackID" : "4187776031",
-      "type" : 45,
       "codec" : 45,
       "infotype" : 4
     }, {
       "TrackID" : "4187776031",
-      "type" : 29,
       "codec" : 29,
       "infotype" : 3,
       "Keyframes" : [{
@@ -6164,7 +5960,6 @@
         }]
     }, {
       "TrackID" : "4187776031",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -6173,7 +5968,6 @@
         }]
     }, {
       "TrackID" : "4202025971",
-      "type" : 6,
       "codec" : 6,
       "infotype" : 0,
       "Keyframes" : [{
@@ -6203,7 +5997,6 @@
         }]
     }, {
       "TrackID" : "4214103169",
-      "type" : 27,
       "codec" : 27,
       "infotype" : 3,
       "Keyframes" : [{
@@ -6212,7 +6005,6 @@
         }]
     }, {
       "TrackID" : "4214103169",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -6221,7 +6013,6 @@
         }]
     }, {
       "TrackID" : "4273652147",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -6293,12 +6084,10 @@
         }]
     }, {
       "TrackID" : "4277248006",
-      "type" : 45,
       "codec" : 45,
       "infotype" : 4
     }, {
       "TrackID" : "4277248006",
-      "type" : 29,
       "codec" : 29,
       "infotype" : 3,
       "Keyframes" : [{
@@ -6349,7 +6138,6 @@
         }]
     }, {
       "TrackID" : "4277248006",
-      "type" : 12,
       "codec" : 12,
       "infotype" : 0,
       "Keyframes" : [{
@@ -6358,7 +6146,6 @@
         }]
     }, {
       "TrackID" : "4294967264",
-      "type" : 57,
       "codec" : 57,
       "infotype" : 5,
       "Keyframes" : [{
