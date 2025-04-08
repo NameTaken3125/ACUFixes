@@ -56,7 +56,7 @@ JSON ReadMainConfigFile()
 {
     fs::path configFullPath = GetMainConfigFilepath();
     JSON cfg = json::FromFile(configFullPath);
-    LOG_DEBUG(L"Read from config file \"%s\":\n%s\n", configFullPath.wstring().c_str(),
+    LOG_DEBUG(DefaultLogger, L"Read from config file \"%s\":\n%s\n", configFullPath.wstring().c_str(),
         asciiString2WString(cfg.dump()).c_str());
     return cfg;
 }
@@ -65,7 +65,7 @@ void WriteToFile()
     JSON cfg;
     g_PluginLoaderConfig.SectionToJSON(cfg);
     fs::path configFullPath = GetMainConfigFilepath();
-    LOG_DEBUG(L"Writing to config file \"%s\":\n%s\n", configFullPath.wstring().c_str(),
+    LOG_DEBUG(DefaultLogger, L"Writing to config file \"%s\":\n%s\n", configFullPath.wstring().c_str(),
         asciiString2WString(cfg.dump()).c_str());
     json::ToFile(cfg, configFullPath);
 }

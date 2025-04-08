@@ -5,8 +5,7 @@ namespace fs = std::filesystem;
 
 // The logging macro.
 
-#define LOG_DEBUG_new(LoggerVariable, fmt, ...) (LoggerVariable).LogDebug(fmt, __VA_ARGS__)
-#define LOG_DEBUG(fmt, ...) LOG_DEBUG_new(DefaultLogger, fmt, __VA_ARGS__)
+#define LOG_DEBUG(LoggerVariable, fmt, ...) (LoggerVariable).LogDebug(fmt, __VA_ARGS__)
 
 // The macros for creation of typical additional loggers if you need them.
 

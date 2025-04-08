@@ -67,11 +67,12 @@ AllModules_t GetAllModules()
 }
 void PrintAllModules(const AllModules_t& modules)
 {
-    LOG_DEBUG(L"[*] All modules:\n");
+    LOG_DEBUG(DefaultLogger, L"[*] All modules:\n");
     for (size_t i = 0; i < modules.size(); i++)
     {
         const Module& mod = modules[i];
         LOG_DEBUG(
+            DefaultLogger,
             L"%3d. %016llX - %016llX: %s\n"
             , i
             , mod.m_baseAddr
@@ -132,6 +133,7 @@ void LogExceptionCode(const ::EXCEPTION_RECORD& exceptionRecord, const AllModule
 #undef EXCEPTION_CASE
 
     LOG_DEBUG(
+        DefaultLogger,
         L"[error][X] CRASH? Unhandled exception %llX%s at %s.\n"
         , exceptionRecord.ExceptionCode
         , readableExceptionCode
@@ -166,13 +168,13 @@ LONG __stdcall UnhandledExceptionHandler(::EXCEPTION_POINTERS* exception) noexce
 {
     // I fail to trigger this. I think this means that there are more vectored exception handlers
     // and they prevent this code from being reached.
-    LOG_DEBUG(L"[X] Unhandled exception. ExceptionCode %llX:\n", exception->ExceptionRecord->ExceptionCode);
+    LOG_DEBUG(DefaultLogger, L"[X] Unhandled exception. ExceptionCode %llX:\n", exception->ExceptionRecord->ExceptionCode);
     LogException(*exception);
     return EXCEPTION_CONTINUE_SEARCH;
 }
 LONG _stdcall VectoredExceptionHandler(::EXCEPTION_POINTERS* exception) noexcept
 {
-    LOG_DEBUG(L"[*] Vectored Exception Handler. ExceptionCode %llX:\n", exception->ExceptionRecord->ExceptionCode);
+    LOG_DEBUG(DefaultLogger, L"[*] Vectored Exception Handler. ExceptionCode %llX:\n", exception->ExceptionRecord->ExceptionCode);
     LogException(*exception);
     // Returns `0x14290BCF4`.
     // However, I'm unable to trigger neither that function nor the one I set.
