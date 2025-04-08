@@ -52,6 +52,11 @@ void UpdateImGuiMouseInput(MouseState& mouseState)
     // Better than not working in Fullscreen at all, I guess.
     io.MouseWheel += (float)(mouseState.mouseWheelDeltaInt_usedInMenus) / (float)WHEEL_DELTA;
 }
+#include "ImGuiConsole.h"
+bool IsNeedToBlockGameInput()
+{
+    return Base::Data::ShowMenu || g_ConsoleMode == ConsoleMode::ForegroundAndFocusable;
+}
 void GameRawInputHook_ImGuiLayer(InputContainerBig& inpCont)
 {
     if (!Base::Data::IsImGuiInitialized)
@@ -59,7 +64,7 @@ void GameRawInputHook_ImGuiLayer(InputContainerBig& inpCont)
         return;
     }
     UpdateImGuiMouseInput(inpCont.mouseState);
-    if (Base::Data::ShowMenu)
+    if (IsNeedToBlockGameInput())
     {
         std::memset(inpCont.isPressed_byScancode, 0, sizeof(inpCont.isPressed_byScancode));
         inpCont.mouseState.mouseDeltaIntForCamera_X = inpCont.mouseState.mouseDeltaIntForCamera_Y = 0;

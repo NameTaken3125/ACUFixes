@@ -20,6 +20,7 @@ struct ConfigTop : YAConfigSection {
     YACSTOR(ConfigTop);
     ACM(imgui_showSuccessfulInjectionIndicator, bool, BooleanAdapter, true);
     ACM(hotkey_ToggleMenu, VirtualKeys, EnumAdapter_template<VirtualKeys>, VirtualKeys::KEYBOARD_INSERT);
+    ACM(hotkey_ToggleConsole, VirtualKeys, EnumAdapter_template<VirtualKeys>, VirtualKeys::KEYBOARD_OEM3);
     struct YACS_DeveloperOptions : YAConfigSection {
         YACSTOR(YACS_DeveloperOptions);
         ACM(isActive, bool, BooleanAdapter, false);

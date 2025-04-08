@@ -169,6 +169,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\ImGuiConsole.h" />
     <ClInclude Include="src\PluginLoader_VariousHooks\Animation\AnimationGraphEvaluationPatches.h" />
     <ClInclude Include="src\Enum_VirtualKeys.h" />
     <ClInclude Include="src\PluginLoader_VariousHooks\Input\Hack_GameRawInputHook.h" />
@@ -179,6 +180,7 @@
     <ClInclude Include="src\PresentHookOuter.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\ImGuiConsole.cpp" />
     <ClCompile Include="src\PluginLoader_VariousHooks\Animation\AnimationGraphEvaluationPatches.cpp" />
     <ClCompile Include="src\CrashLog.cpp" />
     <ClCompile Include="src\DisableIntegrityChecks.cpp" />

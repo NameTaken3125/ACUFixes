@@ -132,7 +132,7 @@ void LogExceptionCode(const ::EXCEPTION_RECORD& exceptionRecord, const AllModule
 #undef EXCEPTION_CASE
 
     LOG_DEBUG(
-        L"[X] CRASH: Unhandled exception %llX%s at %s.\n"
+        L"[error][X] CRASH? Unhandled exception %llX%s at %s.\n"
         , exceptionRecord.ExceptionCode
         , readableExceptionCode
         , MakeAddressReadable(reinterpret_cast<uintptr_t>(exceptionRecord.ExceptionAddress), allModules).c_str()

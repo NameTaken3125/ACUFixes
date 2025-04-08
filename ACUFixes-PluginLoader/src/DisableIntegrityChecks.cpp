@@ -21,7 +21,7 @@ bool TerminateThreadIfRunsTheMainIntegrityCheck(ThreadID_t thread_id)
     NTSTATUS nt_status = NtQueryInformationThread(thread_handle, (THREADINFOCLASS)ThreadQuerySetWin32StartAddress, &dwStartAddress, 0x8, 0);
     if (nt_status == 0)
     {
-        LOG_DEBUG(L", start address: %llx\n", dwStartAddress);
+        LOG_DEBUG(L"  start address: %llx\n", dwStartAddress);
         if (dwStartAddress == g_mainIntegrityCheckThreadStartAddress)
         {
             TerminateThread(thread_handle, 0);

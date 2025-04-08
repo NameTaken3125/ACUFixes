@@ -4,6 +4,12 @@
 #include "MyLog.h"
 #include "PluginLoaderConfig.h"
 
+#include "ImGuiConsole.h"
+bool IsShouldShowImGuiCursor()
+{
+    return Base::Data::ShowMenu || g_ConsoleMode == ConsoleMode::ForegroundAndFocusable;
+}
+
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK WndProc_HackControls(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -25,8 +31,13 @@ LRESULT CALLBACK WndProc_HackControls(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
                 if (Base::Data::IsImGuiInitialized)
                 {
                     Base::Data::ShowMenu = !Base::Data::ShowMenu;
-                    ImGui::GetIO().MouseDrawCursor = Base::Data::ShowMenu;
+                    ImGui::GetIO().MouseDrawCursor = IsShouldShowImGuiCursor();
                 }
+            }
+            else if (keyCode == (UINT)g_PluginLoaderConfig.hotkey_ToggleConsole.get())
+            {
+                ToggleConsoleMode();
+                ImGui::GetIO().MouseDrawCursor = IsShouldShowImGuiCursor();
             }
             else if (
                 g_PluginLoaderConfig.developerOptions->isActive

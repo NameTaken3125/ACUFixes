@@ -181,6 +181,7 @@
     <ClInclude Include="include\SimpleJSON\json.hpp" />
     <ClInclude Include="src\framework.h" />
     <ClInclude Include="src\pch.h" />
+    <ClInclude Include="include\Serialization\UTF8.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\OLYAFSer.cpp" />

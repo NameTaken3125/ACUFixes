@@ -39,6 +39,9 @@
     <ClInclude Include="src\PluginLoader_VariousHooks\Animation\AnimationGraphEvaluationPatches.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\ImGuiConsole.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\dllmain.cpp">
@@ -81,6 +84,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\SharedToPlugins.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ImGuiConsole.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

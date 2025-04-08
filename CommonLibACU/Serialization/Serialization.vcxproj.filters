@@ -13,6 +13,7 @@
     <ClInclude Include="include\Serialization\FilepathAdapter.h" />
     <ClInclude Include="include\OLYAFSer\OLYAFSer.h" />
     <ClInclude Include="include\SimpleJSON\json.hpp" />
+    <ClInclude Include="include\Serialization\UTF8.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />

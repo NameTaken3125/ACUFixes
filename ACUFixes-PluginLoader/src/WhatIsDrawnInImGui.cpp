@@ -77,6 +77,10 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
                 DrawModMenuControls();
                 ImGui::Separator();
                 ImGui::Checkbox("Show the text in the top left corner", &g_PluginLoaderConfig.imgui_showSuccessfulInjectionIndicator.get());
+                ImGui::DrawEnumPicker(
+                    "Hotkey: Console"
+                    , g_PluginLoaderConfig.hotkey_ToggleConsole.get()
+                    , ImGuiComboFlags_HeightLarge);
                 ImGui::Separator();
                 ImGui::Checkbox("Show ImGui Demo Window", &enableDemoWindow);
                 ImGui::Separator();
@@ -109,10 +113,14 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
     }
 }
 void EveryFrameBeforeGraphicsUpdate();
+#include "ImGuiConsole.h"
 void Base::ImGuiLayer_EvenWhenMenuIsClosed()
 {
     EveryFrameBeforeGraphicsUpdate();
-    if (g_PluginLoaderConfig.imgui_showSuccessfulInjectionIndicator)
+    if (g_PluginLoaderConfig.imgui_showSuccessfulInjectionIndicator
+        && g_ConsoleMode == ConsoleMode::Hidden
+        )
         DrawSuccessfulInjectionIndicatorOverlay();
+    DrawConsoleIfVisible();
     DrawPluginsEvenWhenMenuIsClosed();
 }

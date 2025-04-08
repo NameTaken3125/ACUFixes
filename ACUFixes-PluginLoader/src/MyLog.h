@@ -3,12 +3,72 @@
 #include <filesystem>
 namespace fs = std::filesystem;
 
+// The logging macro.
+
+#define LOG_DEBUG_new(LoggerVariable, fmt, ...) (LoggerVariable).LogDebug(fmt, __VA_ARGS__)
+#define LOG_DEBUG(fmt, ...) LOG_DEBUG_new(DefaultLogger, fmt, __VA_ARGS__)
+
+// The macros for creation of typical additional loggers if you need them.
+
+#define DEFINE_LOGGER_CONSOLE_AND_FILE(VariableName, textualName) Logger_ConsoleAndFile VariableName(textualName);
+#define DEFINE_LOGGER_NULL(VariableName, textualName) Logger_Null VariableName;
+
+/*
+This logging is pretty basic.
+1. Single LOG_DEBUG(LoggerVariable, fmt, ...) macro.
+2. The logger is specified as parameter in the macro.
+   The first idea was to skip specifying the logger:
+        LOG_DEBUG("Something to log.");
+   and implicitly utilize the __THE_LOGGER variable from the scope.
+   But I feel like I want to support loggers provided as a function parameter,
+   and because I'm wary of __THE_LOGGER name collisions if I decide to use many scoped
+   loggers.
+3. No standardized levels of logging, but the default ImGuiConsole does highlight a logged string in red
+   if it contains "[error]". So you can do
+        LOG_DEBUG(DefaultLogger, "[error] Everything crashed again.");
+   or I guess maybe
+        DEFINE_LOGGER_CONSOLE_AND_FILE(Error, DefaultLogger.m_name + "[error]");
+        LOG_DEBUG(Error, "Everything crashed again.");
 
 
-void LOG_DEBUG(const wchar_t* fmt, ...);
 
 
+Usage examples:
 
+a) Simplest usage (use the default logger name; output into both log file and ImGui Console):
+#include "DefaultLogger.h"
+void ExampleFunction()
+{
+    LOG_DEBUG(DefaultLogger, "Some info");
+    LOG_DEBUG(DefaultLogger, "[error] Some error: %s.", errorDescription); // "[error]" is automatically colored red in the console.
+}
+
+
+b) Custom name for a logger for the scope (like for a specific .cpp file, a specific namespace or a function):
+#include "Logging.h"
+void ExampleFunction2()
+{
+    DEFINE_LOGGER_CONSOLE_AND_FILE(ScopedLogger, DefaultLogger.m_Name + "[A Custom Logger]");
+    LOG_DEBUG(ScopedLogger, "Some info."); // -> "[YourPlugin.dll][A Custom Logger]Some info."
+}
+
+c) If you want to disable that one logger among many,
+   you can instead do something like:
+
+void ExampleFunction3()
+{
+#ifdef ENABLE_THIS_SPECIAL_LOGGER
+#define DEFINE_THIS_SPECIAL_LOGGER(VariableName, textualName) DEFINE_LOGGER_CONSOLE_AND_FILE(VariableName, textualName)
+#else
+#define DEFINE_THIS_SPECIAL_LOGGER(VariableName, textualName) DEFINE_LOGGER_NULL(VariableName, textualName)
+#endif
+    DEFINE_THIS_SPECIAL_LOGGER(ScopedLogger, DefaultLogger.m_Name +"[A Custom Logger]");
+    LOG_DEBUG(ScopedLogger, "Some info."); // -> logs if ENABLE_THIS_SPECIAL_LOGGER is defined, otherwise does nothing.
+}
+*/
+
+
+extern FILE* g_LogFile;
 class MyLogFileLifetime
 {
 public:
@@ -17,3 +77,41 @@ public:
 private:
     const fs::path& m_filepath;
 };
+#include "ImGuiConsole.h"
+#include "Serialization/UTF8.h"
+struct Logger_Null
+{
+    static void LogDebug(const char* fmt, ...) {}
+};
+struct Logger_ConsoleAndFile
+{
+    const std::string m_Name;
+    Logger_ConsoleAndFile(std::string_view name) : m_Name(name) {}
+    void LogDebug(const wchar_t* fmt, ...)
+    {
+        auto& console = ImGuiConsole::GetSingleton();
+
+        // Append logger name to file.
+        fwprintf(g_LogFile, utf8_and_wide_string_conversion::utf8_decode(m_Name).c_str());
+        // Append formatted string to file.
+        va_list args;
+        va_list argsCopy;
+        va_start(args, fmt);
+        va_copy(argsCopy, args);
+        vfwprintf(g_LogFile, fmt, args);
+        fflush(g_LogFile);
+        // Format string into stringbuffer.
+        wchar_t buf[1024];
+        _vsnwprintf_s(buf, IM_ARRAYSIZE(buf), fmt, argsCopy);
+        buf[IM_ARRAYSIZE(buf) - 1] = 0;
+        va_end(argsCopy);
+        va_end(args);
+
+        std::string asUtf8 = utf8_and_wide_string_conversion::utf8_encode(buf);
+        // Prepend logger name to formatted string.
+        char* copyOfFormattedAndPrepended = console.Strdup((m_Name + asUtf8).c_str());
+        console.Items.push_back(copyOfFormattedAndPrepended);
+    }
+};
+
+inline DEFINE_LOGGER_CONSOLE_AND_FILE(DefaultLogger, "[ACUFixes-PluginLoader.dll]");
