@@ -3,11 +3,11 @@
 #include "MyLog.h"
 
 FILE* g_LogFile = nullptr;
-void LOG_DEBUG(const char* fmt, ...)
+void LOG_DEBUG_onlyFile(const wchar_t* fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    vfprintf(g_LogFile, fmt, args);
+    vfwprintf(g_LogFile, fmt, args);
     fflush(g_LogFile);
     va_end(args);
 }

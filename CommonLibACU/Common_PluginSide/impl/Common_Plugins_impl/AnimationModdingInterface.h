@@ -17,4 +17,4 @@ public:
     AnimationModdingInterface(); // Defined in PluginLoader project.
 };
 
-extern AnimationModdingInterface* g_AnimationModdingInterface;
+extern AnimationModdingInterface* g_AnimationModdingInterface; // Pointer is stored in the plugin; points to the instance owned by the PluginLoader.

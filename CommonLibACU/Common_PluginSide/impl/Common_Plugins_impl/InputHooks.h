@@ -49,5 +49,5 @@ public:
         return !m_ThisFrameKeyStates[(int)keycode] && m_PrevFrameKeyStates[(int)keycode];
     }
 };
-extern InputHooks* g_InputHooksSingletonPtr;
+extern InputHooks* g_InputHooksSingletonPtr; // Pointer is stored in the plugin; points to the instance owned by the PluginLoader.
 } // namespace ACU::Input

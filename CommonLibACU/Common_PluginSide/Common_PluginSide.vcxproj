@@ -173,6 +173,7 @@
     <ClCompile Include="src\AnimationModdingInterface.cpp" />
     <ClCompile Include="src\Common_PluginSide.cpp" />
     <ClCompile Include="src\ACU_InputUtils.cpp" />
+    <ClCompile Include="src\ImGuiConsoleInterface.cpp" />
     <ClCompile Include="src\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -182,6 +183,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="impl\Common_Plugins_impl\AnimationModdingInterface.h" />
+    <ClInclude Include="impl\Common_Plugins_impl\ImGuiConsoleInterface.h" />
     <ClInclude Include="impl\Common_Plugins_impl\InputHooks.h" />
     <ClInclude Include="impl\Common_Plugins_impl\PluginLoaderSharedGlobals.h" />
     <ClInclude Include="public_headers\Common_Plugins\ACUPlugin.h" />
@@ -190,6 +192,7 @@
     <ClInclude Include="public_headers\Common_Plugins\AnimationGraphMods\RTCPVariableDescriptor.h" />
     <ClInclude Include="public_headers\Common_Plugins\AnimationGraphMods\ReactToAnimationSignals.h" />
     <ClInclude Include="public_headers\Common_Plugins\Common_PluginSide.h" />
+    <ClInclude Include="public_headers\Common_Plugins\Console\ImGuiConsole.h" />
     <ClInclude Include="public_headers\Common_Plugins\Enum_BindableKeyCode.h" />
     <ClInclude Include="public_headers\Common_Plugins\Enum_BindableKeyCode_Keyboard.h" />
     <ClInclude Include="src\pch.h" />

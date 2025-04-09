@@ -42,8 +42,8 @@ public:
     }
     virtual bool Start(ACUPluginLoaderInterface& pluginLoader) override
     {
-        g_LogLifetime.emplace(AbsolutePathInThisDLLDirectory("ACUFixes-log.log"));
-        MainConfig::FindAndLoadConfigFileOrCreateDefault(AbsolutePathInThisDLLDirectory("ACUFixes-config.json"));
+        g_LogLifetime.emplace(AbsolutePathInThisDLLDirectory(THIS_DLL_PROJECT_NAME "-log.log"));
+        MainConfig::FindAndLoadConfigFileOrCreateDefault(AbsolutePathInThisDLLDirectory(THIS_DLL_PROJECT_NAME "-config.json"));
         MyVariousHacks::Start();
         ApplyAnimationGraphModsIfWerentAlreadyAppliedThisGameSession(pluginLoader);
         return true;

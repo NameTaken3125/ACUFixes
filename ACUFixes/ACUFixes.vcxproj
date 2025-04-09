@@ -115,6 +115,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <PreprocessorDefinitions>THIS_DLL_PROJECT_TARGET_FILE_NAME="$(TargetFileName)";THIS_DLL_PROJECT_NAME="$(ProjectName)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -123,6 +124,16 @@
       <AdditionalDependencies>
       </AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>echo [+] COMPLETED BUILD: $(TargetDir)$(TargetFileName)
+echo [*] Copying animation files into output directory: $(TargetDir)NewAnimations
+echo.    From: $(SolutionDir)NewAnimations
+echo.    To:   $(TargetDir)NewAnimations
+xcopy "$(SolutionDir)NewAnimations" "$(TargetDir)NewAnimations\" /s /e /y /i
+REM "robocopy" is suggested to be better than xcopy, but its success exit code is 1, which is reported as error. Whatever.
+REM robocopy "$(SolutionDir)NewAnimations" "$(TargetDir)NewAnimations" /MIR
+</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -161,6 +172,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <PreprocessorDefinitions>THIS_DLL_PROJECT_TARGET_FILE_NAME="$(TargetFileName)";THIS_DLL_PROJECT_NAME="$(ProjectName)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -171,6 +183,16 @@
       <AdditionalDependencies>
       </AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>echo [+] COMPLETED BUILD: $(TargetDir)$(TargetFileName)
+echo [*] Copying animation files into output directory: $(TargetDir)NewAnimations
+echo.    From: $(SolutionDir)NewAnimations
+echo.    To:   $(TargetDir)NewAnimations
+xcopy "$(SolutionDir)NewAnimations" "$(TargetDir)NewAnimations\" /s /e /y /i
+REM "robocopy" is suggested to be better than xcopy, but its success exit code is 1, which is reported as error. Whatever.
+REM robocopy "$(SolutionDir)NewAnimations" "$(TargetDir)NewAnimations" /MIR
+</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\AnimationTools\AnimationEditor.cpp" />

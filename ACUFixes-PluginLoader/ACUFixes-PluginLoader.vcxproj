@@ -182,6 +182,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\ImGuiConsole.cpp" />
+    <ClCompile Include="src\ImGuiConsoleInterface_impl.cpp" />
     <ClCompile Include="src\PluginLoader.cpp" />
     <ClCompile Include="src\PluginLoader_VariousHooks\Animation\AnimationGraphEvaluationPatches.cpp" />
     <ClCompile Include="src\CrashLog.cpp" />

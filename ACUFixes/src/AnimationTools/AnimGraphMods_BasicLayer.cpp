@@ -750,14 +750,20 @@ bool IsHoodAnimationsLoaded()
 {
     return AnimGraphMods::BasicLayer::g_HoodMod.has_value();
 }
+
+#include "MyLog.h"
+#define __WIDE2(x) L##x
+#define __WIDE1(x) __WIDE2(x)
+#define __WFUNCTION__ __WIDE1(__FUNCTION__)
 void AnimGraphMods_BasicLayer_ApplyMod(AtomGraph& atomGraph)
 {
     try
     {
         AnimGraphMods::BasicLayer::g_HoodMod.emplace(atomGraph);
+        LOG_DEBUG(DefaultLogger, L"[" __WFUNCTION__ "] Animation mod seems to have started correctly.");
     }
     catch (const AnimGraphMods::BasicLayer::EResourcesNotFound&)
     {
-
+        LOG_DEBUG(DefaultLogger, L"[" __WFUNCTION__ "][error] Animation files not found.");
     }
 }
