@@ -24,6 +24,7 @@
 #include <iostream>
 #include <fstream>
 #include <filesystem>
+namespace fs = std::filesystem;
 #include <sstream>
 #include <optional>
 #include <variant>

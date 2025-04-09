@@ -3,6 +3,8 @@
 #include "ACU/basic_types.h"
 #include "MyLog.h"
 
+DEFINE_LOGGER_CONSOLE_AND_FILE(CrashLog, "[CrashLog]");
+
 class Module
 {
 public:
@@ -67,12 +69,12 @@ AllModules_t GetAllModules()
 }
 void PrintAllModules(const AllModules_t& modules)
 {
-    LOG_DEBUG(DefaultLogger, L"[*] All modules:\n");
+    LOG_DEBUG(CrashLog, L"[*] All modules:\n");
     for (size_t i = 0; i < modules.size(); i++)
     {
         const Module& mod = modules[i];
         LOG_DEBUG(
-            DefaultLogger,
+            CrashLog,
             L"%3d. %016llX - %016llX: %s\n"
             , i
             , mod.m_baseAddr
@@ -99,12 +101,88 @@ std::wstring MakeAddressReadable(uintptr_t addr, const AllModules_t& allModules)
     }
     return ss.str();
 }
-void LogExceptionCode(const ::EXCEPTION_RECORD& exceptionRecord, const AllModules_t& allModules)
+/*
+Additionally, from https://wat.coobie.dev/semestr%204/pnak/PNAKL4iY3/Tools/IDAFreeware84/cfg/exceptions.cfg
+0xC0000005   EXCEPTION_ACCESS_VIOLATION         The instruction at 0x%a referenced memory at 0x%a. The memory could not be %s
+0x80000002   EXCEPTION_DATATYPE_MISALIGNMENT    A datatype misalignment error was detected in a load or store instruction
+0x80000003   EXCEPTION_BREAKPOINT               Software breakpoint exception
+0x80000004   EXCEPTION_SINGLE_STEP              Single step exception
+0xC000008C   EXCEPTION_ARRAY_BOUNDS_EXCEEDED    Array bounds exceeded
+0xC000008D   EXCEPTION_FLT_DENORMAL_OPERAND     Floating point denormal operand
+0xC000008E   EXCEPTION_FLT_DIVIDE_BY_ZERO       Floating point divide by zero
+0xC000008F   EXCEPTION_FLT_INEXACT_RESULT       Floating point inexact result
+0xC0000090   EXCEPTION_FLT_INVALID_OPERATION    Floating point invalid operation
+0xC0000091   EXCEPTION_FLT_OVERFLOW             Floating point overflow
+0xC0000092   EXCEPTION_FLT_STACK_CHECK          Floating point stack check
+0xC0000093   EXCEPTION_FLT_UNDERFLOW            Floating point underflow
+0xC0000094   EXCEPTION_INT_DIVIDE_BY_ZERO       Integer divide by zero
+0xC0000095   EXCEPTION_INT_OVERFLOW             Integer overflow
+0xC0000096   EXCEPTION_PRIV_INSTRUCTION         Priveleged instruction
+0xC0000006   EXCEPTION_IN_PAGE_ERROR            The instruction at "0x%a" referenced memory at "0x%a". The required data was not placed into memory because of an I/O error status of "0x%a"
+0xC000001D   EXCEPTION_ILLEGAL_INSTRUCTION      An attempt was made to execute an illegal instruction
+0xC0000025   EXCEPTION_NONCONTINUABLE_EXCEPTION Windows cannot continue from this exception
+0xC00000FD   EXCEPTION_STACK_OVERFLOW           A new guard page for the stack cannot be created (stack overflow)
+0xC0000026   EXCEPTION_INVALID_DISPOSITION      An invalid exception disposition was returned by an exception handler
+0x80000001   EXCEPTION_GUARD_PAGE               A page of memory that marks the end of a data structure such as a stack or an array has been accessed
+0xC0000008   EXCEPTION_INVALID_HANDLE           An invalid HANDLE was specified
+0xEEFFACE    EXCEPTION_BCC_FATAL                Fatal unhandled exception in the BCC compiled program
+0xEEDFAE6    EXCEPTION_BCC_NORMAL               Unhandled exception in the BCC compiled program
+0x40010005   DBG_CONTROL_C                      CTRL+C was input to console process
+0x40010008   DBG_CONTROL_BREAK                  CTRL+BREAK was input to console process
+0xE06D7363   EXCEPTION_MSC_CPLUSPLUS            Microsoft C++ exception
+0xE0434F4D   EXCEPTION_MANAGED_NET              Managed .NET exception
+0xE0434352   EXCEPTION_MANAGED_NET_V4           Managed .NET exception (V4+)
+0x4000001E   EXCEPTION_WX86_SINGLE_STEP         Single step exception (x86 emulation)
+0x4000001F   EXCEPTION_WX86_BREAKPOINT          Software breakpoint exception (x86 emulation)
+0x406D1388   MS_VC_EXCEPTION                    SetThreadName
+*/
+/*
+https://web.archive.org/web/20070501045100/http://support.microsoft.com/kb/185294
+The code is actually a cryptic mnemonic device, with the initial "E" standing for "exception" and the final 3 bytes (0x6D7363) representing the ASCII values of "msc".
+https://devblogs.microsoft.com/oldnewthing/20100730-00/?p=1327
+
+EXCEPTION_RECORD
++----------+
+| E06D7363 |
++----------+
+|  ~~~     |
++----------+
+|* ~~~     |
++----------+
+|* ~~~     |
++----------+
+| 3 or 4   |
++----------+
+|* ~~~     |
++----------+
+|*Object   |
++----------+     +---+
+|*       ------> |~~~|
++----------+     +---+
+|*HINSTANCE|     |~~~|
++----------+     +---+
+                 |~~~|
+                 +---+    +---+
+                 | -----> |~~~|
+                 +---+    +---+    +---+
+                          | -----> |~~~|
+                          +---+    +---+    +----------+
+                                   | -----> |*   ~~~   |
+                                   +---+    +----------+
+                                            |*   ~~~   |
+                                            +----------+
+                                            |Class name|
+                                            +----------+
+*/
+#define EXCEPTION_MSC_CPLUSPLUS 0xE06D7363
+#define MS_VC_EXCEPTION_SetThreadName 0x406D1388
+
+const wchar_t* GetReadableExceptionCode(const ::EXCEPTION_RECORD& exceptionRecord)
 {
     const wchar_t* readableExceptionCode = [&]() {
 #define EXCEPTION_CASE(exceptionCode) \
 	case exceptionCode:               \
-		return L"==\"" L#exceptionCode L"\""
+		return L" (" L#exceptionCode L")"
         switch (exceptionRecord.ExceptionCode) {
             EXCEPTION_CASE(EXCEPTION_ACCESS_VIOLATION);
             EXCEPTION_CASE(EXCEPTION_ARRAY_BOUNDS_EXCEEDED);
@@ -126,14 +204,22 @@ void LogExceptionCode(const ::EXCEPTION_RECORD& exceptionRecord, const AllModule
             EXCEPTION_CASE(EXCEPTION_PRIV_INSTRUCTION);
             EXCEPTION_CASE(EXCEPTION_SINGLE_STEP);
             EXCEPTION_CASE(EXCEPTION_STACK_OVERFLOW);
+
+            EXCEPTION_CASE(EXCEPTION_MSC_CPLUSPLUS);
+            EXCEPTION_CASE(MS_VC_EXCEPTION_SetThreadName);
         default:
             return L"";
         }
-    }();
+        }();
 #undef EXCEPTION_CASE
+    return readableExceptionCode;
+}
+void LogExceptionCode(const ::EXCEPTION_RECORD& exceptionRecord, const AllModules_t& allModules)
+{
+    const wchar_t* readableExceptionCode = GetReadableExceptionCode(exceptionRecord);
 
     LOG_DEBUG(
-        DefaultLogger,
+        CrashLog,
         L"[error][X] CRASH? Unhandled exception %llX%s at %s.\n"
         , exceptionRecord.ExceptionCode
         , readableExceptionCode
@@ -148,6 +234,7 @@ void LogException(::EXCEPTION_POINTERS& excPointers)
         // https://learn.microsoft.com/en-us/windows/win32/learnwin32/error-codes-in-com?redirectedfrom=MSDN
         // For example, 0x40010006 is being thrown several times without noticeable reason or harm.
         // https://stackoverflow.com/questions/12298406/how-to-treat-0x40010006-exception-in-vectored-exception-handler
+        // UPD: Might be from attaching the VEH debugger of the Cheat Engine.
         return;
         //if (excPointers.ExceptionRecord->ExceptionCode == 0x406D1388)
         //{
@@ -168,14 +255,59 @@ LONG __stdcall UnhandledExceptionHandler(::EXCEPTION_POINTERS* exception) noexce
 {
     // I fail to trigger this. I think this means that there are more vectored exception handlers
     // and they prevent this code from being reached.
-    LOG_DEBUG(DefaultLogger, L"[X] Unhandled exception. ExceptionCode %llX:\n", exception->ExceptionRecord->ExceptionCode);
+    LOG_DEBUG(CrashLog
+        , L"[*] Unhandled Exception. ExceptionCode %llX%s:\n"
+        , exception->ExceptionRecord->ExceptionCode
+        , GetReadableExceptionCode(*exception->ExceptionRecord)
+    );
     LogException(*exception);
     return EXCEPTION_CONTINUE_SEARCH;
 }
+void HandleExc_SetThreadName(::EXCEPTION_POINTERS* exception)
+{
+    DWORD numParams = exception->ExceptionRecord->NumberParameters;
+    LOG_DEBUG(CrashLog
+        , L"    NumParams: %d\n"
+        , numParams
+    );
+    if (numParams == 6)
+    {
+        LOG_DEBUG(CrashLog
+            , L"    Name: \"%s\", Addr: %llX\n"
+            , utf8_and_wide_string_conversion::utf8_decode((const char*)exception->ExceptionRecord->ExceptionInformation[1]).c_str()
+            , exception->ExceptionRecord->ExceptionInformation[5]
+        );
+    }
+    else if (numParams == 3)
+    {
+        LOG_DEBUG(CrashLog
+            , L"    Name: %s\n"
+            , utf8_and_wide_string_conversion::utf8_decode((const char*)exception->ExceptionRecord->ExceptionInformation[1]).c_str()
+        );
+    }
+    else
+    {
+        for (size_t i = 0; i < numParams; i++)
+        {
+            LOG_DEBUG(CrashLog
+                , L"    %d. %llX\n"
+                , i
+                , exception->ExceptionRecord->ExceptionInformation[i]
+            );
+        }
+    }
+}
 LONG _stdcall VectoredExceptionHandler(::EXCEPTION_POINTERS* exception) noexcept
 {
-    LOG_DEBUG(DefaultLogger, L"[*] Vectored Exception Handler. ExceptionCode %llX:\n", exception->ExceptionRecord->ExceptionCode);
-    LogException(*exception);
+    LOG_DEBUG(CrashLog
+        , L"[*] Vectored Exception Handler. ExceptionCode %llX%s:\n"
+        , exception->ExceptionRecord->ExceptionCode
+        , GetReadableExceptionCode(*exception->ExceptionRecord)
+    );
+    if (exception->ExceptionRecord->ExceptionCode == MS_VC_EXCEPTION_SetThreadName)
+    {
+        HandleExc_SetThreadName(exception);
+    }
     // Returns `0x14290BCF4`.
     // However, I'm unable to trigger neither that function nor the one I set.
     LPTOP_LEVEL_EXCEPTION_FILTER previousTopLevelSEHandler = ::SetUnhandledExceptionFilter(&UnhandledExceptionHandler);

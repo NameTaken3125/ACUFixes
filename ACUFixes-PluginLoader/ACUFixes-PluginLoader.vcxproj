@@ -133,7 +133,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;ACUFIXESPLUGINLOADER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;THIS_DLL_PROJECT_TARGET_FILE_NAME="$(TargetFileName)";THIS_DLL_PROJECT_NAME="$(ProjectName)";ACUFIXESPLUGINLOADER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -152,7 +152,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;ACUFIXESPLUGINLOADER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;THIS_DLL_PROJECT_TARGET_FILE_NAME="$(TargetFileName)";THIS_DLL_PROJECT_NAME="$(ProjectName)";ACUFIXESPLUGINLOADER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -170,6 +170,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\ImGuiConsole.h" />
+    <ClInclude Include="src\PluginLoader.h" />
     <ClInclude Include="src\PluginLoader_VariousHooks\Animation\AnimationGraphEvaluationPatches.h" />
     <ClInclude Include="src\Enum_VirtualKeys.h" />
     <ClInclude Include="src\PluginLoader_VariousHooks\Input\Hack_GameRawInputHook.h" />
@@ -181,6 +182,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\ImGuiConsole.cpp" />
+    <ClCompile Include="src\PluginLoader.cpp" />
     <ClCompile Include="src\PluginLoader_VariousHooks\Animation\AnimationGraphEvaluationPatches.cpp" />
     <ClCompile Include="src\CrashLog.cpp" />
     <ClCompile Include="src\DisableIntegrityChecks.cpp" />

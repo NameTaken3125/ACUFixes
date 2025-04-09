@@ -31,7 +31,11 @@ struct ImGuiConsole
     static void  Strtrim(char* s) { char* str_end = s + strlen(s); while (str_end > s && str_end[-1] == ' ') str_end--; *str_end = 0; }
 
     void    ClearLog();
-    void    AddLog(const char* fmt, ...) IM_FMTARGS(2)
+    void    AddLog(const char* s)
+    {
+        Items.push_back(Strdup(s));
+    }
+    void    AddLogF(const char* fmt, ...) IM_FMTARGS(2)
     {
         va_list args;
         va_start(args, fmt);

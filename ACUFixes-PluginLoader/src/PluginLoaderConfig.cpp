@@ -10,7 +10,7 @@
 
 #include "base.h"
 
-const char* g_PluginLoaderConfig_Filename = "ACUFixes-PluginLoader-config.json";
+const char* g_PluginLoaderConfig_Filename = THIS_DLL_PROJECT_NAME "-config.json";
 ConfigTop g_PluginLoaderConfig;
 
 fs::path& GetThisDLLAbsolutePath()

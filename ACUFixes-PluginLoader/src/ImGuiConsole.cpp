@@ -37,7 +37,7 @@ ImGuiConsole::ImGuiConsole()
 	Commands.push_back("CLASSIFY");
 	AutoScroll = true;
 	ScrollToBottom = false;
-	AddLog("Welcome to Dear ImGui!");
+	AddLogF("Welcome to Dear ImGui!");
 }
 ImGuiConsole::~ImGuiConsole()
 {
@@ -53,7 +53,7 @@ void ImGuiConsole::ClearLog()
 }
 void ImGuiConsole::ExecCommand(const char* command_line)
 {
-	AddLog("# %s\n", command_line);
+	AddLogF("# %s\n", command_line);
 
 	// Insert into history. First find match and delete it so it can be pushed to the back.
 	// This isn't trying to be smart or optimal.
@@ -74,19 +74,19 @@ void ImGuiConsole::ExecCommand(const char* command_line)
 	}
 	else if (Stricmp(command_line, "HELP") == 0)
 	{
-		AddLog("Commands:");
+		AddLogF("Commands:");
 		for (int i = 0; i < Commands.Size; i++)
-			AddLog("- %s", Commands[i]);
+			AddLogF("- %s", Commands[i]);
 	}
 	else if (Stricmp(command_line, "HISTORY") == 0)
 	{
 		int first = History.Size - 10;
 		for (int i = first > 0 ? first : 0; i < History.Size; i++)
-			AddLog("%3d: %s\n", i, History[i]);
+			AddLogF("%3d: %s\n", i, History[i]);
 	}
 	else
 	{
-		AddLog("Unknown command: '%s'\n", command_line);
+		AddLogF("Unknown command: '%s'\n", command_line);
 	}
 
 	// On command input, we scroll to bottom even if AutoScroll==false
@@ -99,7 +99,7 @@ int ImGuiConsole::TextEditCallbackStub(ImGuiInputTextCallbackData* data)
 }
 int ImGuiConsole::TextEditCallback(ImGuiInputTextCallbackData* data)
 {
-	//AddLog("cursor: %d, selection: %d-%d", data->CursorPos, data->SelectionStart, data->SelectionEnd);
+	//AddLogF("cursor: %d, selection: %d-%d", data->CursorPos, data->SelectionStart, data->SelectionEnd);
 	switch (data->EventFlag)
 	{
 	case ImGuiInputTextFlags_CallbackCompletion:
@@ -126,7 +126,7 @@ int ImGuiConsole::TextEditCallback(ImGuiInputTextCallbackData* data)
 		if (candidates.Size == 0)
 		{
 			// No match
-			AddLog("No match for \"%.*s\"!\n", (int)(word_end - word_start), word_start);
+			AddLogF("No match for \"%.*s\"!\n", (int)(word_end - word_start), word_start);
 		}
 		else if (candidates.Size == 1)
 		{
@@ -161,9 +161,9 @@ int ImGuiConsole::TextEditCallback(ImGuiInputTextCallbackData* data)
 			}
 
 			// List matches
-			AddLog("Possible matches:\n");
+			AddLogF("Possible matches:\n");
 			for (int i = 0; i < candidates.Size; i++)
-				AddLog("- %s\n", candidates[i]);
+				AddLogF("- %s\n", candidates[i]);
 		}
 
 		break;
@@ -271,7 +271,7 @@ void ImGuiConsole::DrawIfVisible(const char* title, ConsoleMode consoleMode)
 	ImGui::SetNextWindowBgAlpha(window_bgAlpha);
 
 	static bool doSpamInConsole = false;
-	static float t = 0.0f; if (doSpamInConsole && ImGui::GetTime() - t > 0.02f) { t = (float)ImGui::GetTime(); AddLog("Spam %f", t); }
+	static float t = 0.0f; if (doSpamInConsole && ImGui::GetTime() - t > 0.02f) { t = (float)ImGui::GetTime(); AddLogF("Spam %f", t); }
 	if (!ImGui::Begin(title, nullptr, window_flags))
 	{
 		ImGui::End();
@@ -373,9 +373,9 @@ void ImGuiConsole::DrawIfVisible(const char* title, ConsoleMode consoleMode)
 	{
 		ImGui::Separator();
 
-		if (ImGui::SmallButton("Add Debug Text")) { AddLog("%d some text", Items.Size); AddLog("some more text"); AddLog("display very important message here!"); }
+		if (ImGui::SmallButton("Add Debug Text")) { AddLogF("%d some text", Items.Size); AddLogF("some more text"); AddLogF("display very important message here!"); }
 		ImGui::SameLine();
-		if (ImGui::SmallButton("Add Debug Error")) { AddLog("[error] something went wrong"); }
+		if (ImGui::SmallButton("Add Debug Error")) { AddLogF("[error] something went wrong"); }
 		ImGui::SameLine();
 		if (ImGui::SmallButton("Clear")) { ClearLog(); }
 		//ImGui::SameLine();

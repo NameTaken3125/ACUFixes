@@ -91,26 +91,40 @@ struct Logger_ConsoleAndFile
         auto& console = ImGuiConsole::GetSingleton();
 
         // Append logger name to file.
-        fwprintf(g_LogFile, utf8_and_wide_string_conversion::utf8_decode(m_Name).c_str());
+        int filePrintReturn1 = fwprintf(g_LogFile, utf8_and_wide_string_conversion::utf8_decode(m_Name).c_str());
         // Append formatted string to file.
         va_list args;
         va_list argsCopy;
         va_start(args, fmt);
         va_copy(argsCopy, args);
-        vfwprintf(g_LogFile, fmt, args);
+        int filePrintReturn2 = vfwprintf(g_LogFile, fmt, args);
         fflush(g_LogFile);
         // Format string into stringbuffer.
+        const int numWideChars = filePrintReturn1 + filePrintReturn2;
         wchar_t buf[1024];
-        _vsnwprintf_s(buf, IM_ARRAYSIZE(buf), fmt, argsCopy);
-        buf[IM_ARRAYSIZE(buf) - 1] = 0;
+        std::wstring heapBuf;
+        wchar_t* fittingBuf = nullptr;
+        constexpr int bufSize = IM_ARRAYSIZE(buf);
+        if (numWideChars < bufSize)
+        {
+            _vsnwprintf_s(buf, IM_ARRAYSIZE(buf), fmt, argsCopy);
+            buf[IM_ARRAYSIZE(buf) - 1] = 0;
+            fittingBuf = buf;
+        }
+        else
+        {
+            heapBuf.resize(numWideChars + 1);
+            _vsnwprintf_s(&heapBuf[0], numWideChars + 1, numWideChars, fmt, argsCopy);
+            fittingBuf = &heapBuf[0];
+        }
         va_end(argsCopy);
         va_end(args);
 
-        std::string asUtf8 = utf8_and_wide_string_conversion::utf8_encode(buf);
+        std::string asUtf8 = utf8_and_wide_string_conversion::utf8_encode(fittingBuf);
         // Prepend logger name to formatted string.
         char* copyOfFormattedAndPrepended = console.Strdup((m_Name + asUtf8).c_str());
         console.Items.push_back(copyOfFormattedAndPrepended);
     }
 };
 
-inline DEFINE_LOGGER_CONSOLE_AND_FILE(DefaultLogger, "[ACUFixes-PluginLoader.dll]");
+inline DEFINE_LOGGER_CONSOLE_AND_FILE(DefaultLogger, "[" THIS_DLL_PROJECT_TARGET_FILE_NAME "]");
