@@ -25,21 +25,25 @@ class AtomLayeringInfo
 {
 public:
 	// @members
-	SmallArray<uint32> arr0; //0x0000
-	char pad_000C[36]; //0x000C
+	SmallArray<uint32> LayerMarkUpIDHierarchy; //0x0000
+	SmallArray<uint32> UpperBodyMarkup; //0x000C
+	SmallArray<uint32> RightHandMarkup; //0x0018
+	SmallArray<uint32> LeftHandMarkup; //0x0024
 	uint32 BlendType; //0x0030
 	char pad_0034[4]; //0x0034
-	AtomStateNode* stateNode38; //0x0038
-	AtomSelectBoneMaskDecisionNode* boneMaskDecisionNode; //0x0040
-	SharedPtrNew<Animation>* shared_Animation; //0x0048
-	uint32 dword_50; //0x0050
-	uint32 dword_54; //0x0054
-	uint32 dword_58; //0x0058
-	char pad_005C[4]; //0x005C
+	AtomStateMachineNode* StateImplementation; //0x0038
+	AtomSelectBoneMaskDecisionNode* RootDecisionMode; //0x0040
+	SharedPtrNew<Animation>* AdditiveBaseAnimation; //0x0048
+	uint32 CharacterResolution; //0x0050
+	uint32 DynamicBoneLayerMarkup; //0x0054
+	uint32 BlendBoneReferential; //0x0058
+	int32 AdditiveBaseSyncPoint; //0x005C
 	uint32 LayerId; //0x0060
-	char pad_0064[6]; //0x0064
+	uint32 BoneWeightMapInitializedOffset_layeringIndex_mb; //0x0064
+	uint8 IsDynamicBoneWeights; //0x0068
+	uint8 NeedFeetIK; //0x0069
 	SmallArray<BoneWeight> BoneWeights; //0x006A
-	AtomNodeID nodeID; //0x0076
+	AtomNodeID AtomStateMachineNodeID; //0x0076
 	char pad_0086[2]; //0x0086
 
 	// @helper_functions
@@ -52,13 +56,17 @@ class AtomLayeringStateNode : public AtomStateNode
 {
 public:
 	// @members
-	SmallArray<AtomLayeringInfo> layeringInfos; //0x0080
-	SmallArray<AtomGraphNode*> someGraphNodesRelatedToExtraLayers;
+	SmallArray<AtomLayeringInfo> BlendLayers; //0x0080
+	SmallArray<AtomGraphNode*> GraphNodes;
 	char pad_0098[12]; //0x008C
-	AtomNodeID nodeID; //0x00A4
+	AtomNodeID AtomRootTaskID; //0x00A4
 	char pad_00B4[4]; //0x00B4
 	AtomLayeringInfo BaseLayer; //0x00B8
-	char pad_0140[16]; //0x0140
+	uint32 LayerNodesInstanceSize; //0x0140
+	uint32 RightFootIndexOffset; //0x0144
+	uint32 LeftFootIndexOffset; //0x0148
+	uint8 RequiresPerFramePreUpdate; //0x014C
+	char pad_014D[3]; //0x014D
 
 	// @helper_functions
 	static TypeInfo& GetTI() { return *(TypeInfo*)0x1439D9960; }

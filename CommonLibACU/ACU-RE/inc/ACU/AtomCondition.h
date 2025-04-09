@@ -53,19 +53,19 @@ class AtomCondition
 public:
 	// @members
 	uint32 ValueToTestReferenceID; //0x0000
-	uint32 dword4; //0x0004
+	uint32 MarkUpLayerScope; //0x0004
 	AtomCondition_ConditionType ConditionType : 3; //0x0008
 	AtomCondition_ConditionalOperator ConditionalOperator : 4;
 	AtomCondition_ConjunctionOperator ConjunctionOperator : 2;
 	uint16 MarkUpQueryScope : 2;
-	uint16 isComparisonValueAnAnotherRTCPVarIndex : 1; // Take a look at 14009EEA4
+	uint16 ComparisonValueIsRTCP : 1; // Take a look at 14009EEA4
 	uint16 bit_padding_12_15 : 4;
-	uint16 word_A; //0x000A // It's usually ==0xFFFF, but maybe can be the index of an "entityref" RTCP variable whose GraphEvaluation is supposed to be used?
+	uint16 SourceEntityRTCP; //0x000A // It's usually ==0xFFFF, but maybe can be the index of an "entityref" RTCP variable whose GraphEvaluation is supposed to be used?
     // 0x000C
 	// Appears to represent something related to "parentheses" within the `AtomConditionExpression`.
     // Like, how many of the conditions that follow this one need to be "skipped".
     // If so, then it would make sense that the last condition in an expression should have this value at 0.
-	uint16 groupSizeIfDescribesConditionGroup;
+	uint16 SubEntryCount_groupSizeIfDescribesConditionGroup; //0x000C
 	char pad_000E[2]; //0x000E
 	AtomDataContainerWrapper ComparisonValue; //0x0010
 

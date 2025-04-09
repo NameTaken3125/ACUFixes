@@ -69,8 +69,8 @@ public:
 	char pad_0024[12]; //0x0024
 	uint32 outputInstanceDataOffset_mb; //0x0030
 	char pad_0034[4]; //0x0034
-	AtomNodeID nodeID; //0x0038
-	uint16 reverseGraphNodeIdxInGraph; //0x0048
+	AtomNodeID AtomTaskID; //0x0038
+	uint16 PreUpdateID_reverseGraphNodeIdxInGraph; //0x0048
 	char pad_004A[6]; //0x004A
 }; //Size: 0x0050
 assert_sizeof(AtomGraphNode, 0x50);

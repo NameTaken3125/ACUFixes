@@ -758,12 +758,12 @@ public:
             , layerInfo.LayerId
         );
         ImGui::LogText(
-            "%s anim:\n"
+            "%s AdditiveBaseAnimation:\n"
             , m_currentIndent.c_str()
         );
         {
             auto ind = IndentScoped();
-            SharedPtrNew<Animation>* sharedAnim = layerInfo.shared_Animation;
+            SharedPtrNew<Animation>* sharedAnim = layerInfo.AdditiveBaseAnimation;
             ImGui::LogText(
                 "%s%llu => %s\n"
                 , m_currentIndent.c_str()
@@ -772,13 +772,13 @@ public:
             );
         }
         ImGui::LogText(
-            "%s state node:\n"
+            "%s StateImplementation:\n"
             , m_currentIndent.c_str()
         );
         {
             auto ind = IndentScoped();
-            IDOFFSETS_PUSH(offsetof(AtomLayeringInfo, stateNode38));
-            DumpStateNode(*layerInfo.stateNode38);
+            IDOFFSETS_PUSH(offsetof(AtomLayeringInfo, StateImplementation));
+            DumpStateNode(*layerInfo.StateImplementation);
         }
     }
     template<typename AtomStateNodeSubcls>
@@ -866,16 +866,16 @@ public:
             }
         }
         ImGui::LogText(
-            "%s transitionTargets_98: %d\n"
+            "%s GlobalTransitions: %d\n"
             , m_currentIndent.c_str()
-            , stateMachineNode.transitionTargets_98.size
+            , stateMachineNode.GlobalTransitions.size
         );
         {
             auto _ind = IndentScoped();
-            IDOFFSETS_PUSH(offsetof(AtomStateMachineNode, transitionTargets_98));
-            for (uint16 i = 0; i < stateMachineNode.transitionTargets_98.size; i++)
+            IDOFFSETS_PUSH(offsetof(AtomStateMachineNode, GlobalTransitions));
+            for (uint16 i = 0; i < stateMachineNode.GlobalTransitions.size; i++)
             {
-                AtomStateTransitionTarget* trTarget = stateMachineNode.transitionTargets_98[i];
+                AtomStateTransitionTarget* trTarget = stateMachineNode.GlobalTransitions[i];
                 ImGui::LogText(
                     "%s transition #%d.:\n"
                     , m_currentIndent.c_str()
@@ -923,14 +923,14 @@ public:
         ImGui::LogText(
             "%s Extra Layers: %d\n"
             , m_currentIndent.c_str()
-            , layeringNode.layeringInfos.size
+            , layeringNode.BlendLayers.size
         );
         {
             auto _ind = IndentScoped();
-            IDOFFSETS_PUSH(offsetof(AtomLayeringStateNode, layeringInfos));
-            for (uint16 i = 0; i < layeringNode.layeringInfos.size; i++)
+            IDOFFSETS_PUSH(offsetof(AtomLayeringStateNode, BlendLayers));
+            for (uint16 i = 0; i < layeringNode.BlendLayers.size; i++)
             {
-                AtomLayeringInfo& layerInfo = layeringNode.layeringInfos[i];
+                AtomLayeringInfo& layerInfo = layeringNode.BlendLayers[i];
                 ImGui::LogText(
                     "%s extra layer #%d.:\n"
                     , m_currentIndent.c_str()
@@ -1021,7 +1021,7 @@ public:
             return;
         }
         auto _ind = IndentScoped();
-        uint16 topmostGroupSize = condExpr.Conditions[0].groupSizeIfDescribesConditionGroup;
+        uint16 topmostGroupSize = condExpr.Conditions[0].SubEntryCount_groupSizeIfDescribesConditionGroup;
         AtomCondition* first = &condExpr.Conditions[1];
         ImGui::LogText(m_currentIndent.c_str());
         DumpConditionChain(first, topmostGroupSize);
@@ -1031,14 +1031,14 @@ public:
     {
         AtomCondition* in = condInOut;
         condInOut++;
-        for (size_t i = 0; i < in->groupSizeIfDescribesConditionGroup; i++)
+        for (size_t i = 0; i < in->SubEntryCount_groupSizeIfDescribesConditionGroup; i++)
         {
             SkipConditionsChain(condInOut);
         }
     }
     void DumpCondition_GraphVariable(AtomCondition* currentCond)
     {
-        if (currentCond->word_A != 0xFFFF)
+        if (currentCond->SourceEntityRTCP != 0xFFFF)
         {
             ImGui::LogText("ENTITYREFSMTH");
             return;
@@ -1097,7 +1097,7 @@ public:
         }
         static ImGuiTextBuffer valueToText;
         valueToText.clear();
-        if (currentCond->isComparisonValueAnAnotherRTCPVarIndex)
+        if (currentCond->ComparisonValueIsRTCP)
         {
             uint16 rhsGraphVarIdx = (uint16&)currentCond->ComparisonValue.value;
             const char* rhsGraphVarName = graphVariables_NewDemo_DEV[rhsGraphVarIdx];
@@ -1167,11 +1167,11 @@ public:
                 DumpCondition_GraphVariable(currentCond);
                 break;
             case AtomCondition_ConditionType::CONDITION_GROUP:
-                DumpConditionChain(currentCond + 1, currentCond->groupSizeIfDescribesConditionGroup);
+                DumpConditionChain(currentCond + 1, currentCond->SubEntryCount_groupSizeIfDescribesConditionGroup);
                 break;
             case AtomCondition_ConditionType::UNK_1:
             case AtomCondition_ConditionType::UNK_4:
-                ImGui::LogText("COND%d(%X, %d)", currentCond->ConditionType, currentCond->ValueToTestReferenceID, currentCond->groupSizeIfDescribesConditionGroup);
+                ImGui::LogText("COND%d(%X, %d)", currentCond->ConditionType, currentCond->ValueToTestReferenceID, currentCond->SubEntryCount_groupSizeIfDescribesConditionGroup);
                 break;
             default:
                 ImGui::LogText("UNKCONDTYPE");
@@ -1195,7 +1195,7 @@ public:
                 ImGui::LogText(" %s ", conjunctionOpText);
             }
             SkipConditionsChain(currentCond);
-            //uint16 subchainSizeToSkip = currentCond->groupSizeIfDescribesConditionGroup;
+            //uint16 subchainSizeToSkip = currentCond->SubEntryCount_groupSizeIfDescribesConditionGroup;
             //currentCond++;
             //for (size_t i = 0; i < subchainSizeToSkip; i++)
             //{
@@ -1220,16 +1220,16 @@ public:
             ImGui::LogText(
                 "%s custom transition system: %d:\n"
                 , m_currentIndent.c_str()
-                , atomGraph.AtomCustomTransitionSystem_->transitionCells.size
+                , atomGraph.CustomTransitionSystem->transitionCells.size
             );
             {
                 auto _ind = IndentScoped();
                 IDOFFSETS_PUSH(offsetof(AtomGraph, RootStateMachine));
                 {
                     IDOFFSETS_PUSH(offsetof(AtomCustomTransitionSystem, transitionCells));
-                    for (uint16 i = 0; i < atomGraph.AtomCustomTransitionSystem_->transitionCells.size; i++)
+                    for (uint16 i = 0; i < atomGraph.CustomTransitionSystem->transitionCells.size; i++)
                     {
-                        AtomTransitionCellDescription& trCell = atomGraph.AtomCustomTransitionSystem_->transitionCells[i];
+                        AtomTransitionCellDescription& trCell = atomGraph.CustomTransitionSystem->transitionCells[i];
                         ImGui::LogText(
                             "%s transition cell #%d.:\n"
                             , m_currentIndent.c_str()
@@ -1245,9 +1245,9 @@ public:
                 , m_currentIndent.c_str()
             );
             {
-                IDOFFSETS_PUSH(offsetof(AtomGraph, graphNode));
+                IDOFFSETS_PUSH(offsetof(AtomGraph, PostProcessGraph));
                 auto _ind = IndentScoped();
-                DumpStateNodeDetails(*atomGraph.graphNode);
+                DumpStateNodeDetails(*atomGraph.PostProcessGraph);
             }
         }
         ImGui::LogFinish();

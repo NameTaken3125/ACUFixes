@@ -15,15 +15,15 @@ AtomAnimationDataNode& GraphStateNode_PushAnimationDataNode(AtomGraphStateNode& 
 
     node_animData->AnimationProviderID = graphStateNode.NumberOfAnimationProviders;
     graphStateNode.NumberOfAnimationProviders += 1;
-    node_animData->reverseGraphNodeIdxInGraph = graphStateNode.Nodes.size;
+    node_animData->PreUpdateID_reverseGraphNodeIdxInGraph = graphStateNode.Nodes.size;
     SmallArrayInsert(graphStateNode.Nodes, static_cast<AtomGraphNode*>(node_animData), 0);
     graphStateNode.InstanceDataSize += 16;
 
-    node_animData->word_66 = node_animData->AnimationProviderID;
+    node_animData->AnimEventID = node_animData->AnimationProviderID;
     // Not always the same, See AtomGraphStateNode ({16,128,0,240,128,0,128,0,128,0,128,0,128,32}, 0) [[[[[[[[[[[[[[[[[[[[[[[[[[14521AAD0]+40]]+10]+60]+218]+0]+c8]+710]+1c90]+d0]+670]+10]+80]+0]+b8+38]+80]+0]+80]+0]+80]+0]+80]+0]+80]+20]
-    // In that graphStateNode, all 4 animation providers have `word_68 == word_66+1`
-    node_animData->word_68 = node_animData->word_66;
-    node_animData->word_6A = node_animData->word_68;
+    // In that graphStateNode, all 4 animation providers have `word_68 == AnimEventID+1`
+    node_animData->DisplacementResultID = node_animData->AnimEventID;
+    node_animData->TagSynchronizationID = node_animData->DisplacementResultID;
 
     SmallArray_GameType_Reserve(node_animData->InputPorts, 4);
     AtomInputPort* port0 = CreateInputPort(*node_animData, 4, 0);
@@ -37,16 +37,16 @@ AtomAnimationDataNode& GraphStateNode_PushAnimationDataNode(AtomGraphStateNode& 
     const uint32 outputDataOffset = graphStateNode.InstanceDataSize - 16 + 10;
 
     defaultOutputPort.InstanceDataOffset = outputDataOffset;
-    node_animData->outputDataOffsetMinus10 = outputDataOffset - 10;
-    node_animData->outputDataOffsetMinus6 = outputDataOffset - 6;
-    node_animData->outputDataOffsetMinus2 = outputDataOffset - 2;
+    node_animData->FirstKeyTimeOffset_outputDataOffsetMinus10 = outputDataOffset - 10;
+    node_animData->ReplaceBlendTimeOffset_outputDataOffsetMinus6 = outputDataOffset - 6;
+    node_animData->InitializedOffset_outputDataOffsetMinus2 = outputDataOffset - 2;
     return *node_animData;
 }
 AtomAnimationRootNode& GraphStateNode_PushAnimationRootNode(AtomGraphStateNode& graphStateNode)
 {
     AtomAnimationRootNode* node_animRoot = ACUAllocate<AtomAnimationRootNode>();
 
-    node_animRoot->reverseGraphNodeIdxInGraph = graphStateNode.Nodes.size;
+    node_animRoot->PreUpdateID_reverseGraphNodeIdxInGraph = graphStateNode.Nodes.size;
     SmallArrayInsert(graphStateNode.Nodes, static_cast<AtomGraphNode*>(node_animRoot), 0);
     graphStateNode.InstanceDataSize += 32;
 
@@ -59,10 +59,10 @@ AtomAnimationRootNode& GraphStateNode_PushAnimationRootNode(AtomGraphStateNode& 
     AtomOutputPort& defaultOutputPort = *CreateOutputPort(*node_animRoot);
     node_animRoot->CurrentLengthOffset = 20;
     node_animRoot->CurrentRatioOffset = 24;
-    node_animRoot->DataOffsetBegin_mb = 0;
-    node_animRoot->dword_50 = 8;
-    node_animRoot->dword_68 = 4;
-    node_animRoot->dword_6C = 28;
+    node_animRoot->FirstEvaluationOffset = 0;
+    node_animRoot->SyncStatusOffset = 8;
+    node_animRoot->FirstEvaluationRatioOffset = 4;
+    node_animRoot->ForceEntryRatioOffset = 28;
     defaultOutputPort.InstanceDataOffset = node_animRoot->outputInstanceDataOffset_mb = 0;
     return *node_animRoot;
 }
@@ -79,11 +79,11 @@ AtomGraphStateNode& CreateGraphState_SimpleAnimation(uint64 animationHandle)
     AtomAnimationDataNode* node_animData = &GraphStateNode_PushAnimationDataNode(*newGraphState, animationHandle);
     AnimationRootNode_SetAnimationInput(*node_animRoot, *node_animData);
 
-    newGraphState->numberOfAnimationProviders_alsoMb = newGraphState->NumberOfAnimationProviders;
-    newGraphState->word_A4 = 1;
-    newGraphState->word_A6 = 1;
-    newGraphState->numNodes_mb = 2;
-    newGraphState->dword_98 = 0xFFFFFFFF;
+    newGraphState->NumberOfNonLinkedEntries = newGraphState->NumberOfAnimationProviders;
+    newGraphState->NumberOfDisplacementResults = 1;
+    newGraphState->NumberOfTagSynchronizationEntries = 1;
+    newGraphState->NumberOfPreUpdateEntries_numNodes_mb = 2;
+    newGraphState->ExternalID = 0xFFFFFFFF;
 
     return *newGraphState;
 }
@@ -95,11 +95,11 @@ AtomGraphStateNode& CreateGraphState_SimpleAnimationImported(const fs::path& jso
     AtomAnimationDataNode* node_animData = &GraphStateNode_PushAnimationDataNode(*newGraphState, loadedAnim.GetSharedBlock().handle);
     AnimationRootNode_SetAnimationInput(*node_animRoot, *node_animData);
 
-    newGraphState->numberOfAnimationProviders_alsoMb = newGraphState->NumberOfAnimationProviders;
-    newGraphState->word_A4 = 1;
-    newGraphState->word_A6 = 1;
-    newGraphState->numNodes_mb = 2;
-    newGraphState->dword_98 = 0xFFFFFFFF;
+    newGraphState->NumberOfNonLinkedEntries = newGraphState->NumberOfAnimationProviders;
+    newGraphState->NumberOfDisplacementResults = 1;
+    newGraphState->NumberOfTagSynchronizationEntries = 1;
+    newGraphState->NumberOfPreUpdateEntries_numNodes_mb = 2;
+    newGraphState->ExternalID = 0xFFFFFFFF;
 
     return *newGraphState;
 }
@@ -108,7 +108,7 @@ void SetupTheWeirdCondition(AtomCondition& cond)
     cond.ConditionType = AtomCondition_ConditionType::CONDITION_GROUP;
     cond.ConditionalOperator = AtomCondition_ConditionalOperator::EQUALS;
     cond.ConjunctionOperator = AtomCondition_ConjunctionOperator::AND;
-    cond.groupSizeIfDescribesConditionGroup = 1;
+    cond.SubEntryCount_groupSizeIfDescribesConditionGroup = 1;
 
     cond.ComparisonValue.DataType_0bool1float2int4xy5xyz6quat = AtomDataContainerWrapper_DataType::NoData_mb;
     std::memset(&cond.ComparisonValue.value, 0, 0x10);
@@ -142,7 +142,7 @@ AtomConditionExpression* CreateConditionExpression_PlaybackFinished()
         animationIsFinished->ValueToTestReferenceID = 0;
         animationIsFinished->ComparisonValue.DataType_0bool1float2int4xy5xyz6quat = AtomDataContainerWrapper_DataType::Float;
         (float&)animationIsFinished->ComparisonValue.value = 1.0f;
-        animationIsFinished->groupSizeIfDescribesConditionGroup = 0;
+        animationIsFinished->SubEntryCount_groupSizeIfDescribesConditionGroup = 0;
     }
     return condExpr;
 }
@@ -161,7 +161,7 @@ AtomConditionExpression* CreateConditionExpression_SomeWeirdIntegerSignal()
         weirdSignal->ValueToTestReferenceID = 0x800042; // 0x800040, 0x800041, 0x800042
         weirdSignal->ComparisonValue.DataType_0bool1float2int4xy5xyz6quat = AtomDataContainerWrapper_DataType::NoData_mb;
         (float&)weirdSignal->ComparisonValue.value = 0;
-        weirdSignal->groupSizeIfDescribesConditionGroup = 0;
+        weirdSignal->SubEntryCount_groupSizeIfDescribesConditionGroup = 0;
     }
     return condExpr;
 }
@@ -249,7 +249,7 @@ void AppendConditionGroup(AtomConditionExpression& condExpr, const MyCondition_G
         cond.ConditionType = AtomCondition_ConditionType::CONDITION_GROUP;
         cond.ConditionalOperator = AtomCondition_ConditionalOperator::EQUALS;
         cond.ConjunctionOperator = AtomCondition_ConjunctionOperator::AND;
-        cond.groupSizeIfDescribesConditionGroup = (uint16)conditionGroup.subconditions.size();
+        cond.SubEntryCount_groupSizeIfDescribesConditionGroup = (uint16)conditionGroup.subconditions.size();
     }
 
     for (const auto& subcondition : conditionGroup.subconditions)
@@ -258,8 +258,8 @@ void AppendConditionGroup(AtomConditionExpression& condExpr, const MyCondition_G
         {
             AtomCondition& cond = *SmallArray_GameType_Append(condExpr.Conditions);
             cond.ConditionType = AtomCondition_ConditionType::GRAPH_VARIABLE;
-            cond.word_A = 0xFFFF;
-            cond.groupSizeIfDescribesConditionGroup = 0;
+            cond.SourceEntityRTCP = 0xFFFF;
+            cond.SubEntryCount_groupSizeIfDescribesConditionGroup = 0;
             cond.ValueToTestReferenceID = condGraphVar->rtcpVarIdx;
             cond.ComparisonValue.DataType_0bool1float2int4xy5xyz6quat = condGraphVar->varType;
             (ComparisonValue_t&)cond.ComparisonValue.value = condGraphVar->value;
@@ -277,7 +277,7 @@ void AppendConditionGroup(AtomConditionExpression& condExpr, const MyCondition_G
             animationReachedPercentage->ValueToTestReferenceID = 0;
             animationReachedPercentage->ComparisonValue.DataType_0bool1float2int4xy5xyz6quat = AtomDataContainerWrapper_DataType::Float;
             (float&)animationReachedPercentage->ComparisonValue.value = condPlaybackPercentage->playbackPercentageInRange0_1;
-            animationReachedPercentage->groupSizeIfDescribesConditionGroup = 0;
+            animationReachedPercentage->SubEntryCount_groupSizeIfDescribesConditionGroup = 0;
         }
         else if (auto* condGroup = dynamic_cast<MyCondition_Group*>(subcondition.get()))
         {
@@ -338,7 +338,7 @@ AtomConditionExpression* CreateConditionExpression_PlaybackPercentage(const floa
     //    // Appears to represent something related to "parentheses" within the `AtomConditionExpression`.
     //    // Like, how many of the conditions that follow this one need to be "skipped".
     //    // If so, then it would make sense that the last condition in an expression should have this value at 0.
-    //    animationIsFinished->groupSizeIfDescribesConditionGroup = 0;
+    //    animationIsFinished->SubEntryCount_groupSizeIfDescribesConditionGroup = 0;
     //}
     //return condExpr;
     return &BuildConditionExpression(MyCondition_Group(
@@ -637,7 +637,7 @@ void SetupTheNewLayersStateMachine(AtomStateMachineNode& newLayerStateMachine)
 }
 void SetupTheNewLayer(AtomLayeringInfo& newLayer)
 {
-    SetupTheNewLayersStateMachine(*static_cast<AtomStateMachineNode*>(newLayer.stateNode38));
+    SetupTheNewLayersStateMachine(*static_cast<AtomStateMachineNode*>(newLayer.StateImplementation));
 
     // If `0 <= dword_50 <= 10`, then all the nearby NPCs are affected.
     // In the "main layering state", all the layers have this value at `20`,
@@ -654,14 +654,14 @@ void SetupTheNewLayer(AtomLayeringInfo& newLayer)
 // an instance of `AtomStateMachineNode` and not any other subclass of `AtomStateNode`.
 AtomLayeringInfo& LayeringState_CreateNewLayerWithStateMachine(AtomLayeringStateNode& layeringState)
 {
-    uint16 layerIdx = g_IsDoingCinematicLayersNow ? 0 : layeringState.layeringInfos.size;
-    AtomLayeringInfo* newLayer = SmallArray_GameType_Insert(layeringState.layeringInfos, layerIdx);
-    newLayer->stateNode38 = ACUAllocate<AtomStateMachineNode>();
-    newLayer->stateNode38->parentNode_mb = &layeringState;
-    SmallArrayAppend(newLayer->arr0, (uint32)0xFFFFFFFF);
-    SmallArrayAppend(newLayer->arr0, (uint32)0xFFFFFFFF);
-    CreateInputPort(*layeringState.someGraphNodesRelatedToExtraLayers[0], 3, 1.0f);
-    CreateInputPort(*layeringState.someGraphNodesRelatedToExtraLayers[0], 3, 1.0f);
+    uint16 layerIdx = g_IsDoingCinematicLayersNow ? 0 : layeringState.BlendLayers.size;
+    AtomLayeringInfo* newLayer = SmallArray_GameType_Insert(layeringState.BlendLayers, layerIdx);
+    newLayer->StateImplementation = ACUAllocate<AtomStateMachineNode>();
+    newLayer->StateImplementation->parentNode_mb = &layeringState;
+    SmallArrayAppend(newLayer->LayerMarkUpIDHierarchy, (uint32)0xFFFFFFFF);
+    SmallArrayAppend(newLayer->LayerMarkUpIDHierarchy, (uint32)0xFFFFFFFF);
+    CreateInputPort(*layeringState.GraphNodes[0], 3, 1.0f);
+    CreateInputPort(*layeringState.GraphNodes[0], 3, 1.0f);
     return *newLayer;
 }
 
@@ -702,7 +702,7 @@ AtomLayeringStateNode* PlayerAtomGraph_GetCinematicLayeringState(AtomGraph& play
 bool IsHoodControlsModAlreadyApplied(AtomGraph& playerGraph)
 {
     AtomLayeringStateNode* mainLayeringState = PlayerAtomGraph_GetNormalGameplayLayeringState(playerGraph);
-    return mainLayeringState->layeringInfos.size > 14;
+    return mainLayeringState->BlendLayers.size > 14;
 }
 
 class EResourcesNotFound : public std::exception

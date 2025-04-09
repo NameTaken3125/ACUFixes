@@ -33,7 +33,7 @@ void* AddMyNewRTCPVariable_generic(AtomGraph& atomGraph, uint8 varAlignment, uin
     const uint16 newVarIdx = oldNumNormalVars;
     uint32 numRtcpDescriptorsWithoutFixedOffset = rtcpCached->graphVarHashes.size - oldNumNormalVars;
     uint16 newNumOffsets = newNumHashes - numRtcpDescriptorsWithoutFixedOffset;
-    atomGraph.numNonentityrefRTCPVars = newNumOffsets;
+    atomGraph.FirstEntityRefRTCPIndex = newNumOffsets;
 
     SmallArrayReserve(rtcpCached->graphVarsBuffer, newRTCPDataSize);
     rtcpCached->graphVarsBuffer.size = newRTCPDataSize;

@@ -13,16 +13,16 @@ public:
 	AtomNodeID nodeID; //0x0010
 	float TransitionTime; //0x0020
 	uint16 TargetStateIndex; //0x0024
-	uint16 BlendType : 3;
-	uint16 bits_26_3_4 : 2;
-	uint16 bits_26_5_6_prop0x9B4DCC4C : 2;
-	uint16 bits_26_7_8_prop0xBC8FC6BB : 2;
-	uint16 bits_26_9_10_prop0x833FDA8B : 2;
-	uint16 bit_26_11_prop0xA228BF61 : 1;
-	uint16 bit_26_12_prop0xECB5137C : 1;
-	uint16 bit_26_13_prop0x390CAD45 : 1;
+	uint16 BlendType : 3; // Enum ACTBlendType
+	uint16 BlendAlgo : 2; // Enum ACTBlendAlgo
+	uint16 TranslationSource : 2; // Enum ACTBlendDispSrcMode
+	uint16 RotationSource : 2; // Enum ACTBlendDispSrcMode
+	uint16 ActorRef1Source : 2; // Enum ACTBlendDispSrcMode
+	uint16 UseTransitionMatrix : 1;
+	uint16 ForceProportional : 1;
+	uint16 InverseProportional : 1;
 	uint16 bitpadding_26_14 : 1;
-	uint16 bit_26_15_prop0x8481186F : 1;
+	uint16 UsingRTCPDuration : 1;
 
 	// @helper_functions
 	static TypeInfo& GetTI() { return *(TypeInfo*)0x1439DDDB0; }

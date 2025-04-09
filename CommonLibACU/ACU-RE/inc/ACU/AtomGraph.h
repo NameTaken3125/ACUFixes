@@ -63,15 +63,15 @@ class AtomGraph : public AtomRawFile
 public:
     // @members
     AtomStateMachineNode* RootStateMachine; //0x0010
-    AtomGraphStateNode* graphNode; //0x0018
-    AtomNullStateNode* AtomNullStateNode_; //0x0020
+    AtomGraphStateNode* PostProcessGraph; //0x0018
+    AtomNullStateNode* ErrorState; //0x0020
     SmallArray<AtomRTCPDescriptor> rtcpDescriptors; //0x0028
     char pad_0034[4]; //0x0034
-    AtomStateDescriptor stateDescriptor; //0x0038
-    AtomCustomTransitionSystem* AtomCustomTransitionSystem_; //0x0060
+    AtomStateDescriptor PoseParamStateDescriptor; //0x0038
+    AtomCustomTransitionSystem* CustomTransitionSystem; //0x0060
     uint32 RTCPDataSize; //0x0068
-    uint32 numNonentityrefRTCPVars; //0x006C
-    uint32 numNodes_mb; //0x0070
+    uint32 FirstEntityRefRTCPIndex; //0x006C
+    uint32 LifetimeInstanceDataSize; //0x0070
     ExternalIdMap ExternalIdMap_; //0x0074
     char pad_008C[4]; //0x008C
     AtomGraph_RTCP* rtcp; //0x0090
