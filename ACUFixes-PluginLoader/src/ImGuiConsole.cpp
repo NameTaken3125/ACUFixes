@@ -47,6 +47,7 @@ ImGuiConsole::~ImGuiConsole()
 }
 void ImGuiConsole::ClearLog()
 {
+	std::lock_guard _lock{ m_Mutex };
 	for (int i = 0; i < Items.Size; i++)
 		free(Items[i]);
 	Items.clear();
@@ -341,23 +342,26 @@ void ImGuiConsole::DrawIfVisible(const char* title, ConsoleMode consoleMode)
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 1)); // Tighten spacing
 	if (copy_to_clipboard)
 		ImGui::LogToClipboard();
-	for (int i = 0; i < Items.Size; i++)
 	{
-		const char* item = Items[i];
-		if (!Filter.PassFilter(item))
-			continue;
+		std::lock_guard _lock{ m_Mutex };
+		for (int i = 0; i < Items.Size; i++)
+		{
+			const char* item = Items[i];
+			if (!Filter.PassFilter(item))
+				continue;
 
-		// Normally you would store more information in your item than just a string.
-		// (e.g. make Items[] an array of structure, store color/type etc.)
-		ImVec4 color;
-		bool has_color = false;
-		if (strstr(item, "[error]")) { color = ImVec4(1.0f, 0.4f, 0.4f, 1.0f); has_color = true; }
-		else if (strncmp(item, "# ", 2) == 0) { color = ImVec4(1.0f, 0.8f, 0.6f, 1.0f); has_color = true; }
-		if (has_color)
-			ImGui::PushStyleColor(ImGuiCol_Text, color);
-		ImGui::TextUnformatted(item);
-		if (has_color)
-			ImGui::PopStyleColor();
+			// Normally you would store more information in your item than just a string.
+			// (e.g. make Items[] an array of structure, store color/type etc.)
+			ImVec4 color;
+			bool has_color = false;
+			if (strstr(item, "[error]")) { color = ImVec4(1.0f, 0.4f, 0.4f, 1.0f); has_color = true; }
+			else if (strncmp(item, "# ", 2) == 0) { color = ImVec4(1.0f, 0.8f, 0.6f, 1.0f); has_color = true; }
+			if (has_color)
+				ImGui::PushStyleColor(ImGuiCol_Text, color);
+			ImGui::TextUnformatted(item);
+			if (has_color)
+				ImGui::PopStyleColor();
+		}
 	}
 	if (copy_to_clipboard)
 		ImGui::LogFinish();

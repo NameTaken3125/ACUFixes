@@ -3,6 +3,27 @@
 #include "AnimationPicker.h"
 int g_currentAnimIdx = 0;
 std::vector<MyPlayableAnim> g_myAnimations = {
+    {0x0000000FDA0491DD, "xx_Parkour_Run_PreWallEntryFront_Fd050cm.Animation"},
+    {0x0000000FDA0491E8, "xx_Parkour_Run_PreWallEntryFront_Fd100cm.Animation"},
+    {0x0000000FDA0491F6, "xx_Parkour_Run_PreWallEntryFront_Fd150cm.Animation"},
+    {0x0000000FDA049201, "xx_Parkour_Run_PreWallEntryFront_Fd170cm.Animation"},
+    {0x0000000FDA049206, "xx_Parkour_Run_PreWallEntryFront_Fd200cm.Animation"},
+
+    // After initiating failed wallrun, then sidehop right:
+    {0x146A9AC136, "xx_Nav_IdleHigh_PreWallEntry_Fd0Deg040cm.Animation"},
+    {0xDA2D2DC7E, "xx_Nav_IdleHigh_PreWallEntry_Fd0Deg100cm.Animation"},
+    {0xFDA0491DD, "xx_Parkour_Run_PreWallEntryFront_Fd050cm.Animation"},
+    {0x1081724057, "xx_Parkour_WallEntry_Fail_Fd0Deg.Animation"},
+    {0x785672016, "xx_ScrambleFrontFootl_55deg_tr_GroundEntryFootr.Animation"},
+    {0x2082FC8577, "xx_Parkour_ClimbPassExitRight_Fd400cm-Up100cm.Animation"},
+    // After initiating targeted wallrun:
+    {0x296F0C0C1, "xx_Climbing_Climb_Idle.Animation"},
+    {0x146A9AC136, "xx_Nav_IdleHigh_PreWallEntry_Fd0Deg040cm.Animation"},
+    {0xDA2D2DC7E, "xx_Nav_IdleHigh_PreWallEntry_Fd0Deg100cm.Animation"},
+    {0xFDA0491DD, "xx_Parkour_Run_PreWallEntryFront_Fd050cm.Animation"},
+    {0xFDA0491C0, "xx_Parkour_WallEntryFwd_tr_Climb_Up325cm.Animation"},
+    {0xFFAC7D0D4, "xx_Parkour_WallEntryFwd30Deg_tr_Climb_Rt125cm-Up325cm.Animation"},
+
     {83792228775, "DataAI_GroupBehavior_Couple_TakeAway/xx_Fight_Bomb_Freeaim_Throw_Deny.Animation"},
     {40835186528, "DataAI_GroupBehavior_Couple_TakeAway/xx_Fight_Bomb_Freeaim_Throw_Drop.Animation"},
 
@@ -106,7 +127,36 @@ bool AnimationPicker::Draw(const char* label, ACUSharedPtr_Strong<Animation>& in
         if (vtbl == Animation::GetVTBL())
         {
             Animation& anim = *static_cast<Animation*>(maybeAnim);
-            ImGui::Text("%s\nDuration: %f\nAnimationKey: 0x%lX", ACU::Handles::HandleToText(foundSharedBlock.GetSharedBlock().handle).c_str(), anim.Length, anim.AnimationKey);
+            ImGui::Text(
+                "%s"
+                , ACU::Handles::HandleToText(foundSharedBlock.GetSharedBlock().handle).c_str()
+            );
+            ImGui::Text(
+                "Addr: %llX"
+                , foundSharedBlock.GetPtr()
+            );
+            if (ImGui::IsItemClicked(0))
+            {
+                ImGuiTextBuffer buf;
+                buf.appendf("%llX", foundSharedBlock.GetPtr());
+                ImGui::SetClipboardText(buf.c_str());
+            }
+            ImGui::SameLine();
+            ImGui::Text(
+                "SharedBlock: %llX"
+                , &foundSharedBlock.GetSharedBlock()
+            );
+            if (ImGui::IsItemClicked(0))
+            {
+                ImGuiTextBuffer buf;
+                buf.appendf("%llX", &foundSharedBlock.GetSharedBlock());
+                ImGui::SetClipboardText(buf.c_str());
+            }
+            ImGui::Text(
+                "Duration: %f\nAnimationKey: 0x%lX"
+                , anim.Length
+                , anim.AnimationKey
+            );
             inOut = std::move(reinterpret_cast<ACUSharedPtr_Strong<Animation>&>(foundSharedBlock));
         }
         else

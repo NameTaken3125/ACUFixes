@@ -2,6 +2,10 @@
 
 #include "AtomGraphNode.h"
 
+/*
+5 input ports.
+Inputs[4] is "bool IsDisabled" maybe? Skips whole evaluation, it seems. See 1400EA23A
+*/
 class AtomAnimationRootNode : public AtomGraphNode
 {
 public:

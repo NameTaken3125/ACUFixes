@@ -183,4 +183,16 @@ public:
         ImGui::PopID();
     }
 };
+class PushStyleColor
+{
+public:
+    PushStyleColor(ImGuiCol idx, const ImVec4& col)
+    {
+        ImGui::PushStyleColor(idx, col);
+    }
+    ~PushStyleColor()
+    {
+        ImGui::PopStyleColor();
+    }
+};
 }

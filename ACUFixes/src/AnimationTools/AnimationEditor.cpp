@@ -821,7 +821,7 @@ void AnimationEditor::Draw()
             json::JSON exported = ExportAnimationToJSON(*anim);
             ImGui::SetClipboardText(exported.dump().c_str());
         }
-        if (ImGui::Button("Import from JSON from clipboard; keep former nonoverridden tracks"))
+        if (ImGui::Button("Import from JSON from clipboard; keep nonoverridden tracks"))
         {
             json::JSON imported = json::JSON::Load(ImGui::GetClipboardText());
             if (imported.JSONType() == json::JSON::Class::Object)

@@ -576,6 +576,10 @@ typedef class Vector2<double> Vector2d;
 /// Two dimensional Vector of ints
 typedef class Vector2<int> Vector2i;
 
+
+template<class T> class Vector4;
+template<class T> class Matrix4;
+
 /**
  * Class for three dimensional vector.
  * There are four ways of accessing vector components.
@@ -1036,6 +1040,11 @@ public:
 		y = ny;
 		z = nz;
 
+	}
+
+	Vector3<T> transformed(const Matrix4<T>& mat)
+	{
+		return (mat * Vector4<T>(x, y, z, 1)).xyz();
 	}
 
 	/**

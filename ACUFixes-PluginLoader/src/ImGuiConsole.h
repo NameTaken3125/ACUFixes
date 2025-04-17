@@ -21,6 +21,9 @@ struct ImGuiConsole
     bool                  AutoScroll;
     bool                  ScrollToBottom;
 
+    using Mutex_t = std::mutex;
+    Mutex_t m_Mutex;
+
     ImGuiConsole();
     ~ImGuiConsole();
 
@@ -33,6 +36,7 @@ struct ImGuiConsole
     void    ClearLog();
     void    AddLog(const char* s)
     {
+        std::lock_guard _lock{ m_Mutex };
         Items.push_back(Strdup(s));
     }
     void    AddLogF(const char* fmt, ...) IM_FMTARGS(2)
@@ -47,7 +51,7 @@ struct ImGuiConsole
         char buf[1024];
         vsnprintf(buf, IM_ARRAYSIZE(buf), fmt, args);
         buf[IM_ARRAYSIZE(buf) - 1] = 0;
-        Items.push_back(Strdup(buf));
+        AddLog(buf);
     }
     void    ExecCommand(const char* command_line);
     void    DrawIfVisible(const char* title, ConsoleMode consoleMode);

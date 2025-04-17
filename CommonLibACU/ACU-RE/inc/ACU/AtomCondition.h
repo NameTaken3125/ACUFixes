@@ -27,10 +27,10 @@ assert_sizeof(AtomDataContainerWrapper, 0x20);
 enum class AtomCondition_ConditionType : uint16
 {
 	GRAPH_VARIABLE = 0,
-	UNK_1 = 1,
+	MarkUpCondition = 1,
 	CONDITION_GROUP = 2,
 	PLAYBACK_PERCENTAGE_mb = 3,
-	UNK_4 = 4,
+	AccumulatedMarkUpCondition = 4,
 };
 enum class AtomCondition_ConditionalOperator : uint16
 {
@@ -48,6 +48,12 @@ enum class AtomCondition_ConjunctionOperator : uint16
 	OR = 1,
 };
 
+enum class AtomMarkUpQueryScope : uint16
+{
+	AtomMarkUpQuery_Set = 0,
+	AtomMarkUpQuery_NotSet = 2,
+};
+
 class AtomCondition
 {
 public:
@@ -57,7 +63,7 @@ public:
 	AtomCondition_ConditionType ConditionType : 3; //0x0008
 	AtomCondition_ConditionalOperator ConditionalOperator : 4;
 	AtomCondition_ConjunctionOperator ConjunctionOperator : 2;
-	uint16 MarkUpQueryScope : 2;
+	AtomMarkUpQueryScope MarkUpQueryScope : 2;
 	uint16 ComparisonValueIsRTCP : 1; // Take a look at 14009EEA4
 	uint16 bit_padding_12_15 : 4;
 	uint16 SourceEntityRTCP; //0x000A // It's usually ==0xFFFF, but maybe can be the index of an "entityref" RTCP variable whose GraphEvaluation is supposed to be used?

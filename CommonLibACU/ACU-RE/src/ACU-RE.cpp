@@ -189,6 +189,8 @@
 #include "ACU/AtomGraph.h"
 #include "ACU/Animation.h"
 
+#include "ACU/AtomGraphEvaluation.h"
+
 #include "ACU/BigArray.h"
 #include "ACU/ForgeManager.h"
 

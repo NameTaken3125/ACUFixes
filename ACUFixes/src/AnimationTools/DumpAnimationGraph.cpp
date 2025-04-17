@@ -1169,9 +1169,11 @@ public:
             case AtomCondition_ConditionType::CONDITION_GROUP:
                 DumpConditionChain(currentCond + 1, currentCond->SubEntryCount_groupSizeIfDescribesConditionGroup);
                 break;
-            case AtomCondition_ConditionType::UNK_1:
-            case AtomCondition_ConditionType::UNK_4:
-                ImGui::LogText("COND%d(%X, %d)", currentCond->ConditionType, currentCond->ValueToTestReferenceID, currentCond->SubEntryCount_groupSizeIfDescribesConditionGroup);
+            case AtomCondition_ConditionType::MarkUpCondition:
+                ImGui::LogText("MarkUp(%X, %hu)", currentCond->ValueToTestReferenceID, currentCond->MarkUpQueryScope);
+                break;
+            case AtomCondition_ConditionType::AccumulatedMarkUpCondition:
+                ImGui::LogText("AccumulatedMarkUp(%X, %hu)", currentCond->ValueToTestReferenceID, currentCond->MarkUpQueryScope);
                 break;
             default:
                 ImGui::LogText("UNKCONDTYPE");
@@ -1218,20 +1220,21 @@ public:
                 DumpStateNode(*atomGraph.RootStateMachine);
             }
             ImGui::LogText(
-                "%s custom transition system: %d:\n"
+                "%s CustomTransitionSystem: %d:\n"
                 , m_currentIndent.c_str()
                 , atomGraph.CustomTransitionSystem->transitionCells.size
             );
             {
                 auto _ind = IndentScoped();
-                IDOFFSETS_PUSH(offsetof(AtomGraph, RootStateMachine));
+                IDOFFSETS_PUSH(offsetof(AtomGraph, CustomTransitionSystem));
                 {
                     IDOFFSETS_PUSH(offsetof(AtomCustomTransitionSystem, transitionCells));
                     for (uint16 i = 0; i < atomGraph.CustomTransitionSystem->transitionCells.size; i++)
                     {
+                        IDOFFSETS_PUSH(i * sizeof(AtomTransitionCellDescription));
                         AtomTransitionCellDescription& trCell = atomGraph.CustomTransitionSystem->transitionCells[i];
                         ImGui::LogText(
-                            "%s transition cell #%d.:\n"
+                            "%s TransitionCell #%d.:\n"
                             , m_currentIndent.c_str()
                             , i
                         );
@@ -1348,6 +1351,14 @@ void DrawAtomGraphDumper()
     {
         DumpPlayerAnimgraph();
     }
+    if (ImGui::IsItemHovered())
+    {
+        ImGui::SetTooltip(
+            "This will hang up the game for a little while\n"
+            "And generate a 100MB+ AtomGraphDump.txt file in the game's folder.\n"
+            "So just brace yourself."
+        );
+    }
     AtomAnimComponent* animCpnt = ACU::GetPlayerCpnt_AtomAnimComponent();
     if (!animCpnt) { return; }
     GraphEvaluation* graphEvaluation = animCpnt->pD0;
@@ -1394,11 +1405,25 @@ void DrawAtomGraphDumper()
     DrawGraphVariable<bool>("HighClass", *graphEvaluation, 0xcf930fb, notifyTheGraphWhenModifying);
     // bool ProudWalk; // 0x3c6ab8b1/1013627057
     DrawGraphVariable<bool>("ProudWalk", *graphEvaluation, 0x3c6ab8b1, notifyTheGraphWhenModifying);
+    // bool Wall; // 0xb3c740c8/3016179912
+    DrawGraphVariable<bool>("Wall", *graphEvaluation, 0xb3c740c8, notifyTheGraphWhenModifying);
+    // bool WallEject; // 0x4c773550/1282880848
+    DrawGraphVariable<bool>("WallEject", *graphEvaluation, 0x4c773550, notifyTheGraphWhenModifying);
+    // bool walling_vert; // 0x3a67c2a8/979878568
+    DrawGraphVariable<bool>("walling_vert", *graphEvaluation, 0x3a67c2a8, notifyTheGraphWhenModifying);
     // int GeneralState; //0xdf85463d/3750053437
     // In Syndicate the values are:
     // 39 == dodge bullet; 32 == pick up body; 33 == kidnap; 36 == ragdoll; 29 == cut alarm bell; 28 == pick door lock; 27 == pick chest lock;
     // 23 == weird bird flight; 22 == aim pistol; 19 == shoved; 16 == massive stumble; 11 == milling arms freefall; 9 == swimming
     DrawGraphVariable<int>("GeneralState", *graphEvaluation, 0xdf85463d, notifyTheGraphWhenModifying);
+    // int Parkour; // 0xbdec3825/3186374693
+    // int ParkourElementIncoming; // 0x4d509a44/1297128004
+    // int ParkourElementOutgoing; // 0x6a4cea9e/1783425694
+    // int ParkourMode; // 0xcd777060/3447156832
+    DrawGraphVariable<int>("Parkour", *graphEvaluation, 0xbdec3825, notifyTheGraphWhenModifying);
+    DrawGraphVariable<int>("ParkourElementIncoming", *graphEvaluation, 0x4d509a44, notifyTheGraphWhenModifying);
+    DrawGraphVariable<int>("ParkourElementOutgoing", *graphEvaluation, 0x6a4cea9e, notifyTheGraphWhenModifying);
+    DrawGraphVariable<int>("ParkourMode", *graphEvaluation, 0xcd777060, notifyTheGraphWhenModifying);
     DrawGraphVariable<int>(g_rtcpDesc_HoodControlValue.varname, *graphEvaluation, g_rtcpDesc_HoodControlValue.varnameHash, notifyTheGraphWhenModifying);
 
     //if (ImGui::Button("Clear bone layering cache"))

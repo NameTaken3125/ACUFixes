@@ -8,6 +8,14 @@
 class AtomGraphNode;
 class AtomOutputPort;
 
+enum class AtomInputPort_BindingType
+{
+	BT_RTCP = 0x0,
+	BT_ConstantBool = 0x2,
+	BT_ConstantFloat = 0x3,
+	BT_OutputPortPointer = 0x9,
+	BT_Unused = 12,
+};
 class AtomInputPort
 {
 public:

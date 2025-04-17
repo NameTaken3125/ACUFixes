@@ -98,5 +98,8 @@
     <ClCompile Include="src\ImGuiConsoleInterface_impl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\WaitForVEHDebugger.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

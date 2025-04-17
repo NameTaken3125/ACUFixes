@@ -32,9 +32,12 @@ fs::path AbsolutePathInMyDirectory(const fs::path& filenameRel);
 void PluginLoader_VariousHooks_Start();
 void PluginLoader_FindAndLoadPlugins();
 void InstallCrashLog();
+void SuspendThreadsUntilCheatEnginesVEHDebuggerIsAttached();
+
 
 static void PluginLoader_MainThread(HMODULE thisDLLModule)
 {
+    //SuspendThreadsUntilCheatEnginesVEHDebuggerIsAttached();
     Base::Data::thisDLLModule = thisDLLModule;
     MyLogFileLifetime _log{ AbsolutePathInMyDirectory(THIS_DLL_PROJECT_NAME ".log") };
     InstallCrashLog();

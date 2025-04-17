@@ -154,10 +154,10 @@ AtomConditionExpression* CreateConditionExpression_SomeWeirdIntegerSignal()
     AtomConditionExpression* condExpr = CreateConditionExpression_TwoFirstWeirdConditions();
     {
         AtomCondition* weirdSignal = SmallArray_GameType_Append(condExpr->Conditions);
-        weirdSignal->ConditionType = AtomCondition_ConditionType::UNK_4;
+        weirdSignal->ConditionType = AtomCondition_ConditionType::AccumulatedMarkUpCondition;
         weirdSignal->ConditionalOperator = AtomCondition_ConditionalOperator::EQUALS;
         weirdSignal->ConjunctionOperator = AtomCondition_ConjunctionOperator::AND;
-        weirdSignal->MarkUpQueryScope = 2;
+        weirdSignal->MarkUpQueryScope = AtomMarkUpQueryScope::AtomMarkUpQuery_NotSet;
         weirdSignal->ValueToTestReferenceID = 0x800042; // 0x800040, 0x800041, 0x800042
         weirdSignal->ComparisonValue.DataType_0bool1float2int4xy5xyz6quat = AtomDataContainerWrapper_DataType::NoData_mb;
         (float&)weirdSignal->ComparisonValue.value = 0;
@@ -639,12 +639,12 @@ void SetupTheNewLayer(AtomLayeringInfo& newLayer)
 {
     SetupTheNewLayersStateMachine(*static_cast<AtomStateMachineNode*>(newLayer.StateImplementation));
 
-    // If `0 <= dword_50 <= 10`, then all the nearby NPCs are affected.
+    // If `0 <= CharacterResolution <= 10`, then all the nearby NPCs are affected.
     // In the "main layering state", all the layers have this value at `20`,
     // and at this value only the player and guards are affected, but not the civilians.
-    //newLayer.dword_50 = 20;
-    //newLayer.dword_54 = 1;
-    //newLayer.dword_58 = 743623600;
+    //newLayer.CharacterResolution = 20;
+    //newLayer.DynamicBoneLayerMarkup = 1;
+    //newLayer.BlendBoneReferential = 743623600;
 
     AddBoneWeight(newLayer, 372288500, 0xFF); // "Spine2" == upper torso
     AddBoneWeight(newLayer, 3097015817, 0); //left shoulder

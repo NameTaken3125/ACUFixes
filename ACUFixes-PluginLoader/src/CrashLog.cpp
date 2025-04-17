@@ -75,7 +75,7 @@ void PrintAllModules(const AllModules_t& modules)
         const Module& mod = modules[i];
         LOG_DEBUG(
             CrashLog,
-            L"%3d. %016llX - %016llX: %s\n"
+            L"%3d. %16llX - %16llX: %s\n"
             , i
             , mod.m_baseAddr
             , mod.m_baseAddr + mod.m_size
@@ -307,6 +307,10 @@ LONG _stdcall VectoredExceptionHandler(::EXCEPTION_POINTERS* exception) noexcept
     if (exception->ExceptionRecord->ExceptionCode == MS_VC_EXCEPTION_SetThreadName)
     {
         HandleExc_SetThreadName(exception);
+    }
+    else
+    {
+        LogException(*exception);
     }
     // Returns `0x14290BCF4`.
     // However, I'm unable to trigger neither that function nor the one I set.

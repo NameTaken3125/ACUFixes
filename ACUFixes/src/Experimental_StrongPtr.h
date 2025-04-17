@@ -19,7 +19,7 @@ public:
     ~ACUSharedPtr_Strong();
 
 public:
-    ManagedObjectSubcls* GetPtr() { return static_cast<ManagedObjectSubcls*>(m_SharedBlock.get().GetPtr()); }
+    ManagedObjectSubcls* GetPtr() const { return static_cast<ManagedObjectSubcls*>(m_SharedBlock.get().GetPtr()); }
     SharedPtrNew<ManagedObjectSubcls>& GetSharedBlock() { return (SharedPtrNew<ManagedObjectSubcls>&)m_SharedBlock.get(); }
     SharedPtrNew<ManagedObjectSubcls>& Release() { auto& freeSharedBlock = GetSharedBlock(); m_SharedBlock = *g_emptySharedBlock; return freeSharedBlock; }
     void Reset();

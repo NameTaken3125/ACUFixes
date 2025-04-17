@@ -86,6 +86,25 @@ struct EntityFlags
 };
 assert_sizeof(EntityFlags, 8);
 
+class BoundingVolume
+{
+public:
+	uint32 Type; //0x0000
+	Vector3f Min; //0x0004
+	Vector3f Max; //0x0010
+	char pad_001C[12]; //0x001C
+}; //Size: 0x0028
+assert_sizeof(BoundingVolume, 0x28);
+class DataLayerAction;
+class DataLayerFilter
+{
+public:
+    SmallArray<DataLayerAction> LayerActions; //0x0000
+}; //Size: 0x000C
+assert_sizeof(DataLayerFilter, 0xC);
+
+class GameStateData;
+
 class Entity : public BaseEntity
 {
 public:
@@ -94,7 +113,10 @@ public:
     SmallArray<Component*> cpnts_mb; //0x0078
     char pad_0084[4]; //0x0084
     EntityFlags flags88; //0x0088 // Read below.
-    char pad_0090[68]; //0x0090
+    GameStateData* ResetData; //0x0090
+    BoundingVolume BoundingVolume_; //0x0098
+    char pad_00C0[8]; //0x00C0
+    DataLayerFilter DataLayerFilter_; //0x00C8
     EntityDescriptor EntityDescriptor_; //0x00D4
     char pad_00D8[88]; //0x00D8
     SharedPtrNew<Entity>* selfSharedPtr; //0x0130
