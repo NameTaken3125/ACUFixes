@@ -114,7 +114,7 @@
       <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)CommonLibACU\ACU-RE\vmath;$(SolutionDir)CommonLibACU\ACU-RE\inc;$(SolutionDir)CommonLibACU\DearImGui\inc;$(SolutionDir)CommonLibACU\Serialization\include;$(SolutionDir)CommonLibACU\AutoAssemblerKinda\include;$(SolutionDir)CommonLibACU\Common_PluginSide\public_headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <PreprocessorDefinitions>THIS_DLL_PROJECT_TARGET_FILE_NAME="$(TargetFileName)";THIS_DLL_PROJECT_NAME="$(ProjectName)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -170,7 +170,7 @@ REM robocopy "$(SolutionDir)NewAnimations" "$(TargetDir)NewAnimations" /MIR
       <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)CommonLibACU\ACU-RE\vmath;$(SolutionDir)CommonLibACU\ACU-RE\inc;$(SolutionDir)CommonLibACU\DearImGui\inc;$(SolutionDir)CommonLibACU\Serialization\include;$(SolutionDir)CommonLibACU\AutoAssemblerKinda\include;$(SolutionDir)CommonLibACU\Common_PluginSide\public_headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PreprocessorDefinitions>THIS_DLL_PROJECT_TARGET_FILE_NAME="$(TargetFileName)";THIS_DLL_PROJECT_NAME="$(ProjectName)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>

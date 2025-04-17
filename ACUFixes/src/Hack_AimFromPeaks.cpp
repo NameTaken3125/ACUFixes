@@ -46,7 +46,7 @@ AimFromPeaks::AimFromPeaks()
     LABEL(whileOnPeak_0xE0__storage);
 
     whenTryToStartAimingFromPeak = {
-        0xE9, RIP(whenTryToStartAimingFromPeak_cave)
+        db(0xE9), RIP(whenTryToStartAimingFromPeak_cave)
     };
     whenTryToStartAimingFromPeak_cave = {
         "48 8B 81 E0000000"                             //- mov rax,[rcx+000000E0]

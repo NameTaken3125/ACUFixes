@@ -8,7 +8,7 @@ AllowCustomizeEquipment::AllowCustomizeEquipment()
     ALLOC(whenPlayerOnLedgeOrPeakAndCheckingIfInAParticularNavigationState__cave, 0x80, 0x141A19B30);
     LABEL(whenPlayerOnLedgeOrPeakAndCheckingIfInAParticularNavigationState__return);
     whenPlayerOnLedgeOrPeakAndCheckingIfInAParticularNavigationState = {
-        0xE9, RIP(whenPlayerOnLedgeOrPeakAndCheckingIfInAParticularNavigationState__cave),
+        db(0xE9), RIP(whenPlayerOnLedgeOrPeakAndCheckingIfInAParticularNavigationState__cave),
         nop(3),
         PutLabel(whenPlayerOnLedgeOrPeakAndCheckingIfInAParticularNavigationState__return)
     };

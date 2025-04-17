@@ -117,7 +117,7 @@ ReworkedTakeCover::ReworkedTakeCover()
     DEFINE_ADDR(whenMovingAwayFromCoverAndCheckingIfTimerForKeypressIsFinished, 0x14192541F);
     DEFINE_ADDR(whenMovingAwayFromCoverAndKeypressTimerIsFinished, 0x141925455);
     whenMovingAwayFromCoverAndCheckingIfTimerForKeypressIsFinished = {
-        0xE9, RIP(whenMovingAwayFromCoverAndKeypressTimerIsFinished, 4),
+        db(0xE9), RIP(whenMovingAwayFromCoverAndKeypressTimerIsFinished, 4),
         nop(2)
     };
     auto AlsoAllowDetachIfMovingAwayFromOpenCornerTowardWallContinuation = [&]()
@@ -133,7 +133,7 @@ ReworkedTakeCover::ReworkedTakeCover()
         ALLOC(whenBehindCoverTryingToMove_decideIfAlongOrAway__cave, 0x80, 0x1419253DB);
 
         whenBehindCoverTryingToMove_decideIfAlongOrAway = {
-            0xE9, RIP(whenBehindCoverTryingToMove_decideIfAlongOrAway__cave),
+            db(0xE9), RIP(whenBehindCoverTryingToMove_decideIfAlongOrAway__cave),
             nop(2)
         };
         whenBehindCoverTryingToMove_decideIfAlongOrAway__cave = {

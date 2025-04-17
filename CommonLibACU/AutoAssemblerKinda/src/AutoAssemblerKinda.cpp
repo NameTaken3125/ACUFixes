@@ -258,10 +258,7 @@ void WriteableSymbol::ProcessNewCodeElements(size_t idxToStartProcessingFrom)
     for (auto i = idxToStartProcessingFrom; i < m_codeElements.size(); i++)
     {
         CodeElement& block = m_codeElements[i];
-        if (byte* bt = std::get_if<byte>(&block)) {
-            m_resultantCode.push_back(*bt);
-        }
-        else if (db* data = std::get_if<db>(&block)) {
+        if (db* data = std::get_if<db>(&block)) {
             for (auto& b : data->m_Values)
             {
                 m_resultantCode.push_back(b);
@@ -454,7 +451,7 @@ void AutoAssemblerCodeHolder_Base::PresetScript_CCodeInTheMiddle(uintptr_t where
     LABEL_NAMED(cave_entrance, symbolsBaseName + "__cave_entrance");
 
     injectAt = {
-        0xE9, RIP(cave_entrance),
+        db(0xE9), RIP(cave_entrance),
         nop(howManyBytesStolen - 5),
     };
     newmem = {
@@ -512,7 +509,7 @@ void AutoAssemblerCodeHolder_Base::PresetScript_CCodeInTheMiddle(uintptr_t where
         newmem += {db(std::move(currentBytes.m_bytes))};
     }
     newmem += {
-        0xE9, RIP(injection_return),        //  - jmp injection_return
+        db(0xE9), RIP(injection_return),        //  - jmp injection_return
     };
 }
 void AutoAssemblerCodeHolder_Base::PresetScript_NOP(uintptr_t whereToInject, size_t howManyBytesToNOP)

@@ -128,7 +128,7 @@ This can be turned into the following C++ code:
             ALLOC(maybeSkipParkourScanner__cave, 0x1000, 0x141A4C618);
 
             maybeSkipParkourScanner = {
-                0xE9, RIP(maybeSkipParkourScanner__cave),   // - jmp 13FFC0030                                  - needs to be adjusted - relative `jmp` between static and allocated addresses.
+                "E9", RIP(maybeSkipParkourScanner__cave),   // - jmp 13FFC0030                                  - needs to be adjusted - relative `jmp` between static and allocated addresses.
                 "0F1F 00"                                   // - nop dword ptr [rax]
             };
             maybeSkipParkourScanner__cave = {
@@ -158,7 +158,7 @@ This can be turned into the following C++ code:
                 "89 7C 24 28         "  // - mov [rsp+28],edi
                 "F3 0F11 7C 24 20    "  // - movss [rsp+20],xmm7
                 "E8", RIP(__fn140185630), // - call ACU.exe+185630                                              - needs to be adjusted - relative `call` between static and allocated addresses.
-                "E9", RIP(maybeSkipParkourScanner__return),  // - jmp ACU.exe+1A4C620                           - needs to be adjusted - relative `call` between static and allocated addresses.
+                "E9", RIP(maybeSkipParkourScanner__return),  // - jmp ACU.exe+1A4C620                           - needs to be adjusted - relative `jmp` between static and allocated addresses.
             };
         }
         void CreateAndActivatePatch()
@@ -314,40 +314,40 @@ typedef unsigned char		byte;		// 8 bits
 class db
 {
 public:
-    db(unsigned __int8 singleValue) : m_Values({ singleValue }) {}
-    db(std::vector<unsigned __int8>&& values) : m_Values(std::move(values)) {}
+    explicit db(unsigned __int8 singleValue) : m_Values({ singleValue }) {}
+    explicit db(std::vector<unsigned __int8>&& values) : m_Values(std::move(values)) {}
     std::vector<unsigned __int8> m_Values;
 };
 class dw
 {
 public:
-    dw(unsigned __int16 singleValue) : m_Values({ singleValue }) {}
+    explicit dw(unsigned __int16 singleValue) : m_Values({ singleValue }) {}
     std::vector<unsigned __int16> m_Values;
 };
 class dd
 {
 public:
-    dd(unsigned __int32 singleValue) : m_Values({ singleValue }) {}
-    dd(std::vector<unsigned __int32>&& values) : m_Values(std::move(values)) {}
+    explicit dd(unsigned __int32 singleValue) : m_Values({ singleValue }) {}
+    explicit dd(std::vector<unsigned __int32>&& values) : m_Values(std::move(values)) {}
     std::vector<unsigned __int32> m_Values;
 };
 class dq
 {
 public:
-    dq(unsigned __int64 singleValue) : m_Values({ singleValue }) {}
-    dq(std::vector<unsigned __int64>&& values) : m_Values(std::move(values)) {}
+    explicit dq(unsigned __int64 singleValue) : m_Values({ singleValue }) {}
+    explicit dq(std::vector<unsigned __int64>&& values) : m_Values(std::move(values)) {}
     std::vector<unsigned __int64> m_Values;
 };
 class nop {
 public:
-    nop(size_t howManyBytes = 1) : m_HowManyBytes(howManyBytes) {}
+    explicit nop(size_t howManyBytes = 1) : m_HowManyBytes(howManyBytes) {}
     size_t m_HowManyBytes;
 };
 class SymbolWithAnAddress;
 class RIP
 {
 public:
-    RIP(SymbolWithAnAddress& symbol, int howManyBytesUntilTheEndOfOpcodeIncludingThese4bytes = 4)
+    explicit RIP(SymbolWithAnAddress& symbol, int howManyBytesUntilTheEndOfOpcodeIncludingThese4bytes = 4)
         : m_Symbol(symbol)
         , m_HowManyBytesUntilTheEndOfOpcodeIncludingThese4bytes(howManyBytesUntilTheEndOfOpcodeIncludingThese4bytes)
     {}
@@ -357,7 +357,7 @@ public:
 class ABS
 {
 public:
-    ABS(SymbolWithAnAddress& symbol, int absoluteAddrWidth) : m_Symbol(symbol), m_AbsoluteAddrWidth(absoluteAddrWidth) {}
+    explicit ABS(SymbolWithAnAddress& symbol, int absoluteAddrWidth) : m_Symbol(symbol), m_AbsoluteAddrWidth(absoluteAddrWidth) {}
     std::reference_wrapper<SymbolWithAnAddress> m_Symbol;
     uint8_t m_AbsoluteAddrWidth;
 };
@@ -365,15 +365,13 @@ class Label;
 class LabelPlacement
 {
 public:
-    LabelPlacement(Label& label) : m_Label(label) {}
+    explicit LabelPlacement(Label& label) : m_Label(label) {}
     std::reference_wrapper<Label> m_Label;
 };
 inline LabelPlacement PutLabel(Label& label) { return LabelPlacement(label); }
 class WriteableSymbol;
 using CodeElement = std::variant <
-    // Paste code byte by byte.
-    AutoAssemblerKinda::byte
-    , db
+    db
     , dw
     , dd
     , dq
@@ -463,14 +461,41 @@ public:
     ByteVector CopyCurrentBytes(size_t numBytes);
 };
 class AssemblerContext;
+/*
+Just std::vector<CodeElements> but the only constructor is for initializer_list
+to encourage the intended syntax i.e.
+
+    DEFINE_ADDR(whenSomethingHappensThatNeedsToBePatched, 0x1419158E0);
+    ALLOC(whenSomethingHappensThatNeedsToBePatched_cave, 0x80, 0x1419158E0);
+
+    whenSomethingHappensThatNeedsToBePatched = {
+        db(0xE9), RIP(whenSomethingHappensThatNeedsToBePatched_cave)
+    };
+
+The braces in the assignment above should convert into std::initializer_list
+and that one into std::vector, but in C++20 one can accidentally use
+        0xE9, RIP(whenSomethingHappensThatNeedsToBePatched_cave)
+instead of
+        db(0xE9), RIP(whenSomethingHappensThatNeedsToBePatched_cave)
+thinking that 0xE9 will be interpreted as a single byte (which used to be the case).
+While the latter (and probably intended) line would mean a 5-byte relative jmp to the code cave,
+the former places 4-byte relative pointer, 233 times in a row, without even a warning.
+*/
+class StdVectorOfCodeElements : public std::vector<CodeElement>
+{
+public:
+    StdVectorOfCodeElements(std::initializer_list<CodeElement> ilist)
+        : std::vector<CodeElement>(ilist)
+    {}
+};
 class WriteableSymbol : public SymbolWithAnAddress
 {
     friend AssemblerContext;
     AssemblerContext* m_ctx;
 public:
     WriteableSymbol(std::optional<uintptr_t> m_ConstantAddress, AssemblerContext* ctx) : SymbolWithAnAddress(m_ConstantAddress), m_ctx(ctx) {}
-    WriteableSymbol& operator=(const std::vector<CodeElement>& codeElements) { SetCodeElements(codeElements); return *this; }
-    WriteableSymbol& operator+=(const std::vector<CodeElement>& codeElements) { AppendCodeElements(codeElements); return *this; }
+    WriteableSymbol& operator=(const StdVectorOfCodeElements& codeElements) { SetCodeElements(codeElements); return *this; }
+    WriteableSymbol& operator+=(const StdVectorOfCodeElements& codeElements) { AppendCodeElements(codeElements); return *this; }
     void SetCodeElements(const std::vector<CodeElement>& codeElements);
     void AppendCodeElements(const std::vector<CodeElement>& codeElements);
     std::string GetResultBytesString();

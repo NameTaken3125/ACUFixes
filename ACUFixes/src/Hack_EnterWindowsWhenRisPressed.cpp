@@ -75,7 +75,7 @@ void Patch_FakeIsMovingFlag(AssemblerContext* m_ctx)
     DEFINE_ADDR(fake_isMoving_flag__return, 0x141A4CBDC + 7);
     ALLOC(fake_isMoving_flag__cave, 0x100, 0x141A4CBDC);
     fake_isMoving_flag = {
-        0xE9, RIP(fake_isMoving_flag__cave),
+        db(0xE9), RIP(fake_isMoving_flag__cave),
         nop(2)
     };
     /*
@@ -201,7 +201,7 @@ void Patch_RunWindowEntryTesterIfRequested_cppTrampoline(AssemblerContext* m_ctx
     LABEL(rwes_CPPfunction_addr);
 
     runWindowEntrySearch = {
-        0xE9, RIP(runWindowEntrySearch__cave), // - jmp 13FFC0030
+        db(0xE9), RIP(runWindowEntrySearch__cave), // - jmp 13FFC0030
         "0F1F 00"                              // - nop dword ptr [rax]
     };
     runWindowEntrySearch__cave = {
@@ -222,7 +222,7 @@ void Patch_RunWindowEntryTesterIfRequested_cppTrampoline(AssemblerContext* m_ctx
         "48 89 44 24 40     "  // - mov [rsp+40],rax
         "FF 15", RIP(rwes_CPPfunction_addr),    // - call [rip+rwes_CPPfunction_addr]
         "48 83 C4 20",                          // - add rsp,20
-        0xE9, RIP(runWindowEntrySearch__return),
+        db(0xE9), RIP(runWindowEntrySearch__return),
         PutLabel(rwes_CPPfunction_addr),
         dq((uintptr_t)&RunWindowEntryEntryTesterInitAndScan),
     };
