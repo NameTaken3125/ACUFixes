@@ -317,6 +317,7 @@ REM robocopy "$(SolutionDir)NewAnimations" "$(TargetDir)NewAnimations" /MIR
     <ClInclude Include="src\AnimationTools\MyAnimationPlayer.h" />
     <ClInclude Include="src\MyLog.h" />
     <ClInclude Include="src\MyVariousHacks.h" />
+    <ClInclude Include="src\ParkourDebugging\EnumParkourAction.h" />
     <ClInclude Include="src\pch.h" />
     <ClInclude Include="src\Request_FreezeFOV.h" />
     <ClInclude Include="src\Request_Spindescent.h" />

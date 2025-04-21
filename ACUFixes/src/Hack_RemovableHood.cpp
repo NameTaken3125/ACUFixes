@@ -509,17 +509,6 @@ void DrawPlayerVisualsControls()
     if (!ent) { return; }
     DrawEntityVisualsControls(*ent);
 }
-void DrawPlayerVisualsControls_old()
-{
-    ImGui::Text(
-        "The list of player's Visual components to turn on and off."
-        "\nThe numbers are the unique Handles of the corresponding LODSelector objects."
-        "\nClick with the Right Mouse Button to copy the Handle to clipboard."
-    );
-    Entity* player = ACU::GetPlayer();
-    if (!player) { return; }
-    DrawEntityVisualsControls(*player);
-}
 void DrawHoodControls()
 {
     ImGui::Checkbox("Removable Hood", &g_Config.hacks->hoodControls->isActive.get());
