@@ -8,57 +8,38 @@
 
 #include "AutoAssemblerKinda/AutoAssemblerKinda.h"
 
-#include "Hack_EnterWindowsWhenRisPressed.h"
-#include "Hack_SlowMenacingWalkAndAutowalk.h"
-#include "Hack_CycleEquipmentWhenScrollingMousewheel.h"
-#include "Hack_ModifyAimingFOV.h"
-#include "Hack_DontForceUnsheatheWhenInDisguise.h"
-#include "Hack_CrouchFix.h"
-#include "Hack_ReworkedTakeCover.h"
-#include "Hack_BreakfallAndLedgeGrab.h"
-#include "Hack_EasierTurnWhenSwinging.h"
-#include "Hack_AimFromPeaks.h"
-#include "Hack_NoMoreFailedBombThrows.h"
-#include "Hack_MoreResponsiveBombQuickDrop.h"
-#include "Hack_ReloadRangedWeaponsWhenRefillAllInShop.h"
-#include "Hack_MoreReliableQuickshot.h"
-#include "Hack_DontRandomlyTurn180Degrees.h"
-#include "Hack_NoWaitForUnsafeEject.h"
-#include "Hack_AllowCustomizeEquipment.h"
-#include "Hack_GunRange.h"
-#include "Hack_UnequipPistol.h"
+#include "VariousPatches/Hack_EnterWindowsWhenRisPressed.h"
+#include "VariousPatches/Hack_SlowMenacingWalkAndAutowalk.h"
+#include "VariousPatches/Hack_CycleEquipmentWhenScrollingMousewheel.h"
+#include "VariousPatches/Hack_ModifyAimingFOV.h"
+#include "VariousPatches/Hack_DontForceUnsheatheWhenInDisguise.h"
+#include "VariousPatches/Hack_CrouchFix.h"
+#include "VariousPatches/Hack_ReworkedTakeCover.h"
+#include "VariousPatches/Hack_BreakfallAndLedgeGrab.h"
+#include "VariousPatches/Hack_EasierTurnWhenSwinging.h"
+#include "VariousPatches/Hack_AimFromPeaks.h"
+#include "VariousPatches/Hack_NoMoreFailedBombThrows.h"
+#include "VariousPatches/Hack_MoreResponsiveBombQuickDrop.h"
+#include "VariousPatches/Hack_ReloadRangedWeaponsWhenRefillAllInShop.h"
+#include "VariousPatches/Hack_MoreReliableQuickshot.h"
+#include "VariousPatches/Hack_DontRandomlyTurn180Degrees.h"
+#include "VariousPatches/Hack_NoWaitForUnsafeEject.h"
+#include "VariousPatches/Hack_AllowCustomizeEquipment.h"
+#include "VariousPatches/Hack_GunRange.h"
+#include "VariousPatches/Hack_UnequipPistol.h"
 
-#include "Hack_LookbehindButton.h"
-#include "Hack_WhistleAbility.h"
-#include "Hacks_VariousExperiments.h"
+#include "VariousPatches/Hack_LookbehindButton.h"
+#include "VariousPatches/Hack_WhistleAbility.h"
+#include "VariousPatches/Hacks_VariousExperiments.h"
 
-#include "Cheat_BatlampOfFranciade.h"
-#include "Cheat_PretendYoureInFranciade.h"
-#include "Cheat_Health.h"
-#include "Cheat_Ammo.h"
-#include "Cheat_DisguiseUpgrades.h"
+#include "VariousPatches/Cheat_BatlampOfFranciade.h"
+#include "VariousPatches/Cheat_PretendYoureInFranciade.h"
+#include "VariousPatches/Cheat_Health.h"
+#include "VariousPatches/Cheat_Ammo.h"
+#include "VariousPatches/Cheat_DisguiseUpgrades.h"
 
-#include "Request_Spindescent.h"
-#include "Request_FreezeFOV.h"
-
-#include "AutoAssemblerKinda/AutoAssemblerKinda.h"
-
-struct HookAnimationSignalsThatHumansReceive : AutoAssemblerCodeHolder_Base
-{
-    HookAnimationSignalsThatHumansReceive();
-};
-void WhenRegisteredAnimationSignalHasSentAnUpdate(AllRegisters* params)
-{
-    uint32 animationSignalReceiverIndex = (uint32&)params->rdx_;
-    HumanStatesHolder* humanStates = (HumanStatesHolder*)params->rcx_;
-    uint8 isSignalPositiveNow = (uint8&)params->r8_;
-}
-HookAnimationSignalsThatHumansReceive::HookAnimationSignalsThatHumansReceive()
-{
-    uintptr_t whenRegisteredAnimationSignalHasSentAnUpdate = 0x141942CB0;
-    PresetScript_CCodeInTheMiddle(whenRegisteredAnimationSignalHasSentAnUpdate, 5,
-        WhenRegisteredAnimationSignalHasSentAnUpdate, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
-}
+#include "VariousPatches/Request_Spindescent.h"
+#include "VariousPatches/Request_FreezeFOV.h"
 
 void DrawSlowMotionControls();
 void DrawSlowMotionTrickControls();
