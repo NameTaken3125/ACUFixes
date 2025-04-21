@@ -63,6 +63,19 @@ DEFINE_GAME_FUNCTION(Visual__ToggleVisibility_P, 0x141CE1440, int, __fastcall, (
 inline void ToggleVisualCpntVisibility(Visual& vis, bool doEnable)
 {
     // WARNING!
+    // The issue explained below has been worked around. The shorter version is this:
+    // If you want to turn visibility of Visual components, then depending on whether
+    // you're running in the MainThread, or in the
+    // Thread-That-Receives-Animation-Signals, you'll have better luck calling
+    // the "Visual__ToggleVisibility()" (0x1421F4DD0) or "Visual__ToggleVisibility_P" (0x141CE1440),
+    // and the wrong choice will have strange bugs in the few game moments
+    // when hood's visibility is changed by a script.
+    // The point is that the most reliable way I found of toggling visibility is to call
+    // 0x1421F4DD0 from the main thread (like when drawing ImGui).
+    // This is why the animated version of the hood toggle uses "scheduling"
+    // instead of toggling Visuals immediately.
+
+    // Old comment:
     // The "hood toggle" basically works by turning parts of the player's visuals (on/off versions of the hood
     // as well as hair) on and off.
     // In the old version I used to toggle the visibility instantly
@@ -84,7 +97,7 @@ inline void ToggleVisualCpntVisibility(Visual& vis, bool doEnable)
     // I need to use the 0x141CE1440 function in this context.
     // (The reason, I think, is some bullcrap with the global thread locks or whatever, causing the state of the Visuals
     // to be refreshed instead of changed, see critical section at 1421F4E80).
-    Visual__ToggleVisibility_P(&vis, doEnable);
+    Visual__ToggleVisibility(&vis, doEnable);
 }
 void EnableVisibilityForVisualCpnt(Entity& entity, uint64 lodSelectorHandle, bool doEnable)
 {
@@ -299,13 +312,17 @@ void PlayHoodAnimation(bool doPutHoodOn)
     }
     SetGraphVariable<int>(*graphEvaluation, g_rtcpDesc_HoodControlValue.varnameHash, newRTCPValue);
 }
+
+/*
+true == PutOn, false == TakeOff, empty == do nothing.
+See comments inside ToggleVisualCpntVisibility() for the reason
+why I need scheduling instead of toggling visibility
+immediately upon receiving an "animation signal".
+*/
+std::optional<bool> g_ScheduledHoodToogle;
 void RemovableHood_ReactToAnimationSignal(bool truePutOnFalseTakeOff)
 {
-    Entity* player = ACU::GetPlayer();
-    if (!player) { return; }
-    CurrentHoodState currentHood = FindCurrentHoodVariation(*player);
-    if (!currentHood.m_currentHood) { return; }
-    ToggleHoodVisuals(*currentHood.m_currentHood, truePutOnFalseTakeOff);
+    g_ScheduledHoodToogle = truePutOnFalseTakeOff;
 }
 bool IsHoodToggleShouldBeInstant()
 {
@@ -332,7 +349,7 @@ bool IsHoodToggleShouldBeInstant()
     }
     return false;
 }
-void ToggleHood()
+void StartToggleHood()
 {
     Entity* player = ACU::GetPlayer();
     if (!player) { return; }
@@ -357,9 +374,19 @@ void DoManualHoodControls()
     {
         return;
     }
+    if (g_ScheduledHoodToogle)
+    {
+        const bool truePutOnFalseTakeOff = *g_ScheduledHoodToogle;
+        g_ScheduledHoodToogle.reset();
+        Entity* player = ACU::GetPlayer();
+        if (!player) { return; }
+        CurrentHoodState currentHood = FindCurrentHoodVariation(*player);
+        if (!currentHood.m_currentHood) { return; }
+        ToggleHoodVisuals(*currentHood.m_currentHood, truePutOnFalseTakeOff);
+    }
     if (ACU::Input::IsJustPressed(g_Config.hacks->hoodControls->hoodToggleButton))
     {
-        ToggleHood();
+        StartToggleHood();
     }
 }
 #include "ACU/LODSelectorInstance.h"
