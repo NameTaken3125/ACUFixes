@@ -174,6 +174,8 @@
     <ClInclude Include="inc\ACU\BigArray.h" />
     <ClInclude Include="inc\ACU\Letterbox.h" />
     <ClInclude Include="inc\ACU\AtomGraphEvaluation.h" />
+    <ClInclude Include="inc\ACU\MissionConditionGroup.h" />
+    <ClInclude Include="inc\ACU\MissionCondition.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />

@@ -2,15 +2,18 @@
 
 #include "ImGui3D.h"
 #include "ImGui3DRenderer.h"
+#include "ImGui3DCustomDraw.h"
 
-
-void ImGui3D::DrawStuff()
+namespace ImGui3D
 {
-    CalculateViewProjectionForCurrentFrame(ImGui3D::g_ViewProjection);
-    // ImGuizmo only draws within the bounds of an ImGui Window.
+extern ImDrawList* g_DrawList;
+extern World2ScreenParams g_World2ScreenParams;
+
+void ImGui3D::Draw3DLayer(const ImGui3D::World2ScreenParams& w2sParams)
+{
+    ImGui3D::g_World2ScreenParams = w2sParams;
     // Create a window the size of the screen with a transparent background.
     ImVec2 windowSize = ImGui::GetIO().DisplaySize;
-    ImGui3D::g_WindowSize = (Vector2f&)windowSize;
     ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
     ImGui::SetNextWindowPos({ 0, 0 }, ImGuiCond_Always);
     ImGuiWindowFlags imgu3dWindowFlags = 0;
@@ -25,7 +28,9 @@ void ImGui3D::DrawStuff()
     if (ImGui::Begin("ImGui3D", 0, imgu3dWindowFlags))
     {
         ImGui3D::g_DrawList = ImGui::GetWindowDrawList();
-        WhatIsActuallyDrawnForFrame();
+        ImGui3D::DrawMarkers();
+        ImGui3D::CustomDraw::DrawAllCustom();
     }
     ImGui::End();
 }
+} // namespace ImGui3D

@@ -1042,7 +1042,7 @@ public:
 
 	}
 
-	Vector3<T> transformed(const Matrix4<T>& mat)
+	Vector3<T> transformed(const Matrix4<T>& mat) const
 	{
 		return (mat * Vector4<T>(x, y, z, 1)).xyz();
 	}

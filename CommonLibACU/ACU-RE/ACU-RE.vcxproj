@@ -204,6 +204,8 @@
     <ClInclude Include="inc\ACU\MenuManager.h" />
     <ClInclude Include="inc\ACU\MenuPage.h" />
     <ClInclude Include="inc\ACU\MissionCategory.h" />
+    <ClInclude Include="inc\ACU\MissionConditionGroup.h" />
+    <ClInclude Include="inc\ACU\MissionCondition.h" />
     <ClInclude Include="inc\ACU\MissionStepGroup.h" />
     <ClInclude Include="inc\ACU\PlayerProgressionCharacterCustomization.h" />
     <ClInclude Include="inc\ACU\SeamlessCinematicOutroTransitionOperatorData.h" />

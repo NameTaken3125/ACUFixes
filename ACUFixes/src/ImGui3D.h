@@ -32,17 +32,29 @@ Therefore, the View-Projection Matrix is:
 
 Finding the correct Camera (and thus the View) Matrix can be tricky.
 In the case of AC Unity, I found the camera transform matrix constructed in game,
-but to use in-world rendering it required adjustement.
+but to use in-world rendering it required adjustment.
 Specifically, it turned out:
     Correct View Matrix == (Camera Transform Matrix * {X axis rotation of -90 degrees})^-1.
 So next time if the found View rotation doesn't result in successful rendering, try to
 pre-rotate the View various degrees around various axes,
 as well as apply some Inverse and Transpose operations
 in case a game uses differently oriented matrices.
+
+Viewport size:
+If the game window is fullscreen, then
+    m_ViewportTopLeft = Vector(0, 0); and
+    m_ViewportBottomRight = (const Vector2f&)ImGui::GetIO().DisplaySize;
+If for example the window has a letterbox (like ACU does
+when the graphics option Stretching is off), then:
+    m_ViewportTopLeft = Vector2f(0, letterboxWidth); and
+    m_ViewportBottomRight = Vector2f(imguiDisplaySize.x, imguiDisplaySize.y - letterboxWidth);
 */
-extern Matrix4f g_ViewProjection;
-extern ImDrawList* g_DrawList;
-extern Vector2f g_WindowSize;
+struct World2ScreenParams
+{
+    Matrix4f m_ViewProjection;
+    Vector2f m_ViewportTopLeft;
+    Vector2f m_ViewportBottomRight;
+};
 struct ModelEdge
 {
     short idx1, idx2;
@@ -69,14 +81,17 @@ static ImU32 axisColors[3] = {
 ImGuiWireModel GenerateGrid(int howManyPointsOnSide = 5, float sideLength = 1);
 ImGuiWireModel& GetArrowModel();
 ImGuiWireModel& GetCrossModel();
+ImGuiWireModel& GetModel_CubePlusMinus1();  // The points are: [-1, -1, -1], [1, 1, 1], [-1, -1, 1]...
+ImGuiWireModel& GetModel_Cube01();          // The points are: [0, 0, 0], [1, 1, 1], [0, 0, 1]...
 
 
-void DrawWireModel(const ImGui3D::ImGuiWireModel& model, const Vector3f& position, float thicknessMultiplier = 1);
+void DrawWireModel(const ImGui3D::ImGuiWireModel& model, const Vector3f& position, float thicknessMultiplier = 1, float scaleMultiplier = 1.0f, std::optional<ImU32> overrideColor = {});
 void DrawWireModelTransform(const ImGui3D::ImGuiWireModel& model, const Matrix4f& transform, float thicknessMultiplier = 1);
+void DrawWireModelOnce(const ImGui3D::ImGuiWireModel& model, const Matrix4f& transform);
 
-void DrawLocationOnce(const Vector3f& location);
+void DrawLocationOnce(const Vector3f& location, float scaleMultiplier = 1.0f);
 void DrawLocationAndPersist(const Vector3f& location);
-void DrawLocationNamed(const Vector3f& location, const std::string& name);
+void DrawLocationNamed(const Vector3f& location, const std::string& name, float scaleMultiplier = 1.0f);
 
 void DrawMarkers();
 void DrawPersistent3DMarkersControls();

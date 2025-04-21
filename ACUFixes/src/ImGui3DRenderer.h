@@ -1,13 +1,12 @@
 #pragma once
 
 #include <vmath/vmath.h>
+#include "ImGui3D.h"
 
 namespace ImGui3D
 {
 
-void DrawStuff();
-// To be implemented by the user.
-void CalculateViewProjectionForCurrentFrame(Matrix4f& viewProjOut);
-void WhatIsActuallyDrawnForFrame();
+// Call once per frame during ImGui drawing.
+void Draw3DLayer(const World2ScreenParams& w2sParams);
 
 }

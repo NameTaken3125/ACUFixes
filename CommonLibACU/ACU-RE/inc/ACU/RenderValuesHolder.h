@@ -16,11 +16,12 @@ public:
     char pad_02AC[16]; //0x02AC
     Vector4f vec_2bc_hasViewportSize; //0x02BC
     float aspectRatio; //0x02CC
-    char pad_02D0[80]; //0x02D0
-    Matrix4f matProjection_mb; //0x0320
+    char pad_02D0[16]; //0x02D0
+    Matrix4f matViewProjection; //0x02E0
+    Matrix4f matProjection; //0x0320
     Matrix4f mat_360; //0x0360
     Matrix4f matInvProjection; //0x03A0
-    char pad_03E0[208]; //0x03E0
+    char pad_03E0[320]; //0x03E0
 
     // @helper_functions
     static RenderValuesHolder* GetSingleton() { return *(RenderValuesHolder**)0x14521AAA8; }

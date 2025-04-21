@@ -71,9 +71,9 @@ namespace ACU {
     {
         Entity* player = ACU::GetPlayer();
         if (!player) { return nullptr; }
-        constexpr uint64 vtbl_SkeletonComponent = 0x142E7F780;
-        AtomAnimComponent* skeletonCpnt = static_cast<AtomAnimComponent*>(player->FindComponentByVTBL(vtbl_SkeletonComponent));
-        return skeletonCpnt;
+        constexpr uint64 vtbl_AtomAnimComponent = 0x142E7F780;
+        AtomAnimComponent* atomAnimCpnt = static_cast<AtomAnimComponent*>(player->FindComponentByVTBL(vtbl_AtomAnimComponent));
+        return atomAnimCpnt;
     }
 
 }

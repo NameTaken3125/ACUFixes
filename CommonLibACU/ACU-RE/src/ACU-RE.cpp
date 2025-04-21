@@ -147,6 +147,8 @@
 #include "ACU/MissionCategory.h"
 #include "ACU/MissionContext.h"
 #include "ACU/MissionManager.h"
+#include "ACU/MissionCondition.h"
+#include "ACU/MissionConditionGroup.h"
 
 #include "ACU/LocalizationManager.h"
 #include "ACU/ExclusiveContent.h"

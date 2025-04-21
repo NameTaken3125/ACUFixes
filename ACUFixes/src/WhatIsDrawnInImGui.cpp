@@ -4,27 +4,12 @@
 #include <vmath/vmath_extra.h>
 
 #include "ImGuiCTX.h"
-#include "ImGui3D.h"
 #include "ImGui3DRenderer.h"
 
 #include "ACU/ACUGetSingletons.h"
 #include "ACU/Entity.h"
 #include "ACU/RenderValuesHolder.h"
 
-Matrix4f gameMatView;
-Matrix4f gameMatProj;
-void ImGuiPrintMatrix(const Matrix4f& mat)
-{
-    for (size_t i = 0; i < 4; i++)
-    {
-        ImGui::Text("%f %f %f %f:"
-            , mat.data[i * 4]
-            , mat.data[i * 4 + 1]
-            , mat.data[i * 4 + 2]
-            , mat.data[i * 4 + 3]
-        );
-    }
-}
 Vector3f g_VisualizedDebugDirection;
 void VisualizeLocationFromClipboard()
 {
@@ -46,66 +31,8 @@ void VisualizeDirectionFromClipboard()
 void DrawHacksControls();
 void TypeInfoSystemTests();
 
-Matrix4f MakeSimpleDebugTransform(const Vector3f& position)
-{
-    return Matrix4f::createTranslation(position.x, position.y, position.z) * Matrix4f::createScale(0.1f, 0.1f, 0.1f);
-}
 
 
-
-#include "MainConfig.h"
-void SetProjMatrix(Matrix4f& matOut)
-{
-    matOut = RenderValuesHolder::GetSingleton()->matProjection_mb;
-}
-// The stupid game has the camera matrix all rotated around.
-// Why don't you stop rotating your matrices, game?
-void SetCorrectViewMatrix(Matrix4f& matOut)
-{
-    Matrix4f cameraMat = RenderValuesHolder::GetSingleton()->cameraTransform;
-    cameraMat = cameraMat * Matrix4f::createRotationAroundAxis(-90, 0, 0);
-    matOut = cameraMat.inverse();
-}
-void ImGui3D::CalculateViewProjectionForCurrentFrame(Matrix4f& viewProjOut)
-{
-    SetProjMatrix(gameMatProj);
-    SetCorrectViewMatrix(gameMatView);
-    viewProjOut = gameMatProj * gameMatView;
-}
-
-Entity* FindHighlightedNPC();
-std::optional<Vector3f> GetDisguiseTargetPosition();
-void ImGui3D::WhatIsActuallyDrawnForFrame()
-{
-    // On a pile of junk next to the artiste.
-    static Vector3f testPosition{ 127.82f, 704.28f, 1.06f };
-    ImGui3D::DrawWireModel(ImGui3D::GetArrowModel(), testPosition);
-    std::optional<Vector3f> currentDisguiseTargetPos = GetDisguiseTargetPosition();
-    if (currentDisguiseTargetPos)
-    {
-        ImGui3D::DrawWireModel(ImGui3D::GetCrossModel(), *currentDisguiseTargetPos);
-    }
-    Entity* player = ACU::GetPlayer();
-
-    static ImGui3D::ImGuiWireModel grid5_model = ImGui3D::GenerateGrid(5, 2);
-
-    if (player)
-    {
-        Matrix4f debugDirectionTransform;
-        debugDirectionTransform.setRotation(MakeRotationAlignZWithVector(g_VisualizedDebugDirection));
-        debugDirectionTransform = Matrix4f::createTranslation(player->GetPosition()) * debugDirectionTransform;
-        ImGui3D::DrawWireModelTransform(ImGui3D::GetArrowModel(), debugDirectionTransform);
-        ImGui3D::DrawWireModelTransform(ImGui3D::GetArrowModel(), player->GetTransform());
-        ImGui3D::DrawWireModelTransform(grid5_model, player->GetTransform());
-
-        Entity* rangedWeaponTargetNPC = FindHighlightedNPC();
-        if (rangedWeaponTargetNPC)
-        {
-            ImGui3D::DrawWireModelTransform(grid5_model, rangedWeaponTargetNPC->GetTransform());
-        }
-    }
-    ImGui3D::DrawMarkers();
-}
 void DrawBuiltinDebugCommands();
 void DrawPlayerVisualsControls();
 void DrawWeatherControls();
@@ -119,6 +46,7 @@ void DrawModMenuControls()
     }
 }
 
+void DrawImGui3DMatricesDebug();
 void RequestUnloadThisPlugin();
 void DrawAnimationExperiments();
 #include "MainConfig.h"
@@ -202,10 +130,7 @@ void ImGuiLayer_WhenMenuIsOpen()
                 }
                 if (ImGui::CollapsingHeader("View-projection matrices debugging"))
                 {
-                    ImGui::Text("View matrix:");
-                    ImGuiPrintMatrix(gameMatView);
-                    ImGui::Text("Projection matrix:");
-                    ImGuiPrintMatrix(gameMatProj);
+                    DrawImGui3DMatricesDebug();
                 }
             }
             if (ImGuiCTX::Tab _{ "Player's Visuals" })
@@ -226,6 +151,8 @@ void ImGuiLayer_WhenMenuIsOpen()
             }
         }
 }
+
+ImGui3D::World2ScreenParams CalculateWorld2ScreenParametersForCurrentFrame();
 void DoSlowMotionTrick();
 void DoManualHoodControls();
 #include "AnimationTools/MyAnimationPlayer.h"
@@ -236,5 +163,5 @@ void ImGuiLayer_EvenWhenMenuIsClosed()
     DoManualHoodControls();
     bool drawImGui3D = g_showDevExtraOptions && g_DrawImGui3DifDevExtrasEnabled;
     if (drawImGui3D)
-        ImGui3D::DrawStuff();
+        ImGui3D::Draw3DLayer(CalculateWorld2ScreenParametersForCurrentFrame());
 }
