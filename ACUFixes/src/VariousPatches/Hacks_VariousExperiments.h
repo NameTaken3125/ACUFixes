@@ -6,7 +6,7 @@
 */
 
 #include "AutoAssemblerKinda/AutoAssemblerKinda.h"
-#include "ImGui3D.h"
+#include "ImGui3D/ImGui3D.h"
 
 template<typename floatlike>
 floatlike simple_interp(floatlike mn, floatlike mx)

@@ -4,7 +4,7 @@
 #include <vmath/vmath_extra.h>
 
 #include "ImGuiCTX.h"
-#include "ImGui3DRenderer.h"
+#include "ImGui3D/ImGui3DRenderer.h"
 
 #include "ACU/ACUGetSingletons.h"
 #include "ACU/Entity.h"

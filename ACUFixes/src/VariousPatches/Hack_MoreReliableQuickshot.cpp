@@ -613,7 +613,7 @@ void WhenGettingRangedWeaponTarget_onWallInJumpEtc_ForceScan(AllRegisters* param
 
 
 
-#include "ImGui3D.h"
+#include "ImGui3D/ImGui3D.h"
 void WhenGunshotRaycastSuccessful_Display(AllRegisters* params)
 {
     Entity* collidedEntity = *(Entity**)(params->rbp_ - 0x80);

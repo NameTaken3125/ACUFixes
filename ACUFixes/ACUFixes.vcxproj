@@ -200,7 +200,7 @@ REM robocopy "$(SolutionDir)NewAnimations" "$(TargetDir)NewAnimations" /MIR
     <ClCompile Include="src\AnimationTools\AnimGraphMods.cpp" />
     <ClCompile Include="src\AnimationTools\AnimGraphMods_BasicLayer.cpp" />
     <ClCompile Include="src\AnimationTools\Animtools_ImGui.cpp" />
-    <ClCompile Include="src\ImGui3DLayer.cpp" />
+    <ClCompile Include="src\ImGui3D\ImGui3DLayer.cpp" />
     <ClCompile Include="src\VariousPatches\Cheat_WeatherControls.cpp" />
     <ClCompile Include="src\AnimationTools\DumpAnimationGraph.cpp" />
     <ClCompile Include="src\VariousPatches\Hack_AllowCustomizeEquipment.cpp" />
@@ -237,8 +237,8 @@ REM robocopy "$(SolutionDir)NewAnimations" "$(TargetDir)NewAnimations" /MIR
     <ClCompile Include="src\VariousPatches\Hack_UnequipPistol.cpp" />
     <ClCompile Include="src\VariousPatches\Hack_WhistleAbility.cpp" />
     <ClCompile Include="src\Handles.cpp" />
-    <ClCompile Include="src\ImGui3D.cpp" />
-    <ClCompile Include="src\ImGui3DRenderer.cpp" />
+    <ClCompile Include="src\ImGui3D\ImGui3D.cpp" />
+    <ClCompile Include="src\ImGui3D\ImGui3DRenderer.cpp" />
     <ClCompile Include="src\AnimationTools\imGuIZMO.quat\imGuIZMOquat.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -303,9 +303,9 @@ REM robocopy "$(SolutionDir)NewAnimations" "$(TargetDir)NewAnimations" /MIR
     <ClInclude Include="src\VariousPatches\Hack_UnequipPistol.h" />
     <ClInclude Include="src\VariousPatches\Hack_WhistleAbility.h" />
     <ClInclude Include="src\Handles.h" />
-    <ClInclude Include="src\ImGui3D.h" />
-    <ClInclude Include="src\ImGui3DCustomDraw.h" />
-    <ClInclude Include="src\ImGui3DRenderer.h" />
+    <ClInclude Include="src\ImGui3D\ImGui3D.h" />
+    <ClInclude Include="src\ImGui3D\ImGui3DCustomDraw.h" />
+    <ClInclude Include="src\ImGui3D\ImGui3DRenderer.h" />
     <ClInclude Include="src\ImGuiConfigUtils.h" />
     <ClInclude Include="src\AnimationTools\imGuIZMO.quat\imGuIZMOquat.h" />
     <ClInclude Include="src\AnimationTools\imGuIZMO.quat\vgConfig.h" />
