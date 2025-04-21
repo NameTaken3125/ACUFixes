@@ -623,7 +623,7 @@ void WhenGunshotRaycastSuccessful_Display(AllRegisters* params)
     ImGui3D::DrawLocationNamed(*hitLocation, "Last Gunshot hit location");
 }
 class PhysicComponent;
-class RaycastResult_mb
+class RaycastResult
 {
 public:
     Vector4f hitLocation; //0x0000
@@ -637,7 +637,7 @@ public:
     uint32 dword_48; //0x0048
     char pad_004C[20]; //0x004C
 }; //Size: 0x0060
-assert_sizeof(RaycastResult_mb, 0x60);
+assert_sizeof(RaycastResult, 0x60);
 struct MyRememberedRaycastResult
 {
     Entity* targetEntity;
@@ -650,9 +650,9 @@ Entity* GetChokedEntity();
 Entity* GetQuickshotTargetEntity();
 void WhenGatheredGunshotLineOfFireResults_RememberResults(AllRegisters* params)
 {
-    SmallArray<RaycastResult_mb>& arrResults = *(SmallArray<RaycastResult_mb>*)(params->GetRSP() + 0x68);
+    SmallArray<RaycastResult>& arrResults = *(SmallArray<RaycastResult>*)(params->GetRSP() + 0x68);
     g_LastGunshotRaycastResults.clear();
-    for (RaycastResult_mb& res : arrResults)
+    for (RaycastResult& res : arrResults)
     {
         g_LastGunshotRaycastResults.push_back({
             res.shared_targetEntity->GetPtr(),
@@ -662,10 +662,10 @@ void WhenGatheredGunshotLineOfFireResults_RememberResults(AllRegisters* params)
             });
     }
 }
-DEFINE_GAME_FUNCTION(ArrRaycastResults__GetNext, 0x1425D5550, RaycastResult_mb*, __fastcall, (SmallArray<RaycastResult_mb>* a1, RaycastResult_mb* p_startFrom_opt, char p_0getFirst));
+DEFINE_GAME_FUNCTION(ArrRaycastResults__GetNext, 0x1425D5550, RaycastResult*, __fastcall, (SmallArray<RaycastResult>* a1, RaycastResult* p_startFrom_opt, char p_0getFirst));
 void WhenTheFirstGunshotRaycastResultWasSelected_DontCollideWithTheChokedNPC(AllRegisters* params)
 {
-    RaycastResult_mb* firstSelectedRaycastResult = (RaycastResult_mb*)params->GetRAX();
+    RaycastResult* firstSelectedRaycastResult = (RaycastResult*)params->GetRAX();
     if (!firstSelectedRaycastResult)
     {
         return;
@@ -694,9 +694,9 @@ void WhenTheFirstGunshotRaycastResultWasSelected_DontCollideWithTheChokedNPC(All
         return;
     }
     // The choked NPC will (accidentally) absorb the bullet unless I change that now.
-    SmallArray<RaycastResult_mb>& arrResults = *(SmallArray<RaycastResult_mb>*)(params->GetRSP() + 0x68);
-    RaycastResult_mb* it = firstSelectedRaycastResult;
-    RaycastResult_mb* selectedResult = nullptr;
+    SmallArray<RaycastResult>& arrResults = *(SmallArray<RaycastResult>*)(params->GetRSP() + 0x68);
+    RaycastResult* it = firstSelectedRaycastResult;
+    RaycastResult* selectedResult = nullptr;
     do
     {
         it = ArrRaycastResults__GetNext(&arrResults, it, 0);

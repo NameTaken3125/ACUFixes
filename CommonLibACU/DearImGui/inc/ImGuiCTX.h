@@ -82,6 +82,22 @@ public:
     }
     operator bool() { return m_opened; }
 };
+class TreeNodeEx
+{
+    bool m_opened;
+public:
+    TreeNodeEx(const char* label, ImGuiTreeNodeFlags flags = 0)
+    {
+        m_opened = ImGui::TreeNodeEx(label, flags);
+    }
+    ~TreeNodeEx()
+    {
+        if (m_opened) {
+            ImGui::TreePop();
+        }
+    }
+    operator bool() { return m_opened; }
+};
 class Popup
 {
     bool m_opened;

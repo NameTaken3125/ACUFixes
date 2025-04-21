@@ -575,6 +575,9 @@ static std::array<const char*, 541> graphVariables_NewDemo_DEV = {
 class AtomGraphDumper
 {
 public:
+    std::string m_RootAddr;
+    AtomGraphDumper(const std::string_view& m_RootAddr) : m_RootAddr(m_RootAddr) {}
+
     std::string m_currentIndent;
     class Indent
     {
@@ -618,13 +621,12 @@ public:
     ImGuiTextBuffer FormatTheCurrentOffsetStackForReclassAndCheatEngine()
     {
         ImGuiTextBuffer buf;
-        const char* rootAddr = "[[[[[[[[[[[[14521AAD0]+40]]+10]+60]+218]+0]+c8]+710]+1c90]+d0]+670]";
         for (size_t i = 0; i < m_currentOffsetsStack.size(); i++)
         {
             if (m_currentOffsetsStack[i].m_doDereference)
                 buf.append("[");
         }
-        buf.append(rootAddr);
+        buf.append(m_RootAddr.c_str());
         for (size_t i = 0; i < m_currentOffsetsStack.size(); i++)
         {
             buf.appendf("+%x", m_currentOffsetsStack[i].offset);
@@ -1197,12 +1199,6 @@ public:
                 ImGui::LogText(" %s ", conjunctionOpText);
             }
             SkipConditionsChain(currentCond);
-            //uint16 subchainSizeToSkip = currentCond->SubEntryCount_groupSizeIfDescribesConditionGroup;
-            //currentCond++;
-            //for (size_t i = 0; i < subchainSizeToSkip; i++)
-            //{
-            //    SkipConditionsChain(currentCond);
-            //}
         }
         ImGui::LogText(")");
     }
@@ -1210,21 +1206,23 @@ public:
     {
         ImGui::LogToFile(-1, "AtomGraphDump.txt");
         {
-            ImGui::LogText(
-                "%s RootStateMachine:\n"
-                , m_currentIndent.c_str()
-            );
+            if (atomGraph.RootStateMachine)
             {
+                ImGui::LogText(
+                    "%s RootStateMachine:\n"
+                    , m_currentIndent.c_str()
+                );
                 auto _ind = IndentScoped();
                 IDOFFSETS_PUSH(offsetof(AtomGraph, RootStateMachine));
                 DumpStateNode(*atomGraph.RootStateMachine);
             }
-            ImGui::LogText(
-                "%s CustomTransitionSystem: %d:\n"
-                , m_currentIndent.c_str()
-                , atomGraph.CustomTransitionSystem->transitionCells.size
-            );
+            if (atomGraph.CustomTransitionSystem)
             {
+                ImGui::LogText(
+                    "%s CustomTransitionSystem: %d:\n"
+                    , m_currentIndent.c_str()
+                    , atomGraph.CustomTransitionSystem->transitionCells.size
+                );
                 auto _ind = IndentScoped();
                 IDOFFSETS_PUSH(offsetof(AtomGraph, CustomTransitionSystem));
                 {
@@ -1243,11 +1241,12 @@ public:
                     }
                 }
             }
-            ImGui::LogText(
-                "%s root graph node:\n"
-                , m_currentIndent.c_str()
-            );
+            if (atomGraph.PostProcessGraph)
             {
+                ImGui::LogText(
+                    "%s PostProcessGraph:\n"
+                    , m_currentIndent.c_str()
+                );
                 IDOFFSETS_PUSH(offsetof(AtomGraph, PostProcessGraph));
                 auto _ind = IndentScoped();
                 DumpStateNodeDetails(*atomGraph.PostProcessGraph);
@@ -1272,16 +1271,6 @@ private:
 #include "ACU/AtomAnimComponent.h"
 #include "ACU/ACUGetSingletons.h"
 #include "ACU/Entity.h"
-void DumpPlayerAnimgraph()
-{
-    AtomAnimComponent* animCpnt = ACU::GetPlayerCpnt_AtomAnimComponent();
-    AtomGraph* graph = animCpnt->shared_AtomGraph_NewDemo_DEV->GetPtr();
-    if (graph)
-    {
-        AtomGraphDumper dumper;
-        dumper.DumpAtomGraph(*graph);
-    }
-}
 #include "AtomGraphControls.h"
 template<typename VarType>
 void DrawGraphVariable(const char* label, GraphEvaluation& graphEvaluation, uint32 varnameHash, bool doNotifyIfSet = true);
@@ -1345,26 +1334,147 @@ void CloneAtomGraphExperiment()
     }
 }
 #include "Hack_RemovableHood_Animations.h"
+#include "Raycasting/RaycastPicker.h"
+struct g_PickedAtomGraph
+{
+    ACUSharedPtr_Strong<AtomGraph> m_Graph;
+    std::string m_BaseAddr;
+} g_PickedAtomGraph;
+ACUSharedPtr_Strong<AtomGraph> GetAtomGraph(Entity& ent)
+{
+    constexpr uint64 vtbl_AtomAnimComponent = 0x142E7F780;
+    AtomAnimComponent* atomAnimCpnt = static_cast<AtomAnimComponent*>(ent.FindComponentByVTBL(vtbl_AtomAnimComponent));
+    if (!atomAnimCpnt) return {};
+    return (ACUSharedPtr_Strong<AtomGraph>&)atomAnimCpnt->shared_AtomGraph_NewDemo_DEV;
+}
+void RaycastPicker_PickAtomGraph()
+{
+    static RaycastPickerModal picker;
+    picker.Pick(
+        "Pick Entity with an animation graph"
+        , [&](const MyRaycastSuccessfulHit& hit) // On confirmed pick
+        {
+            g_PickedAtomGraph.m_Graph = GetAtomGraph(*hit.m_Entity.GetPtr());
+            ImGuiTextBuffer buf;
+            buf.appendf("%llX", g_PickedAtomGraph.m_Graph.GetPtr());
+            g_PickedAtomGraph.m_BaseAddr = buf.c_str();
+        }
+        , [&](const MyRaycastSuccessfulHit& hit) // On every hit
+        {
+            Entity* ent = hit.m_Entity.GetPtr();
+            ImGuiTextBuffer buf;
+            buf.appendf("Entity at %llX, Handle: %llX\n", ent, hit.m_Entity.GetHandle());
+            buf.appendf(
+                "[%8.2f,%8.2f,%8.2f]\n"
+                , hit.m_HitLocation.x
+                , hit.m_HitLocation.y
+                , hit.m_HitLocation.z
+            );
+            ACUSharedPtr_Strong<AtomGraph> foundGraph = GetAtomGraph(*ent);
+            if (!foundGraph.GetPtr())
+            {
+                buf.append("Has no AtomGraph");
+            }
+            else
+            {
+                buf.appendf(
+                    "AtomGraph: %llu => %s"
+                    , foundGraph.GetHandle()
+                    , ACU::Handles::HandleToText(foundGraph.GetHandle()).c_str()
+                );
+            }
+            ImGui::Text(
+                buf.c_str()
+            );
+            ImGui3D::DrawLocationOnce(hit.m_HitLocation, 0.2f);
+            Vector3f entityPos = ent->GetPosition();
+            ImGui3D::DrawLocationOnce(entityPos, 0.2f);
+            BoundingVolume& bbox = ent->BoundingVolume_;
+            Matrix4f bboxScale = Matrix4f::createScale(
+                bbox.Max.x - bbox.Min.x,
+                bbox.Max.y - bbox.Min.y,
+                bbox.Max.z - bbox.Min.z
+            );
+            Matrix4f bboxPos = Matrix4f::createTranslation(bbox.Min);
+            Matrix4f bboxTransform = ent->GetTransform() * bboxPos * bboxScale;
+            ImGui3D::DrawWireModelOnce(ImGui3D::GetModel_Cube01(), bboxTransform);
+        }
+        , RaycastPickerModal::DefaultOnNoHit
+    );
+    static ImGuiTextBuffer buf;
+    buf.clear();
+    if (!g_PickedAtomGraph.m_Graph.GetPtr())
+    {
+        buf.append("\nNo AtomGraph picked");
+    }
+    else
+    {
+        buf.appendf(
+            "AtomGraph: Addr: %llX, Shared: %llX\n"
+            , g_PickedAtomGraph.m_Graph.GetPtr()
+            , &g_PickedAtomGraph.m_Graph.GetSharedBlock()
+        );
+        buf.appendf(
+            "Handle: %llu => %s"
+            , g_PickedAtomGraph.m_Graph.GetHandle()
+            , ACU::Handles::HandleToText(g_PickedAtomGraph.m_Graph.GetHandle()).c_str()
+        );
+    }
+    ImGui::Text(buf.c_str());
+    if (ImGui::IsItemClicked(0))
+        ImGui::SetClipboardText(buf.c_str());
+}
 void DrawAtomGraphDumper()
 {
-    if (ImGui::Button("Dump Player's Animation graph"))
+    if (ImGuiCTX::TreeNodeEx _graphDumpSection{
+        "Dump animation graph to text file",
+        ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_NoAutoOpenOnLog
+        })
     {
-        DumpPlayerAnimgraph();
-    }
-    if (ImGui::IsItemHovered())
-    {
-        ImGui::SetTooltip(
-            "This will hang up the game for a little while\n"
-            "And generate a 100MB+ AtomGraphDump.txt file in the game's folder.\n"
-            "So just brace yourself."
-        );
+        if (ImGui::Button("Pick player's animation graph"))
+        {
+            auto GetPlayerAnimGraph = []() -> ACUSharedPtr_Strong<AtomGraph>
+                {
+                    auto* animCpnt = ACU::GetPlayerCpnt_AtomAnimComponent();
+                    if (!animCpnt) return {};
+                    return (ACUSharedPtr_Strong<AtomGraph>&)animCpnt->shared_AtomGraph_NewDemo_DEV;
+                };
+            g_PickedAtomGraph.m_Graph = GetPlayerAnimGraph();
+            g_PickedAtomGraph.m_BaseAddr = "[[[[[[[[[[[[14521AAD0]+40]]+10]+60]+218]+0]+c8]+710]+1c90]+d0]+670]";
+        }
+        ImGui::SameLine();
+        ImGui::Text("or");
+        ImGui::SameLine();
+        RaycastPicker_PickAtomGraph();
+        {
+            ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(0 / 7.0f, 0.6f, 0.6f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(0 / 7.0f, 0.7f, 0.7f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(0 / 7.0f, 0.8f, 0.8f));
+            if (ImGui::Button("Dump selected Animation graph"))
+            {
+                if (AtomGraph* graph = g_PickedAtomGraph.m_Graph.GetPtr())
+                {
+                    AtomGraphDumper dumper(g_PickedAtomGraph.m_BaseAddr);
+                    dumper.DumpAtomGraph(*graph);
+                }
+            }
+            ImGui::PopStyleColor(3);
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::SetTooltip(
+                    "This will hang up the game for a little while\n"
+                    "And generate a 100MB+ AtomGraphDump.txt file in the game's folder.\n"
+                    "So just brace yourself."
+                );
+            }
+        }
     }
     AtomAnimComponent* animCpnt = ACU::GetPlayerCpnt_AtomAnimComponent();
     if (!animCpnt) { return; }
     GraphEvaluation* graphEvaluation = animCpnt->pD0;
     if (!graphEvaluation) { return; }
     ImGui::Separator();
-    ImGui::Text("Current graph variables:");
+    ImGui::Text("Some of the player's animation graph variables:");
     ImGui::SameLine();
     static bool notifyTheGraphWhenModifying = true;
     ImGui::Checkbox("Notify the graph when modifying", &notifyTheGraphWhenModifying);
@@ -1430,6 +1540,6 @@ void DrawAtomGraphDumper()
     //{
     //    ClearBoneLayeringCache(*animCpnt->shared_AtomGraph_NewDemo_DEV->GetPtr());
     //}
-    CloneAtomGraphExperiment();
+    //CloneAtomGraphExperiment();
 
 }

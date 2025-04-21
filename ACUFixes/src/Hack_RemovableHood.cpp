@@ -465,7 +465,51 @@ void DrawEntityVisualsControls(Entity& entity)
         ImGui::PopID();
     }
 }
+#include "Experimental_StrongPtr.h"
+#include "Raycasting/RaycastPicker.h"
+ACU::WeakPtr<Entity> g_VisualCpntsControls_SelectedEntity;
+void RaycastPicker_PickEntityForVisualsToggles()
+{
+    static RaycastPickerModal picker;
+    picker.Pick(
+        "Pick Entity with Visual components"
+        , [&](const MyRaycastSuccessfulHit& hit) // On confirmed pick
+        {
+            g_VisualCpntsControls_SelectedEntity = hit.m_Entity;
+        }
+        , RaycastPickerModal::DefaultOnEveryHit
+        , RaycastPickerModal::DefaultOnNoHit
+    );
+}
 void DrawPlayerVisualsControls()
+{
+    ImGui::Text(
+        "The list of an Entity's Visual components to turn on and off."
+        "\nThe numbers are the unique Handles of the corresponding LODSelector objects."
+        "\nClick with the Right Mouse Button to copy the Handle to clipboard."
+    );
+    if (ImGui::Button("Select player"))
+    {
+        g_VisualCpntsControls_SelectedEntity.Reset();
+    }
+    ImGui::SameLine();
+    ImGui::Text("or");
+    ImGui::SameLine();
+    RaycastPicker_PickEntityForVisualsToggles();
+    ACUSharedPtr_Strong<Entity> sharedEnt = g_VisualCpntsControls_SelectedEntity.Lock();
+    Entity* ent = nullptr;
+    if (sharedEnt.IsEmpty())
+    {
+        ent = ACU::GetPlayer();
+    }
+    else
+    {
+        ent = sharedEnt.GetPtr();
+    }
+    if (!ent) { return; }
+    DrawEntityVisualsControls(*ent);
+}
+void DrawPlayerVisualsControls_old()
 {
     ImGui::Text(
         "The list of player's Visual components to turn on and off."

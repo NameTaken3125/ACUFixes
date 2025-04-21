@@ -255,6 +255,7 @@ REM robocopy "$(SolutionDir)NewAnimations" "$(TargetDir)NewAnimations" /MIR
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="src\Raycasting\Raycasting.cpp" />
     <ClCompile Include="src\Request_FreezeFOV.cpp" />
     <ClCompile Include="src\Request_Spindescent.cpp" />
     <ClCompile Include="src\TypeInfoSystemDump.cpp" />
@@ -267,6 +268,8 @@ REM robocopy "$(SolutionDir)NewAnimations" "$(TargetDir)NewAnimations" /MIR
     <ClInclude Include="src\AnimationTools\AtomGraphModsCommon.h" />
     <ClInclude Include="src\AnimationTools\Hack_RemovableHood_Animations.h" />
     <ClInclude Include="src\AnimationTools\NewHandlesFactory.h" />
+    <ClInclude Include="src\Raycasting\Raycasting.h" />
+    <ClInclude Include="src\Raycasting\RaycastPicker.h" />
     <ClInclude Include="src\AnimationTools\SkeletonDumper.h" />
     <ClInclude Include="src\AnimationTools\UsefulHandles.h" />
     <ClInclude Include="src\Experimental_StrongPtr.h" />
