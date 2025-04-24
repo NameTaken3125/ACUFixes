@@ -37,7 +37,8 @@ ImGuiConsole::ImGuiConsole()
 	Commands.push_back("CLASSIFY");
 	AutoScroll = true;
 	ScrollToBottom = false;
-	AddLogF("Welcome to Dear ImGui!");
+
+	m_SingleLineToCopy.reserve(1024);
 }
 ImGuiConsole::~ImGuiConsole()
 {
@@ -309,8 +310,12 @@ void ImGuiConsole::DrawIfVisible(const char* title, ConsoleMode consoleMode)
 	bool copy_to_clipboard = false;
 	if (ImGui::BeginPopupContextWindow())
 	{
+		if (ImGui::Selectable("Copy line"))
+		{
+			ImGui::SetClipboardText(m_SingleLineToCopy.c_str());
+		}
+		if (ImGui::Selectable("Copy all")) copy_to_clipboard = true;
 		if (ImGui::Selectable("Clear")) ClearLog();
-		if (ImGui::Selectable("Copy")) copy_to_clipboard = true;
 		ImGui::EndPopup();
 	}
 
@@ -359,6 +364,10 @@ void ImGuiConsole::DrawIfVisible(const char* title, ConsoleMode consoleMode)
 			if (has_color)
 				ImGui::PushStyleColor(ImGuiCol_Text, color);
 			ImGui::TextUnformatted(item);
+			if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+			{
+				m_SingleLineToCopy = item;
+			}
 			if (has_color)
 				ImGui::PopStyleColor();
 		}
@@ -390,7 +399,7 @@ void ImGuiConsole::DrawIfVisible(const char* title, ConsoleMode consoleMode)
 		if (ImGui::Button("Options"))
 			ImGui::OpenPopup("Options");
 		ImGui::SameLine();
-		Filter.Draw("Filter (\"incl,-excl\") (\"error\")", 180);
+		Filter.Draw("Filter (\"incl,-excl\") (\"error\")");
 
 		if (showFooterCommandInput)
 		{

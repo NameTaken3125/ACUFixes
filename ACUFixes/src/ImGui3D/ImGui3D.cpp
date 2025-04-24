@@ -275,22 +275,28 @@ void DrawLocationNamed(const Vector3f& location, const std::string& name, float 
 std::optional<MarkerID_t> g_HoveredEditableMarkerID;
 namespace CustomDraw
 {
-std::vector<CustomDrawer*> g_CustomDrawers;
+std::vector<CustomDrawer*>& GetCustomDrawers()
+{
+    static std::vector<CustomDrawer*> singleton;
+    return singleton;
+}
 void CustomDraw_Subscribe(CustomDrawer& subscriber)
 {
-    if (std::find(g_CustomDrawers.begin(), g_CustomDrawers.end(), &subscriber) != g_CustomDrawers.end())
+    auto& drawers = GetCustomDrawers();
+    if (std::find(drawers.begin(), drawers.end(), &subscriber) != drawers.end())
     {
         return;
     }
-    g_CustomDrawers.push_back(&subscriber);
+    drawers.push_back(&subscriber);
 }
 void CustomDraw_Unsubscribe(CustomDrawer& subscriber)
 {
-    g_CustomDrawers.erase(std::remove(g_CustomDrawers.begin(), g_CustomDrawers.end(), &subscriber), g_CustomDrawers.end());
+    auto& drawers = GetCustomDrawers();
+    drawers.erase(std::remove(drawers.begin(), drawers.end(), &subscriber), drawers.end());
 }
 void DrawAllCustom()
 {
-    for (CustomDrawer* drawer : g_CustomDrawers)
+    for (CustomDrawer* drawer : GetCustomDrawers())
     {
         drawer->DoDraw();
     }

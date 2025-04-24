@@ -23,6 +23,7 @@ struct ImGuiConsole
 
     using Mutex_t = std::mutex;
     Mutex_t m_Mutex;
+    std::string m_SingleLineToCopy;
 
     ImGuiConsole();
     ~ImGuiConsole();

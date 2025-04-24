@@ -31,21 +31,12 @@ public:
     {
         return MAKE_VERSION_NUMBER_UINT64(0, 0, 1, 0);
     }
-    void ApplyAnimationGraphModsIfWerentAlreadyAppliedThisGameSession(ACUPluginLoaderInterface& pluginLoader)
-    {
-        bool isAnimmodsApplied = false;
-        if (!isAnimmodsApplied)
-        {
-            ApplyAnimationGraphMods();
-            isAnimmodsApplied = true;
-        }
-    }
     virtual bool Start(ACUPluginLoaderInterface& pluginLoader) override
     {
         g_LogLifetime.emplace(AbsolutePathInThisDLLDirectory(THIS_DLL_PROJECT_NAME "-log.log"));
         MainConfig::FindAndLoadConfigFileOrCreateDefault(AbsolutePathInThisDLLDirectory(THIS_DLL_PROJECT_NAME "-config.json"));
         MyVariousHacks::Start();
-        ApplyAnimationGraphModsIfWerentAlreadyAppliedThisGameSession(pluginLoader);
+        ApplyAnimationGraphMods();
         return true;
     }
 } g_thisPlugin;

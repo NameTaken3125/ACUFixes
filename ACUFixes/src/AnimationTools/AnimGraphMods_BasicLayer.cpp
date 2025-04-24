@@ -369,7 +369,7 @@ using namespace AnimationTools;
 
 RTCPVariableDescriptor g_rtcpDesc_HoodControlValue("HoodControlValue", 2751097728, int(ValueOfHoodControl::PutHoodOn_normalpath));
 void RemovableHood_ReactToAnimationSignal(bool truePutOnFalseTakeOff);
-namespace AnimGraphMods::BasicLayer
+namespace AnimGraphMods::RemovableHood
 {
 
 /*
@@ -635,6 +635,16 @@ void SetupTheNewLayersStateMachine(AtomStateMachineNode& newLayerStateMachine)
         SmallArrayAppend(playbackState2.base8.Transitions, interruptByOppositeAnimation2);
     }
 }
+using _16chars = char[16];
+const _16chars g_RemovableHoodLayerStringID = "NT_HoodAnims";
+bool AtomNodeID__IsEqual(AtomNodeID& nodeID, const _16chars& stringId)
+{
+    return std::memcmp(nodeID.pad_0000, stringId, 16) == 0;
+}
+AtomNodeID AtomNodeID__FromStringID(const _16chars& stringId)
+{
+    return (const AtomNodeID&)stringId;
+}
 void SetupTheNewLayer(AtomLayeringInfo& newLayer)
 {
     SetupTheNewLayersStateMachine(*static_cast<AtomStateMachineNode*>(newLayer.StateImplementation));
@@ -649,6 +659,7 @@ void SetupTheNewLayer(AtomLayeringInfo& newLayer)
     AddBoneWeight(newLayer, 372288500, 0xFF); // "Spine2" == upper torso
     AddBoneWeight(newLayer, 3097015817, 0); //left shoulder
     newLayer.BlendType = 0;
+    newLayer.AtomStateMachineNodeID = AtomNodeID__FromStringID(g_RemovableHoodLayerStringID);
 }
 // In the player's AtomGraph, the `stateNode38` of every `AtomLayeringStateNode` seems to always be
 // an instance of `AtomStateMachineNode` and not any other subclass of `AtomStateNode`.
@@ -699,10 +710,30 @@ AtomLayeringStateNode* PlayerAtomGraph_GetCinematicLayeringState(AtomGraph& play
     auto* cinematicLayering = static_cast<AtomLayeringStateNode*>(cinematicState->States[0]);
     return cinematicLayering;
 }
+AtomLayeringInfo* FindLayerForID(AtomLayeringStateNode& layeringState, const _16chars& stringId)
+{
+    for (AtomLayeringInfo& layer : layeringState.BlendLayers)
+    {
+        if (AtomNodeID__IsEqual(layer.AtomStateMachineNodeID, stringId))
+            return &layer;
+    }
+    return nullptr;
+}
+// To retain the reinjectability of the DLL, I need to make sure that the animation
+// graph patches aren't applied multiple times (I shouldn't add _another_ "hood animation layer"
+// on every reinjection).
+// Ideally I'd reload a clean AtomGraph from disk and reapply patches,
+// but I haven't had luck with that yet.
+// So for now I have to check the graph to see whether it "looks like" it has been changed.
+// I'll just use the AtomNodeID (which is 16 bytes) as a short string identifier.
 bool IsHoodControlsModAlreadyApplied(AtomGraph& playerGraph)
 {
     AtomLayeringStateNode* mainLayeringState = PlayerAtomGraph_GetNormalGameplayLayeringState(playerGraph);
-    return mainLayeringState->BlendLayers.size > 14;
+    if (AtomLayeringInfo* hoodLayer = FindLayerForID(*mainLayeringState, g_RemovableHoodLayerStringID))
+    {
+        return true;
+    }
+    return false;
 }
 
 class EResourcesNotFound : public std::exception
@@ -748,22 +779,22 @@ std::optional<AnimationGraphMod_HoodControls> g_HoodMod;
 }
 bool IsHoodAnimationsLoaded()
 {
-    return AnimGraphMods::BasicLayer::g_HoodMod.has_value();
+    return AnimGraphMods::RemovableHood::g_HoodMod.has_value();
 }
 
 #include "MyLog.h"
 #define __WIDE2(x) L##x
 #define __WIDE1(x) __WIDE2(x)
 #define __WFUNCTION__ __WIDE1(__FUNCTION__)
-void AnimGraphMods_BasicLayer_ApplyMod(AtomGraph& atomGraph)
+void AnimGraphMods_RemovableHoodAnimated_ApplyMod(AtomGraph& atomGraph)
 {
     try
     {
-        AnimGraphMods::BasicLayer::g_HoodMod.emplace(atomGraph);
-        LOG_DEBUG(DefaultLogger, L"[" __WFUNCTION__ "] Animation mod seems to have started correctly.");
+        AnimGraphMods::RemovableHood::g_HoodMod.emplace(atomGraph);
+        LOG_DEBUG(DefaultLogger, L"[RemovableHoodAnimated] Animation mod seems to have started correctly.");
     }
-    catch (const AnimGraphMods::BasicLayer::EResourcesNotFound&)
+    catch (const AnimGraphMods::RemovableHood::EResourcesNotFound&)
     {
-        LOG_DEBUG(DefaultLogger, L"[" __WFUNCTION__ "][error] Animation files not found.");
+        LOG_DEBUG(DefaultLogger, L"[RemovableHoodAnimated][error] Animation files not found.");
     }
 }

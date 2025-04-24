@@ -39,7 +39,7 @@ void WriteToFile()
     JSON cfg;
     g_Config.SectionToJSON(cfg);
     fs::path& configFullPath = g_ConfigFilepath;
-    LOG_DEBUG(DefaultLogger, L"Read from config file \"%s\":\n%s\n", configFullPath.wstring().c_str(),
+    LOG_DEBUG(DefaultLogger, L"Writing to config file \"%s\":\n%s\n", configFullPath.wstring().c_str(),
         asciiString2WString(cfg.dump()).c_str());
     json::ToFile(cfg, configFullPath);
 }
