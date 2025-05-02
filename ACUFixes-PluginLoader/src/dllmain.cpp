@@ -49,6 +49,7 @@ static void PluginLoader_MainThread(HMODULE thisDLLModule)
     PluginLoader_FindAndLoadPlugins();
 
     PresentHookOuter::BasehookSettings_PresentHookOuter basehook;
+    Base::Fonts::SetFontSize(g_PluginLoaderConfig.fontSize);
     Base::Start(basehook);
     while (!Base::Data::Detached)
     {

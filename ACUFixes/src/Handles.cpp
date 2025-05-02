@@ -92,13 +92,27 @@ std::string MakeHandleString_HandleNotRecognized(uint64 handle)
 {
     return "";
 }
+enum class HandlesDictionaryNotLoadedWhy
+{
+    AttemptedToLoad_WasntFound = 0,
+    DidntAttemptToLoadYet,
+};
+HandlesDictionaryNotLoadedWhy g_HandlesDictState = HandlesDictionaryNotLoadedWhy::DidntAttemptToLoadYet;
 std::string HandlesMap::FindNameForHandle_binsearchinmemory(uint64 handle)
 {
     if (!g_LoadedHandlesmap)
     {
-        LoadHandlesmapFile();
-        if (!g_LoadedHandlesmap)
+        switch (g_HandlesDictState)
         {
+        case HandlesDictionaryNotLoadedWhy::AttemptedToLoad_WasntFound:
+            return MakeHandleString_HandlesmapNotLoaded(handle);
+        case HandlesDictionaryNotLoadedWhy::DidntAttemptToLoadYet:
+            LoadHandlesmapFile();
+            if (g_LoadedHandlesmap)
+                break;
+            g_HandlesDictState = HandlesDictionaryNotLoadedWhy::AttemptedToLoad_WasntFound;
+            return MakeHandleString_HandlesmapNotLoaded(handle);
+        default:
             return MakeHandleString_HandlesmapNotLoaded(handle);
         }
     }

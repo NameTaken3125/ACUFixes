@@ -165,7 +165,7 @@ void MyAnimationPlayer::DrawTimeSlider()
     float* cinematicAnimTime = GetGraphVariable<float>(*animCpnt->pD0, hash_CinematicAnimationTime);
     if (!cinematicAnimTime)
     {
-        ImGui::Text("Cannot find the graph variable");
+        ImGui::Text("Cannot find the \"CinematicAnimationTime\" graph variable");
         return;
     }
     if (ImGui::SliderFloat("CinematicAnimationTime", cinematicAnimTime, 0, 5))
@@ -183,6 +183,7 @@ void MyAnimationPlayer::DrawControls()
     DrawSpoofAnimationExperiments();
     static AnimationPicker picker;
     static ACUSharedPtr_Strong<Animation> animToRestart;
+    ImGui::Separator();
     if (picker.Draw("Pick animation to play", animToRestart))
     {
         if (Animation* anim = animToRestart.GetPtr())
@@ -191,6 +192,7 @@ void MyAnimationPlayer::DrawControls()
             RestartAnimation_impl(*anim);
         }
     }
+    ImGui::Separator();
     if (ImGui::Button("Restart cinematic anim"))
     {
         if (Animation* anim = animToRestart.GetPtr())
@@ -1401,8 +1403,11 @@ void DrawConfigurationPopupForSkeletonPoser(SkeletonComponent& skelCpnt)
         ImGui::Checkbox(buf.c_str(), pIsThisSkelEnabled);
         if (*pIsThisSkelEnabled) { skels.push_back(sharedSkel->GetPtr()); }
     }
-    if (ImGui::Button("Create and play the \"posing animation\" for these skeletons"))
-    {
+    if (ImGui::Button(
+        "Create and play the \"posing animation\" for these skeletons.\n"
+        "If you press \"Send to editor\", then in the Animedit tab\n"
+        "you can use some rudimentary controls for the bones."
+    )) {
         static ACUSharedPtr_Strong<Animation> posingAnim;
         if (std::optional<ACUSharedPtr_Strong<Animation>> recreatedAnim = CreatePosingAnimation(skels))
         {
@@ -1419,7 +1424,7 @@ void DrawSpoofAnimationExperiments()
         static MySpoofAnimation spoof(spoofHandle);
         g_MyAnimationPlayer.StartAnimation(spoof.GetAnim());
     }
-    if (ImGui::Button("Create and start posing animation"))
+    if (ImGui::Button("Create and start a \"posing animation\""))
     {
         ImGui::OpenPopup("SkeletonPoserPopup");
     }
@@ -1430,9 +1435,12 @@ void DrawSpoofAnimationExperiments()
             DrawConfigurationPopupForSkeletonPoser(*skelCpnt);
         }
     }
-    if (ImGui::Button("Load JSON animation and start"))
+    const char* quickTestAnimFilepath = "NewAnimations/QuickTestAnimation.anim.json";
+    ImGuiTextBuffer buf;
+    buf.appendf("Load \"%s\" JSON animation and start", quickTestAnimFilepath);
+    if (ImGui::Button(buf.c_str()))
     {
-        ACUSharedPtr_Strong<Animation> loadedAnim = g_NewAnimationsFactory.LoadNewAnimationFromFile(AbsolutePathInThisDLLDirectory("NewAnimations/new_spoof_animation.anim.json"));
+        ACUSharedPtr_Strong<Animation> loadedAnim = g_NewAnimationsFactory.LoadNewAnimationFromFile(AbsolutePathInThisDLLDirectory(quickTestAnimFilepath));
         if (loadedAnim.GetPtr())
         {
             g_MyAnimationPlayer.StartAnimation(loadedAnim);

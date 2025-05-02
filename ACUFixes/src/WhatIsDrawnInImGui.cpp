@@ -50,8 +50,7 @@ void DrawImGui3DMatricesDebug();
 void RequestUnloadThisPlugin();
 void DrawAnimationExperiments();
 #include "MainConfig.h"
-bool g_showDevExtraOptions = false;
-bool g_DrawImGui3DifDevExtrasEnabled = true;
+#include "Handles.h"
 void ImGuiLayer_WhenMenuIsOpen()
 {
     ImGui::SetNextWindowPos(ImVec2(100, 100), ImGuiCond_FirstUseEver);
@@ -60,36 +59,11 @@ void ImGuiLayer_WhenMenuIsOpen()
         {
             if (ImGuiCTX::Tab _mainTab{ "Main Tab" })
             {
-                if (ImGuiCTX::WindowChild _{ "MainTabChild", ImVec2(0, 0), true })
-                {
-                    DrawHacksControls();
-                }
+                DrawHacksControls();
             }
             if (ImGuiCTX::Tab _mainTab{ "Weather" })
             {
-                if (ImGuiCTX::WindowChild _{ "WeatherTabChild", ImVec2(0, 0), true })
-                {
-                    DrawWeatherControls();
-                }
-            }
-            if (ImGuiCTX::Tab _mainTab{ "Animtools" })
-            {
-                if (ImGuiCTX::WindowChild _{ "animschild", ImVec2(0, 0), true })
-                {
-                    if (ImGui::Button("Go to top of Bastille"))
-                    {
-                        if (Entity* player = ACU::GetPlayer())
-                        {
-                            player->GetPosition() = Vector3f(1200.23f, 150.99f, 39.00f);
-                        }
-                    }
-                    ImGui::SameLine();
-                    if (ImGui::Button("Unload this plugin"))
-                    {
-                        RequestUnloadThisPlugin();
-                    }
-                    DrawAnimationExperiments();
-                }
+                DrawWeatherControls();
             }
             if (ImGuiCTX::Tab _extraoptions{ "Extra" })
             {
@@ -100,54 +74,103 @@ void ImGuiLayer_WhenMenuIsOpen()
                     RequestUnloadThisPlugin();
                 }
                 ImGui::Separator();
-                ImGui::Checkbox("Show development experiments", &g_showDevExtraOptions);
+                ImGui::Checkbox("Show development experiments", &g_Config.developmentExtras->showDevelopmentExtras.get());
                 if (ImGui::IsItemHovered(0))
                 {
                     ImGui::SetTooltip("These contain my experiments and nothing that improves the gameplay.");
                 }
-                if (g_showDevExtraOptions)
+                if (g_Config.developmentExtras->showDevelopmentExtras)
                 {
-                    ImGui::Checkbox("Draw 3D markers", &g_DrawImGui3DifDevExtrasEnabled);
+                    ImGui::Checkbox("Draw 3D markers", &g_Config.developmentExtras->show3DMarkersIfDevelopmentExtrasAreEnabled.get());
                 }
             }
-            if (g_showDevExtraOptions)
-            {
-            if (ImGuiCTX::Tab _3dMarkersTab{ "3D Markers" })
-            {
-                ImGui::Checkbox("Draw 3D markers", &g_DrawImGui3DifDevExtrasEnabled);
-                ImGui3D::DrawPersistent3DMarkersControls();
-                if (ImGui::Button("Visualize location from clipboard"))
+            if (!g_Config.developmentExtras->showDevelopmentExtras) return;
+            auto DrawDevExtrasTabs = []()
                 {
-                    VisualizeLocationFromClipboard();
-                }
-                if (ImGui::Button("Visualize direction from clipboard"))
-                {
-                    VisualizeDirectionFromClipboard();
-                }
-                if (ImGui::Button("Visualize current Player Location"))
-                {
-                    VisualizeCurrentPlayerLocation();
-                }
-                if (ImGui::CollapsingHeader("View-projection matrices debugging"))
-                {
-                    DrawImGui3DMatricesDebug();
-                }
-            }
-            if (ImGuiCTX::Tab _{ "Player's Visuals" })
+                    if (ImGuiCTX::Tab _3dMarkersTab{ "3D Markers" })
+                    {
+                        ImGui::Checkbox("Draw 3D markers", &g_Config.developmentExtras->show3DMarkersIfDevelopmentExtrasAreEnabled.get());
+                        ImGui3D::DrawPersistent3DMarkersControls();
+                        if (ImGui::Button("Visualize location from clipboard"))
+                        {
+                            VisualizeLocationFromClipboard();
+                        }
+                        if (ImGui::Button("Visualize direction from clipboard"))
+                        {
+                            VisualizeDirectionFromClipboard();
+                        }
+                        if (ImGui::Button("Visualize current Player Location"))
+                        {
+                            VisualizeCurrentPlayerLocation();
+                        }
+                        if (ImGui::CollapsingHeader("View-projection matrices debugging"))
+                        {
+                            DrawImGui3DMatricesDebug();
+                        }
+                    }
+                    if (ImGuiCTX::Tab _{ "Player's Visuals" })
+                    {
+                        DrawPlayerVisualsControls();
+                    }
+                    if (ImGuiCTX::Tab _mainTab{ "Animtools" })
+                    {
+                        if (ImGui::Button("Go to top of Bastille"))
+                        {
+                            if (Entity* player = ACU::GetPlayer())
+                            {
+                                player->GetPosition() = Vector3f(1200.23f, 150.99f, 39.00f);
+                            }
+                        }
+                        ImGui::SameLine();
+                        if (ImGui::Button("Unload this plugin"))
+                        {
+                            RequestUnloadThisPlugin();
+                        }
+                        DrawAnimationExperiments();
+                    }
+                    if (ImGuiCTX::Tab _typeInfosTab{ "TypeInfos" })
+                    {
+                        TypeInfoSystemTests();
+                    }
+                    if (ImGuiCTX::Tab _typeInfosTab{ "Builtin Commands" })
+                    {
+                        if (ImGuiCTX::WindowChild _{ "DebugCommands" })
+                        {
+                            DrawBuiltinDebugCommands();
+                        }
+                    }
+                    if (ImGuiCTX::Tab _tab_handles{ "Handles" })
+                    {
+                        extern const char* g_HandlesMapFilename;
+                        ImGui::Text(
+                            "Some of the development extra features show handles of files\n"
+                            "e.g. Animation log, Animation Graph dump, entity Visual components etc.\n"
+                            "If you have the \"%s\" file\n"
+                            "(which should be available in the Releases section of ACUFixes github page)\n"
+                            "present in the plugin's directory,\n"
+                            "then the names of the files that correspond to these handles\n"
+                            "will also be shown (if recognized).\n"
+                            "For example, if the mentioned file is present, then you should see\n"
+                            "64839213519 => \n"
+                            "turn into\n"
+                            "64839213519 => ACU_Paris\\ACU_Paris.World"
+                            , g_HandlesMapFilename
+                        );
+                        static uint64 handleToSearch = 64839213519; // => ACU_Paris\ACU_Paris.World
+                        ImGui::InputScalar("Search handle", ImGuiDataType_U64, &handleToSearch);
+                        ImGui::Text(
+                            "%llu => %s"
+                            , handleToSearch
+                            , ACU::Handles::HandleToText(handleToSearch).c_str()
+                        );
+                    }
+                };
+            if (ImGuiCTX::Tab _tab_devExtras{ "Dev extras" })
             {
-                DrawPlayerVisualsControls();
-            }
-            if (ImGuiCTX::Tab _typeInfosTab{ "TypeInfos" })
-            {
-                TypeInfoSystemTests();
-            }
-            if (ImGuiCTX::Tab _typeInfosTab{ "Builtin Commands" })
-            {
-                if (ImGuiCTX::WindowChild _{ "DebugCommands" })
+                if (ImGuiCTX::TabBar _tabbar_withinDevExtrasTab{ "DevExtrasTabs" })
                 {
-                    DrawBuiltinDebugCommands();
+                    DrawDevExtrasTabs();
                 }
-            }
             }
         }
 }
@@ -161,7 +184,9 @@ void ImGuiLayer_EvenWhenMenuIsClosed()
     g_MyAnimationPlayer.UpdateAnimations();
     DoSlowMotionTrick();
     DoManualHoodControls();
-    bool drawImGui3D = g_showDevExtraOptions && g_DrawImGui3DifDevExtrasEnabled;
+    bool drawImGui3D =
+        g_Config.developmentExtras->showDevelopmentExtras
+        && g_Config.developmentExtras->show3DMarkersIfDevelopmentExtrasAreEnabled;
     if (drawImGui3D)
         ImGui3D::Draw3DLayer(CalculateWorld2ScreenParametersForCurrentFrame());
 }

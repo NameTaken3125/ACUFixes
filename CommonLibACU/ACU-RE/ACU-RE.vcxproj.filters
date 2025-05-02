@@ -204,4 +204,7 @@
     <ClCompile Include="src\WorldTagRules.cpp" />
     <ClCompile Include="src\ForgeManager.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="misc\debuggers\SmallArray.natvis" />
+  </ItemGroup>
 </Project>

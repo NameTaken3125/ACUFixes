@@ -74,5 +74,10 @@ template<typename T, size_t NumStaticElements>
 class SmallArraySemistatic : public SmallArray<T>
 {
 public:
-    T staticElements[NumStaticElements];
+    SmallArraySemistatic()
+    {
+        this->capacityAndFlags = 0x8000 | NumStaticElements;
+        this->arr = reinterpret_cast<T*>(staticElements);
+    }
+    std::aligned_storage_t<sizeof(T), alignof(T)> staticElements[NumStaticElements];
 };

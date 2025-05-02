@@ -20,6 +20,7 @@ public:
     void IncrementStrongRefcount() { _InterlockedIncrement((volatile long*)&strongRefCountAndFlags); }
     void DecrementWeakRefcount();
     void DecrementStrongRefcount();
+    uint32 GetRefcountStrong() { return strongRefCountAndFlags & 0xFFFFFF; }
 };
 assert_offsetof(SharedBlock, weakRefCount, 8);
 assert_offsetof(SharedBlock, strongRefCountAndFlags, 0xC);

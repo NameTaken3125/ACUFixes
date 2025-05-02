@@ -82,6 +82,10 @@ namespace Base
         // If you want to use an "outer" hook (at the call site), just call this function from there.
         void GrabGraphicsDevicesInitializeImGuiAndDraw(IDXGISwapChain* thisptr);
 	}
+	namespace Fonts
+	{
+		void SetFontSize(float fontSizePixels);
+	}
 }
 
 namespace Base

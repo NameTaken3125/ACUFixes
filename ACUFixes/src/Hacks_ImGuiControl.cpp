@@ -44,7 +44,6 @@ void DrawSlowMotionControls();
 void DrawSlowMotionTrickControls();
 void DrawHoodControls();
 
-extern bool g_showDevExtraOptions;
 #include "ImGuiConfigUtils.h"
 class MyHacks
 {
@@ -302,7 +301,7 @@ public:
             ImGui::DrawEnumPicker("Lookbehind hotkey", g_Config.hacks->lookbehindButton->hotkey.get(), ImGuiComboFlags_HeightLarge);
         }
         DrawSlowMotionTrickControls();
-        if (g_showDevExtraOptions)
+        if (g_Config.developmentExtras->showDevelopmentExtras)
         {
             if (ImGuiCTX::TreeNode _header{ "Unfinished and useless hacks" })
             {

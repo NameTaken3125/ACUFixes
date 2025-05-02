@@ -72,8 +72,10 @@ public:
 class ForgeFile_DatapackPrefetchInfo
 {
 public:
+    // @members
     uint64 firstHandle; //0x0000
-    uint32 prefetchDataSizeAndFlags_mb; //0x0008
+    uint32 prefetchDataSize : 31;
+    uint32 isCompressed_mb : 1;
     uint32 offsetInPrefetchData; //0x000C
 }; //Size: 0x0010
 assert_sizeof(ForgeFile_DatapackPrefetchInfo, 0x10);
@@ -115,7 +117,7 @@ public:
     char pad_0300[24]; //0x0300
     uint64 prefetchInfoHandle; //0x0318
     char pad_0320[16]; //0x0320
-    void* prefetchData; //0x0330
+    byte* prefetchData; //0x0330
     BigArray<ForgeFile_DatapackPrefetchInfo> datapacksPrefetchInfoAscendingHandles; //0x0338
 
     // @helper_functions
@@ -158,8 +160,56 @@ assert_sizeof(ForgeFileEntry, 0x40);
 class ForgeManager
 {
 public:
+    // @vtbl
+    virtual void Unk000();
+    virtual void Unk008();
+    virtual void Unk010();
+    virtual void Unk018();
+    virtual void Unk020();
+    virtual void Unk028();
+    virtual void Unk030();
+    virtual void Unk038();
+    virtual void Unk040();
+    virtual void Unk048();
+    virtual void Unk050();
+    virtual void Unk058();
+    virtual void Unk060();
+    virtual void Unk068();
+    virtual void Unk070();
+    virtual void Unk078();
+    virtual void Unk080();
+    virtual void Unk088();
+    virtual void Unk090();
+    virtual void Unk098();
+    virtual void Unk0A0();
+    virtual void Unk0A8();
+    virtual void Unk0B0();
+    virtual void Unk0B8();
+    virtual void Unk0C0();
+    virtual void Unk0C8();
+    virtual void Unk0D0();
+    virtual void Unk0D8();
+    virtual void Unk0E0();
+    virtual void Unk0E8();
+    virtual void Unk0F0();
+    virtual void Unk0F8();
+    virtual void Unk100();
+    virtual void Unk108();
+    virtual void Unk110();
+    virtual void Unk118();
+    virtual void Unk120();
+    virtual void Unk128();
+    virtual void Unk130();
+    virtual void Unk138();
+    virtual void Unk140();
+    virtual void Unk148();
+    virtual void Unk150();
+    virtual void Unk158();
+    virtual void Unk160_GetDatapackSizeAndOffset(unsigned __int64 p_handleFirstInDatapack, uint32* p_forgeIdxOut, ForgeFile** p_forgeDescriptorOut, __int64 p_offsetInForgeFileOut, __int64 p_sizePackedOut, SmallArray<uint32>* p_arrForgeIndicesOut); // 142733330
+
+
     // @members
-    char pad_0000[192]; //0x0000
+    char pad_0008[184]; //0x0008
     uint32 nextForgeIdx; //0x00C0
     SmallArray<ForgeFileEntry*> forges; //0x00C4
     uint64 criticalSection_forgeEntries; //0x00D0

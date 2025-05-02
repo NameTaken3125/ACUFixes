@@ -586,7 +586,6 @@ json::JSON ExportAnimationTracksToJSON(Animation& anim)
         track["TrackID"] = std::to_string(trackID);
         byte* trackdata = (byte*)anim.rawTracks[i];
         uint8 trackdataType = (uint8)trackdata[0];
-        track["type"] = trackdataType;
         track["codec"] = trackdataType;
         AnimationInformationType infotype = GetAnimationTrackdataCodecs()[trackdataType]->Unk_018_GetInformationType();
         track["infotype"] = (uint32)infotype;

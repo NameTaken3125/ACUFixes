@@ -43,6 +43,13 @@ std::vector<HANDLE> SuspendAllOtherThreads()
     CloseHandle(snapshot);
     return suspendedThreads;
 }
+class SuspendAllOtherThreadsRAII
+{
+public:
+    std::vector<HANDLE> m_SuspendedThreads;
+    SuspendAllOtherThreadsRAII() : m_SuspendedThreads(SuspendAllOtherThreads()) {}
+    ~SuspendAllOtherThreadsRAII() { for (HANDLE handle : m_SuspendedThreads) ResumeThread(handle); }
+};
 /*
 I'm unable to launch ACU under, say, the Visual Studio debugger,
 but early after injection (e.g. from the DllMain) I can suspend all threads
@@ -51,7 +58,7 @@ It isn't as good of an option, but it has uses for very-early-debugging.
 */
 void SuspendThreadsUntilCheatEnginesVEHDebuggerIsAttached()
 {
-    std::vector<HANDLE> suspendedThreads = SuspendAllOtherThreads();
+    SuspendAllOtherThreadsRAII _pause;
     while (true)
     {
         if (GetModuleHandleA("vehdebug-x86_64.dll") != NULL)
@@ -59,9 +66,5 @@ void SuspendThreadsUntilCheatEnginesVEHDebuggerIsAttached()
             break;
         }
         Sleep(200);
-    }
-    for (HANDLE handle : suspendedThreads)
-    {
-        ResumeThread(handle);
     }
 }

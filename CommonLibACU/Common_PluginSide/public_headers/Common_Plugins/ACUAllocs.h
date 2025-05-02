@@ -6,7 +6,7 @@
 #include "ACU_DefineNativeFunction.h"
 
 byte* ACUAllocateBytes(uint32 numBytes, uint32 alignment);
-void ACUDeallocateBytes(byte* allocated); // I think an implementation can be seen at `CString::Alloc()` at 0x14250D050.
+void ACUDeallocateBytes(byte* allocated);
 inline char* ACUAllocateString(std::string_view s)
 {
     char* cstring = reinterpret_cast<char*>(ACUAllocateBytes((uint32)s.size() + 1, 1));

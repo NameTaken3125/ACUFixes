@@ -467,9 +467,10 @@ void FindPlayerFaceComponentAndApplyTheMaterialWithoutTheFakeHoodShadow(Entity& 
     }
 }
 #include "ImGuiConfigUtils.h"
+#include "Handles.h"
 void DrawEntityVisualsControls(Entity& entity)
 {
-    static std::string fmt;
+    static ImGuiTextBuffer fmt;
     for (Component* cpnt : entity.cpnts_mb)
     {
         if (*(uint64*)cpnt != Visual__VTable)
@@ -480,7 +481,11 @@ void DrawEntityVisualsControls(Entity& entity)
         ImGui::PushID(vis);
         bool isVisible = !vis->flags.isHidden;
         fmt.clear();
-        fmt = std::to_string(vis->shared_LODSelector->handle);
+        fmt.appendf(
+            "%llu => %s"
+            , vis->shared_LODSelector->handle
+            , ACU::Handles::HandleToText(vis->shared_LODSelector->handle).c_str()
+        );
         if (ImGui::Checkbox(fmt.c_str(), &isVisible))
         {
             Visual__ToggleVisibility(vis, isVisible);

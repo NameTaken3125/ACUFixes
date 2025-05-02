@@ -116,5 +116,11 @@ struct ConfigTop : YAConfigSection {
         ACM(freezeFOV, YACS_FreezeFOV, YAConfigSectionAdapter, );
     };
     ACM(personalRequests, PersonalRequests, YAConfigSectionAdapter, );
+    struct DevExtras : YAConfigSection {
+        YACSTOR(DevExtras);
+        ACM(showDevelopmentExtras, bool, BooleanAdapter, false);
+        ACM(show3DMarkersIfDevelopmentExtrasAreEnabled, bool, BooleanAdapter, true);
+    };
+    ACM(developmentExtras, DevExtras, YAConfigSectionAdapter, );
 };
 extern ConfigTop g_Config;

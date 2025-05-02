@@ -264,6 +264,7 @@ void MyPluginLoader::DrawPluginListControls()
         }
         else
         {
+            ImGui::AlignTextToFramePadding();
             ImGui::TextDisabled(buf.c_str());
             ImGui::SameLine();
             if (ImGui::Button("Load"))

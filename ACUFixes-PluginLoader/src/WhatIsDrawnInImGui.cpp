@@ -44,6 +44,14 @@ void DrawModMenuControls()
     }
     ImGui::DrawEnumPicker("Mod menu hotkey", g_PluginLoaderConfig.hotkey_ToggleMenu.get(), ImGuiComboFlags_HeightLarge);
 }
+void DrawFontControls()
+{
+    if (ImGui::SliderFloat("Font size", &g_PluginLoaderConfig.fontSize.get(), 9.0f, 75.0f, "%.3f",
+        ImGuiSliderFlags_AlwaysClamp))
+    {
+        Base::Fonts::SetFontSize(g_PluginLoaderConfig.fontSize);
+    }
+}
 
 void DrawPluginListControls();
 void DrawPluginsWhenMenuOpen();
@@ -81,6 +89,8 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
                     "Hotkey: Console"
                     , g_PluginLoaderConfig.hotkey_ToggleConsole.get()
                     , ImGuiComboFlags_HeightLarge);
+                ImGui::Separator();
+                DrawFontControls();
                 ImGui::Separator();
                 ImGui::Checkbox("Show ImGui Demo Window", &enableDemoWindow);
                 ImGui::Separator();

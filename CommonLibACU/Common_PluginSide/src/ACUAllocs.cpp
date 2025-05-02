@@ -32,3 +32,10 @@ public:
     static SomeOTHERMemoryManager* GetSingleton() { return **(SomeOTHERMemoryManager***)0x0000000145221CF8; }
 };
 } // namespace ACU::Memory
+// An implementation can be seen at `CString::Alloc()` at 0x14250D050
+// or at 0x14271B444
+void ACUDeallocateBytes(byte* allocated)
+{
+    __int64 result1 = MemoryManager__GetSomeFlagsBeforeDealloc(*(__int64*)0x145221E08, allocated);
+    ACU::Memory::SomeOTHERMemoryManager::GetSingleton()->Unk_028_Deallocate(allocated, result1);
+}

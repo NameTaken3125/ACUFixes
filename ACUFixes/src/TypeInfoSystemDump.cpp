@@ -324,7 +324,7 @@ void TypeInfoSystemDump::Draw()
         static size_t howManyToAttempt = 10000;
         ImGui::InputInt("attemptedConstructionFirstIdx", (int*)&attemptedConstructionFirstIdx);
         ImGui::InputInt("howManyToAttempt", (int*)&howManyToAttempt);
-        if (ImGui::Button("Yes")) {
+        if (ImGui::Button("Yes, I'm sure")) {
             ToFileLog_AttemptToConstructAllObjects(attemptedConstructionFirstIdx, howManyToAttempt);
         }
     }

@@ -24,7 +24,7 @@ void WhenInFreefall_HelpFindLedgeToGrab(AllRegisters* params)
     Vector3f& searchDirectionInGroundPlane_UnitVector = *playerMovementVecInGroundPlane;
     constexpr float pretendPlayerIsCloserToWall_multiplier = 1.0f;
     *playerFeetPosition = *playerFeetPosition + searchDirectionInGroundPlane_UnitVector * pretendPlayerIsCloserToWall_multiplier;
-    ImGui3D::DrawLocationNamed(*playerFeetPosition, "Breakfall: sensor location");
+    //ImGui3D::DrawLocationNamed(*playerFeetPosition, "Breakfall: sensor location");
 }
 BreakfallAndLedgeGrab::BreakfallAndLedgeGrab()
 {

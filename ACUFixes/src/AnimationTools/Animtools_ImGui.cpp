@@ -24,13 +24,12 @@ void DrawSkeletonExperimentsControls()
             SkelDumper().DumpSkeletons(*skelCpnt);
         }
     }
-    if (ImGui::Button("Export player skeleton into Blender as JSON"))
+    if (ImGui::Button("Export player skeleton bones as JSON to clipboard"))
     {
         ExportPlayerSkeletonAsJSON();
     }
 }
 
-constexpr uint64 handle_skeleton_BaseMale = 28540328525; // = > NEW_SDN_CN_U_ArmorSet_02/ACU_BaseSkeleton_Male.Skeleton
 constexpr uint64 handle_skeleton_HiddenBlade = 87332257962; // = > CN_P_LegacyAvatar_ThomasCarneillon_Base/ACU_U_Arno_IconicWeapon.Skeleton
 void DrawAnimationEditor();
 void DrawAtomGraphDumper();
@@ -40,19 +39,13 @@ void DrawAnimationExperiments()
     {
         if (ImGuiCTX::Tab _mainTab{ "Animplayer" })
         {
-            if (ImGuiCTX::WindowChild _{ "animtoolsmaintabchild" })
-            {
-                //g_SkeletonsVisualizer.DrawControls();
-                //g_ManualAnimationPlayer.DrawControls();
-                g_MyAnimationPlayer.DrawControls();
-            }
+            //g_SkeletonsVisualizer.DrawControls();
+            //g_ManualAnimationPlayer.DrawControls();
+            g_MyAnimationPlayer.DrawControls();
         }
         if (ImGuiCTX::Tab _mainTab{ "Animedit" })
         {
-            if (ImGuiCTX::WindowChild _{ "animeditchild" })
-            {
-                DrawAnimationEditor();
-            }
+            DrawAnimationEditor();
         }
         if (ImGuiCTX::Tab _mainTab{ "Skeletons" })
         {

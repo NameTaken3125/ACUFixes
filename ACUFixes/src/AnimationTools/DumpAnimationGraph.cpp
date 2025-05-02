@@ -1474,6 +1474,7 @@ void DrawAtomGraphDumper()
     GraphEvaluation* graphEvaluation = animCpnt->pD0;
     if (!graphEvaluation) { return; }
     ImGui::Separator();
+    ImGui::AlignTextToFramePadding();
     ImGui::Text("Some of the player's animation graph variables:");
     ImGui::SameLine();
     static bool notifyTheGraphWhenModifying = true;

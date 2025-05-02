@@ -4,6 +4,12 @@
 #include "InventoryItemSettings.h"
 #include "SharedPtr.h"
 
+enum class AvatarSkillType : uint32
+{
+	AvatarSkillType_None = 0,
+	AvatarSkillType_Morphing = 34,
+};
+
 class AvatarLoadout
 {
 public:
@@ -17,9 +23,9 @@ public:
 	SharedPtrNew<InventoryItemSettings>* shared_invItemSett_LanternDLC; //0x0038
 	SharedPtrNew<InventoryItemSettings>* OutfitSlot; //0x0040
 	SharedPtrNew<InventoryItemSettings>* ColorSlot; //0x0048
-	uint32 dword_50; //0x0050
+	AvatarSkillType CurrentCoopSkill; //0x0050
 	char pad_0054[4]; //0x0054
-	SharedPtrNew<InventoryItemSettings>* boosterSlot; //0x0058
+	SharedPtrNew<InventoryItemSettings>* CurrentSelectedBooster; //0x0058
 	char pad_0060[32]; //0x0060
 	uint8 byte_80; //0x0080
 	char pad_0081[7]; //0x0081

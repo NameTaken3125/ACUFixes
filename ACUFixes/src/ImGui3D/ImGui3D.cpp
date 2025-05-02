@@ -355,12 +355,17 @@ void DrawPersistent3DMarkersControls()
     {
         ImGui::PushID((const void*)&pt);
         ImGuiTextBuffer buf;
-        buf.appendf("[%8.2f,%8.2f,%8.2f] - \"%s\""
+        buf.appendf("[%8.2f,%8.2f,%8.2f]"
             , pt.m_Params.m_Location.x
             , pt.m_Params.m_Location.y
             , pt.m_Params.m_Location.z
-            , pt.m_Name->c_str()
         );
+        if (pt.m_Name)
+        {
+            buf.appendf(" - \"%s\""
+                , pt.m_Name->c_str()
+            );
+        }
         if (ImGui::Selectable(buf.c_str()))
         {
             selectedMarkerID = id;
