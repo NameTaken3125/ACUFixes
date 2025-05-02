@@ -10,6 +10,7 @@ namespace fs = std::filesystem;
 // The macros for creation of typical additional loggers if you need them.
 
 #define DEFINE_LOGGER_CONSOLE_AND_FILE(VariableName, textualName) Logger_ConsoleAndFile VariableName(textualName);
+#define DEFINE_LOGGER_CONSOLE(VariableName, textualName) Logger_Console VariableName(textualName);
 #define DEFINE_LOGGER_NULL(VariableName, textualName) Logger_Null VariableName;
 
 /*
@@ -117,6 +118,45 @@ struct Logger_ConsoleAndFile
         }
         va_end(argsCopy);
         va_end(args);
+
+        std::string asUtf8 = utf8_and_wide_string_conversion::utf8_encode(fittingBuf);
+        // Prepend logger name to formatted string.
+        ImGuiConsole::AddLog((m_Name + asUtf8).c_str());
+    }
+};
+struct Logger_Console
+{
+    const std::string m_Name;
+    Logger_Console(std::string_view name) : m_Name(name) {}
+    void LogDebug(const wchar_t* fmt, ...)
+    {
+        va_list args;
+        va_start(args, fmt);
+        va_list argsCopy;
+        va_copy(argsCopy, args);
+        // Format string into stringbuffer.
+        wchar_t buf[1024];
+        const int numWideChars = _vsnwprintf_s(buf, IM_ARRAYSIZE(buf), fmt, args);
+        va_end(args);
+        std::wstring heapBuf;
+        wchar_t* fittingBuf = nullptr;
+        constexpr int bufSize = IM_ARRAYSIZE(buf);
+        if (numWideChars < 0)
+        {
+            va_end(argsCopy);
+            return;
+        }
+        if (numWideChars < bufSize)
+        {
+            fittingBuf = buf;
+        }
+        else
+        {
+            heapBuf.resize(numWideChars + 1);
+            _vsnwprintf_s(&heapBuf[0], numWideChars + 1, numWideChars, fmt, argsCopy);
+            va_end(argsCopy);
+            fittingBuf = &heapBuf[0];
+        }
 
         std::string asUtf8 = utf8_and_wide_string_conversion::utf8_encode(fittingBuf);
         // Prepend logger name to formatted string.

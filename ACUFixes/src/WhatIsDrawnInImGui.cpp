@@ -49,6 +49,7 @@ void DrawModMenuControls()
 void DrawImGui3DMatricesDebug();
 void RequestUnloadThisPlugin();
 void DrawAnimationExperiments();
+void DrawHacksControls_DevExtras();
 #include "MainConfig.h"
 #include "Handles.h"
 void ImGuiLayer_WhenMenuIsOpen()
@@ -107,6 +108,10 @@ void ImGuiLayer_WhenMenuIsOpen()
                         {
                             DrawImGui3DMatricesDebug();
                         }
+                    }
+                    if (ImGuiCTX::Tab _tab_parkourDebug{ "Movement debug" })
+                    {
+                        DrawHacksControls_DevExtras();
                     }
                     if (ImGuiCTX::Tab _{ "Player's Visuals" })
                     {
@@ -178,10 +183,12 @@ void ImGuiLayer_WhenMenuIsOpen()
 ImGui3D::World2ScreenParams CalculateWorld2ScreenParametersForCurrentFrame();
 void DoSlowMotionTrick();
 void DoManualHoodControls();
+void ShowHumanStatesLogIfNeeded();
 #include "AnimationTools/MyAnimationPlayer.h"
 void ImGuiLayer_EvenWhenMenuIsClosed()
 {
     g_MyAnimationPlayer.UpdateAnimations();
+    ShowHumanStatesLogIfNeeded();
     DoSlowMotionTrick();
     DoManualHoodControls();
     bool drawImGui3D =

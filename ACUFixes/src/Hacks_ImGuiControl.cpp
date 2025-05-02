@@ -538,10 +538,11 @@ void DrawHacksControls()
 }
 
 #include "MyVariousHacks.h"
-
+void MyVariousHacks_DevExtras_Start();
 void MyVariousHacks::Start()
 {
     g_MyHacks.emplace();
+    MyVariousHacks_DevExtras_Start();
     g_MyHacks->ReadConfig(g_Config);
     g_MyHacks->WriteConfig(g_Config);
     MainConfig::WriteToFile();
