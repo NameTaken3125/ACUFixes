@@ -98,6 +98,42 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
                 if (g_PluginLoaderConfig.developerOptions->isActive)
                 {
                     ImGui::Checkbox("Allow uninject the PluginLoader", &g_PluginLoaderConfig.developerOptions->canUninjectPluginLoader->isActive.get());
+                    if (ImGui::IsItemHovered())
+                    {
+                        ImGui::SetTooltip(
+                            "You aren't supposed to uninject the PluginLoader.\n"
+                            "Doing so is likely to crash the game.\n"
+                            "Furthermore, it's up to the plugins to decide\n"
+                            "whether or not they can be safely uninjected.\n"
+                            "If you're curious: currently the only reason for such a crash\n"
+                            "is my Animated Removable Hood Toggle. See more details in the code comments.\n"
+                            "You can still try and uninject if you need to."
+                        );
+                        /*
+                        Currently the only reason why I cannot safely uninject the PluginLoader
+                        is my Animated Removable Hood Toggle. It works by extending the player's
+                        (and all NPCs') Animation Graph and due to certain implementation details
+                        I need to maintain the patches that at runtime adjust the indices of the last two
+                        RTCP variables of the AtomGraph, the only two of the `entityref` type:
+                            539. entityref SyncParticipant1; // 0x324db80/52747136
+                            540. entityref SyncSubject; // 0xe35d816d/3814556013
+                        Basically, I insert a new RTCP variable `int HoodControlValue` at index 539
+                        and displace the two vars mentioned above: SyncParticipant1->540; SyncSubject->541
+                        (because "entityrefs" are supposed to be the last ones).
+                        So whenever a user of the patched AtomGraph (player or NPC)
+                        refers to an "entityref" at index 539, it should be referring to index 540,
+                        and this adjustment of the index is what I need to maintain at runtime.
+                        A way to regain uninjectability would be to look through the AtomGraph dump
+                        and patch every single reference to SyncSubject and SyncParticipant1.
+                        A quick look at the dump shows 173 references to SyncParticipant1 and 129
+                        to SyncSubject, and there most likely are more that I missed.
+                        Yet another way would be to change the "adjust entityref index" patches
+                        from C++ to assembly, and not deallocate them upon uninjection,
+                        with some way to find "rediscover" these patches upon reinjection.
+                        I'm going to declare this a very low priority feature and just accept that
+                        the PluginLoader isn't supposed to be uninjected.
+                        */
+                    }
                     if (g_PluginLoaderConfig.developerOptions->canUninjectPluginLoader->isActive)
                     {
                         ImGuiCTX::Indent _ind;

@@ -9,6 +9,7 @@
 #include "ACU/ACUGetSingletons.h"
 #include "ACU/Entity.h"
 #include "ACU/RenderValuesHolder.h"
+#include "Experimental_StrongPtr.h"
 
 Vector3f g_VisualizedDebugDirection;
 void VisualizeLocationFromClipboard()
@@ -54,8 +55,10 @@ void DrawHacksControls_DevExtras();
 #include "Handles.h"
 void ImGuiLayer_WhenMenuIsOpen()
 {
-    ImGui::SetNextWindowPos(ImVec2(100, 100), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowSize(ImVec2(500, 500), ImGuiCond_FirstUseEver);
+#ifdef _DEBUG
+    void RequestUnloadThisPlugin(); if (ImGui::Button("Unload this plugin")) RequestUnloadThisPlugin();
+    ImGui::Separator();
+#endif // _DEBUG
         if (ImGuiCTX::TabBar _tabbar{ "MainWindowTabs" })
         {
             if (ImGuiCTX::Tab _mainTab{ "Main Tab" })
@@ -167,6 +170,17 @@ void ImGuiLayer_WhenMenuIsOpen()
                             "%llu => %s"
                             , handleToSearch
                             , ACU::Handles::HandleToText(handleToSearch).c_str()
+                        );
+                        ACU::WeakPtr<ManagedObject> weakRef(handleToSearch);
+                        ImGui::Text(
+                            "Address:     %llX\n"
+                            "SharedBlock: %llX\n"
+                            "StrongRefs:  %u\n"
+                            "WeakRefs:    %u"
+                            , weakRef.GetSharedBlock().GetPtr()
+                            , &weakRef.GetSharedBlock()
+                            , weakRef.GetSharedBlock().GetRefcountStrong()
+                            , weakRef.GetSharedBlock().weakRefCount
                         );
                     }
                 };

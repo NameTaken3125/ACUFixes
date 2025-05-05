@@ -17,7 +17,7 @@ WndProc_t               Base::Data::oWndProc    = (WndProc_t)NULL;
 #if defined(MEM_86)
 Base::size_t            Base::Data::szPresent = 5;
 #elif defined(MEM_64)
-Base::size_t            Base::Data::szPresent = 19;
+Base::size_t            Base::Data::szPresent = 19; // =20 on Windows 11, actually.
 #endif
 UINT                    Base::Data::WmKeys[0xFF];
 bool                    Base::Data::Detached   = false;

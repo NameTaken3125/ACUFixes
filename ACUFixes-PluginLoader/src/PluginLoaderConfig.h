@@ -22,7 +22,7 @@ struct ConfigTop : YAConfigSection {
     ACM(imgui_showSuccessfulInjectionIndicator, bool, BooleanAdapter, true);
     ACM(hotkey_ToggleMenu, VirtualKeys, EnumAdapter_template<VirtualKeys>, VirtualKeys::KEYBOARD_INSERT);
     ACM(hotkey_ToggleConsole, VirtualKeys, EnumAdapter_template<VirtualKeys>, VirtualKeys::KEYBOARD_OEM3);
-    ACM(fontSize, float, NumericAdapter_template<float>, 13.0f);
+    ACM(fontSize, float, NumericAdapter_template<float>, 16.0f);
     struct YACS_DeveloperOptions : YAConfigSection {
         YACSTOR(YACS_DeveloperOptions);
         ACM(isActive, bool, BooleanAdapter, false);

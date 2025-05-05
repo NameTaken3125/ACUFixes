@@ -106,6 +106,20 @@ public:
 
     virtual ~Settings() {}
 };
+// This uses the generic Present hook: create a dummy Swapchain,
+// find the address of Present() within its vtable, then place a jmp
+// from the beginning of Present() to your function. On a new target game, you can use this
+// to quickly get started with ImGui, then look at return address
+// to find out where to place a better, outer hook.
+// That's the idea, anyway. I didn't look closely at the implementation,
+// and now I know that this will crash if used on e.g. Windows 11, due to a newer
+// version of dxgi.dll. In this newer version the Present's "inner" hook needs to steal
+// 20 bytes, and not 19 (the default value of Base::Data::szPresent).
+// To make this generic hook work out of the box I need to either include a whole
+// disassembler (reaaally don't want to do that), or...
+// TODO: Pass the number of bytes to steal from the prologue of original Present()
+// as parameter. This number can't be too far off from 19 bytes, and on a new target game
+// I can just recompile the dll a few times until I find a value that doesn't cause a crash.
 class BasehookSettings_PresentHookInner : public Base::Settings
 {
     const bool m_ShowMenuByDefault;

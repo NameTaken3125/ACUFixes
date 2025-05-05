@@ -220,7 +220,7 @@ void LogExceptionCode(const ::EXCEPTION_RECORD& exceptionRecord, const AllModule
 
     LOG_DEBUG(
         CrashLog,
-        L"[error][X] CRASH? Unhandled exception %llX%s at %s.\n"
+        L"[error][X] CRASH? Exception %llX%s at %s.\n"
         , exceptionRecord.ExceptionCode
         , readableExceptionCode
         , MakeAddressReadable(reinterpret_cast<uintptr_t>(exceptionRecord.ExceptionAddress), allModules).c_str()
@@ -253,10 +253,10 @@ void LogException(::EXCEPTION_POINTERS& excPointers)
 }
 LONG __stdcall UnhandledExceptionHandler(::EXCEPTION_POINTERS* exception) noexcept
 {
-    // I fail to trigger this. I think this means that there are more vectored exception handlers
+    // I fail to trigger this. Maybe this means that there are more vectored exception handlers
     // and they prevent this code from being reached.
     LOG_DEBUG(CrashLog
-        , L"[*] Unhandled Exception. ExceptionCode %llX%s:\n"
+        , L"[error][X] Unhandled Exception. ExceptionCode %llX%s:\n"
         , exception->ExceptionRecord->ExceptionCode
         , GetReadableExceptionCode(*exception->ExceptionRecord)
     );
@@ -304,9 +304,16 @@ LONG _stdcall VectoredExceptionHandler(::EXCEPTION_POINTERS* exception) noexcept
         , exception->ExceptionRecord->ExceptionCode
         , GetReadableExceptionCode(*exception->ExceptionRecord)
     );
+    const bool isShouldLogCPPExceptions = false;
     if (exception->ExceptionRecord->ExceptionCode == MS_VC_EXCEPTION_SetThreadName)
     {
         HandleExc_SetThreadName(exception);
+    }
+    else if (exception->ExceptionRecord->ExceptionCode == EXCEPTION_MSC_CPLUSPLUS && !isShouldLogCPPExceptions)
+    {
+        LOG_DEBUG(CrashLog
+            , L"[*] Not logging the C++ exception..."
+        );
     }
     else
     {

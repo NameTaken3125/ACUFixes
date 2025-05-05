@@ -152,6 +152,8 @@ public:
     History_ManyLocations m_History_MovesBeforeFiltering;
     static void DoDraw_Location(History_Location& historySingleLoc)
     {
+        auto* world = World::GetSingleton();
+        if (!world) return;
         auto& crossModel = ImGui3D::GetCrossModel();
         auto& history = historySingleLoc.m_History;
         size_t curSize = history.size();
@@ -165,7 +167,7 @@ public:
         auto CalculateFadeFactor_ByTimestamp = [&](size_t i)
             {
                 auto& entry = history[i];
-                const float currentTime = World::GetSingleton()->clockInWorldWithSlowmotion.GetCurrentTimeFloat();
+                const float currentTime = world->clockInWorldWithSlowmotion.GetCurrentTimeFloat();
                 const float timeElapsed = currentTime - entry.m_Timestamp;
                 float fadeFactor = 1 - timeElapsed / historySingleLoc.m_MaxRetainHowLongSecs;
                 if (fadeFactor < 0) fadeFactor = 0;

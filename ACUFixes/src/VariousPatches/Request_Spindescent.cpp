@@ -99,6 +99,7 @@ CustomSelectedParkourMove SelectBestMatchingMoveIdx_ExtraProcessing_CustomSelect
         EnumParkourAction actionType = action->GetEnumParkourAction();
         if (actionType == EnumParkourAction::dive
             || actionType == EnumParkourAction::swing_31_swingToSwing_mb
+            || actionType == EnumParkourAction::jumpOutOfWindowToHang
             )
         {
             return { action, i };

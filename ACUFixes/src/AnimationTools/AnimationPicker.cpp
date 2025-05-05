@@ -100,6 +100,7 @@ bool AnimationPicker::Draw(const char* label, ACUSharedPtr_Strong<Animation>& in
     }
     uint64 editedAnimHandle = inOut.GetSharedBlock().handle;
     bool isChanged = false;
+    bool isNewValidPick = false;
     if (ImGuiCTX::Popup _animpicker{ "Animpicker" })
     {
         ImGui::Text("Input handle:"); ImGui::SameLine();
@@ -108,10 +109,13 @@ bool AnimationPicker::Draw(const char* label, ACUSharedPtr_Strong<Animation>& in
         ImGui::SameLine();
         if (ImGui::BeginCombo("##fromCollection", nullptr, ImGuiComboFlags_HeightLargest))
         {
+            ImGuiTextBuffer buf;
             for (size_t i = 0; i < g_myAnimations.size(); i++)
             {
                 const MyPlayableAnim& anim = g_myAnimations[i];
-                if (ImGui::Selectable(anim.name, anim.handle == editedAnimHandle))
+                buf.clear();
+                buf.appendf("%s##%d", anim.name, i);
+                if (ImGui::Selectable(buf.c_str(), anim.handle == editedAnimHandle))
                 {
                     editedAnimHandle = anim.handle;
                     isChanged = true;
@@ -126,6 +130,8 @@ bool AnimationPicker::Draw(const char* label, ACUSharedPtr_Strong<Animation>& in
         uint64 vtbl = *(uint64*)maybeAnim;
         if (vtbl == Animation::GetVTBL())
         {
+            if (isChanged)
+                isNewValidPick = true;
             Animation& anim = *static_cast<Animation*>(maybeAnim);
             ImGui::Text(
                 "%s"
@@ -168,5 +174,5 @@ bool AnimationPicker::Draw(const char* label, ACUSharedPtr_Strong<Animation>& in
     {
         ImGui::Text("Object doesn't exist.");
     }
-    return isChanged;
+    return isNewValidPick;
 }

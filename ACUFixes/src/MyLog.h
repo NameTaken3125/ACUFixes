@@ -87,6 +87,26 @@ struct Logger_ConsoleAndFile
 {
     const std::string m_Name;
     Logger_ConsoleAndFile(std::string_view name) : m_Name(name) {}
+    void LogDebug(const char* fmt, ...)
+    {
+        // TODO: Reimplement ImGuiTextBuffer to start with a stack buffer of 1024 bytes.
+        ImGuiTextBuffer buf;
+        buf.reserve(1024);
+        buf.append(m_Name.c_str());
+        va_list args;
+        va_start(args, fmt);
+        buf.appendfv(fmt, args);
+        va_end(args);
+        // Prepend logger name to formatted string.
+        ImGuiConsole::AddLog(buf.c_str());
+        fprintf(g_LogFile, buf.c_str());
+        fflush(g_LogFile);
+    }
+    // Aah, looks like this IS broken on non-Latin characters...
+    // TODO: Remove and leave only the "const char*" version
+    //       (which is secretly the "const char8_t*" cast to "const char*": see
+    //        https://github.com/ocornut/imgui/blob/c0dfd65d6790b9b96872b64fa232f1fa80fcd3b3/docs/FONTS.md#about-utf-8-encoding
+    //       )
     void LogDebug(const wchar_t* fmt, ...)
     {
         // Append logger name to file.

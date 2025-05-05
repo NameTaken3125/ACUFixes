@@ -64,7 +64,7 @@ struct ConfigTop : YAConfigSection {
         ACM(hoodControls, HoodControls, YAConfigSectionAdapter, );
         ACM(allowCustomizeEquipmentOnLedges, bool, BooleanAdapter, true);
         ACM(slightlyGreaterGuillotineGunQuickshotRange, bool, BooleanAdapter, true);
-        ACM(noWaitForUnsafeEject, bool, BooleanAdapter, false);
+        ACM(noWaitForUnsafeEject, bool, BooleanAdapter, true);
         ACM(allowUnequipPistol, bool, BooleanAdapter, true);
         struct YACS_LookbehindButton : YAConfigSection {
             YACSTOR(YACS_LookbehindButton);
@@ -97,11 +97,11 @@ struct ConfigTop : YAConfigSection {
         YACSTOR(PersonalRequests);
         struct YACS_ParkourHelper : YAConfigSection {
             YACSTOR(YACS_ParkourHelper);
-            ACM(isActive, bool, BooleanAdapter, false);
-            ACM(spinningDescentHelper, bool, BooleanAdapter, true);
+            ACM(isActive, bool, BooleanAdapter, true);
+            ACM(spinningDescentHelper, bool, BooleanAdapter, false);
             struct YACS_DiveHelper : YAConfigSection {
                 YACSTOR(YACS_DiveHelper);
-                ACM(isActive, bool, BooleanAdapter, true);
+                ACM(isActive, bool, BooleanAdapter, false);
                 ACM(hotkey, BindableKeyCode, EnumAdapter_template<BindableKeyCode>, BindableKeyCode::MOUSE_X5);
             };
             ACM(diveHelper, YACS_DiveHelper, YAConfigSectionAdapter, );
