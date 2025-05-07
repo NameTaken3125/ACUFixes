@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 
 template<typename EnumType>
 struct enum_reflection;
@@ -15,11 +16,11 @@ public:
         {
             return false;
         }
-        EnumType parsedValue = enum_reflection<EnumType>::GetValue(obj.ToString());
-        if (parsedValue == EnumType::INVALID_FROM_STRING) {
+        std::optional<EnumType> parsedValue = enum_reflection<EnumType>::GetValue(obj.ToString());
+        if (!parsedValue) {
             return false;
         }
-        this->source = parsedValue;
+        this->source = *parsedValue;
         return true;
     }
     JSON ToJSON()

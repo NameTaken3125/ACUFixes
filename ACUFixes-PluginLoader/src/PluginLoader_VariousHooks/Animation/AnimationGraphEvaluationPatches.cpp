@@ -4,7 +4,6 @@
 #include "Common_Plugins/AnimationGraphMods/RTCPVariableDescriptor.h"
 #include "Common_Plugins/ACUAllocs.h"
 
-DatabaseOfCustomReactionsToAnimationSignals g_DatabaseOfCustomReactionsToAnimationSignals;
 #include "ACU_DefineNativeFunction.h"
 DEFINE_GAME_FUNCTION(HashmapGeneric__AddElement, 0x14277B2A0, void*, __fastcall, (ACUHashmapGeneric* p_hashmap, unsigned __int64 p_key, __int64 p_errorOut_mb));
 // Returns ptr to element, or `-1` if fails for some reason, I guess?
@@ -103,15 +102,15 @@ void DatabaseOfCustomReactionsToAnimationSignals::UnregisterCustomReaction(Custo
 }
 void RegisterCustomReaction_impl(CustomReactionToAnimationSignals& newCustomReaction)
 {
-    g_DatabaseOfCustomReactionsToAnimationSignals.RegisterCustomReaction(newCustomReaction);
+    DatabaseOfCustomReactionsToAnimationSignals::GetSingleton().RegisterCustomReaction(newCustomReaction);
 }
 void UnregisterCustomReaction_impl(CustomReactionToAnimationSignals& reactionToRemove)
 {
-    g_DatabaseOfCustomReactionsToAnimationSignals.UnregisterCustomReaction(reactionToRemove);
+    DatabaseOfCustomReactionsToAnimationSignals::GetSingleton().UnregisterCustomReaction(reactionToRemove);
 }
 void RegisterSignal_impl(SignalID_t signalInt)
 {
-    g_DatabaseOfCustomReactionsToAnimationSignals.RegisterSignal(signalInt);
+    DatabaseOfCustomReactionsToAnimationSignals::GetSingleton().RegisterSignal(signalInt);
 }
 
 
@@ -136,12 +135,12 @@ void DatabaseOfCustomReactionsToAnimationSignals::Hook_WhenInitializingArrayOfIn
 }
 void WhenInitializingArrayOfIntegerSignalReceivers_FinishedBuildingDefaultSignalReceivers_AddCustomSignals(ManagerOfAnimationSignalsReceivers& integerSignalReceiversManager)
 {
-    g_DatabaseOfCustomReactionsToAnimationSignals.Hook_WhenInitializingArrayOfIntegerSignalReceivers(integerSignalReceiversManager);
+    DatabaseOfCustomReactionsToAnimationSignals::GetSingleton().Hook_WhenInitializingArrayOfIntegerSignalReceivers(integerSignalReceiversManager);
 }
 void WhenInitializingArrayOfIntegerSignalReceivers_FinishedBuildingDefaultSignalReceivers_AddCustomSignals(AllRegisters* params)
 {
     ManagerOfAnimationSignalsReceivers* integerSignalReceiversManager = (ManagerOfAnimationSignalsReceivers*)params->rsi_;
-    g_DatabaseOfCustomReactionsToAnimationSignals.Hook_WhenInitializingArrayOfIntegerSignalReceivers(*integerSignalReceiversManager);
+    DatabaseOfCustomReactionsToAnimationSignals::GetSingleton().Hook_WhenInitializingArrayOfIntegerSignalReceivers(*integerSignalReceiversManager);
 }
 void WhenEnabledSignalReceiverHasReceivedAChange_DispatchToCustomSubscribers(AllRegisters* params)
 {
@@ -150,7 +149,7 @@ void WhenEnabledSignalReceiverHasReceivedAChange_DispatchToCustomSubscribers(All
     const bool isSignalOn = (bool&)params->r8_;
     UsedDuringQuickshot_SignalReceiver& integerSignalReceiver = humanStates->integerSignalReceiversManager->integerSignalReceivers[idxOfRegisteredIntegerSignal];
     SignalID_t signalInt = integerSignalReceiver.animationSignalValue;
-    g_DatabaseOfCustomReactionsToAnimationSignals.WhenSignalChangeDispatched(
+    DatabaseOfCustomReactionsToAnimationSignals::GetSingleton().WhenSignalChangeDispatched(
         humanStates,
         signalInt,
         isSignalOn

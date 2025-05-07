@@ -4,7 +4,6 @@
 #include "Common_Plugins/AnimationGraphMods/ReactToAnimationSignals.h"
 #include "PluginLoader_VariousHooks/Animation/AnimationGraphEvaluationPatches.h"
 
-AnimationModdingInterface g_AnimationModding;
 
 void RegisterCustomReaction_impl(CustomReactionToAnimationSignals& newCustomReaction);
 void UnregisterCustomReaction_impl(CustomReactionToAnimationSignals& reactionToRemove);
@@ -15,4 +14,7 @@ AnimationModdingInterface::AnimationModdingInterface()
     , fnp_RegisterCustomReaction(::RegisterCustomReaction_impl)
     , fnp_UnregisterCustomReaction(::UnregisterCustomReaction_impl)
     , fnp_AddNewRTCPVariableIfNotPresent(::AddNewRTCPVariableIfNotPresent_impl)
-{}
+{
+    // To ensure the initialization order of the singletons.
+    DatabaseOfCustomReactionsToAnimationSignals::GetSingleton();
+}

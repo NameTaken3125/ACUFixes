@@ -3,7 +3,6 @@
 #include "Common_Plugins_impl/ImGuiConsoleInterface.h"
 #include "ImGuiConsole.h"
 
-ImGuiConsoleInterface g_ImGuiConsoleInterface;
 
 void ImGuiConsole_AddLog(const char* s)
 {

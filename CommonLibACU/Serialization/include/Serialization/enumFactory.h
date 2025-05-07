@@ -1,5 +1,7 @@
 #pragma once
 
+#include <optional>
+
 /*
 Thank you Suma https://stackoverflow.com/questions/147267/easy-way-to-use-variables-of-enum-types-as-string-in-c/202511#202511
 Something to note:
@@ -19,8 +21,7 @@ Something to note:
 template<typename EnumType>
 struct enum_reflection {
     static constexpr const char* GetString(EnumType value);
-    static constexpr EnumType GetValue(const std::string_view& str);
-    // NOT including the extra element `INVALID_FROM_STRING`.
+    static constexpr std::optional<EnumType> GetValue(const std::string_view& str);
     static constexpr size_t GetNumItems();
     static constexpr auto GetAllStrings();
     static constexpr auto GetAllValues();
@@ -28,7 +29,6 @@ struct enum_reflection {
 };
 
 constexpr const std::string_view INVALID_ENUM_TO_STRING = "INVALID_TO_STRING";
-#define ENUM_REFLECTION_INVALID_FROM_STRING INVALID_FROM_STRING
 
 // expansion macro for enum value definition
 #define ENUM_VALUE(name,assign) name assign,
@@ -46,10 +46,10 @@ constexpr const std::string_view INVALID_ENUM_TO_STRING = "INVALID_TO_STRING";
 #define ENUM_VALUE_AND_COMMA(name,assign) current_enum_type::name,
 #define ENUM_PAIR_AND_COMMA(name,assign) Pair{ current_enum_type::name, #name },
 
-/// declare the access function and define enum values
+// Expand the macro-fied enum in several different ways, to define the enum class itself
+// and various access functions.
 #define DECLARE_ENUM(EnumType,ENUM_DEF) \
   enum class EnumType { \
-    ENUM_REFLECTION_INVALID_FROM_STRING, \
     ENUM_DEF(ENUM_VALUE) \
   }; \
   template<> \
@@ -63,11 +63,11 @@ constexpr const std::string_view INVALID_ENUM_TO_STRING = "INVALID_TO_STRING";
     } \
   } \
   template<> \
-  constexpr EnumType enum_reflection<EnumType>::GetValue(const std::string_view& str) \
+  constexpr std::optional<EnumType> enum_reflection<EnumType>::GetValue(const std::string_view& str) \
   { \
     using current_enum_type = EnumType; \
     ENUM_DEF(ENUM_STRCMP) \
-    return EnumType::INVALID_FROM_STRING; /* handle input error */ \
+    return {}; /* handle input error */ \
   } \
   template<> \
   constexpr size_t enum_reflection<EnumType>::GetNumItems() \

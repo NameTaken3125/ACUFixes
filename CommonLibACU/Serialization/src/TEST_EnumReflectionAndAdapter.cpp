@@ -27,9 +27,10 @@ void TEST_EnumFactoryStaticReflection()
     constexpr const char* s2 = enum_reflection<SomeEnum>::GetString((SomeEnum)2);
     constexpr const char* s3_invalidToString = enum_reflection<SomeEnum>::GetString((SomeEnum)5555);
     constexpr bool testOfInvalidTranslation = s3_invalidToString == INVALID_ENUM_TO_STRING;
-    constexpr SomeEnum val1 = enum_reflection<SomeEnum>::GetValue("K_NONE");
-    constexpr SomeEnum val2 = enum_reflection<SomeEnum>::GetValue("K_2");
-    constexpr SomeEnum val3_invalidFromString = enum_reflection<SomeEnum>::GetValue("K_5555");
+    constexpr SomeEnum val1 = enum_reflection<SomeEnum>::GetValue("K_NONE").value();
+    constexpr SomeEnum val2 = enum_reflection<SomeEnum>::GetValue("K_2").value();
+    // Invalid constexpr conversion from a string won't compile:
+    //constexpr SomeEnum val3_invalidFromString = enum_reflection<SomeEnum>::GetValue("K_5555").value();
 
     constexpr auto numItems = enum_reflection<SomeEnum>::GetNumItems();
     constexpr auto allStrings = enum_reflection<SomeEnum>::GetAllStrings();

@@ -16,7 +16,6 @@ struct AnimationGraphEvaluationPatches : AutoAssemblerCodeHolder_Base
 class DatabaseOfCustomReactionsToAnimationSignals
 {
 public:
-public:
     void RegisterCustomReaction(CustomReactionToAnimationSignals& newCustomReceiver);
     void UnregisterCustomReaction(CustomReactionToAnimationSignals& reactionToRemove);
     void RegisterSignal(SignalID_t signalInt);
@@ -27,5 +26,6 @@ private:
     std::vector<CustomReactionToAnimationSignals*> m_CustomReactions;
 public:
     std::set<SignalID_t> m_AppendedNewSignalReceiversInHumanStates;
+public:
+    static DatabaseOfCustomReactionsToAnimationSignals& GetSingleton() { static DatabaseOfCustomReactionsToAnimationSignals singleton; return singleton; }
 };
-extern DatabaseOfCustomReactionsToAnimationSignals g_DatabaseOfCustomReactionsToAnimationSignals;
