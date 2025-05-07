@@ -13,6 +13,7 @@ JSON FromFile(const fs::path& path)
 }
 void ToFile(const JSON& obj, const fs::path& path)
 {
+    fs::create_directories(path.parent_path());
     std::ofstream ofs(path);
     ofs << obj.dump();
 }

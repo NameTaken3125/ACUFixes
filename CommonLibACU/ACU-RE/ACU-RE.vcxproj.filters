@@ -176,6 +176,8 @@
     <ClInclude Include="inc\ACU\AtomGraphEvaluation.h" />
     <ClInclude Include="inc\ACU\MissionConditionGroup.h" />
     <ClInclude Include="inc\ACU\MissionCondition.h" />
+    <ClInclude Include="inc\ACU\GameBootstrap.h" />
+    <ClInclude Include="inc\ACU\LoadInfo.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />

@@ -105,7 +105,7 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
                             "Doing so is likely to crash the game.\n"
                             "Furthermore, it's up to the plugins to decide\n"
                             "whether or not they can be safely uninjected.\n"
-                            "If you're curious: currently the only reason for such a crash\n"
+                            "If you're curious: currently the reason why such a crash is unavoidable\n"
                             "is my Animated Removable Hood Toggle. See more details in the code comments.\n"
                             "You can still try and uninject if you need to."
                         );

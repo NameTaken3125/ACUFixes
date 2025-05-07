@@ -251,7 +251,7 @@ void LogException(::EXCEPTION_POINTERS& excPointers)
     PrintAllModules(modules);
     LogExceptionCode(*excPointers.ExceptionRecord, modules);
 }
-LONG __stdcall UnhandledExceptionHandler(::EXCEPTION_POINTERS* exception) noexcept
+LONG __stdcall CrashLogUnhandledExceptionHandler(::EXCEPTION_POINTERS* exception) noexcept
 {
     // I fail to trigger this. Maybe this means that there are more vectored exception handlers
     // and they prevent this code from being reached.
@@ -267,13 +267,14 @@ void HandleExc_SetThreadName(::EXCEPTION_POINTERS* exception)
 {
     DWORD numParams = exception->ExceptionRecord->NumberParameters;
     LOG_DEBUG(CrashLog
-        , L"    NumParams: %d\n"
+        , L"    ThreadID: %x, NumParams: %d\n"
+        , GetCurrentThreadId()
         , numParams
     );
     if (numParams == 6)
     {
         LOG_DEBUG(CrashLog
-            , L"    Name: \"%s\", Addr: %llX\n"
+            , L"    Name    : \"%s\", Addr: %llX\n"
             , utf8_and_wide_string_conversion::utf8_decode((const char*)exception->ExceptionRecord->ExceptionInformation[1]).c_str()
             , exception->ExceptionRecord->ExceptionInformation[5]
         );
@@ -281,7 +282,7 @@ void HandleExc_SetThreadName(::EXCEPTION_POINTERS* exception)
     else if (numParams == 3)
     {
         LOG_DEBUG(CrashLog
-            , L"    Name: %s\n"
+            , L"    Name    : %s\n"
             , utf8_and_wide_string_conversion::utf8_decode((const char*)exception->ExceptionRecord->ExceptionInformation[1]).c_str()
         );
     }
@@ -297,7 +298,7 @@ void HandleExc_SetThreadName(::EXCEPTION_POINTERS* exception)
         }
     }
 }
-LONG _stdcall VectoredExceptionHandler(::EXCEPTION_POINTERS* exception) noexcept
+LONG _stdcall CrashLogVectoredExceptionHandler(::EXCEPTION_POINTERS* exception) noexcept
 {
     LOG_DEBUG(CrashLog
         , L"[*] Vectored Exception Handler. ExceptionCode %llX%s:\n"
@@ -327,6 +328,6 @@ LONG _stdcall VectoredExceptionHandler(::EXCEPTION_POINTERS* exception) noexcept
 PVOID g_VEHhandle = nullptr;
 void InstallCrashLog()
 {
-    PVOID vehHandle = ::AddVectoredExceptionHandler(0, &VectoredExceptionHandler);
+    PVOID vehHandle = ::AddVectoredExceptionHandler(0, &CrashLogVectoredExceptionHandler);
     g_VEHhandle = vehHandle;
 }

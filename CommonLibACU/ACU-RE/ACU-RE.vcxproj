@@ -194,12 +194,14 @@
     <ClInclude Include="inc\ACU\CameraSelectorNode.h" />
     <ClInclude Include="inc\ACU\Event.h" />
     <ClInclude Include="inc\ACU\ForgeManager.h" />
+    <ClInclude Include="inc\ACU\GameBootstrap.h" />
     <ClInclude Include="inc\ACU\GearPage.h" />
     <ClInclude Include="inc\ACU\GearUIInfo.h" />
     <ClInclude Include="inc\ACU\GearUIInfoContainer.h" />
     <ClInclude Include="inc\ACU\HasWorld.h" />
     <ClInclude Include="inc\ACU\InventoryItemContainer.h" />
     <ClInclude Include="inc\ACU\Letterbox.h" />
+    <ClInclude Include="inc\ACU\LoadInfo.h" />
     <ClInclude Include="inc\ACU\Material.h" />
     <ClInclude Include="inc\ACU\MenuManager.h" />
     <ClInclude Include="inc\ACU\MenuPage.h" />

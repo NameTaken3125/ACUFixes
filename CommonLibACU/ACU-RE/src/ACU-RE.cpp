@@ -198,3 +198,6 @@
 
 #include "ACU/TagDescriptor.h"
 #include "ACU/TagDictionnaries.h"
+
+#include "ACU/LoadInfo.h"
+#include "ACU/GameBootstrap.h"

@@ -16,6 +16,7 @@ std::optional<MyLogFileLifetime> g_LogLifetime;
 void ImGuiLayer_EvenWhenMenuIsClosed();
 void ImGuiLayer_WhenMenuIsOpen();
 void ApplyAnimationGraphMods();
+void HacksContainer_AssetOverrides_Start();
 class ACUFixes_TheFixesPlugin : public ACUPluginInterfaceVirtuals
 {
 public:
@@ -36,6 +37,7 @@ public:
         g_LogLifetime.emplace(AbsolutePathInThisDLLDirectory(THIS_DLL_PROJECT_NAME "-log.log"));
         MainConfig::FindAndLoadConfigFileOrCreateDefault(AbsolutePathInThisDLLDirectory(THIS_DLL_PROJECT_NAME "-config.json"));
         MyVariousHacks::Start();
+        HacksContainer_AssetOverrides_Start();
         ApplyAnimationGraphMods();
         return true;
     }

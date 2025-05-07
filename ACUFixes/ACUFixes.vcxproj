@@ -201,6 +201,10 @@ REM robocopy "$(SolutionDir)NewAnimations" "$(TargetDir)NewAnimations" /MIR
     <ClCompile Include="src\AnimationTools\AnimGraphMods.cpp" />
     <ClCompile Include="src\AnimationTools\AnimGraphMods_BasicLayer.cpp" />
     <ClCompile Include="src\AnimationTools\Animtools_ImGui.cpp" />
+    <ClCompile Include="src\AssetOverrides\AssetOverridesConfig.cpp" />
+    <ClCompile Include="src\AssetOverrides\FindFirstHandleInDatapack.cpp" />
+    <ClCompile Include="src\AssetOverrides\HacksContainer_AssetOverrides.cpp" />
+    <ClCompile Include="src\AssetOverrides\VirtualForgeFiles.cpp" />
     <ClCompile Include="src\ParkourDebugging\Hack_PickEntityToShoot.cpp" />
     <ClCompile Include="src\HacksContainer_DevExtras.cpp" />
     <ClCompile Include="src\ImGui3D\ImGui3DLayer.cpp" />
@@ -272,6 +276,8 @@ REM robocopy "$(SolutionDir)NewAnimations" "$(TargetDir)NewAnimations" /MIR
     <ClInclude Include="src\AnimationTools\AnimationsLog\AnimationGraphEvaluationLog.h" />
     <ClInclude Include="src\AnimationTools\AtomGraphControls.h" />
     <ClInclude Include="src\AnimationTools\AtomGraphModsCommon.h" />
+    <ClInclude Include="src\AssetOverrides\AssetOverrides.h" />
+    <ClInclude Include="src\AssetOverrides\AssetOverridesConfig.h" />
     <ClInclude Include="src\ParkourDebugging\Hack_PickEntityToShoot.h" />
     <ClInclude Include="src\AnimationTools\Hack_RemovableHood_Animations.h" />
     <ClInclude Include="src\AnimationTools\NewHandlesFactory.h" />

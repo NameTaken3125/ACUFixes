@@ -29,8 +29,8 @@ namespace ACU::Handles
 class HandlesMap
 {
 public:
-    std::string FindNameForHandle(uint64 handle) { return FindNameForHandle_binsearchinmemory(handle); }
-    std::string FindNameForHandle_binsearchinmemory(uint64 handle);
+    const char* FindNameForHandle(uint64 handle) { return FindNameForHandle_binsearchinmemory(handle); }
+    const char* FindNameForHandle_binsearchinmemory(uint64 handle);
     static HandlesMap& GetSingleton() {
         static HandlesMap singleton;
         return singleton;
@@ -84,11 +84,11 @@ void LoadHandlesmapFile()
 
     g_LoadedHandlesmap.emplace(std::move(resultWholeFile));
 };
-std::string MakeHandleString_HandlesmapNotLoaded(uint64 handle)
+const char* MakeHandleString_HandlesmapNotLoaded(uint64 handle)
 {
     return "";
 }
-std::string MakeHandleString_HandleNotRecognized(uint64 handle)
+const char* MakeHandleString_HandleNotRecognized(uint64 handle)
 {
     return "";
 }
@@ -98,7 +98,7 @@ enum class HandlesDictionaryNotLoadedWhy
     DidntAttemptToLoadYet,
 };
 HandlesDictionaryNotLoadedWhy g_HandlesDictState = HandlesDictionaryNotLoadedWhy::DidntAttemptToLoadYet;
-std::string HandlesMap::FindNameForHandle_binsearchinmemory(uint64 handle)
+const char* HandlesMap::FindNameForHandle_binsearchinmemory(uint64 handle)
 {
     if (!g_LoadedHandlesmap)
     {
@@ -116,9 +116,9 @@ std::string HandlesMap::FindNameForHandle_binsearchinmemory(uint64 handle)
             return MakeHandleString_HandlesmapNotLoaded(handle);
         }
     }
-    auto FindStringForHandleInFile = [&]() -> std::string
+    auto FindStringForHandleInFile = [&]() -> const char*
     {
-        std::string result;
+        const char* result = nullptr;
         int left = 0;
         int right = g_LoadedHandlesmap->numHandles;
         while (left <= right)
@@ -142,8 +142,8 @@ std::string HandlesMap::FindNameForHandle_binsearchinmemory(uint64 handle)
         }
         return result;
     };
-    std::string foundName = FindStringForHandleInFile();
-    if (!foundName.empty())
+    const char* foundName = FindStringForHandleInFile();
+    if (foundName)
     {
         return foundName;
     }

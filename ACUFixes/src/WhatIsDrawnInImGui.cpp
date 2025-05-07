@@ -51,6 +51,7 @@ void DrawImGui3DMatricesDebug();
 void RequestUnloadThisPlugin();
 void DrawAnimationExperiments();
 void DrawHacksControls_DevExtras();
+void HacksContainer_AssetOverrides_DrawControls();
 #include "MainConfig.h"
 #include "Handles.h"
 void ImGuiLayer_WhenMenuIsOpen()
@@ -68,6 +69,10 @@ void ImGuiLayer_WhenMenuIsOpen()
             if (ImGuiCTX::Tab _mainTab{ "Weather" })
             {
                 DrawWeatherControls();
+            }
+            if (ImGuiCTX::Tab _mainTab{ "Asset Overrides" })
+            {
+                HacksContainer_AssetOverrides_DrawControls();
             }
             if (ImGuiCTX::Tab _extraoptions{ "Extra" })
             {
@@ -128,11 +133,6 @@ void ImGuiLayer_WhenMenuIsOpen()
                             {
                                 player->GetPosition() = Vector3f(1200.23f, 150.99f, 39.00f);
                             }
-                        }
-                        ImGui::SameLine();
-                        if (ImGui::Button("Unload this plugin"))
-                        {
-                            RequestUnloadThisPlugin();
                         }
                         DrawAnimationExperiments();
                     }
