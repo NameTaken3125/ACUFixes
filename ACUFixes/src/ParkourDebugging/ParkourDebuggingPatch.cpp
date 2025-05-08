@@ -313,7 +313,6 @@ std::vector<EnumParkourAction> g_UnidentifiedParkourActions = {
     EnumParkourAction::unk110,
     EnumParkourAction::unk111,
     EnumParkourAction::unk113,
-    EnumParkourAction::unk116,
     EnumParkourAction::unk117,
     EnumParkourAction::unk118,
     EnumParkourAction::defenestrateSprintOutOfWindow_122,
@@ -383,7 +382,7 @@ void WhenGatheredMoves_FilterFnPrologue_LogBeforeFiltered(AllRegisters* params)
 {
     SmallArray<ParkourAction_Commonbase*>& moves = **(SmallArray<ParkourAction_Commonbase*>**)(params->GetRSP() + 0x48);
     if (moves.size == 0) return;
-    LOG_DEBUG(ParkourLogger, L"Num before filter: %d"
+    LOG_DEBUG(ParkourLogger, L"Num potential actions before filtering: %d"
         , moves.size
     );
     for (ParkourAction_Commonbase* move : moves)

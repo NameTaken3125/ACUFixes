@@ -230,6 +230,11 @@ int SelectBestMatchingMoveIdx_ExtraProcessing(AllRegisters* params)
     then make my final selection.
     */
     auto [selectedSpindescent, _spindescentIdxBeforeSorting] = SelectBestMatchingMoveIdx_ExtraProcessing_CustomSelection_Spindescent(availableParkourActions);
+    //// If I can provide some flexible way to specify custom move selection from UI
+    //// without recompilation, then this is where that selection can be enforced.
+    //std::optional<int>                 ParkourDebugging_SelectMove(SmallArray<AvailableParkourAction*>&availableParkourActions);
+    //std::optional<int> forcedMoveIdx = ParkourDebugging_SelectMove(availableParkourActions);
+    //if (forcedMoveIdx) return *forcedMoveIdx;
     int bestMatchIdxAfterNativeSorting = ((BestMatchSelector_fnt)params->r10_)(
         params->rcx_,
         params->rdx_,

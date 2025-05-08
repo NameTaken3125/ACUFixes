@@ -119,7 +119,7 @@
     XX(unk113, = 113) \
     XX(passementFromHayStack, = 114) \
     XX(startJumpOutOfWindow, = 115) \
-    XX(unk116, = 116) \
+    XX(jumpOutOfWindowDescendToLedge_mb, = 116) /* Sprint out of window with ParkourUp at [497.08 125.68 9.92] */ \
     XX(unk117, = 117) \
     XX(unk118, = 118) \
     XX(jumpOutOfWindowToFeet, = 119) \

@@ -59,7 +59,8 @@ static AtomAnimComponent* GetPlayerAtomAnimComponent()
 
 MyPlayedAnimation::MyPlayedAnimation(const ACUSharedPtr_Strong<Animation>& animStrongRef, uint64 playStartTime)
     : m_playedAnimationStrongRef(animStrongRef)
-    , m_currentState(AnimState_Playing{ 0, playStartTime })
+    , m_LastChangeTimestamp(playStartTime)
+    , m_LastChangeAnimTime(0)
 {}
 float MyPlayedAnimation::GetDuration()
 {
@@ -69,50 +70,52 @@ float MyPlayedAnimation::GetDuration()
     }
     return 0;
 }
-
 bool MyPlayedAnimation::IsPaused()
 {
-    const bool isPaused = std::get_if<AnimState_Paused>(&m_currentState) != nullptr;
+    const bool isPaused = m_IsPaused;
     return isPaused;
 }
-float MyAnimationPlayer::CalculateAnimTime(MyPlayedAnimation& anim)
+float MyAnimationPlayer::CalculateAnimTime(MyPlayedAnimation& anim, uint64 animatorTime)
 {
-    if (auto* statePlaying = std::get_if<AnimState_Playing>(&anim.m_currentState))
+    if (anim.IsPaused())
     {
-        uint64 animatorTime = GetAnimatorTime();
-        float timeElapsedSinceLastResume = (animatorTime - statePlaying->m_startingAnimatorTimestamp) / 30000.0f;
-        timeElapsedSinceLastResume *= m_speedMult;
-        float currentAnimTime = timeElapsedSinceLastResume + statePlaying->m_startingAnimtime;
-
-        const bool isLooping = m_isLooping;
-        if (isLooping)
-        {
-            float animDuration = m_playedAnim->GetDuration();
-            currentAnimTime = fmodf(currentAnimTime, animDuration);
-        }
-        return currentAnimTime;
+        return anim.m_LastChangeAnimTime;
     }
-    else if (auto* statePaused = std::get_if<AnimState_Paused>(&anim.m_currentState))
+    float timeElapsedSinceLastChange = (animatorTime - anim.m_LastChangeTimestamp) / 30000.0f;
+    float animTimeChange = timeElapsedSinceLastChange * m_speedMult;
+    float newAnimTime = anim.m_LastChangeAnimTime + animTimeChange;
+    if (!m_isLooping)
     {
-        return statePaused->m_pausedAtAnimTime;
+        if (newAnimTime < 0) newAnimTime = 0;
+        else if (newAnimTime > anim.GetDuration()) newAnimTime = anim.GetDuration();
     }
-    return 0;
+    else
+    {
+        float duration = anim.GetDuration();
+        if (newAnimTime > duration) newAnimTime = fmodf(newAnimTime, duration);
+        else if (newAnimTime < 0) newAnimTime = duration - fmodf(-newAnimTime, duration);
+    }
+    return newAnimTime;
 }
 void MyAnimationPlayer::Pause(MyPlayedAnimation& anim)
 {
-    float currentAnimTime = CalculateAnimTime(anim);
-    anim.m_currentState = AnimState_Paused{ currentAnimTime };
+    uint64 animatorTime = GetAnimatorTime();
+    float currentAnimTime = CalculateAnimTime(anim, animatorTime);
+    anim.m_LastChangeTimestamp = animatorTime;
+    anim.m_LastChangeAnimTime = currentAnimTime;
+    anim.m_IsPaused = true;
 }
 void MyAnimationPlayer::PauseAt(MyPlayedAnimation& anim, float animTime)
 {
-    anim.m_currentState = AnimState_Paused{ animTime };
+    uint64 animatorTime = GetAnimatorTime();
+    anim.m_LastChangeTimestamp = animatorTime;
+    anim.m_LastChangeAnimTime = animTime;
+    anim.m_IsPaused = true;
 }
 void MyAnimationPlayer::Unpause(MyPlayedAnimation& anim)
 {
-    if (auto* statePaused = std::get_if<AnimState_Paused>(&anim.m_currentState))
-    {
-        anim.m_currentState = AnimState_Playing{ statePaused->m_pausedAtAnimTime, GetAnimatorTime() };
-    }
+    anim.m_LastChangeTimestamp = GetAnimatorTime();
+    anim.m_IsPaused = false;
 }
 void MyAnimationPlayer::OnAnimationEdited(Animation& anim, AnimationKeyframeTime_t animTime)
 {
@@ -154,21 +157,26 @@ void MyAnimationPlayer::DrawTimeSlider()
     auto* animCpnt = GetPlayerAtomAnimComponent();
     if (!animCpnt)
     {
+        ImGuiCTX::PushStyleColor _redText(ImGuiCol_Text, ImVec4(0.869f, 0.389f, 0.376f, 1.0f));
         ImGui::Text("Cannot find the AtomAnimComponent");
         return;
     }
     if (!animCpnt->pD0)
     {
-        ImGui::Text("Cannot AtomAnimComponent GraphEvaluation doesn't exist");
+        ImGuiCTX::PushStyleColor _redText(ImGuiCol_Text, ImVec4(0.869f, 0.389f, 0.376f, 1.0f));
+        ImGui::Text("AtomAnimComponent GraphEvaluation doesn't exist");
         return;
     }
     float* cinematicAnimTime = GetGraphVariable<float>(*animCpnt->pD0, hash_CinematicAnimationTime);
     if (!cinematicAnimTime)
     {
+        ImGuiCTX::PushStyleColor _redText(ImGuiCol_Text, ImVec4(0.869f, 0.389f, 0.376f, 1.0f));
         ImGui::Text("Cannot find the \"CinematicAnimationTime\" graph variable");
         return;
     }
-    if (ImGui::SliderFloat("CinematicAnimationTime", cinematicAnimTime, 0, 5))
+    float timeMin = 0;
+    float timeMax = m_playedAnim ? m_playedAnim->GetDuration() : 5;
+    if (ImGui::SliderFloat("CinematicAnimationTime", cinematicAnimTime, timeMin, timeMax))
     {
         if (m_playedAnim)
         {
@@ -203,10 +211,23 @@ void MyAnimationPlayer::DrawControls()
     }
     if (m_playedAnim)
     {
+        if (ImGui::Button("|<<"))
+        {
+            m_playedAnim->m_LastChangeTimestamp = GetAnimatorTime();
+            m_playedAnim->m_LastChangeAnimTime = 0;
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("<<"))
+        {
+            Pause(*m_playedAnim);
+            m_speedMult = -fabsf(m_speedMult);
+            Unpause(*m_playedAnim);
+        }
+        ImGui::SameLine();
         const bool isPaused = m_playedAnim->IsPaused();
         if (!isPaused)
         {
-            if (ImGui::Button("Pause"))
+            if (ImGui::Button(" Pause "))
             {
                 Pause(*m_playedAnim);
             }
@@ -217,6 +238,19 @@ void MyAnimationPlayer::DrawControls()
             {
                 Unpause(*m_playedAnim);
             }
+        }
+        ImGui::SameLine();
+        if (ImGui::Button(">>"))
+        {
+            Pause(*m_playedAnim);
+            m_speedMult = fabsf(m_speedMult);
+            Unpause(*m_playedAnim);
+        }
+        ImGui::SameLine();
+        if (ImGui::Button(">>|"))
+        {
+            m_playedAnim->m_LastChangeTimestamp = GetAnimatorTime();
+            m_playedAnim->m_LastChangeAnimTime = m_playedAnim->GetDuration();
         }
         ImGui::SameLine();
         if (ImGui::Button("Stop cinematic animation"))
@@ -244,7 +278,18 @@ void MyAnimationPlayer::DrawControls()
         }
         m_speedMult = newSpeedMult;
     }
-    ImGui::Checkbox("Looping", &m_isLooping);
+    bool newIsLooping = m_isLooping;
+    if (ImGui::Checkbox("Looping", &newIsLooping))
+    {
+        if (m_playedAnim)
+        {
+            uint64 animatorTime = GetAnimatorTime();
+            float currentAnimTime = CalculateAnimTime(*m_playedAnim, animatorTime);
+            m_playedAnim->m_LastChangeTimestamp = animatorTime;
+            m_playedAnim->m_LastChangeAnimTime = currentAnimTime;
+        }
+        m_isLooping = newIsLooping;
+    }
 }
 void MyAnimationPlayer::UpdateAnimations()
 {
@@ -252,7 +297,7 @@ void MyAnimationPlayer::UpdateAnimations()
     auto* animCpnt = GetPlayerAtomAnimComponent();
     if (!animCpnt) { return; }
 
-    float currentAnimTime = CalculateAnimTime(*m_playedAnim);
+    float currentAnimTime = CalculateAnimTime(*m_playedAnim, GetAnimatorTime());
     auto* graphEval = animCpnt->pD0;
     if (!graphEval) return;
     SetGraphVariable<float>(*graphEval, hash_CinematicAnimationTime, currentAnimTime);

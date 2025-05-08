@@ -4,19 +4,6 @@
 #include "Experimental_StrongPtr.h"
 #include "ACU/Animation.h"
 
-struct AnimState_Playing
-{
-    float m_startingAnimtime = 0;
-    uint64 m_startingAnimatorTimestamp = 0;
-};
-struct AnimState_Paused
-{
-    float m_pausedAtAnimTime = 0;
-};
-using AnimState_t = std::variant<
-    AnimState_Playing
-    , AnimState_Paused
->;
 class MyPlayedAnimation
 {
 public:
@@ -27,7 +14,9 @@ public:
 private:
     friend class MyAnimationPlayer;
     ACUSharedPtr_Strong<Animation> m_playedAnimationStrongRef;
-    AnimState_t m_currentState;
+    uint64 m_LastChangeTimestamp;
+    float m_LastChangeAnimTime;
+    bool m_IsPaused = false;
 };
 
 using AnimationKeyframeTime_t = uint16;
@@ -49,7 +38,7 @@ public:
     float m_speedMult = 1.0f;
 
 private:
-    float CalculateAnimTime(MyPlayedAnimation& anim);
+    float CalculateAnimTime(MyPlayedAnimation& anim, uint64 animatorTime);
 private:
     void DrawTimeSlider();
 private:
