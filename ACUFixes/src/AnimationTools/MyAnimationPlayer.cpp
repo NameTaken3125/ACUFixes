@@ -234,13 +234,15 @@ void MyAnimationPlayer::DrawControls()
         }
     }
     DrawTimeSlider();
-    if (ImGui::SliderFloat("Speed", &m_speedMult, 0, 3))
+    float newSpeedMult = m_speedMult;
+    if (ImGui::SliderFloat("Speed", &newSpeedMult, -2.0f, 2.0f))
     {
         if (m_playedAnim)
         {
             Pause(*m_playedAnim);
             Unpause(*m_playedAnim);
         }
+        m_speedMult = newSpeedMult;
     }
     ImGui::Checkbox("Looping", &m_isLooping);
 }
@@ -251,7 +253,9 @@ void MyAnimationPlayer::UpdateAnimations()
     if (!animCpnt) { return; }
 
     float currentAnimTime = CalculateAnimTime(*m_playedAnim);
-    SetGraphVariable<float>(*animCpnt->pD0, hash_CinematicAnimationTime, currentAnimTime);
+    auto* graphEval = animCpnt->pD0;
+    if (!graphEval) return;
+    SetGraphVariable<float>(*graphEval, hash_CinematicAnimationTime, currentAnimTime);
 }
 
 DEFINE_GAME_FUNCTION(Animation__ctor, 0x140053270, Animation*, __fastcall, (Animation* a1));
