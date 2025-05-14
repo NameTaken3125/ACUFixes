@@ -87,7 +87,8 @@ void AddNewRTCPVariableIfNotPresent_impl(AtomGraph& atomGraph, const RTCPVariabl
     g_GraphPatches.AddRTCPVariable(atomGraph, newVarDescriptor);
 }
 
-
+using AnimationTools::Signals::CustomReactionToAnimationSignals;
+using AnimationTools::Signals::SignalID_t;
 void DatabaseOfCustomReactionsToAnimationSignals::RegisterSignal(SignalID_t signalInt)
 {
     m_AppendedNewSignalReceiversInHumanStates.insert(signalInt);
@@ -118,7 +119,7 @@ void DatabaseOfCustomReactionsToAnimationSignals::WhenSignalChangeDispatched(Hum
 {
     for (CustomReactionToAnimationSignals* customReaction : m_CustomReactions)
     {
-        customReaction->OnSignalChangeDispatched(receivingEntityHumanStates, signalInt, isSignalOn);
+        customReaction(receivingEntityHumanStates, signalInt, isSignalOn);
     }
 }
 void DatabaseOfCustomReactionsToAnimationSignals::Hook_WhenInitializingArrayOfIntegerSignalReceivers(ManagerOfAnimationSignalsReceivers& integerSignalReceiversManager)

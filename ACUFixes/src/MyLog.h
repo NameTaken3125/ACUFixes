@@ -97,7 +97,6 @@ struct Logger_ConsoleAndFile
         va_start(args, fmt);
         buf.appendfv(fmt, args);
         va_end(args);
-        // Prepend logger name to formatted string.
         ImGuiConsole::AddLog(buf.c_str());
         fprintf(g_LogFile, buf.c_str());
         fflush(g_LogFile);

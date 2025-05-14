@@ -4,6 +4,8 @@
 #include "Common_Plugins/AnimationGraphMods/ReactToAnimationSignals.h"
 #include "PluginLoader_VariousHooks/Animation/AnimationGraphEvaluationPatches.h"
 
+using AnimationTools::Signals::SignalID_t;
+using AnimationTools::Signals::CustomReactionToAnimationSignals;
 
 void RegisterCustomReaction_impl(CustomReactionToAnimationSignals& newCustomReaction);
 void UnregisterCustomReaction_impl(CustomReactionToAnimationSignals& reactionToRemove);

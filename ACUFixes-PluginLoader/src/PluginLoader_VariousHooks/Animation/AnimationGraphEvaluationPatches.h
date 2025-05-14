@@ -16,16 +16,16 @@ struct AnimationGraphEvaluationPatches : AutoAssemblerCodeHolder_Base
 class DatabaseOfCustomReactionsToAnimationSignals
 {
 public:
-    void RegisterCustomReaction(CustomReactionToAnimationSignals& newCustomReceiver);
-    void UnregisterCustomReaction(CustomReactionToAnimationSignals& reactionToRemove);
-    void RegisterSignal(SignalID_t signalInt);
-    void WhenSignalChangeDispatched(HumanStatesHolder* receivingEntityHumanStates, SignalID_t signalInt, bool isSignalOn);
+    void RegisterCustomReaction(AnimationTools::Signals::CustomReactionToAnimationSignals& newCustomReceiver);
+    void UnregisterCustomReaction(AnimationTools::Signals::CustomReactionToAnimationSignals& reactionToRemove);
+    void RegisterSignal(AnimationTools::Signals::SignalID_t signalInt);
+    void WhenSignalChangeDispatched(HumanStatesHolder* receivingEntityHumanStates, AnimationTools::Signals::SignalID_t signalInt, bool isSignalOn);
 public:
     void Hook_WhenInitializingArrayOfIntegerSignalReceivers(ManagerOfAnimationSignalsReceivers& integerSignalReceiversManager);
 private:
-    std::vector<CustomReactionToAnimationSignals*> m_CustomReactions;
+    std::vector<AnimationTools::Signals::CustomReactionToAnimationSignals*> m_CustomReactions;
 public:
-    std::set<SignalID_t> m_AppendedNewSignalReceiversInHumanStates;
+    std::set<AnimationTools::Signals::SignalID_t> m_AppendedNewSignalReceiversInHumanStates;
 public:
     static DatabaseOfCustomReactionsToAnimationSignals& GetSingleton() { static DatabaseOfCustomReactionsToAnimationSignals singleton; return singleton; }
 };

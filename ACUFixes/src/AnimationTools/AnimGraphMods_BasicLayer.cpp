@@ -676,29 +676,27 @@ AtomLayeringInfo& LayeringState_CreateNewLayerWithStateMachine(AtomLayeringState
     return *newLayer;
 }
 
+using AnimationTools::Signals::SignalID_t;
+using AnimationTools::Signals::CustomReactionToAnimationSignals;
 constexpr SignalID_t signal_HoodPutOn = 0x800177;
 constexpr SignalID_t signal_HoodTakeOff = 0x800077;
-class ReactToAnimationHoodOnOff : public CustomReactionToAnimationSignals
+void ReactToAnimationHoodOnOff(HumanStatesHolder* receivingEntityHumanStates, SignalID_t signalInt, bool isSignalOn)
 {
-public:
-    virtual void OnSignalChangeDispatched(HumanStatesHolder* receivingEntityHumanStates, SignalID_t signalInt, bool isSignalOn) override
+    if (signalInt == signal_HoodPutOn)
     {
-        if (signalInt == signal_HoodPutOn)
+        if (isSignalOn)
         {
-            if (isSignalOn)
-            {
-                RemovableHood_ReactToAnimationSignal(true);
-            }
-        }
-        else if (signalInt == signal_HoodTakeOff)
-        {
-            if (isSignalOn)
-            {
-                RemovableHood_ReactToAnimationSignal(false);
-            }
+            RemovableHood_ReactToAnimationSignal(true);
         }
     }
-};
+    else if (signalInt == signal_HoodTakeOff)
+    {
+        if (isSignalOn)
+        {
+            RemovableHood_ReactToAnimationSignal(false);
+        }
+    }
+}
 AtomLayeringStateNode* PlayerAtomGraph_GetNormalGameplayLayeringState(AtomGraph& playerGraph)
 {
     auto* mainLayeringState = static_cast<AtomLayeringStateNode*>(playerGraph.RootStateMachine->States[0]);
@@ -742,7 +740,7 @@ public:
 };
 class AnimationGraphMod_HoodControls
 {
-    ReactToAnimationHoodOnOff m_SignalReaction_HoodVisibility;
+    CustomReactionToAnimationSignals& m_SignalReaction_HoodVisibility = ReactToAnimationHoodOnOff;
 public:
     AnimationGraphMod_HoodControls(AtomGraph& atomGraph)
     {

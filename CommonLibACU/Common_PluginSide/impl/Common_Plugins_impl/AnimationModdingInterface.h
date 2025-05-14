@@ -9,9 +9,9 @@ class RTCPVariableDescriptor;
 class  AnimationModdingInterface
 {
 public:
-    void (*fnp_RegisterSignal)(SignalID_t signalInt);
-    void (*fnp_RegisterCustomReaction)(CustomReactionToAnimationSignals& newCustomReaction);
-    void (*fnp_UnregisterCustomReaction)(CustomReactionToAnimationSignals& reactionToRemove);
+    void (*fnp_RegisterSignal)(AnimationTools::Signals::SignalID_t signalInt);
+    void (*fnp_RegisterCustomReaction)(AnimationTools::Signals::CustomReactionToAnimationSignals& newCustomReaction);
+    void (*fnp_UnregisterCustomReaction)(AnimationTools::Signals::CustomReactionToAnimationSignals& reactionToRemove);
     void (*fnp_AddNewRTCPVariableIfNotPresent)(AtomGraph& atomGraph, const RTCPVariableDescriptor& newVarDescriptor);
 
     AnimationModdingInterface(); // Defined in PluginLoader project.
