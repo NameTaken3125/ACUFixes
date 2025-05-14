@@ -4,57 +4,34 @@
 #include "MyLog.h"
 #include "PluginLoaderConfig.h"
 #include "PresentHookOuter.h"
+#include "EarlyHooks/ThreadOperations.h"
+
+#define LOG_FILENAME THIS_DLL_PROJECT_NAME ".log"
 
 
-// Required so that the game doesn't crash on code modification.
-void DisableMainIntegrityCheck();
-void WaitUntilGameIsInitializedEnoughSoThatTheMainIntegrityCheckCanBeDisabled();
-void ClearThe_BeingDebugged_Flag();
-// Respond to input: toggle hacks, etc.
-LRESULT CALLBACK WndProc_HackControls(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
-
-class PresentHookOuter::BasehookSettings_PresentHookOuter : public Base::Settings
-{
-public:
-    BasehookSettings_PresentHookOuter() : Base::Settings(false, WndProc_HackControls) {}
-    virtual void OnBeforeActivate() override {
-        PresentHookOuter::Activate();
-        Base::Data::ShowMenu = false;
-    }
-    virtual void OnBeforeDetach() override {
-        PresentHookOuter::Deactivate();
-    }
-};
 fs::path AbsolutePathInMyDirectory(const fs::path& filenameRel);
-
-
 void PluginLoader_VariousHooks_Start();
 void PluginLoader_FindAndLoadPlugins();
 void InstallCrashLog();
 void SuspendThreadsUntilCheatEnginesVEHDebuggerIsAttached();
+void ClearThe_BeingDebugged_Flag();
 
 
-static void PluginLoader_MainThread(HMODULE thisDLLModule)
+std::optional<MyLogFileLifetime> g_LogLifetime;
+DWORD WINAPI PluginLoaderSetup_AfterMICIsDisabled(LPVOID lpThreadParameter)
 {
-    //SuspendThreadsUntilCheatEnginesVEHDebuggerIsAttached();
-    Base::Data::thisDLLModule = thisDLLModule;
-    MyLogFileLifetime _log{ AbsolutePathInMyDirectory(THIS_DLL_PROJECT_NAME ".log") };
-    InstallCrashLog();
-    WaitUntilGameIsInitializedEnoughSoThatTheMainIntegrityCheckCanBeDisabled();
-    PluginLoaderConfig::FindAndLoadConfigFileOrCreateDefault();
-    DisableMainIntegrityCheck();
-
+    HANDLE evPluginLoaderReady = (HANDLE)lpThreadParameter;
     PluginLoader_VariousHooks_Start();
     PluginLoader_FindAndLoadPlugins();
 
     PresentHookOuter::BasehookSettings_PresentHookOuter basehook;
     Base::Fonts::SetFontSize(g_PluginLoaderConfig.fontSize);
     Base::Start(basehook);
+    SetEvent(evPluginLoaderReady);
     while (!Base::Data::Detached)
     {
         // If the debugger is attached, the game can crash, though not immediately.
-        // Manually repeatedly resetting the `BeingDebugged` flag is a simplistic solution,
+        // Repeatedly resetting the `BeingDebugged` flag on a timer is a simplistic solution,
         // but it has been enough so far.
         ClearThe_BeingDebugged_Flag();
         Sleep(100);
@@ -67,24 +44,61 @@ static void PluginLoader_MainThread(HMODULE thisDLLModule)
     // // The best solution would be to not deallocate the Present() trampoline at all, like
     // // what I believe Cheat Engine's `globalalloc` does.
     Sleep(500);
-}
-DWORD WINAPI PluginLoader_MainThread_RAIIWrapper(LPVOID lpThreadParameter)
-{
-    // `FreeLibraryAndExitThread()` will prevent destructors of objects at this scope
-    // from being called, that's why all work is instead done in a separate function.
-    PluginLoader_MainThread((HMODULE)lpThreadParameter);
-    FreeLibraryAndExitThread((HMODULE)lpThreadParameter, TRUE);
     return TRUE;
 }
-
+void MainIntegrityCheckHasJustBeenDisabled()
+{
+    HANDLE evPluginLoaderReady = CreateEventA(0, 0, 0, 0);
+    CreateThread(nullptr, 0, PluginLoaderSetup_AfterMICIsDisabled, evPluginLoaderReady, 0, nullptr);
+    if (evPluginLoaderReady)
+        WaitForSingleObject(evPluginLoaderReady, INFINITE);
+}
+#include "ACU/Threads/KnownThreads.h"
+void BeforeGameMainThreadStarted_HookTheStartAddress();
+BOOL DllMainOnProcessAttach(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
+{
+    Base::Data::thisDLLModule = hModule;
+    g_LogLifetime.emplace(AbsolutePathInMyDirectory(LOG_FILENAME));
+    PluginLoaderConfig::FindAndLoadConfigFileOrCreateDefault();
+    const bool isInMainThread = GetThreadStartAddress(GetCurrentThread()) == ACU::Threads::ThreadStartAddr_MainThread;
+    if (!isInMainThread)
+    {
+        LOG_DEBUG(DefaultLogger,
+            L"[EarlyHooks]\n"
+            "   Too late to install the early hooks.\n"
+            "   This version of ACUFixes is supposed to be installed in the following way:\n"
+            "   Place the files directly into the \"Assassin's Creed Unity\" folder (where the \"ACU.exe\" file is).\n"
+            "   Game's folder structure will look like this:\n"
+            "       Assassin's Creed Unity/\n"
+            "       +-- ACUFixes/\n"
+            "       |   +-- plugins/\n"
+            "       |   |   +--ACUFixes.dll\n"
+            "       |   +-- ACUFixes-PluginLoader.dll\n"
+            "       +-- ACU.exe\n"
+            "       +-- version.dll\n"
+        );
+        const char* msg =
+            "[" THIS_DLL_PROJECT_NAME "]:\n"
+            "Too late to install the early hooks.\n"
+            "The mod has probably been installed incorrectly.\n"
+            "The mod will not start.\n"
+            "See \"" LOG_FILENAME "\" log file for more details.\n"
+            ;
+        MessageBoxA(NULL, msg, THIS_DLL_PROJECT_NAME, MB_OK | MB_ICONWARNING);
+        return FALSE;
+    }
+    BeforeGameMainThreadStarted_HookTheStartAddress();
+    return TRUE;
+}
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
 {
     switch (dwReason)
     {
     case DLL_PROCESS_ATTACH:
-        DisableThreadLibraryCalls(hModule);
-        CreateThread(nullptr, 0, PluginLoader_MainThread_RAIIWrapper, hModule, 0, nullptr);
+    {
+        return DllMainOnProcessAttach(hModule, dwReason, lpReserved);
         break;
+    }
     case DLL_PROCESS_DETACH:
     case DLL_THREAD_ATTACH:
     case DLL_THREAD_DETACH:
