@@ -230,7 +230,7 @@ void MainIntegrityCheckHasJustBeenDisabled();
 void MainIntegrityCheckHasJustBeenDisabledWithoutStarting()
 {
     LOG_DEBUG(DefaultLogger,
-        L"[+] Main Integrity Check has just been disabled without starting."
+        "[+] Main Integrity Check has just been disabled without starting."
     );
     MainIntegrityCheckHasJustBeenDisabled();
 }
@@ -275,7 +275,7 @@ void DoImmediatelyAtTheStartOfGamesMainThread()
 {
     RestoreMainThreadStartAddressOriginalCode();
     LOG_DEBUG(DefaultLogger,
-        L"[+] Running at the very start of game's main thread...\n"
+        "[+] Running at the very start of game's main thread...\n"
     );
     InstallCrashLog();
     g_EarlyHooks_VEHandler.emplace(1, EarlyHooks_HardwareBreakpointsHandler);

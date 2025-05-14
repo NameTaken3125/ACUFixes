@@ -789,10 +789,10 @@ void AnimGraphMods_RemovableHoodAnimated_ApplyMod(AtomGraph& atomGraph)
     try
     {
         AnimGraphMods::RemovableHood::g_HoodMod.emplace(atomGraph);
-        LOG_DEBUG(DefaultLogger, L"[RemovableHoodAnimated] Animation mod seems to have started correctly.");
+        LOG_DEBUG(DefaultLogger, "[RemovableHoodAnimated] Animation mod seems to have started correctly.\n");
     }
     catch (const AnimGraphMods::RemovableHood::EResourcesNotFound&)
     {
-        LOG_DEBUG(DefaultLogger, L"[RemovableHoodAnimated][error] Animation files not found.");
+        LOG_DEBUG(DefaultLogger, "[RemovableHoodAnimated][error] Animation files not found.\n");
     }
 }

@@ -47,11 +47,11 @@ void WhenJustRetrievedAnimationForNewlyInitializedAnimationDataNode_DoLog(AllReg
     SharedPtrNew<Animation>& animSharedBlock = (SharedPtrNew<Animation>&)FindSharedBlockByObjectAndIncrementStrongRefcount(*anim);
     uint64 animHandle = animSharedBlock.handle;
     LOG_DEBUG(AnimationsLog
-        , L"N:%llX A:%llX H:%llu => %s\n"
+        , "N:%llX A:%llX H:%llu => %s\n"
         , animDataNode
         , anim
         , animHandle
-        , utf8_and_wide_string_conversion::utf8_decode(ACU::Handles::HandleToText(animHandle).c_str()).c_str()
+        , ACU::Handles::HandleToText(animHandle).c_str()
     );
 }
 

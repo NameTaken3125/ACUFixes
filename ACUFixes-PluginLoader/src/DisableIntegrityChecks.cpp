@@ -12,7 +12,7 @@ bool TerminateThreadIfRunsTheMainIntegrityCheck(ThreadID_t thread_id)
     HANDLE thread_handle = OpenThread(THREAD_ALL_ACCESS, 0, thread_id);
     if (!thread_handle) return false;
     uintptr_t startAddress = GetThreadStartAddress(thread_handle);
-    LOG_DEBUG(DefaultLogger, L"ThreadID: %4X, start address: %llx\n", thread_id, startAddress);
+    LOG_DEBUG(DefaultLogger, "ThreadID: %4X, start address: %llx\n", thread_id, startAddress);
     if (startAddress == ACU::Threads::ThreadStartAddr_MainIntegrityCheck)
     {
         TerminateThread(thread_handle, 0);

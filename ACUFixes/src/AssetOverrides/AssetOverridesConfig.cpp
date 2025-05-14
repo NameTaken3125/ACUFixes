@@ -29,8 +29,8 @@ JSON ReadMainConfigFile()
 {
     fs::path& configFullPath = g_AssetOverridesConfigFilepath;
     JSON cfg = json::FromFile(configFullPath);
-    LOG_DEBUG(DefaultLogger, L"Read from config file \"%s\":\n%s\n", configFullPath.wstring().c_str(),
-        asciiString2WString(cfg.dump()).c_str());
+    LOG_DEBUG(DefaultLogger, "Read from config file \"%s\":\n%s\n", configFullPath.u8string().c_str(),
+        cfg.dump().c_str());
     return cfg;
 }
 void WriteToFile()
@@ -38,8 +38,8 @@ void WriteToFile()
     JSON cfg;
     g_AssetOverridesConfig.SectionToJSON(cfg);
     fs::path& configFullPath = g_AssetOverridesConfigFilepath;
-    LOG_DEBUG(DefaultLogger, L"Writing to config file \"%s\":\n%s\n", configFullPath.wstring().c_str(),
-        asciiString2WString(cfg.dump()).c_str());
+    LOG_DEBUG(DefaultLogger, "Writing to config file \"%s\":\n%s\n", configFullPath.u8string().c_str(),
+        cfg.dump().c_str());
     json::ToFile(cfg, configFullPath);
 }
 void FindAndLoadConfigFileOrCreateDefault(const fs::path& filename)

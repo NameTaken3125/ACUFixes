@@ -64,7 +64,7 @@ BOOL DllMainOnProcessAttach(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
     if (!isInMainThread)
     {
         LOG_DEBUG(DefaultLogger,
-            L"[EarlyHooks]\n"
+            "[EarlyHooks]\n"
             "   Too late to install the early hooks.\n"
             "   This version of ACUFixes is supposed to be installed in the following way:\n"
             "   Place the files directly into the \"Assassin's Creed Unity\" folder (where the \"ACU.exe\" file is).\n"

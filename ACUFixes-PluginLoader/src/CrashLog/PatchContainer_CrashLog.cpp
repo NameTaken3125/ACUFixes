@@ -62,7 +62,7 @@ void CrashLog_TestVariousWaysOfCrashing_DrawImGui()
         catch (const std::bad_optional_access&)
         {
             LOG_DEBUG(DefaultLogger,
-                L"[CrashLog_TestVariousWaysOfCrashing] Exception manually thrown and safely caught using C++."
+                "[CrashLog_TestVariousWaysOfCrashing] Exception manually thrown and safely caught using C++."
             );
         }
     }
@@ -78,7 +78,7 @@ void CrashLog_TestVariousWaysOfCrashing_DrawImGui()
                 __except (EXCEPTION_EXECUTE_HANDLER)
                 {
                     LOG_DEBUG(DefaultLogger,
-                        L"[CrashLog_TestVariousWaysOfCrashing] Exception manually thrown and safely caught using SEH."
+                        "[CrashLog_TestVariousWaysOfCrashing] Exception manually thrown and safely caught using SEH."
                     );
                 }
             };

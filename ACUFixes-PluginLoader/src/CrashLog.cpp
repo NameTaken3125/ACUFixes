@@ -22,12 +22,11 @@ class Module
 public:
     uint64 m_baseAddr;
     uint32 m_size;
-    std::wstring m_name;
+    fs::path m_fullpath;
     bool IsAddressInRange(uint64 addr) const { return addr >= m_baseAddr && addr < m_baseAddr + m_size; }
-    std::wstring GetFilename() const
+    std::string GetFilename() const
     {
-        fs::path fullpath{ m_name };
-        return fullpath.filename().wstring();
+        return m_fullpath.filename().u8string();
     }
 };
 const Module* FindModuleForAddress(uint64 addr, const std::vector<Module>& modules)
@@ -63,11 +62,10 @@ AllModules_t GetAllModules()
             // Get the full path to the module's file.
             Module newMod;
             newMod.m_baseAddr = (uint64)hMods[i];
-            newMod.m_name.reserve(MAX_PATH);
             std::array<wchar_t, MAX_PATH> fullpathBuf = { 0 };
             if (GetModuleFileNameExW(hProcess, hMods[i], &fullpathBuf[0], MAX_PATH))
             {
-                newMod.m_name = fullpathBuf.data();
+                newMod.m_fullpath = fullpathBuf.data();
                 MODULEINFO modInfo;
                 if (GetModuleInformation(hProcess, hMods[i], &modInfo, sizeof(modInfo)))
                 {
@@ -81,33 +79,33 @@ AllModules_t GetAllModules()
 }
 void PrintAllModules(const AllModules_t& modules)
 {
-    LOG_DEBUG(CrashLog, L"[*] All modules:\n");
+    LOG_DEBUG(CrashLog, "[*] All modules:\n");
     for (size_t i = 0; i < modules.size(); i++)
     {
         const Module& mod = modules[i];
         LOG_DEBUG(
             CrashLog,
-            L"%3d. %16llX - %16llX: %s\n"
+            "%3d. %16llX - %16llX: %s\n"
             , i
             , mod.m_baseAddr
             , mod.m_baseAddr + mod.m_size
-            , mod.m_name.c_str()
+            , mod.m_fullpath.u8string().c_str()
         );
     }
 }
-std::wstring MakeAddressReadable(uintptr_t addr, const AllModules_t& allModules)
+std::string MakeAddressReadable(uintptr_t addr, const AllModules_t& allModules)
 {
-    std::wstringstream ss;
+    std::stringstream ss;
 
     const Module* foundInModule = FindModuleForAddress(addr, allModules);
     if (!foundInModule)
     {
-        ss << L"0x" << std::hex << addr;
+        ss << "0x" << std::hex << addr;
     }
     else
     {
         ss << foundInModule->GetFilename();
-        ss << L"+";
+        ss << "+";
         ss << std::hex;
         ss << (addr - foundInModule->m_baseAddr);
     }
@@ -189,44 +187,7 @@ EXCEPTION_RECORD
 #define EXCEPTION_MSC_CPLUSPLUS 0xE06D7363
 #define MS_VC_EXCEPTION_SetThreadName 0x406D1388
 
-const wchar_t* GetReadableExceptionCode(const ::EXCEPTION_RECORD& exceptionRecord)
-{
-    const wchar_t* readableExceptionCode = [&]() {
-#define EXCEPTION_CASE(exceptionCode) \
-	case exceptionCode:               \
-		return L" (" L#exceptionCode L")"
-        switch (exceptionRecord.ExceptionCode) {
-            EXCEPTION_CASE(EXCEPTION_ACCESS_VIOLATION);
-            EXCEPTION_CASE(EXCEPTION_ARRAY_BOUNDS_EXCEEDED);
-            EXCEPTION_CASE(EXCEPTION_BREAKPOINT);
-            EXCEPTION_CASE(EXCEPTION_DATATYPE_MISALIGNMENT);
-            EXCEPTION_CASE(EXCEPTION_FLT_DENORMAL_OPERAND);
-            EXCEPTION_CASE(EXCEPTION_FLT_DIVIDE_BY_ZERO);
-            EXCEPTION_CASE(EXCEPTION_FLT_INEXACT_RESULT);
-            EXCEPTION_CASE(EXCEPTION_FLT_INVALID_OPERATION);
-            EXCEPTION_CASE(EXCEPTION_FLT_OVERFLOW);
-            EXCEPTION_CASE(EXCEPTION_FLT_STACK_CHECK);
-            EXCEPTION_CASE(EXCEPTION_FLT_UNDERFLOW);
-            EXCEPTION_CASE(EXCEPTION_ILLEGAL_INSTRUCTION);
-            EXCEPTION_CASE(EXCEPTION_IN_PAGE_ERROR);
-            EXCEPTION_CASE(EXCEPTION_INT_DIVIDE_BY_ZERO);
-            EXCEPTION_CASE(EXCEPTION_INT_OVERFLOW);
-            EXCEPTION_CASE(EXCEPTION_INVALID_DISPOSITION);
-            EXCEPTION_CASE(EXCEPTION_NONCONTINUABLE_EXCEPTION);
-            EXCEPTION_CASE(EXCEPTION_PRIV_INSTRUCTION);
-            EXCEPTION_CASE(EXCEPTION_SINGLE_STEP);
-            EXCEPTION_CASE(EXCEPTION_STACK_OVERFLOW);
-
-            EXCEPTION_CASE(EXCEPTION_MSC_CPLUSPLUS);
-            EXCEPTION_CASE(MS_VC_EXCEPTION_SetThreadName);
-        default:
-            return L"";
-        }
-        }();
-#undef EXCEPTION_CASE
-    return readableExceptionCode;
-}
-static const char* GetReadableExceptionCodeA(const ::EXCEPTION_RECORD& exceptionRecord)
+static const char* GetReadableExceptionCode(const ::EXCEPTION_RECORD& exceptionRecord)
 {
     const char* readableExceptionCode = [&]() {
 #define EXCEPTION_CASE(exceptionCode) \
@@ -265,11 +226,11 @@ static const char* GetReadableExceptionCodeA(const ::EXCEPTION_RECORD& exception
 }
 void VEHLogExceptionCode(const ::EXCEPTION_RECORD& exceptionRecord, const AllModules_t& allModules)
 {
-    const wchar_t* readableExceptionCode = GetReadableExceptionCode(exceptionRecord);
+    const char* readableExceptionCode = GetReadableExceptionCode(exceptionRecord);
 
     LOG_DEBUG(
         CrashLog,
-        L"[x] Exception %llX%s at %s.\n"
+        "[x] Exception %llX%s at %s.\n"
         , exceptionRecord.ExceptionCode
         , readableExceptionCode
         , MakeAddressReadable(reinterpret_cast<uintptr_t>(exceptionRecord.ExceptionAddress), allModules).c_str()
@@ -326,8 +287,8 @@ public:
     void DoLog()
     {
         LOG_DEBUG(CrashLog
-            , L"[error][X] %s: uncaught exception! Code: %X%s At: %llX\n"
-            , utf8_and_wide_string_conversion::utf8_decode(m_WhereCaught).c_str()
+            , "[error][X] %s: uncaught exception! Code: %X%s At: %llX\n"
+            , m_WhereCaught.c_str()
             , ExceptionRecord.ExceptionCode
             , GetReadableExceptionCode(ExceptionRecord)
             , ExceptionRecord.ExceptionAddress
@@ -335,12 +296,12 @@ public:
         m_AllModules = GetAllModules();
         PrintAllModules(m_AllModules);
         LOG_DEBUG(CrashLog,
-            L"Readable ExceptionAddress: %s\n"
+            "Readable ExceptionAddress: %s\n"
             , MakeAddressReadable((uintptr_t)ExceptionRecord.ExceptionAddress, m_AllModules).c_str()
         );
         DoStacktrace();
         LOG_DEBUG(CrashLog,
-            utf8_and_wide_string_conversion::utf8_decode(m_StackBackTrace.c_str()).c_str()
+            m_StackBackTrace.c_str()
         );
         CrashLog_MessageBoxAF(
             "[CrashLog] %s: uncaught exception!\n"
@@ -351,7 +312,7 @@ public:
             "A crash log has been generated."
             , m_WhereCaught.c_str()
             , ExceptionRecord.ExceptionCode
-            , GetReadableExceptionCodeA(ExceptionRecord)
+            , GetReadableExceptionCode(ExceptionRecord)
             , ExceptionRecord.ExceptionAddress
             , ContextRecord.Rsp
             , m_StackBackTrace.c_str()
@@ -367,7 +328,7 @@ public:
             , ContextRecord
             , m_StackBackTrace
             , [&](uint64 addr) {
-                return utf8_and_wide_string_conversion::utf8_encode(MakeAddressReadable(addr, m_AllModules));
+                return MakeAddressReadable(addr, m_AllModules);
             });
     }
 };
@@ -387,15 +348,15 @@ void HandleExc_SetThreadName(::EXCEPTION_POINTERS* exception)
 {
     DWORD numParams = exception->ExceptionRecord->NumberParameters;
     LOG_DEBUG(CrashLog
-        , L"    ThreadID: %x, NumParams: %d\n"
+        , "    ThreadID: %x, NumParams: %d\n"
         , GetCurrentThreadId()
         , numParams
     );
     if (numParams == 6 || numParams == 3)
     {
         LOG_DEBUG(CrashLog
-            , L"    Name    : \"%s\"\n"
-            , utf8_and_wide_string_conversion::utf8_decode((const char*)exception->ExceptionRecord->ExceptionInformation[1]).c_str()
+            , "    Name    : \"%s\"\n"
+            , (const char*)exception->ExceptionRecord->ExceptionInformation[1]
         );
     }
     else
@@ -403,7 +364,7 @@ void HandleExc_SetThreadName(::EXCEPTION_POINTERS* exception)
         for (size_t i = 0; i < numParams; i++)
         {
             LOG_DEBUG(CrashLog
-                , L"    %d. %llX\n"
+                , "    %d. %llX\n"
                 , i
                 , exception->ExceptionRecord->ExceptionInformation[i]
             );
@@ -413,7 +374,7 @@ void HandleExc_SetThreadName(::EXCEPTION_POINTERS* exception)
 LONG _stdcall CrashLogVectoredExceptionHandler(::EXCEPTION_POINTERS* exception) noexcept
 {
     LOG_DEBUG(CrashLog
-        , L"[*] Vectored Exception Handler. Code %llX%s: At: %llX\n"
+        , "[*] Vectored Exception Handler. Code %llX%s: At: %llX\n"
         , exception->ExceptionRecord->ExceptionCode
         , GetReadableExceptionCode(*exception->ExceptionRecord)
         , exception->ExceptionRecord->ExceptionAddress
@@ -426,13 +387,13 @@ LONG _stdcall CrashLogVectoredExceptionHandler(::EXCEPTION_POINTERS* exception) 
     else if (exception->ExceptionRecord->ExceptionCode == 0x40010006)
     {
         LOG_DEBUG(CrashLog
-            , L"[*] Not logging, looks like Cheat Engine's VEH debugger just attached..."
+            , "[*] Not logging, looks like Cheat Engine's VEH debugger just attached..."
         );
     }
     else if (exception->ExceptionRecord->ExceptionCode == EXCEPTION_MSC_CPLUSPLUS && !isShouldLogCPPExceptions)
     {
         LOG_DEBUG(CrashLog
-            , L"[*] Not logging the C++ exception..."
+            , "[*] Not logging the C++ exception..."
         );
     }
     else

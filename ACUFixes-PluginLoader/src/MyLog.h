@@ -86,44 +86,19 @@ struct Logger_ConsoleAndFile
 {
     const std::string m_Name;
     Logger_ConsoleAndFile(std::string_view name) : m_Name(name) {}
-    void LogDebug(const wchar_t* fmt, ...)
+    void LogDebug(const char* fmt, ...)
     {
-        auto& console = ImGuiConsole::GetSingleton();
-
-        // Append logger name to file.
-        int filePrintReturn1 = fwprintf(g_LogFile, utf8_and_wide_string_conversion::utf8_decode(m_Name).c_str());
-        // Append formatted string to file.
+        // TODO: Reimplement ImGuiTextBuffer to start with a stack buffer of 1024 bytes.
+        ImGuiTextBuffer buf;
+        buf.reserve(1024);
+        buf.append(m_Name.c_str());
         va_list args;
-        va_list argsCopy;
         va_start(args, fmt);
-        va_copy(argsCopy, args);
-        int filePrintReturn2 = vfwprintf(g_LogFile, fmt, args);
-        fflush(g_LogFile);
-        // Format string into stringbuffer.
-        const int numWideChars = filePrintReturn1 + filePrintReturn2;
-        wchar_t buf[1024];
-        std::wstring heapBuf;
-        wchar_t* fittingBuf = nullptr;
-        constexpr int bufSize = IM_ARRAYSIZE(buf);
-        if (numWideChars < bufSize)
-        {
-            _vsnwprintf_s(buf, IM_ARRAYSIZE(buf), fmt, argsCopy);
-            buf[IM_ARRAYSIZE(buf) - 1] = 0;
-            fittingBuf = buf;
-        }
-        else
-        {
-            heapBuf.resize(numWideChars + 1);
-            _vsnwprintf_s(&heapBuf[0], numWideChars + 1, numWideChars, fmt, argsCopy);
-            fittingBuf = &heapBuf[0];
-        }
-        va_end(argsCopy);
+        buf.appendfv(fmt, args);
         va_end(args);
-
-        std::string asUtf8 = utf8_and_wide_string_conversion::utf8_encode(fittingBuf);
-        // Prepend logger name to formatted string.
-        char* copyOfFormattedAndPrepended = console.Strdup((m_Name + asUtf8).c_str());
-        console.Items.push_back(copyOfFormattedAndPrepended);
+        ImGuiConsole::GetSingleton().AddLog(buf.c_str());
+        fprintf(g_LogFile, buf.c_str());
+        fflush(g_LogFile);
     }
 };
 

@@ -101,85 +101,21 @@ struct Logger_ConsoleAndFile
         fprintf(g_LogFile, buf.c_str());
         fflush(g_LogFile);
     }
-    // Aah, looks like this IS broken on non-Latin characters...
-    // TODO: Remove and leave only the "const char*" version
-    //       (which is secretly the "const char8_t*" cast to "const char*": see
-    //        https://github.com/ocornut/imgui/blob/c0dfd65d6790b9b96872b64fa232f1fa80fcd3b3/docs/FONTS.md#about-utf-8-encoding
-    //       )
-    void LogDebug(const wchar_t* fmt, ...)
-    {
-        // Append logger name to file.
-        int filePrintReturn1 = fwprintf(g_LogFile, utf8_and_wide_string_conversion::utf8_decode(m_Name).c_str());
-        // Append formatted string to file.
-        va_list args;
-        va_list argsCopy;
-        va_start(args, fmt);
-        va_copy(argsCopy, args);
-        int filePrintReturn2 = vfwprintf(g_LogFile, fmt, args);
-        fflush(g_LogFile);
-        // Format string into stringbuffer.
-        const int numWideChars = filePrintReturn1 + filePrintReturn2;
-        wchar_t buf[1024];
-        std::wstring heapBuf;
-        wchar_t* fittingBuf = nullptr;
-        constexpr int bufSize = IM_ARRAYSIZE(buf);
-        if (numWideChars < bufSize)
-        {
-            _vsnwprintf_s(buf, IM_ARRAYSIZE(buf), fmt, argsCopy);
-            buf[IM_ARRAYSIZE(buf) - 1] = 0;
-            fittingBuf = buf;
-        }
-        else
-        {
-            heapBuf.resize(numWideChars + 1);
-            _vsnwprintf_s(&heapBuf[0], numWideChars + 1, numWideChars, fmt, argsCopy);
-            fittingBuf = &heapBuf[0];
-        }
-        va_end(argsCopy);
-        va_end(args);
-
-        std::string asUtf8 = utf8_and_wide_string_conversion::utf8_encode(fittingBuf);
-        // Prepend logger name to formatted string.
-        ImGuiConsole::AddLog((m_Name + asUtf8).c_str());
-    }
 };
 struct Logger_Console
 {
     const std::string m_Name;
     Logger_Console(std::string_view name) : m_Name(name) {}
-    void LogDebug(const wchar_t* fmt, ...)
+    void LogDebug(const char* fmt, ...)
     {
+        ImGuiTextBuffer buf;
+        buf.reserve(1024);
+        buf.append(m_Name.c_str());
         va_list args;
         va_start(args, fmt);
-        va_list argsCopy;
-        va_copy(argsCopy, args);
-        // Format string into stringbuffer.
-        wchar_t buf[1024];
-        const int numWideChars = _vsnwprintf_s(buf, IM_ARRAYSIZE(buf), fmt, args);
+        buf.appendfv(fmt, args);
         va_end(args);
-        std::wstring heapBuf;
-        wchar_t* fittingBuf = nullptr;
-        constexpr int bufSize = IM_ARRAYSIZE(buf);
-        if (numWideChars < 0)
-        {
-            va_end(argsCopy);
-            return;
-        }
-        if (numWideChars < bufSize)
-        {
-            fittingBuf = buf;
-        }
-        else
-        {
-            heapBuf.resize(numWideChars + 1);
-            _vsnwprintf_s(&heapBuf[0], numWideChars + 1, numWideChars, fmt, argsCopy);
-            va_end(argsCopy);
-            fittingBuf = &heapBuf[0];
-        }
-
-        std::string asUtf8 = utf8_and_wide_string_conversion::utf8_encode(fittingBuf);
-        // Prepend logger name to formatted string.
-        ImGuiConsole::AddLog((m_Name + asUtf8).c_str());
+        ImGuiConsole::AddLog(buf.c_str());
     }
 };
 

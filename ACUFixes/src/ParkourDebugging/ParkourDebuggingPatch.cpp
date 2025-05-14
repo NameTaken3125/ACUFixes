@@ -248,12 +248,12 @@ void WhenReturningBestMatchingMove_LogIt(AllRegisters* params)
         int x = 0;
     }
     LOG_DEBUG(ParkourLogger
-        , L"Selected: %7.2f %7.2f %7.2f (%d == %s)"
+        , "Selected: %7.2f %7.2f %7.2f (%d == %s)"
         , bestMatchMove->locationAnchorSrc.x
         , bestMatchMove->locationAnchorSrc.y
         , bestMatchMove->locationAnchorSrc.z
         , actionType
-        , utf8_and_wide_string_conversion::utf8_decode(enum_reflection<EnumParkourAction>::GetString(actionType)).c_str()
+        , enum_reflection<EnumParkourAction>::GetString(actionType)
     );
     //ImGui3D::DrawLocationNamed((Vector3f&)bestMatchMove->locationAnchorSrc, "locationAnchorSrc");
     //ImGui3D::DrawLocationNamed((Vector3f&)bestMatchMove->locationAnchorDest, "locationAnchorDest");
@@ -344,12 +344,12 @@ std::optional<int> ParkourDebugging_SelectMove(SmallArray<AvailableParkourAction
             int idx = std::distance(availableParkourActions.begin(), foundIt);
             EnumParkourAction actionType = (*foundIt)->GetEnumParkourAction();
             LOG_DEBUG(ParkourLogger
-                , L"[error]Selected for %s: idx/size: %d/%hu, %d == %s"
+                , "[error]Selected for %s: idx/size: %d/%hu, %d == %s"
                 , critName.data()
                 , idx
                 , availableParkourActions.size
                 , actionType
-                , utf8_and_wide_string_conversion::utf8_decode(enum_reflection<EnumParkourAction>::GetString(actionType)).c_str()
+                , enum_reflection<EnumParkourAction>::GetString(actionType)
             );
             return idx;
         };
@@ -382,7 +382,7 @@ void WhenGatheredMoves_FilterFnPrologue_LogBeforeFiltered(AllRegisters* params)
 {
     SmallArray<ParkourAction_Commonbase*>& moves = **(SmallArray<ParkourAction_Commonbase*>**)(params->GetRSP() + 0x48);
     if (moves.size == 0) return;
-    LOG_DEBUG(ParkourLogger, L"Num potential actions before filtering: %d"
+    LOG_DEBUG(ParkourLogger, "Num potential actions before filtering: %d"
         , moves.size
     );
     for (ParkourAction_Commonbase* move : moves)
@@ -394,9 +394,9 @@ void WhenGatheredMoves_FilterFnPrologue_LogBeforeFiltered(AllRegisters* params)
             actionType) != g_UnidentifiedParkourActions.end())
         {
             LOG_DEBUG(ParkourLogger
-                , L"[error] Unidentified move: %d == %s"
+                , "[error] Unidentified move: %d == %s"
                 , actionType
-                , utf8_and_wide_string_conversion::utf8_decode(enum_reflection<EnumParkourAction>::GetString(actionType)).c_str()
+                , enum_reflection<EnumParkourAction>::GetString(actionType)
             );
         }
     }

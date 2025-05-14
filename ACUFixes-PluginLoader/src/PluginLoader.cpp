@@ -18,34 +18,34 @@ bool IsPluginAPIversionCompatible(uint64 pluginLoaderVersion, uint64 pluginVersi
 #define PLUGIN_API_VERSION_GET_MINOREST(version) (version & 0xFF)
 void MyPluginLoader::LoadAndStartPlugin(MyPluginResult& pluginRecord)
 {
-    const auto* pluginFilepath = pluginRecord.m_filepath.c_str();
-    fs::path _pluginName = pluginRecord.m_filepath.filename().c_str();
-    const auto* pluginName = _pluginName.c_str();
-    LOG_DEBUG(DefaultLogger, L"[*] Plugin %s: Trying to load.\n", pluginFilepath);
-    HMODULE moduleHandle = LoadLibraryW(pluginFilepath);
+    std::wstring pluginFilepath = pluginRecord.m_filepath.wstring();
+    std::string _pluginName = (const char*)pluginRecord.m_filepath.filename().u8string().c_str();
+    const char* pluginName = _pluginName.c_str();
+    LOG_DEBUG(DefaultLogger, "[*] Plugin %s: Trying to load.\n", utf8_and_wide_string_conversion::utf8_encode(pluginFilepath).c_str());
+    HMODULE moduleHandle = LoadLibraryW(pluginFilepath.c_str());
     if (!moduleHandle)
     {
-        LOG_DEBUG(DefaultLogger, L"[x] Plugin %s: Failed to load.\n", pluginName);
+        LOG_DEBUG(DefaultLogger, "[error][x] Plugin %s: Failed to load.\n", pluginName);
         return;
     }
-    LOG_DEBUG(DefaultLogger, L"[*] Plugin %s: handle: %llX\n", pluginName, moduleHandle);
+    LOG_DEBUG(DefaultLogger, "[*] Plugin %s: handle: %llX\n", pluginName, moduleHandle);
     ACUPluginStart_fnt startFn = reinterpret_cast<ACUPluginStart_fnt>(GetProcAddress(moduleHandle, "ACUPluginStart"));
     if (!startFn)
     {
-        LOG_DEBUG(DefaultLogger, L"[x] Plugin %s: Doesn't export the `ACUPluginStart()` function. Unloading.\n", pluginName);
+        LOG_DEBUG(DefaultLogger, "[error][x] Plugin %s: Doesn't export the `ACUPluginStart()` function. Unloading.\n", pluginName);
         FreeLibrary(moduleHandle);
         return;
     }
-    LOG_DEBUG(DefaultLogger, L"[*] Plugin %s: Address of the `ACUPluginStart()` function: %llX\n", pluginName, startFn);
+    LOG_DEBUG(DefaultLogger, "[*] Plugin %s: Address of the `ACUPluginStart()` function: %llX\n", pluginName, startFn);
     std::unique_ptr<ACUPluginInfo> pluginInfo = std::make_unique<ACUPluginInfo>();
     bool isPluginThinksIsReadyToStart = startFn(m_PluginLoaderInterfaces, *pluginInfo);
     if (!isPluginThinksIsReadyToStart)
     {
-        LOG_DEBUG(DefaultLogger, L"[x] Plugin %s: `ACUPluginStart()` returned `false`. Unloading.\n", pluginName);
+        LOG_DEBUG(DefaultLogger, "[error][x] Plugin %s: `ACUPluginStart()` returned `false`. Unloading.\n", pluginName);
         FreeLibrary(moduleHandle);
         return;
     }
-    LOG_DEBUG(DefaultLogger, L"[*] Plugin %s: `ACUPluginStart()` returned `true`. Plugin API version: %d.%d.%d.%d. Plugin's version: 0x%llX.\n"
+    LOG_DEBUG(DefaultLogger, "[*] Plugin %s: `ACUPluginStart()` returned `true`. Plugin API version: %d.%d.%d.%d. Plugin's version: 0x%llX.\n"
         , pluginName
         , PLUGIN_API_VERSION_GET_MAJOR(pluginInfo->m_PluginAPIVersion)
         , PLUGIN_API_VERSION_GET_MINOR(pluginInfo->m_PluginAPIVersion)
@@ -55,7 +55,7 @@ void MyPluginLoader::LoadAndStartPlugin(MyPluginResult& pluginRecord)
     );
     if (!IsPluginAPIversionCompatible(g_CurrentPluginAPIversion, pluginInfo->m_PluginAPIVersion))
     {
-        LOG_DEBUG(DefaultLogger, L"[x] Plugin %s: Plugin's API version %d.%d.%d.%d is incompatible with the version of this plugin loader (%d.%d.%d.%d). Unloading.\n"
+        LOG_DEBUG(DefaultLogger, "[error][x] Plugin %s: Plugin's API version %d.%d.%d.%d is incompatible with the version of this plugin loader (%d.%d.%d.%d). Unloading.\n"
             , pluginName
             , PLUGIN_API_VERSION_GET_MAJOR(pluginInfo->m_PluginAPIVersion)
             , PLUGIN_API_VERSION_GET_MINOR(pluginInfo->m_PluginAPIVersion)
@@ -71,17 +71,17 @@ void MyPluginLoader::LoadAndStartPlugin(MyPluginResult& pluginRecord)
     }
     if (!pluginInfo->m_Start)
     {
-        LOG_DEBUG(DefaultLogger, L"[x] Plugin %s: Plugin didn't provide the `ACUPluginInfo.m_Start()` callback. Unloading.\n", pluginName);
+        LOG_DEBUG(DefaultLogger, "[error][x] Plugin %s: Plugin didn't provide the `ACUPluginInfo.m_Start()` callback. Unloading.\n", pluginName);
         FreeLibrary(moduleHandle);
         return;
     }
     if (!pluginInfo->m_Start(m_PluginLoaderInterfaces))
     {
-        LOG_DEBUG(DefaultLogger, L"[x] Plugin %s: The start procedure returned `false` indicating that the plugin doesn't want to start. Unloading.\n", pluginName);
+        LOG_DEBUG(DefaultLogger, "[error][x] Plugin %s: The start procedure returned `false` indicating that the plugin doesn't want to start. Unloading.\n", pluginName);
         FreeLibrary(moduleHandle);
         return;
     }
-    LOG_DEBUG(DefaultLogger, L"[+] Plugin %s: Successfully loaded.\n", pluginName);
+    LOG_DEBUG(DefaultLogger, "[+] Plugin %s: Successfully loaded.\n", pluginName);
     pluginRecord.m_successfulLoad.emplace(moduleHandle, std::move(pluginInfo));
 }
 #undef PLUGIN_API_VERSION_GET_MAJOR
@@ -106,7 +106,7 @@ void MyPluginLoader::RequestUnloadDLL(HMODULE dllHandle)
         if (loadedPlugin->m_successfulLoad
             && loadedPlugin->m_successfulLoad->m_moduleHandle == dllHandle)
         {
-            LOG_DEBUG(DefaultLogger, L"[*] Plugin %s: Requested to unload.\n", loadedPlugin->m_filepath.filename().c_str());
+            LOG_DEBUG(DefaultLogger, "[*] Plugin %s: Requested to unload.\n", loadedPlugin->m_filepath.filename().u8string().c_str());
             loadedPlugin->m_successfulLoad->m_isRequestedToUnload = true;
             m_IsRequestedToUnloadPlugin = true;
             break;
@@ -137,7 +137,7 @@ HMODULE MyPluginLoader::GetPluginIfLoaded(const wchar_t* pluginName)
 fs::path AbsolutePathInMyDirectory(const fs::path& filenameRel);
 void MyPluginLoader::UpdateListOfAvailablePlugins()
 {
-    LOG_DEBUG(DefaultLogger, L"[*] UpdateListOfAvailablePlugins():\n");
+    LOG_DEBUG(DefaultLogger, "[*] UpdateListOfAvailablePlugins():\n");
     fs::path pluginsFolder = AbsolutePathInMyDirectory(L"plugins");
     fs::create_directory(pluginsFolder);
     std::vector<fs::path> currentlyPresentDLLsInFolder;
@@ -145,7 +145,7 @@ void MyPluginLoader::UpdateListOfAvailablePlugins()
     for (const auto& entry : std::filesystem::directory_iterator(pluginsFolder)) {
         if (entry.path().extension() == L".dll") {
             currentlyPresentDLLsInFolder.push_back(entry.path());
-            LOG_DEBUG(DefaultLogger, L"[*] Found DLL: %s\n", entry.path().c_str());
+            LOG_DEBUG(DefaultLogger, "[*] Found DLL: %s\n", entry.path().u8string().c_str());
         }
     }
     // Remove the records of DLLs that were available but are not anymore.
@@ -191,7 +191,7 @@ void MyPluginLoader::UpdateListOfAvailablePlugins()
 }
 void MyPluginLoader::LoadAllFoundNonloadedPlugins()
 {
-    LOG_DEBUG(DefaultLogger, L"[*] LoadAllFoundNonloadedPlugins():\n");
+    LOG_DEBUG(DefaultLogger, "[*] LoadAllFoundNonloadedPlugins():\n");
     for (std::unique_ptr<MyPluginResult>& plugin : dllResults)
     {
         if (plugin->m_successfulLoad)
@@ -215,14 +215,14 @@ void MyPluginLoader::DrawPluginListControls()
     {
         LoadAllFoundNonloadedPlugins();
     }
-    std::string buf;
+    ImGuiTextBuffer buf;
 
     ImGuiShared imguiShared{ *GImGui };
     ImGui::GetAllocatorFunctions(&imguiShared.alloc_func, &imguiShared.free_func, &imguiShared.user_data);
     for (size_t i = 0; i < dllResults.size(); i++)
     {
         std::unique_ptr<MyPluginResult>& plugin = dllResults[i];
-        buf = std::to_string(i + 1) + ". " + plugin->m_filepath.filename().string();
+        buf.appendf("%d. %s", i + 1, plugin->m_filepath.filename().u8string().c_str());
         ImGui::PushID(&plugin);
         if (plugin->m_successfulLoad)
         {

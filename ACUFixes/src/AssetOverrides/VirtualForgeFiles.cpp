@@ -198,8 +198,8 @@ ForgeFileEntry* MakeNewForgeFileEntry(uint64 targetHandle, const fs::path& absol
     catch (const fs::filesystem_error&)
     {
         LOG_DEBUG(VirtualForgesLog
-            , L"[error] Failed to create virtual forge: \"%s\""
-            , absoluteFilepath.wstring().c_str()
+            , "[error] Failed to create virtual forge: \"%s\""
+            , absoluteFilepath.u8string().c_str()
         );
     }
     return nullptr;
@@ -676,8 +676,8 @@ public:
         catch (const fs::filesystem_error& e) {
             LOG_DEBUG(
                 VirtualForgesLog
-                , L"[AddVirtualForges] Filesystem error: %s\n"
-                , utf8_and_wide_string_conversion::utf8_decode(e.what()).c_str()
+                , "[AddVirtualForges] Filesystem error: %s\n"
+                , e.what()
             );
         }
         MakeVirtualForgesForAllDatapacks();

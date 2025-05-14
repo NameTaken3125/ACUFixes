@@ -11,6 +11,8 @@ Brings the app's components together.
 
 #include "Common_Plugins/Common_PluginSide.h"
 
+#define LOG_FILENAME    THIS_DLL_PROJECT_NAME "-log.log"
+#define CONFIG_FILENAME THIS_DLL_PROJECT_NAME "-config.json"
 
 std::optional<MyLogFileLifetime> g_LogLifetime;
 void ImGuiLayer_EvenWhenMenuIsClosed();
@@ -34,8 +36,8 @@ public:
     }
     virtual bool Start(ACUPluginLoaderInterface& pluginLoader) override
     {
-        g_LogLifetime.emplace(AbsolutePathInThisDLLDirectory(THIS_DLL_PROJECT_NAME "-log.log"));
-        MainConfig::FindAndLoadConfigFileOrCreateDefault(AbsolutePathInThisDLLDirectory(THIS_DLL_PROJECT_NAME "-config.json"));
+        g_LogLifetime.emplace(AbsolutePathInThisDLLDirectory(LOG_FILENAME));
+        MainConfig::FindAndLoadConfigFileOrCreateDefault(AbsolutePathInThisDLLDirectory(CONFIG_FILENAME));
         MyVariousHacks::Start();
         HacksContainer_AssetOverrides_Start();
         ApplyAnimationGraphMods();

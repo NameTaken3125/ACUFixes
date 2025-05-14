@@ -380,7 +380,7 @@ public:
         }
         m_recordedEnterFunctions.push_back(enterFunction);
         LOG_DEBUG(HumanStatesLog
-            , L"New state: %16llX (total %u)"
+            , "New state: %16llX (total %u)"
             , enterFunction
             , m_recordedEnterFunctions.size()
         );

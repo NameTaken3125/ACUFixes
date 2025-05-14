@@ -68,7 +68,7 @@ void RaycastPicker_PickRangedWeaponTarget()
         {
             mostRecentEntity = hit.m_Entity.GetPtr();
             LOG_DEBUG(DefaultLogger
-                , L"[!] Selected!  %7.2f %7.2f %7.2f"
+                , "[!] Selected!  %7.2f %7.2f %7.2f"
                 , hit.m_HitLocation.x
                 , hit.m_HitLocation.y
                 , hit.m_HitLocation.z
