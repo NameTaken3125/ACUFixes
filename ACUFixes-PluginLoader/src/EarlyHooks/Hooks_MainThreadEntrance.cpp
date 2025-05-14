@@ -203,29 +203,23 @@ void RestoreMainThreadStartAddressOriginalCode()
 std::optional<VEHandler> g_EarlyHooks_VEHandler;
 void RemoveHardwareBreakpointFromThisThreadDuringException(_EXCEPTION_POINTERS* ExceptionInfo, void* address)
 {
-    bool isDRegisterBusy_by_idx[4] = { false, false, false, false };
-    int removedIdx = -1;
     if ((void*)ExceptionInfo->ContextRecord->Dr0 == address)
     {
-        removedIdx = 0;
         ExceptionInfo->ContextRecord->Dr0 = 0;
         ExceptionInfo->ContextRecord->Dr7 &= ~1;
     }
     if ((void*)ExceptionInfo->ContextRecord->Dr1 == address)
     {
-        removedIdx = 1;
         ExceptionInfo->ContextRecord->Dr1 = 0;
         ExceptionInfo->ContextRecord->Dr7 &= ~4;
     }
     if ((void*)ExceptionInfo->ContextRecord->Dr2 == address)
     {
-        removedIdx = 2;
         ExceptionInfo->ContextRecord->Dr2 = 0;
         ExceptionInfo->ContextRecord->Dr7 &= ~16;
     }
     if ((void*)ExceptionInfo->ContextRecord->Dr3 == address)
     {
-        removedIdx = 3;
         ExceptionInfo->ContextRecord->Dr3 = 0;
         ExceptionInfo->ContextRecord->Dr7 &= ~64;
     }

@@ -302,6 +302,13 @@ void LogVEHException(::EXCEPTION_POINTERS& excPointers)
     PrintAllModules(modules);
     VEHLogExceptionCode(*excPointers.ExceptionRecord, modules);
 }
+
+void CrashLog_TopLevelException_DoStacktrace(
+    EXCEPTION_RECORD& ExceptionRecord
+    , CONTEXT& ContextRecord
+    , ImGuiTextBuffer& outputBuf
+    , const std::function<std::string(unsigned long long)>& makeAddressReadable
+);
 class TopLevelExceptionLoggerTool
 {
 public:
@@ -338,13 +345,15 @@ public:
         CrashLog_MessageBoxAF(
             "[CrashLog] %s: uncaught exception!\n"
             "Code: %X%s\n"
-            "At: %llX\n"
+            "At:   %llX\n"
+            "Rsp:  %llX\n"
             "%s\n"
             "A crash log has been generated."
             , m_WhereCaught.c_str()
             , ExceptionRecord.ExceptionCode
             , GetReadableExceptionCodeA(ExceptionRecord)
             , ExceptionRecord.ExceptionAddress
+            , ContextRecord.Rsp
             , m_StackBackTrace.c_str()
         );
     }
@@ -353,37 +362,13 @@ public:
     ImGuiTextBuffer m_StackBackTrace;
     void DoStacktrace()
     {
-        uintptr_t fromAddr = (uintptr_t)ExceptionRecord.ExceptionAddress;
-        ULONG traceHash;
-        std::array<void*, 64> frames = { 0 };
-        USHORT numFrames = RtlCaptureStackBackTrace(0, (DWORD)frames.size(), &frames[0], &traceHash);
-
-        USHORT startFromIdx = 0;
-        for (size_t i = 0; i < numFrames; i++)
-        {
-            if ((uintptr_t)frames[i] == fromAddr)
-            {
-                startFromIdx = (USHORT)i;
-                break;
-            }
-        }
-        m_StackBackTrace.appendf(
-            "Rsp: %llX\n"
-            , ContextRecord.Rsp
-        );
-        m_StackBackTrace.appendf(
-            "RtlCaptureStackBackTrace():\n"
-            "%hu return addresses found:\n"
-            , numFrames - startFromIdx
-        );
-        for (size_t i = startFromIdx; i < numFrames; i++)
-        {
-            m_StackBackTrace.appendf(
-                "%2d. %s\n"
-                , i - startFromIdx
-                , utf8_and_wide_string_conversion::utf8_encode(MakeAddressReadable(reinterpret_cast<uintptr_t>(frames[i]), m_AllModules)).c_str()
-            );
-        }
+        CrashLog_TopLevelException_DoStacktrace(
+            ExceptionRecord
+            , ContextRecord
+            , m_StackBackTrace
+            , [&](uint64 addr) {
+                return utf8_and_wide_string_conversion::utf8_encode(MakeAddressReadable(addr, m_AllModules));
+            });
     }
 };
 void LogTopLevelException(const std::string_view& whereCaught, ::EXCEPTION_RECORD& ExceptionRecord, ::CONTEXT& ContextRecord)

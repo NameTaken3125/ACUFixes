@@ -213,6 +213,7 @@ if exist "$(ProjectDir)copy_output_to_directory.txt" (
     <ClInclude Include="src\EarlyHooks\ThreadOperations.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\CrashLog\Stacktrace.cpp" />
     <ClCompile Include="src\CrashLog\Hook_ZwRaiseException.cpp" />
     <ClCompile Include="src\CrashLog\PatchContainer_CrashLog.cpp" />
     <ClCompile Include="src\EarlyHooks\Hooks_MainThreadEntrance.cpp" />

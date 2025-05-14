@@ -125,5 +125,8 @@
     <ClCompile Include="src\EarlyHooks\Hooks_MainThreadEntrance.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\CrashLog\Stacktrace.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
