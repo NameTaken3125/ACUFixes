@@ -2,8 +2,20 @@
 
 #include "ACU/basic_types.h"
 #include "MyLog.h"
+#include "EarlyHooks/ThreadOperations.h"
+#include "EarlyHooks/VEH.h"
 
 DEFINE_LOGGER_CONSOLE_AND_FILE(CrashLog, "[CrashLog]");
+
+static void CrashLog_MessageBoxAF(const char* fmt, ...)
+{
+    ImGuiTextBuffer buf;
+    va_list args;
+    va_start(args, fmt);
+    buf.appendfv(fmt, args);
+    va_end(args);
+    MessageBoxA(NULL, buf.c_str(), "CrashLog", MB_OK | MB_ICONSTOP);
+}
 
 class Module
 {
@@ -214,20 +226,59 @@ const wchar_t* GetReadableExceptionCode(const ::EXCEPTION_RECORD& exceptionRecor
 #undef EXCEPTION_CASE
     return readableExceptionCode;
 }
-void LogExceptionCode(const ::EXCEPTION_RECORD& exceptionRecord, const AllModules_t& allModules)
+static const char* GetReadableExceptionCodeA(const ::EXCEPTION_RECORD& exceptionRecord)
+{
+    const char* readableExceptionCode = [&]() {
+#define EXCEPTION_CASE(exceptionCode) \
+	case exceptionCode:               \
+		return " (" #exceptionCode ")"
+        switch (exceptionRecord.ExceptionCode) {
+            EXCEPTION_CASE(EXCEPTION_ACCESS_VIOLATION);
+            EXCEPTION_CASE(EXCEPTION_ARRAY_BOUNDS_EXCEEDED);
+            EXCEPTION_CASE(EXCEPTION_BREAKPOINT);
+            EXCEPTION_CASE(EXCEPTION_DATATYPE_MISALIGNMENT);
+            EXCEPTION_CASE(EXCEPTION_FLT_DENORMAL_OPERAND);
+            EXCEPTION_CASE(EXCEPTION_FLT_DIVIDE_BY_ZERO);
+            EXCEPTION_CASE(EXCEPTION_FLT_INEXACT_RESULT);
+            EXCEPTION_CASE(EXCEPTION_FLT_INVALID_OPERATION);
+            EXCEPTION_CASE(EXCEPTION_FLT_OVERFLOW);
+            EXCEPTION_CASE(EXCEPTION_FLT_STACK_CHECK);
+            EXCEPTION_CASE(EXCEPTION_FLT_UNDERFLOW);
+            EXCEPTION_CASE(EXCEPTION_ILLEGAL_INSTRUCTION);
+            EXCEPTION_CASE(EXCEPTION_IN_PAGE_ERROR);
+            EXCEPTION_CASE(EXCEPTION_INT_DIVIDE_BY_ZERO);
+            EXCEPTION_CASE(EXCEPTION_INT_OVERFLOW);
+            EXCEPTION_CASE(EXCEPTION_INVALID_DISPOSITION);
+            EXCEPTION_CASE(EXCEPTION_NONCONTINUABLE_EXCEPTION);
+            EXCEPTION_CASE(EXCEPTION_PRIV_INSTRUCTION);
+            EXCEPTION_CASE(EXCEPTION_SINGLE_STEP);
+            EXCEPTION_CASE(EXCEPTION_STACK_OVERFLOW);
+
+            EXCEPTION_CASE(EXCEPTION_MSC_CPLUSPLUS);
+            EXCEPTION_CASE(MS_VC_EXCEPTION_SetThreadName);
+        default:
+            return "";
+        }
+        }();
+#undef EXCEPTION_CASE
+    return readableExceptionCode;
+}
+void VEHLogExceptionCode(const ::EXCEPTION_RECORD& exceptionRecord, const AllModules_t& allModules)
 {
     const wchar_t* readableExceptionCode = GetReadableExceptionCode(exceptionRecord);
 
     LOG_DEBUG(
         CrashLog,
-        L"[error][X] CRASH? Exception %llX%s at %s.\n"
+        L"[x] Exception %llX%s at %s.\n"
         , exceptionRecord.ExceptionCode
         , readableExceptionCode
         , MakeAddressReadable(reinterpret_cast<uintptr_t>(exceptionRecord.ExceptionAddress), allModules).c_str()
     );
 }
-void LogException(::EXCEPTION_POINTERS& excPointers)
+void LogVEHException(::EXCEPTION_POINTERS& excPointers)
 {
+    const bool doDumpOnVEHException = false;
+    if (!doDumpOnVEHException) return;
     if (excPointers.ExceptionRecord->ExceptionCode < 0x80000000)
     {
         // Supposedly the exceptions in this range aren't indicating failure
@@ -249,22 +300,102 @@ void LogException(::EXCEPTION_POINTERS& excPointers)
     }
     std::vector<Module> modules = GetAllModules();
     PrintAllModules(modules);
-    LogExceptionCode(*excPointers.ExceptionRecord, modules);
+    VEHLogExceptionCode(*excPointers.ExceptionRecord, modules);
 }
-static std::optional<LPTOP_LEVEL_EXCEPTION_FILTER> g_previousTopLevelSEHandler;
+class TopLevelExceptionLoggerTool
+{
+public:
+    std::string m_WhereCaught;
+    ::EXCEPTION_RECORD& ExceptionRecord;
+    ::CONTEXT& ContextRecord;
+    TopLevelExceptionLoggerTool(
+        const std::string_view& whereCaught
+        , ::EXCEPTION_RECORD& ExceptionRecord
+        , ::CONTEXT& ContextRecord
+    ) : m_WhereCaught(whereCaught)
+        , ExceptionRecord(ExceptionRecord)
+        , ContextRecord(ContextRecord)
+    {}
+    void DoLog()
+    {
+        LOG_DEBUG(CrashLog
+            , L"[error][X] %s: uncaught exception! Code: %X%s At: %llX\n"
+            , utf8_and_wide_string_conversion::utf8_decode(m_WhereCaught).c_str()
+            , ExceptionRecord.ExceptionCode
+            , GetReadableExceptionCode(ExceptionRecord)
+            , ExceptionRecord.ExceptionAddress
+        );
+        m_AllModules = GetAllModules();
+        PrintAllModules(m_AllModules);
+        LOG_DEBUG(CrashLog,
+            L"Readable ExceptionAddress: %s\n"
+            , MakeAddressReadable((uintptr_t)ExceptionRecord.ExceptionAddress, m_AllModules).c_str()
+        );
+        DoStacktrace();
+        LOG_DEBUG(CrashLog,
+            utf8_and_wide_string_conversion::utf8_decode(m_StackBackTrace.c_str()).c_str()
+        );
+        CrashLog_MessageBoxAF(
+            "[CrashLog] %s: uncaught exception!\n"
+            "Code: %X%s\n"
+            "At: %llX\n"
+            "%s\n"
+            "A crash log has been generated."
+            , m_WhereCaught.c_str()
+            , ExceptionRecord.ExceptionCode
+            , GetReadableExceptionCodeA(ExceptionRecord)
+            , ExceptionRecord.ExceptionAddress
+            , m_StackBackTrace.c_str()
+        );
+    }
+public:
+    std::vector<Module> m_AllModules;
+    ImGuiTextBuffer m_StackBackTrace;
+    void DoStacktrace()
+    {
+        uintptr_t fromAddr = (uintptr_t)ExceptionRecord.ExceptionAddress;
+        ULONG traceHash;
+        std::array<void*, 64> frames = { 0 };
+        USHORT numFrames = RtlCaptureStackBackTrace(0, (DWORD)frames.size(), &frames[0], &traceHash);
+
+        USHORT startFromIdx = 0;
+        for (size_t i = 0; i < numFrames; i++)
+        {
+            if ((uintptr_t)frames[i] == fromAddr)
+            {
+                startFromIdx = (USHORT)i;
+                break;
+            }
+        }
+        m_StackBackTrace.appendf(
+            "Rsp: %llX\n"
+            , ContextRecord.Rsp
+        );
+        m_StackBackTrace.appendf(
+            "RtlCaptureStackBackTrace():\n"
+            "%hu return addresses found:\n"
+            , numFrames - startFromIdx
+        );
+        for (size_t i = startFromIdx; i < numFrames; i++)
+        {
+            m_StackBackTrace.appendf(
+                "%2d. %s\n"
+                , i - startFromIdx
+                , utf8_and_wide_string_conversion::utf8_encode(MakeAddressReadable(reinterpret_cast<uintptr_t>(frames[i]), m_AllModules)).c_str()
+            );
+        }
+    }
+};
+void LogTopLevelException(const std::string_view& whereCaught, ::EXCEPTION_RECORD& ExceptionRecord, ::CONTEXT& ContextRecord)
+{
+    TopLevelExceptionLoggerTool(whereCaught, ExceptionRecord, ContextRecord).DoLog();
+}
+static std::optional<LPTOP_LEVEL_EXCEPTION_FILTER> g_CrashLog_PreviousTopLevelSEHandler;
 LONG __stdcall CrashLogUnhandledExceptionHandler(::EXCEPTION_POINTERS* exception) noexcept
 {
-    // I fail to trigger this. Maybe this means that there are more vectored exception handlers
-    // and they prevent this code from being reached.
-    LOG_DEBUG(CrashLog
-        , L"[error][X] Unhandled Exception. ExceptionCode %llX%s:\n"
-        , exception->ExceptionRecord->ExceptionCode
-        , GetReadableExceptionCode(*exception->ExceptionRecord)
-    );
-    LogException(*exception);
-    MessageBoxA(NULL, "CrashLog: Unhandled exception", "Crash Log", MB_OK | MB_ICONSTOP);
-    if (g_previousTopLevelSEHandler && *g_previousTopLevelSEHandler)
-        return (*g_previousTopLevelSEHandler)(exception);
+    LogTopLevelException("UnhandledExceptionFilter()", *exception->ExceptionRecord, *exception->ContextRecord);
+    if (g_CrashLog_PreviousTopLevelSEHandler && *g_CrashLog_PreviousTopLevelSEHandler)
+        return (*g_CrashLog_PreviousTopLevelSEHandler)(exception);
     return EXCEPTION_CONTINUE_SEARCH;
 }
 void HandleExc_SetThreadName(::EXCEPTION_POINTERS* exception)
@@ -275,18 +406,10 @@ void HandleExc_SetThreadName(::EXCEPTION_POINTERS* exception)
         , GetCurrentThreadId()
         , numParams
     );
-    if (numParams == 6)
+    if (numParams == 6 || numParams == 3)
     {
         LOG_DEBUG(CrashLog
-            , L"    Name    : \"%s\", Addr: %llX\n"
-            , utf8_and_wide_string_conversion::utf8_decode((const char*)exception->ExceptionRecord->ExceptionInformation[1]).c_str()
-            , exception->ExceptionRecord->ExceptionInformation[5]
-        );
-    }
-    else if (numParams == 3)
-    {
-        LOG_DEBUG(CrashLog
-            , L"    Name    : %s\n"
+            , L"    Name    : \"%s\"\n"
             , utf8_and_wide_string_conversion::utf8_decode((const char*)exception->ExceptionRecord->ExceptionInformation[1]).c_str()
         );
     }
@@ -305,9 +428,10 @@ void HandleExc_SetThreadName(::EXCEPTION_POINTERS* exception)
 LONG _stdcall CrashLogVectoredExceptionHandler(::EXCEPTION_POINTERS* exception) noexcept
 {
     LOG_DEBUG(CrashLog
-        , L"[*] Vectored Exception Handler. ExceptionCode %llX%s:\n"
+        , L"[*] Vectored Exception Handler. Code %llX%s: At: %llX\n"
         , exception->ExceptionRecord->ExceptionCode
         , GetReadableExceptionCode(*exception->ExceptionRecord)
+        , exception->ExceptionRecord->ExceptionAddress
     );
     const bool isShouldLogCPPExceptions = false;
     if (exception->ExceptionRecord->ExceptionCode == MS_VC_EXCEPTION_SetThreadName)
@@ -328,17 +452,43 @@ LONG _stdcall CrashLogVectoredExceptionHandler(::EXCEPTION_POINTERS* exception) 
     }
     else
     {
-        LogException(*exception);
+        LogVEHException(*exception);
     }
     // Returns `0x14290BCF4`.
-    // However, I'm unable to trigger neither that function nor the one I set.
-    if (!g_previousTopLevelSEHandler)
-        g_previousTopLevelSEHandler = ::SetUnhandledExceptionFilter(&CrashLogUnhandledExceptionHandler);
+    // I cannot set the SEH _as_soon_as_ the mod is injected,
+    // because my handler gets removed by the game.
+    // This is why I set it from VEH, which does not get removed and triggers before SEH.
+    // SEH doesn't catch _every_ crash though.
+    // For example, it can catch an invalid dereference in the game code
+    // but not in the VMProtect code, and not in some of the cases
+    // where the call stack contains allocated code (but in some cases it can. Idk).
+    if (!g_CrashLog_PreviousTopLevelSEHandler)
+        g_CrashLog_PreviousTopLevelSEHandler = ::SetUnhandledExceptionFilter(&CrashLogUnhandledExceptionHandler);
     return EXCEPTION_CONTINUE_SEARCH;
 }
-PVOID g_CrashLogVEHhandle = nullptr;
+std::optional<VEHandler> g_CrashLogVEH;
+/*
+The Vectored Exception Handler is the most successful way of catching exceptions.
+The problem is it triggers on all exceptions, including the nonerror ones
+like MS_VC_EXCEPTION_SetThreadName (0x406D1388) and the handled ones
+like the C++ exceptions that get successfully caught. I can find no way of
+distinguishing nonhandled critical exceptions from successfully handled, and bombarding the log
+with stacktraces from successfully handled exceptions just doesn't seem like a good idea.
+SetUnhandledExceptionFilter() _seems_ like the solution, but doesn't actually succeed
+at catching exceptions that e.g. happen within the C++ receiver functions called from
+my PresetScript_CCodeInTheMiddle() hooks.
+(I think this has something to do with my implementation of
+PresetScript_CCodeInTheMiddle() and how the code cave's stack frame
+_in_some_cases_ cannot be recovered during a stack walk/unwind. Hmmmm.
+Regardless of the reason...)
+I'd like to have the ability to catch all crashes, especially
+since I already know VMProtect likes to make crashes silent.
+This is why I also hook the ZwRaiseException() within the ntdll.dll
+as a last resort. Such a hook doesn't produce a good stacktrace
+and interacts poorly with an attached debugger by preventing UnhandledExceptionFilter()
+from running when it otherwise would.
+*/
 void InstallCrashLog()
 {
-    PVOID vehHandle = ::AddVectoredExceptionHandler(0, &CrashLogVectoredExceptionHandler);
-    g_CrashLogVEHhandle = vehHandle;
+    g_CrashLogVEH.emplace(0, CrashLogVectoredExceptionHandler);
 }

@@ -218,6 +218,7 @@
     <ClInclude Include="inc\ACU\TagDescriptor.h" />
     <ClInclude Include="inc\ACU\TagDictionnaries.h" />
     <ClInclude Include="inc\ACU\TagRules.h" />
+    <ClInclude Include="inc\ACU\Threads\KnownThreads.h" />
     <ClInclude Include="inc\ACU\UniverseTagRules.h" />
     <ClInclude Include="inc\ACU\WorldTagRules.h" />
     <ClInclude Include="inc\ACU_DefineNativeFunction.h" />

@@ -520,3 +520,15 @@ void AutoAssemblerCodeHolder_Base::PresetScript_NOP(uintptr_t whereToInject, siz
     DEFINE_ADDR_NAMED(injectAt, symbolsBaseName, whereToInject);
     injectAt = { nop(howManyBytesToNOP) };
 }
+void AutoAssemblerCodeHolder_Base::PresetScript_ReplaceFunctionAtItsStart(uintptr_t whereToInject, void* Func)
+{
+    std::stringstream ss;
+    ss << std::hex << whereToInject;
+    std::string symbolsBaseName = "injectAt_" + ss.str();
+    DEFINE_ADDR_NAMED(injectAt, symbolsBaseName, whereToInject);
+    injectAt = {
+        "FF 25 00000000",       //  - jmp [label_externalFuncAddrBelow]
+    //label_externalFuncAddrBelow:
+        dq((uintptr_t)Func)
+    };
+}

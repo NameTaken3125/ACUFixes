@@ -10,7 +10,7 @@ class SkeletonComponent;
 class AtomAnimComponent;
 class CSrvPlayerHealth;
 
-struct IDXGISwapchain;
+struct IDXGISwapChain;
 
 namespace ACU {
 
@@ -23,6 +23,6 @@ SkeletonComponent* GetPlayerCpnt_SkeletonComponent();
 AtomAnimComponent* GetPlayerCpnt_AtomAnimComponent();
 
 uint64 GetWindowHandle();
-IDXGISwapchain* GetSwapchain();
+IDXGISwapChain* GetSwapchain();
 
 } // namespace ACU

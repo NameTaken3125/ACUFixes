@@ -51,7 +51,7 @@ namespace ACU {
         */
         return *(uint64*)0x145136FD0;
     }
-    IDXGISwapchain* GetSwapchain()
+    IDXGISwapChain* GetSwapchain()
     {
         HasSwapchain* hsc = HasSwapchain::GetSingleton();
         if (!hsc) return nullptr;

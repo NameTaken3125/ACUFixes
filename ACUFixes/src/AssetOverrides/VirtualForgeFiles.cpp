@@ -900,7 +900,9 @@ void DrawAssetOverridesInstructions()
                 "       (you can rename the file, but the datapack needs to have extension \".data\")\n"
                 "   into\n"
                 "       \"Assassin's Creed Unity/ACUFixes/plugins/AssetOverrides/VictoryOutfit/\"\n"
-                "       (if your mod has multiple .data files, put them all in the same folder)\n"
+                "       (if your mod has multiple .data files\n"
+                "       (for example the \"Templar Extremist Retexture + Remove Distance Glow\" by MaceoniK\n"
+                "       has 30 .data files), put them all in the same folder.)\n"
                 "3. In game, in the Asset Overrides menu, in the Load Order section,\n"
                 "   click \"Refresh load order\"\n"
                 "   You should now see\n"
@@ -957,8 +959,8 @@ void DrawAssetOverridesInstructions()
                 "When the number of references reaches 0, the datapack will be unloaded,\n"
                 "at which point the overrides can become active.\n"
                 "Sometimes you'll need to restart the game so that the datapack can be freshly loaded\n"
-                "(and again, some datapacks are loaded too early for me to override - see\n"
-                "   \"Game Bootstrap Settings.data\""
+                "(and again, some datapacks are loaded too early for me to override at all - see\n"
+                "   \"Game Bootstrap Settings.data\")."
             );
             ImGui::BulletText(
                 "Some AnvilToolkit mods are supposed to be installed in a particular World\n"
@@ -1005,11 +1007,16 @@ void DrawAssetOverridesInstructions()
 
             ImGui::PushStyleColor(ImGuiCol_Text, colorWarning);
             ModTextAndLink(
-                "Jacob's Outfits by th3kill (works OK, but seems to be prone to arbitrary crashes\n"
-                "when used with other mods? Not sure why. You can still try it out)"
+                "Jacob's Outfits by th3kill (works OK, but seems to be\n"
+                "prone to arbitrary crashes when used with other mods?\n"
+                "Especially if quickly changing outfits in the menu.\n"
+                "Not sure why.You can definitely still try them out)"
                 , "https://www.nexusmods.com/assassinscreedunity/mods/217"
             );
-            ModTextAndLink("Eiffel Tower by LoremIpsum12 (known to crash during fast travel, but works otherwise)", "https://www.nexusmods.com/assassinscreedunity/mods/225");
+            ModTextAndLink(
+                "Eiffel Tower by LoremIpsum12 (known to crash during fast travel,\n"
+                "but works otherwise)"
+                , "https://www.nexusmods.com/assassinscreedunity/mods/225");
             ImGui::PopStyleColor();
 
             ImGui::PushStyleColor(ImGuiCol_Text, colorIncompatible);

@@ -1,67 +1,31 @@
 #include "pch.h"
 
-#include <TlHelp32.h>
-#include <winternl.h>
-#pragma comment(lib, "ntdll")
+#include "ACU/Threads/KnownThreads.h"
+#include "EarlyHooks/ThreadOperations.h"
 
 #include "MyLog.h"
 
-uintptr_t g_mainIntegrityCheckThreadStartAddress = 0x14275DE50;
-
-using ProcessID_t = DWORD;
-using ThreadID_t = DWORD;
-
-#define ThreadQuerySetWin32StartAddress 0x9
 
 bool TerminateThreadIfRunsTheMainIntegrityCheck(ThreadID_t thread_id)
 {
-    bool result = false;
-    uintptr_t dwStartAddress;
+    bool isFoundAndTerminated = false;
     HANDLE thread_handle = OpenThread(THREAD_ALL_ACCESS, 0, thread_id);
-    NTSTATUS nt_status = NtQueryInformationThread(thread_handle, (THREADINFOCLASS)ThreadQuerySetWin32StartAddress, &dwStartAddress, 0x8, 0);
-    if (nt_status == 0)
+    if (!thread_handle) return false;
+    uintptr_t startAddress = GetThreadStartAddress(thread_handle);
+    LOG_DEBUG(DefaultLogger, L"ThreadID: %4X, start address: %llx\n", thread_id, startAddress);
+    if (startAddress == ACU::Threads::ThreadStartAddr_MainIntegrityCheck)
     {
-        LOG_DEBUG(DefaultLogger, L"  start address: %llx\n", dwStartAddress);
-        if (dwStartAddress == g_mainIntegrityCheckThreadStartAddress)
-        {
-            TerminateThread(thread_handle, 0);
-            result = true;
-        }
+        TerminateThread(thread_handle, 0);
+        isFoundAndTerminated = true;
     }
     CloseHandle(thread_handle);
-    return result;
+    return isFoundAndTerminated;
 }
 
 // Thanks to Sunbeam at https://fearlessrevolution.com/viewtopic.php?t=9605#post-92942.
 void DisableMainIntegrityCheck()
 {
-    auto thisProcessID = GetCurrentProcessId();
-    HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
-    if (snapshot != INVALID_HANDLE_VALUE)
-    {
-        THREADENTRY32 te;
-        te.dwSize = sizeof(te);
-        if (Thread32First(snapshot, &te))
-        {
-            size_t threadCounter = 0;
-            do
-            {
-                if (te.dwSize >= FIELD_OFFSET(THREADENTRY32, th32OwnerProcessID) + sizeof(te.th32OwnerProcessID))
-                {
-                    if (te.th32OwnerProcessID == thisProcessID)
-                    {
-                        LOG_DEBUG(DefaultLogger, L"Thread #%d, id: %x", threadCounter++, te.th32ThreadID);
-                        if (bool mainCheckIsTerminated = TerminateThreadIfRunsTheMainIntegrityCheck(te.th32ThreadID))
-                        {
-                            LOG_DEBUG(DefaultLogger, L"Thread 0x%x terminated.\n", te.th32ThreadID);
-                            break;
-                        }
-                    }
-                }
-            } while (Thread32Next(snapshot, &te));
-        }
-    }
-    CloseHandle(snapshot);
+    ForEachThreadIDOfThisProcess(TerminateThreadIfRunsTheMainIntegrityCheck);
 }
 #include "ACU/basic_types.h"
 class ACUPlayerCameraComponent;

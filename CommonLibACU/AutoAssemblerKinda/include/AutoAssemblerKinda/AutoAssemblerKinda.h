@@ -668,6 +668,8 @@ public:
         , std::optional<uintptr_t> whereToReturn = RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, bool isNeedToExecuteStolenBytesAfterwards = true);
     void PresetScript_NOP(
         uintptr_t whereToInject, size_t howManyBytesToNOP);
+    void PresetScript_ReplaceFunctionAtItsStart(
+        uintptr_t whereToInject, void* Func);
 };
 template<class HasAutoAssemblerCodeInConstructor>
 class AutoAssembleWrapper
@@ -677,8 +679,9 @@ class AutoAssembleWrapper
 private:
     HasAutoAssemblerCodeInConstructor m_CodeHolderInstantiation;
 public:
-    AutoAssembleWrapper()
-        : m_CodeHolderInstantiation()
+    template <typename ... Args>
+    AutoAssembleWrapper(Args&& ... args)
+        : m_CodeHolderInstantiation(std::forward<Args>(args) ...)
     {
         m_CodeHolderInstantiation.m_ctx->AllocateVariables();
         m_CodeHolderInstantiation.m_ctx->ResolveSymbolAddresses();
@@ -715,6 +718,7 @@ public:
         if (m_IsActive) { Deactivate(); }
     }
 
+    HasAutoAssemblerCodeInConstructor& GetCodeHolder() { return m_CodeHolderInstantiation; }
     AssemblerContext& debug_GetAssemblerContext() { return *m_CodeHolderInstantiation.m_ctx; }
 private:
     bool m_IsActive = false;

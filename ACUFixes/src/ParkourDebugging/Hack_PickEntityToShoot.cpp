@@ -93,3 +93,12 @@ void RaycastPicker_PickRangedWeaponTarget()
         ImGui::SetClipboardText(buf.c_str());
     }
 }
+
+void PickEntityToShoot::OnBeforeActivate()
+{
+    ImGui3D::CustomDraw::CustomDraw_Subscribe(g_OverrideRangedTarget_CustomDraw);
+}
+void PickEntityToShoot::OnBeforeDeactivate()
+{
+    ImGui3D::CustomDraw::CustomDraw_Unsubscribe(g_OverrideRangedTarget_CustomDraw);
+}

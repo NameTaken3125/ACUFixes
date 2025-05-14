@@ -445,3 +445,11 @@ ParkourDebuggingPatch::ParkourDebuggingPatch()
     PresetScript_CCodeInTheMiddle(whenPerformingFinalFilter1OnSortedMoves, 5,
         WhenPerformingFinalFilter1OnSortedMoves_ForceTurnInPalaisDeLuxembourgCorners, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, false);
 }
+void ParkourDebuggingPatch::OnBeforeActivate()
+{
+    ImGui3D::CustomDraw::CustomDraw_Subscribe(g_ParkourVisualization);
+}
+void ParkourDebuggingPatch::OnBeforeDeactivate()
+{
+    ImGui3D::CustomDraw::CustomDraw_Unsubscribe(g_ParkourVisualization);
+}

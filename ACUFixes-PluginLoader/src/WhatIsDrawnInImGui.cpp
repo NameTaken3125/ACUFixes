@@ -23,7 +23,7 @@ void DrawSuccessfulInjectionIndicatorOverlay()
         ImGui::Text(
             "Press %s to open ImGui menu."
             "\nThe hotkeys can be changed in the menu or in the config file."
-            "\nThis text can be disabled in the Extra tab of the menu. See `ACUFixes-readme.txt`."
+            "\nThis text can be disabled in the Extra tab of the menu. See `ACUFixesAndPluginLoader-readme.txt`."
             , enum_reflection<VirtualKeys>::GetString(g_PluginLoaderConfig.hotkey_ToggleMenu)
             );
     }
