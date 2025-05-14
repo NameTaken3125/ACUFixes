@@ -466,6 +466,7 @@ LONG _stdcall CrashLogVectoredExceptionHandler(::EXCEPTION_POINTERS* exception) 
         g_CrashLog_PreviousTopLevelSEHandler = ::SetUnhandledExceptionFilter(&CrashLogUnhandledExceptionHandler);
     return EXCEPTION_CONTINUE_SEARCH;
 }
+void CrashLog_CodePatches_Start();
 std::optional<VEHandler> g_CrashLogVEH;
 /*
 The Vectored Exception Handler is the most successful way of catching exceptions.
@@ -491,4 +492,8 @@ from running when it otherwise would.
 void InstallCrashLog()
 {
     g_CrashLogVEH.emplace(0, CrashLogVectoredExceptionHandler);
+    //// Uncomment this to enable the ZwRaiseException() hook. It can catch more crashes,
+    //// but I force it to exit the process, and this might not be desirable
+    //// if a debugger is attached.
+    //CrashLog_CodePatches_Start();
 }

@@ -197,6 +197,7 @@ if exist "$(ProjectDir)copy_output_to_directory.txt" (
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\CrashLog\Hook_ZwRaiseException.h" />
     <ClInclude Include="src\EarlyHooks\VEH.h" />
     <ClInclude Include="src\ImGuiConsole.h" />
     <ClInclude Include="src\PluginLoader.h" />
@@ -211,6 +212,8 @@ if exist "$(ProjectDir)copy_output_to_directory.txt" (
     <ClInclude Include="src\EarlyHooks\ThreadOperations.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\CrashLog\Hook_ZwRaiseException.cpp" />
+    <ClCompile Include="src\CrashLog\PatchContainer_CrashLog.cpp" />
     <ClCompile Include="src\EarlyHooks\ThreadOperations.cpp" />
     <ClCompile Include="src\ImGuiConsole.cpp" />
     <ClCompile Include="src\ImGuiConsoleInterface_impl.cpp" />
