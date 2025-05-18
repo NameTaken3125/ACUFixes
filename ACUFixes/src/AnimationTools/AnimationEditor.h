@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Experimental_StrongPtr.h"
+#include "ACU/ManagedPtrs/ManagedPtrs.h"
 #include "ACU/Animation.h"
 
 class AnimationEditor

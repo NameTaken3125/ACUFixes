@@ -497,7 +497,7 @@ void DrawEntityVisualsControls(Entity& entity)
         ImGui::PopID();
     }
 }
-#include "Experimental_StrongPtr.h"
+#include "ACU/ManagedPtrs/ManagedPtrs.h"
 #include "Raycasting/RaycastPicker.h"
 ACU::WeakPtr<Entity> g_VisualCpntsControls_SelectedEntity;
 void RaycastPicker_PickEntityForVisualsToggles()

@@ -20,9 +20,8 @@
 #include "ACU/AtomCondition.h"
 #include "ACU/AtomConditionExpression.h"
 
-#include "ACU_SharedPtrs.h"
+#include "ACU/ManagedPtrs/ManagedPtrs.h"
 #include "ACU_DefineNativeFunction.h"
-#include "Experimental_StrongPtr.h"
 
 #include "AnimationTools/UsefulHandles.h"
 

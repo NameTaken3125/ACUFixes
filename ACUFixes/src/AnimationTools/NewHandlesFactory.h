@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Experimental_StrongPtr.h"
+#include "ACU/ManagedPtrs/ManagedPtrs.h"
 constexpr uint64 handle_MaximumInACU = 272054823035; // => LargeMesh_LV_Ground_07A_LOD0_Chunk_0047_MeshShape/LargeMesh_LV_Ground_07A_LOD0_Chunk_0047_MeshShape.MeshShape
 
 class NewHandlesFactory

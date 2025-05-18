@@ -1,9 +1,15 @@
 #pragma once
 
-#include <functional>
-
 #include "ACU/basic_types.h"
-#include "ACU_SharedPtrs.h"
+#include "ACU/SharedPtr.h"
+
+SharedBlock& FindOrMakeSharedBlockByHandleAndIncrementWeakrefcount(uint64 handle);
+SharedBlock& FindOrMakeSharedBlockByHandleAndIncrementStrongRefcount(uint64 handle);
+SharedBlock& FindSharedBlockByObjectAndIncrementWeakrefcount(ManagedObject& manObj);
+SharedBlock& FindSharedBlockByObjectAndIncrementStrongRefcount(ManagedObject& manObj);
+
+
+
 
 SharedBlock* const g_emptySharedBlock = (SharedBlock*)0x14525BB58;
 
@@ -75,11 +81,13 @@ inline ACUSharedPtr_Strong<ManagedObjectSubcls>& ACUSharedPtr_Strong<ManagedObje
 template<class ManagedObjectSubcls>
 inline ACUSharedPtr_Strong<ManagedObjectSubcls>::ACUSharedPtr_Strong(uint64 handle)
     : m_SharedBlock(FindOrMakeSharedBlockByHandleAndIncrementStrongRefcount(handle))
-{}
+{
+}
 template<class ManagedObjectSubcls>
 inline ACUSharedPtr_Strong<ManagedObjectSubcls>::ACUSharedPtr_Strong()
     : m_SharedBlock(*g_emptySharedBlock)
-{}
+{
+}
 template<class ManagedObjectSubcls>
 inline ACUSharedPtr_Strong<ManagedObjectSubcls>::~ACUSharedPtr_Strong()
 {

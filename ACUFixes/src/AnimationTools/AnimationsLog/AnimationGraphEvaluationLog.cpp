@@ -6,7 +6,7 @@
 #include "ACU/AtomAnimationDataBaseNode.h"
 #include "ACU/ACUGetSingletons.h"
 #include "ACU/Animation.h"
-#include "ACU_SharedPtrs.h"
+#include "ACU/ManagedPtrs/ManagedPtrs.h"
 
 #include "Handles.h"
 

@@ -4,7 +4,7 @@
 
 #include "ACU/HumanStatesHolder.h"
 #include "ACU/Entity.h"
-#include "Experimental_StrongPtr.h"
+#include "ACU/ManagedPtrs/ManagedPtrs.h"
 
 ACU::WeakPtr<Entity> g_PickedEntityToShoot;
 ACUSharedPtr_Strong<Entity> GetRangedWeaponTargetEntityFromRaycastPicker()

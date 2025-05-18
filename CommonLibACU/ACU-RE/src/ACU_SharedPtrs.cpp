@@ -1,7 +1,7 @@
 #include "pch.h"
 
-#include "ACU/AllManagedObjects.h"
-#include "ACU_SharedPtrs.h"
+#include "ACU/ManagedPtrs/AllManagedObjects.h"
+#include "ACU/SharedPtr.h"
 #include "ACU_DefineNativeFunction.h"
 
 DEFINE_GAME_FUNCTION(AllManagedObjects__FindOrMakeSharedBlockByHandle_WeakRef, 0x1426EAF00, SharedBlock*, __fastcall, (AllManagedObjects_mb* objList, __int64 p_managedObjHandle_mb_opt, ManagedObject* a3));

@@ -9,7 +9,7 @@
 
 
 
-#include "ACU_SharedPtrs.h"
+#include "ACU/ManagedPtrs/ManagedPtrs.h"
 
 DEFINE_GAME_FUNCTION(Entity__Get_Human1C8, 0x140C17A50, void*, __fastcall, (Entity* entity));
 DEFINE_GAME_FUNCTION(Entity__Get_WeaponComponent, 0x140C1B7E0, WeaponComponent*, __fastcall, (Entity* weaponEntity));

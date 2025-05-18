@@ -122,13 +122,12 @@
     <ClInclude Include="vmath\vmath\vmath.h" />
     <ClInclude Include="vmath\vmath\vmath_extra.h" />
     <ClInclude Include="inc\ACU_DefineNativeFunction.h" />
-    <ClInclude Include="inc\ACU_SharedPtrs.h" />
     <ClInclude Include="inc\ACU\MenuManager.h" />
     <ClInclude Include="inc\ACU\MenuPage.h" />
     <ClInclude Include="inc\ACU\StandardPage.h" />
     <ClInclude Include="inc\ACU\GearPage.h" />
     <ClInclude Include="inc\ACU\Event.h" />
-    <ClInclude Include="inc\ACU\AllManagedObjects.h" />
+    <ClInclude Include="inc\ACU\ManagedPtrs\AllManagedObjects.h" />
     <ClInclude Include="inc\ACU\Material.h" />
     <ClInclude Include="inc\ACU\SkeletonComponent.h" />
     <ClInclude Include="inc\ACU\Skeleton.h" />
@@ -183,6 +182,7 @@
     <ClInclude Include="inc\ACU\AtomRTCPDescriptor.h" />
     <ClInclude Include="inc\ACU\Memory\ACUAllocs.h" />
     <ClInclude Include="inc\ACU\Sound\ACU_SoundUtils.h" />
+    <ClInclude Include="inc\ACU\ManagedPtrs\ManagedPtrs.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />

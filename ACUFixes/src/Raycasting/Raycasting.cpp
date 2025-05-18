@@ -10,7 +10,7 @@
 #include "ACU/RenderValuesHolder.h"
 #include "ACU/Letterbox.h"
 #include "ACU_DefineNativeFunction.h"
-#include "Experimental_StrongPtr.h"
+#include "ACU/ManagedPtrs/ManagedPtrs.h"
 
 #include "ImGui3D/ImGui3D.h"
 #include "ImGuiCTX.h"

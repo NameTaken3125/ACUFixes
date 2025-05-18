@@ -19,8 +19,7 @@
 #include "ACU/AtomCondition.h"
 #include "ACU/AtomConditionExpression.h"
 
-#include "ACU_SharedPtrs.h"
-#include "Experimental_StrongPtr.h"
+#include "ACU/ManagedPtrs/ManagedPtrs.h"
 
 #include "Common_Plugins/AnimationGraphMods/RTCPVariableDescriptor.h"
 

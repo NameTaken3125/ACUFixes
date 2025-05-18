@@ -286,7 +286,6 @@ REM robocopy "$(SolutionDir)NewAnimations" "$(TargetDir)NewAnimations" /MIR
     <ClInclude Include="src\Raycasting\RaycastPicker.h" />
     <ClInclude Include="src\AnimationTools\SkeletonDumper.h" />
     <ClInclude Include="src\AnimationTools\UsefulHandles.h" />
-    <ClInclude Include="src\Experimental_StrongPtr.h" />
     <ClInclude Include="src\VariousPatches\Hack_AllowCustomizeEquipment.h" />
     <ClInclude Include="src\VariousPatches\Hack_DontRandomlyTurn180Degrees.h" />
     <ClInclude Include="src\VariousPatches\Hack_GunRange.h" />

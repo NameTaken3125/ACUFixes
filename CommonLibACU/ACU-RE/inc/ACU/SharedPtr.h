@@ -45,6 +45,18 @@ inline void SharedBlock::DecrementStrongRefcount()
         MarkManagedObjectForFreeingAfterZeroStrongRefcount_impl(*this);
     }
 }
+// A SharedBlock holding a pointer to an instance of a specific subclass of ManagedObject.
+// I use "SharedPtrNew<T> *" (notice the "*" pointer) like so:
+//      class SomeGameStructure
+//      {
+//          //...
+//          SharedPtrNew<Animation>* m_someAnimation; // Notice the "*" pointer
+//          //...
+//      };
+// in places where I don't know whether the reference the game uses here
+// is Weak or Strong.
+// See "ACU/ManagedPtrs/ManagedPtrs.h" for actual classes
+// with the behavior of Strong and Weak references.
 template<class ManagedObjectSubcls>
 class SharedPtrNew : public SharedBlock
 {
@@ -52,9 +64,5 @@ public:
 
     // @helper_functions
     ManagedObjectSubcls* GetPtr() { return static_cast<ManagedObjectSubcls*>(SharedBlock::GetPtr()); }
-    void IncrementWeakRefcount() { SharedBlock::IncrementWeakRefcount(); }
-    void IncrementStrongRefcount() { SharedBlock::IncrementStrongRefcount(); }
-    void DecrementWeakRefcount() { SharedBlock::DecrementWeakRefcount(); }
-    void DecrementStrongRefcount() { SharedBlock::DecrementStrongRefcount(); }
 };
 assert_sizeof(SharedPtrNew<ManagedObject>, sizeof(SharedBlock));

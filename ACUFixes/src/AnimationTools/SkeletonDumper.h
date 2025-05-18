@@ -188,7 +188,7 @@ json::JSON SkeletonToJSON(Skeleton& skel)
     return obj;
 }
 
-#include "Experimental_StrongPtr.h"
+#include "ACU/ManagedPtrs/ManagedPtrs.h"
 
 void ExportPlayerSkeletonAsJSON()
 {

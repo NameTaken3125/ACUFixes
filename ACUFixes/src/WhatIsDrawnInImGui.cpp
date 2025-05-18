@@ -9,7 +9,7 @@
 #include "ACU/ACUGetSingletons.h"
 #include "ACU/Entity.h"
 #include "ACU/RenderValuesHolder.h"
-#include "Experimental_StrongPtr.h"
+#include "ACU/ManagedPtrs/ManagedPtrs.h"
 
 Vector3f g_VisualizedDebugDirection;
 void VisualizeLocationFromClipboard()

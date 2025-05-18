@@ -4,7 +4,7 @@
 #include "AnimationTools/Hack_RemovableHood_Animations.h"
 
 #include "ACU/AtomGraph.h"
-#include "Experimental_StrongPtr.h"
+#include "ACU/ManagedPtrs/ManagedPtrs.h"
 
 #include "AnimationTools/UsefulHandles.h"
 

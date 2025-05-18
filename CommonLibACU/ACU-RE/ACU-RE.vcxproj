@@ -167,7 +167,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="inc\ACU\AllManagedObjects.h" />
+    <ClInclude Include="inc\ACU\ManagedPtrs\AllManagedObjects.h" />
     <ClInclude Include="inc\ACU\Animation.h" />
     <ClInclude Include="inc\ACU\AtomAnimationDataBaseNode.h" />
     <ClInclude Include="inc\ACU\AtomAnimationDataNode.h" />
@@ -206,6 +206,7 @@
     <ClInclude Include="inc\ACU\InventoryItemContainer.h" />
     <ClInclude Include="inc\ACU\Letterbox.h" />
     <ClInclude Include="inc\ACU\LoadInfo.h" />
+    <ClInclude Include="inc\ACU\ManagedPtrs\ManagedPtrs.h" />
     <ClInclude Include="inc\ACU\Material.h" />
     <ClInclude Include="inc\ACU\MenuManager.h" />
     <ClInclude Include="inc\ACU\MenuPage.h" />
@@ -344,7 +345,6 @@
     <ClInclude Include="inc\ACU\WitnessEvent.h" />
     <ClInclude Include="inc\ACU\World.h" />
     <ClInclude Include="inc\ACU\WorldComponent.h" />
-    <ClInclude Include="inc\ACU_SharedPtrs.h" />
     <ClInclude Include="src\framework.h" />
     <ClInclude Include="src\pch.h" />
     <ClInclude Include="vmath\vmath\vmath.h" />
