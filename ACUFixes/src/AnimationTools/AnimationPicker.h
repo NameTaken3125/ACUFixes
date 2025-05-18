@@ -26,5 +26,5 @@ inline bool InputUInt64(const char* label, uint64* v, uint64 step = 1, uint64 st
 class AnimationPicker
 {
 public:
-    bool Draw(const char* label, ACUSharedPtr_Strong<Animation>& inOut);
+    bool Draw(const char* label, ACU::StrongRef<Animation>& inOut);
 };

@@ -57,7 +57,7 @@ static AtomAnimComponent* GetPlayerAtomAnimComponent()
 
 
 
-MyPlayedAnimation::MyPlayedAnimation(const ACUSharedPtr_Strong<Animation>& animStrongRef, uint64 playStartTime)
+MyPlayedAnimation::MyPlayedAnimation(const ACU::StrongRef<Animation>& animStrongRef, uint64 playStartTime)
     : m_playedAnimationStrongRef(animStrongRef)
     , m_LastChangeTimestamp(playStartTime)
     , m_LastChangeAnimTime(0)
@@ -142,7 +142,7 @@ void RestartAnimation_impl(Animation& anim)
         oneOfThoseFns_WhenStartActing(humanStates, &a2, &anim, 0, 1, 1);
     }
 }
-void MyAnimationPlayer::StartAnimation(ACUSharedPtr_Strong<Animation>& sharedAnim)
+void MyAnimationPlayer::StartAnimation(ACU::StrongRef<Animation>& sharedAnim)
 {
     m_playedAnim.emplace(sharedAnim, GetAnimatorTime());
     if (Animation* anim = sharedAnim.GetPtr())
@@ -190,7 +190,7 @@ void MyAnimationPlayer::DrawControls()
 {
     DrawSpoofAnimationExperiments();
     static AnimationPicker picker;
-    static ACUSharedPtr_Strong<Animation> animToRestart;
+    static ACU::StrongRef<Animation> animToRestart;
     ImGui::Separator();
     if (picker.Draw("Pick animation to play", animToRestart))
     {
@@ -311,11 +311,11 @@ class MySpoofAnimation
 public:
     MySpoofAnimation(uint64 handle);
     ~MySpoofAnimation();
-    ACUSharedPtr_Strong<Animation>& GetAnim() { return m_sharedPtr; }
+    ACU::StrongRef<Animation>& GetAnim() { return m_sharedPtr; }
     AnimTrackData& GetAnimTrackData() { return (AnimTrackData&)m_buf_animTrackData[0]; }
 private:
     uint64 m_handle;
-    ACUSharedPtr_Strong<Animation> m_sharedPtr;
+    ACU::StrongRef<Animation> m_sharedPtr;
     std::vector<byte> m_buf_animTrackData;
 };
 class SmthDuringDeserializeManagedObj
@@ -334,11 +334,11 @@ Animation* CreateManagedAnimationByHandle(uint64 handle)
 
     return static_cast<TargetType*>(UsesTypeInfoCreate(handle, 0, &TargetType::GetTI()));
 }
-ACUSharedPtr_Strong<Animation> FindOrCreateSharedAnimationByHandle(uint64 handle)
+ACU::StrongRef<Animation> FindOrCreateSharedAnimationByHandle(uint64 handle)
 {
     using TargetType = Animation;
 
-    ACUSharedPtr_Strong<TargetType> sharedAnim = ACUSharedPtr_Strong<TargetType>(handle);
+    ACU::StrongRef<TargetType> sharedAnim = ACU::StrongRef<TargetType>(handle);
     // Managed objects lock is unnecessarily released here.
     if (!sharedAnim.GetSharedBlock().manObj)
     {
@@ -662,7 +662,7 @@ inline bool SliderEulerAngles(const char* label, Vector3f& v)
     ImGuiDataType data_type = ImGuiDataType_Float;
     int components = 3;
     constexpr float gimbalLockEps = 1e-2f;
-    float v_min[3] = { -pi(), -pi() / 2 + gimbalLockEps, -pi(),};
+    float v_min[3] = { -pi(), -pi() / 2 + gimbalLockEps, -pi(), };
     float v_max[3] = { pi(), pi() / 2 - gimbalLockEps, pi() };
     const char* format = "%.3f";
     ImGuiSliderFlags flags = 0;
@@ -714,7 +714,7 @@ template<uint8 Datatype>
 class AnimationDatatypeSolver : public AnimationDatatypeSolverBase
 {
 public:
-    virtual uint8 GetDatatype() override { return Datatype;  }
+    virtual uint8 GetDatatype() override { return Datatype; }
 };
 class ADS_Translation : public AnimationDatatypeSolver<27>
 {
@@ -1164,7 +1164,7 @@ namespace fs = std::filesystem;
 #include "Serialization/ToFromFile/ToFromFile.h"
 
 NewHandlesFactory g_NewHandlesFactory;
-ACUSharedPtr_Strong<Animation> NewAnimationsFactory::AllocateNewAnimation()
+ACU::StrongRef<Animation> NewAnimationsFactory::AllocateNewAnimation()
 {
     auto InitializeNewAnimation = [](Animation& newManObj, uint64 newHandle) {
         const uint32 animationKey_shouldBeUniqueToAvoidCachingProblemsButIdkHowItsGenerated = newHandle & 0xFFFFFFFF;
@@ -1316,7 +1316,7 @@ MySpoofAnimation::MySpoofAnimation(uint64 handle)
     ////SpoofAnimationRawTrackData(thisAnim, rotation_Hips);
     ////SpoofAnimationRawTrackData(thisAnim, rotation_Reference);
     return;
-    ACUSharedPtr_Strong<Skeleton> skeleton_maleBase(handle_skeleton_BaseMale);
+    ACU::StrongRef<Skeleton> skeleton_maleBase(handle_skeleton_BaseMale);
     if (Skeleton* skel = skeleton_maleBase.GetPtr())
     {
         const uint16 startFromHipsBoneNotFromReferenceBone = 1;
@@ -1362,9 +1362,9 @@ MySpoofAnimation::MySpoofAnimation(uint64 handle)
     }
 }
 constexpr uint32 boneID_Reference = 743623600;
-std::optional<ACUSharedPtr_Strong<Animation>> CreatePosingAnimation(const std::vector<Skeleton*>& skels)
+std::optional<ACU::StrongRef<Animation>> CreatePosingAnimation(const std::vector<Skeleton*>& skels)
 {
-    ACUSharedPtr_Strong<Animation> newAnim = g_NewAnimationsFactory.AllocateNewAnimation();
+    ACU::StrongRef<Animation> newAnim = g_NewAnimationsFactory.AllocateNewAnimation();
     Animation& thisAnim = *newAnim.GetPtr();
 
     uint8 framesLength = 0xf0;
@@ -1384,7 +1384,7 @@ std::optional<ACUSharedPtr_Strong<Animation>> CreatePosingAnimation(const std::v
             {
                 continue;
             }
-            const bool isThisBoneIDTrackAlreadyAdded =  std::find_if(newAnimTrackData->AnimTrackDataMapping_.begin(), newAnimTrackData->AnimTrackDataMapping_.end(), [bone](AnimTrackDataMapping& tdMapp)
+            const bool isThisBoneIDTrackAlreadyAdded = std::find_if(newAnimTrackData->AnimTrackDataMapping_.begin(), newAnimTrackData->AnimTrackDataMapping_.end(), [bone](AnimTrackDataMapping& tdMapp)
                 {
                     return tdMapp.TrackID == bone->BoneID_boneNameHash;
                 }) != newAnimTrackData->AnimTrackDataMapping_.end();
@@ -1457,8 +1457,8 @@ void DrawConfigurationPopupForSkeletonPoser(SkeletonComponent& skelCpnt)
         "If you press \"Send to editor\", then in the Animedit tab\n"
         "you can use some rudimentary controls for the bones."
     )) {
-        static ACUSharedPtr_Strong<Animation> posingAnim;
-        if (std::optional<ACUSharedPtr_Strong<Animation>> recreatedAnim = CreatePosingAnimation(skels))
+        static ACU::StrongRef<Animation> posingAnim;
+        if (std::optional<ACU::StrongRef<Animation>> recreatedAnim = CreatePosingAnimation(skels))
         {
             posingAnim = *recreatedAnim;
             g_MyAnimationPlayer.StartAnimation(posingAnim);
@@ -1489,7 +1489,7 @@ void DrawSpoofAnimationExperiments()
     buf.appendf("Load \"%s\" JSON animation and start", quickTestAnimFilepath);
     if (ImGui::Button(buf.c_str()))
     {
-        ACUSharedPtr_Strong<Animation> loadedAnim = g_NewAnimationsFactory.LoadNewAnimationFromFile(AbsolutePathInThisDLLDirectory(quickTestAnimFilepath));
+        ACU::StrongRef<Animation> loadedAnim = g_NewAnimationsFactory.LoadNewAnimationFromFile(AbsolutePathInThisDLLDirectory(quickTestAnimFilepath));
         if (loadedAnim.GetPtr())
         {
             g_MyAnimationPlayer.StartAnimation(loadedAnim);

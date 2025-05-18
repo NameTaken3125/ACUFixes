@@ -7,8 +7,8 @@ class AnimationEditor
 {
 public:
     void Draw();
-    void SetAnimation(ACUSharedPtr_Strong<Animation>& newEdited) { m_editedAnim = newEdited; }
+    void SetAnimation(ACU::StrongRef<Animation>& newEdited) { m_editedAnim = newEdited; }
 private:
-    ACUSharedPtr_Strong<Animation> m_editedAnim;
+    ACU::StrongRef<Animation> m_editedAnim;
 };
 extern AnimationEditor g_AnimationEditor;

@@ -499,7 +499,7 @@ void DrawEntityVisualsControls(Entity& entity)
 }
 #include "ACU/ManagedPtrs/ManagedPtrs.h"
 #include "Raycasting/RaycastPicker.h"
-ACU::WeakPtr<Entity> g_VisualCpntsControls_SelectedEntity;
+ACU::WeakRef<Entity> g_VisualCpntsControls_SelectedEntity;
 void RaycastPicker_PickEntityForVisualsToggles()
 {
     static RaycastPickerModal picker;
@@ -528,7 +528,7 @@ void DrawPlayerVisualsControls()
     ImGui::Text("or");
     ImGui::SameLine();
     RaycastPicker_PickEntityForVisualsToggles();
-    ACUSharedPtr_Strong<Entity> sharedEnt = g_VisualCpntsControls_SelectedEntity.Lock();
+    ACU::StrongRef<Entity> sharedEnt = g_VisualCpntsControls_SelectedEntity.Lock();
     Entity* ent = nullptr;
     if (sharedEnt.IsEmpty())
     {

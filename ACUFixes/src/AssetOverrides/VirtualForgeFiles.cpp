@@ -1,9 +1,9 @@
 #include "pch.h"
 
 #include "ACU/ForgeManager.h"
-#include "Experimental_StrongPtr.h"
-#include "AssetOverrides.h"
+#include "ACU/ManagedPtrs/ManagedPtrs.h"
 #include "ACU/Memory/ACUAllocs.h"
+#include "AssetOverrides.h"
 #include "Common_Plugins/Common_PluginSide.h"
 #include "Serialization/Serialization.h"
 #include "Serialization/NumericAdapters.h"
@@ -575,7 +575,7 @@ public:
                                     ImGui::Text(buf);
                                     if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) ImGui::SetClipboardText(buf);
                                     ImGui::TableSetColumnIndex(2);
-                                    ACU::WeakPtr<ManagedObject> weakRef(datapackOk->m_Handle);
+                                    ACU::WeakRef<ManagedObject> weakRef(datapackOk->m_Handle);
                                     const bool isLoaded = weakRef.GetSharedBlock().GetPtr();
                                     const uint32 strongRefs = weakRef.GetSharedBlock().GetRefcountStrong();
                                     if (isLoaded)

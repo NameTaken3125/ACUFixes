@@ -92,7 +92,7 @@ AtomGraphStateNode& CreateGraphState_SimpleAnimation(uint64 animationHandle)
 AtomGraphStateNode& CreateGraphState_SimpleAnimationImported(const fs::path& jsonAnimFilepath)
 {
     AtomGraphStateNode* newGraphState = ACUAllocate<AtomGraphStateNode>();
-    ACUSharedPtr_Strong<Animation> loadedAnim = g_NewAnimationsFactory.LoadNewAnimationFromFile(jsonAnimFilepath);
+    ACU::StrongRef<Animation> loadedAnim = g_NewAnimationsFactory.LoadNewAnimationFromFile(jsonAnimFilepath);
     AtomAnimationRootNode* node_animRoot = &GraphStateNode_PushAnimationRootNode(*newGraphState);
     AtomAnimationDataNode* node_animData = &GraphStateNode_PushAnimationDataNode(*newGraphState, loadedAnim.GetSharedBlock().handle);
     AnimationRootNode_SetAnimationInput(*node_animRoot, *node_animData);
@@ -315,7 +315,7 @@ AtomConditionExpression* CreateConditionExpression_SingleVariableEqualsTo(uint32
         Subconditions_t{
             std::make_shared<MyCondition_GraphVariable>(rtcpVarIdx, AtomCondition_ConditionalOperator::EQUALS, AtomDataContainerWrapper_DataType::Bool, ComparisonValue_t(value)),
         }
-    ));
+        ));
 }
 AtomConditionExpression* CreateConditionExpression_SingleVariableEqualsTo(uint32 rtcpVarIdx, int value)
 {
@@ -324,7 +324,7 @@ AtomConditionExpression* CreateConditionExpression_SingleVariableEqualsTo(uint32
         Subconditions_t{
             std::make_shared<MyCondition_GraphVariable>(rtcpVarIdx, AtomCondition_ConditionalOperator::EQUALS, AtomDataContainerWrapper_DataType::Int, ComparisonValue_t(value)),
         }
-    ));
+        ));
 }
 AtomConditionExpression* CreateConditionExpression_PlaybackPercentage(const float inRange0_1)
 {
@@ -348,7 +348,7 @@ AtomConditionExpression* CreateConditionExpression_PlaybackPercentage(const floa
         Subconditions_t{
             std::make_shared<MyCondition_PlaybackPercentage>(inRange0_1),
         }
-    ));
+        ));
 }
 void SetupStateMachineDefaultInitialState(AtomStateMachineNode& stateMachineNode)
 {
@@ -479,8 +479,8 @@ before the second tap on the "hood toggle button" will actually interrupt the an
 */
 struct RequiredLoadedCustomResources
 {
-    ACUSharedPtr_Strong<Animation> m_AnimPutHoodOn;
-    ACUSharedPtr_Strong<Animation> m_AnimTakeHoodOff;
+    ACU::StrongRef<Animation> m_AnimPutHoodOn;
+    ACU::StrongRef<Animation> m_AnimTakeHoodOff;
     bool LoadAllRequiredResources()
     {
         fs::path resPath_animPutHoodOn = AbsolutePathInThisDLLDirectory("NewAnimations/ACVI_xy_UpperBody_Hat_tr_Hood.anim.json");

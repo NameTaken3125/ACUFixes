@@ -6,35 +6,35 @@
 #include "ACU/Entity.h"
 #include "ACU/ManagedPtrs/ManagedPtrs.h"
 
-ACU::WeakPtr<Entity> g_PickedEntityToShoot;
-ACUSharedPtr_Strong<Entity> GetRangedWeaponTargetEntityFromRaycastPicker()
+ACU::WeakRef<Entity> g_PickedEntityToShoot;
+ACU::StrongRef<Entity> GetRangedWeaponTargetEntityFromRaycastPicker()
 {
-	return g_PickedEntityToShoot.Lock();
+    return g_PickedEntityToShoot.Lock();
 }
 
 void WhenGettingRangedTargetEntity_OverrideWithPickedOne(AllRegisters* params)
 {
-	auto* humanStates = (HumanStatesHolder*)params->rcx_;
-	ACUSharedPtr_Strong<Entity> pickedEntity = GetRangedWeaponTargetEntityFromRaycastPicker();
-	if (!pickedEntity.GetPtr()) { return; }
-	SharedPtrNew<Entity>* prevTarget = humanStates->shared_quickshotTarget_mb;
-	pickedEntity.GetSharedBlock().IncrementWeakRefcount();
-	humanStates->shared_quickshotTarget_mb = &pickedEntity.GetSharedBlock();
-	prevTarget->DecrementWeakRefcount();
-	int noop = 0;
+    auto* humanStates = (HumanStatesHolder*)params->rcx_;
+    ACU::StrongRef<Entity> pickedEntity = GetRangedWeaponTargetEntityFromRaycastPicker();
+    if (!pickedEntity.GetPtr()) { return; }
+    SharedPtrNew<Entity>* prevTarget = humanStates->shared_quickshotTarget_mb;
+    pickedEntity.GetSharedBlock().IncrementWeakRefcount();
+    humanStates->shared_quickshotTarget_mb = &pickedEntity.GetSharedBlock();
+    prevTarget->DecrementWeakRefcount();
+    int noop = 0;
 }
 
 PickEntityToShoot::PickEntityToShoot()
 {
-	uintptr_t whenGettingRangedTargetEntity = 0x141ACDB00;
-	PresetScript_CCodeInTheMiddle(whenGettingRangedTargetEntity, 7,
-		WhenGettingRangedTargetEntity_OverrideWithPickedOne, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
+    uintptr_t whenGettingRangedTargetEntity = 0x141ACDB00;
+    PresetScript_CCodeInTheMiddle(whenGettingRangedTargetEntity, 7,
+        WhenGettingRangedTargetEntity_OverrideWithPickedOne, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
 }
 
 
 #include "ImGui3D/ImGui3DCustomDraw.h"
 #include "Raycasting/RaycastPicker.h"
-extern ACU::WeakPtr<Entity> g_PickedEntityToShoot;
+extern ACU::WeakRef<Entity> g_PickedEntityToShoot;
 class OverrideRangedTarget_3DDrawer : public ImGui3D::CustomDraw::CustomDrawer
 {
 public:
@@ -42,7 +42,7 @@ public:
     ~OverrideRangedTarget_3DDrawer() { ImGui3D::CustomDraw::CustomDraw_Unsubscribe(*this); }
     virtual void DoDraw() override
     {
-        ACUSharedPtr_Strong<Entity> locked = g_PickedEntityToShoot.Lock();
+        ACU::StrongRef<Entity> locked = g_PickedEntityToShoot.Lock();
         if (Entity* ent = locked.GetPtr())
         {
             BoundingVolume& bbox = ent->BoundingVolume_;

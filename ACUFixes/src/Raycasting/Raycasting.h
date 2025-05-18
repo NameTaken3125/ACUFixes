@@ -4,7 +4,7 @@ struct MyRaycastSuccessfulHit
 {
     Vector3f m_HitLocation;
     Vector3f m_EntityLocation;
-    ACUSharedPtr_Strong<Entity> m_Entity;
+    ACU::StrongRef<Entity> m_Entity;
 };
 namespace Raycasting
 {

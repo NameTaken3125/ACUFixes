@@ -14,20 +14,19 @@ SharedBlock& FindSharedBlockByObjectAndIncrementStrongRefcount(ManagedObject& ma
 SharedBlock* const g_emptySharedBlock = (SharedBlock*)0x14525BB58;
 
 namespace ACU {
-template<class ManagedObjectSubcls> class WeakPtr;
-}
+template<class ManagedObjectSubcls> class WeakRef;
 
 template<class ManagedObjectSubcls>
-class ACUSharedPtr_Strong
+class StrongRef
 {
 public:
     // "Empty" shared ptr.
-    ACUSharedPtr_Strong();
-    ACUSharedPtr_Strong(uint64 managedObjectHandle);
-    ACUSharedPtr_Strong(SharedPtrNew<ManagedObjectSubcls>& sharedBlock);
-    ACUSharedPtr_Strong(const ACUSharedPtr_Strong& rhs);
-    ACUSharedPtr_Strong& operator=(const ACUSharedPtr_Strong& rhs);
-    ~ACUSharedPtr_Strong();
+    StrongRef();
+    StrongRef(uint64 managedObjectHandle);
+    StrongRef(SharedPtrNew<ManagedObjectSubcls>& sharedBlock);
+    StrongRef(const StrongRef& rhs);
+    StrongRef& operator=(const StrongRef& rhs);
+    ~StrongRef();
 
 public:
     ManagedObjectSubcls* GetPtr() const { return static_cast<ManagedObjectSubcls*>(m_SharedBlock.get().GetPtr()); }
@@ -45,32 +44,32 @@ private:
     // When a shared ptr is reset to "empty", it just points to `g_emptySharedBlock` (== 0x14525BB58).
     // It's an optimisation thing, I guess, to avoid nullptr-checking when increasing/decreasing the refcount.
     std::reference_wrapper<SharedBlock> m_SharedBlock;
-    friend ACU::WeakPtr<ManagedObjectSubcls>;
+    friend ACU::WeakRef<ManagedObjectSubcls>;
 };
-assert_sizeof(ACUSharedPtr_Strong<ManagedObject>, 8);
+assert_sizeof(StrongRef<ManagedObject>, 8);
 
 
 template<class ManagedObjectSubcls>
-inline void ACUSharedPtr_Strong<ManagedObjectSubcls>::Reset()
+inline void StrongRef<ManagedObjectSubcls>::Reset()
 {
     SharedBlock& sharedBlock = m_SharedBlock.get();
     m_SharedBlock = *g_emptySharedBlock;
     sharedBlock.DecrementStrongRefcount();
 }
 template<class ManagedObjectSubcls>
-inline ACUSharedPtr_Strong<ManagedObjectSubcls>::ACUSharedPtr_Strong(SharedPtrNew<ManagedObjectSubcls>& sharedBlock)
+inline StrongRef<ManagedObjectSubcls>::StrongRef(SharedPtrNew<ManagedObjectSubcls>& sharedBlock)
     : m_SharedBlock(static_cast<SharedBlock&>(sharedBlock))
 {
     sharedBlock.IncrementStrongRefcount();
 }
 template<class ManagedObjectSubcls>
-inline ACUSharedPtr_Strong<ManagedObjectSubcls>::ACUSharedPtr_Strong(const ACUSharedPtr_Strong& rhs)
+inline StrongRef<ManagedObjectSubcls>::StrongRef(const StrongRef& rhs)
     : m_SharedBlock(rhs.m_SharedBlock)
 {
     m_SharedBlock.get().IncrementStrongRefcount();
 }
 template<class ManagedObjectSubcls>
-inline ACUSharedPtr_Strong<ManagedObjectSubcls>& ACUSharedPtr_Strong<ManagedObjectSubcls>::operator=(const ACUSharedPtr_Strong& rhs)
+inline StrongRef<ManagedObjectSubcls>& StrongRef<ManagedObjectSubcls>::operator=(const StrongRef& rhs)
 {
     SharedBlock& prevSharedBlock = m_SharedBlock.get();
     m_SharedBlock = rhs.m_SharedBlock;
@@ -79,43 +78,41 @@ inline ACUSharedPtr_Strong<ManagedObjectSubcls>& ACUSharedPtr_Strong<ManagedObje
     return *this;
 }
 template<class ManagedObjectSubcls>
-inline ACUSharedPtr_Strong<ManagedObjectSubcls>::ACUSharedPtr_Strong(uint64 handle)
+inline StrongRef<ManagedObjectSubcls>::StrongRef(uint64 handle)
     : m_SharedBlock(FindOrMakeSharedBlockByHandleAndIncrementStrongRefcount(handle))
 {
 }
 template<class ManagedObjectSubcls>
-inline ACUSharedPtr_Strong<ManagedObjectSubcls>::ACUSharedPtr_Strong()
+inline StrongRef<ManagedObjectSubcls>::StrongRef()
     : m_SharedBlock(*g_emptySharedBlock)
 {
 }
 template<class ManagedObjectSubcls>
-inline ACUSharedPtr_Strong<ManagedObjectSubcls>::~ACUSharedPtr_Strong()
+inline StrongRef<ManagedObjectSubcls>::~StrongRef()
 {
     m_SharedBlock.get().DecrementStrongRefcount();
 }
 
-namespace ACU
-{
 template<class ManagedObjectSubcls>
-class WeakPtr
+class WeakRef
 {
 public:
     // "Empty" shared ptr.
-    WeakPtr();
-    WeakPtr(uint64 managedObjectHandle);
-    WeakPtr(SharedPtrNew<ManagedObjectSubcls>& sharedBlock);
-    WeakPtr(const WeakPtr& rhs);
-    WeakPtr& operator=(const WeakPtr& rhs);
-    ~WeakPtr();
+    WeakRef();
+    WeakRef(uint64 managedObjectHandle);
+    WeakRef(SharedPtrNew<ManagedObjectSubcls>& sharedBlock);
+    WeakRef(const WeakRef& rhs);
+    WeakRef& operator=(const WeakRef& rhs);
+    ~WeakRef();
 
-    WeakPtr& operator=(const ACUSharedPtr_Strong<ManagedObjectSubcls>& strongRef);
+    WeakRef& operator=(const StrongRef<ManagedObjectSubcls>& strongRef);
 
 public:
     uint64 GetHandle() const { return m_SharedBlock.get().handle; }
     SharedPtrNew<ManagedObjectSubcls>& GetSharedBlock() { return (SharedPtrNew<ManagedObjectSubcls>&)m_SharedBlock.get(); }
     // Resets to empty and _does_not_ decrement refcount.
     SharedPtrNew<ManagedObjectSubcls>& Release() { auto& freeSharedBlock = GetSharedBlock(); m_SharedBlock = *g_emptySharedBlock; return freeSharedBlock; }
-    ACUSharedPtr_Strong<ManagedObjectSubcls> Lock() const { return ACUSharedPtr_Strong<ManagedObjectSubcls>((SharedPtrNew<ManagedObjectSubcls>&)m_SharedBlock.get()); }
+    StrongRef<ManagedObjectSubcls> Lock() const { return StrongRef<ManagedObjectSubcls>((SharedPtrNew<ManagedObjectSubcls>&)m_SharedBlock.get()); }
     // Resets to empty and decrements refcount.
     void Reset();
 private:
@@ -124,30 +121,30 @@ private:
     // It's an optimisation thing, I guess, to avoid nullptr-checking when increasing/decreasing the refcount.
     std::reference_wrapper<SharedBlock> m_SharedBlock;
 };
-assert_sizeof(WeakPtr<ManagedObject>, 8);
+assert_sizeof(WeakRef<ManagedObject>, 8);
 
 
 template<class ManagedObjectSubcls>
-inline void WeakPtr<ManagedObjectSubcls>::Reset()
+inline void WeakRef<ManagedObjectSubcls>::Reset()
 {
     SharedBlock& sharedBlock = m_SharedBlock.get();
     m_SharedBlock = *g_emptySharedBlock;
     sharedBlock.DecrementWeakRefcount();
 }
 template<class ManagedObjectSubcls>
-inline WeakPtr<ManagedObjectSubcls>::WeakPtr(SharedPtrNew<ManagedObjectSubcls>& sharedBlock)
+inline WeakRef<ManagedObjectSubcls>::WeakRef(SharedPtrNew<ManagedObjectSubcls>& sharedBlock)
     : m_SharedBlock(static_cast<SharedBlock&>(sharedBlock))
 {
     sharedBlock.IncrementWeakRefcount();
 }
 template<class ManagedObjectSubcls>
-inline WeakPtr<ManagedObjectSubcls>::WeakPtr(const WeakPtr& rhs)
+inline WeakRef<ManagedObjectSubcls>::WeakRef(const WeakRef& rhs)
     : m_SharedBlock(rhs.m_SharedBlock)
 {
     m_SharedBlock.get().IncrementWeakRefcount();
 }
 template<class ManagedObjectSubcls>
-inline WeakPtr<ManagedObjectSubcls>& WeakPtr<ManagedObjectSubcls>::operator=(const WeakPtr& rhs)
+inline WeakRef<ManagedObjectSubcls>& WeakRef<ManagedObjectSubcls>::operator=(const WeakRef& rhs)
 {
     SharedBlock& prevSharedBlock = m_SharedBlock.get();
     m_SharedBlock = rhs.m_SharedBlock;
@@ -156,22 +153,22 @@ inline WeakPtr<ManagedObjectSubcls>& WeakPtr<ManagedObjectSubcls>::operator=(con
     return *this;
 }
 template<class ManagedObjectSubcls>
-inline WeakPtr<ManagedObjectSubcls>::WeakPtr(uint64 handle)
+inline WeakRef<ManagedObjectSubcls>::WeakRef(uint64 handle)
     : m_SharedBlock(FindOrMakeSharedBlockByHandleAndIncrementWeakrefcount(handle))
 {
 }
 template<class ManagedObjectSubcls>
-inline WeakPtr<ManagedObjectSubcls>::WeakPtr()
+inline WeakRef<ManagedObjectSubcls>::WeakRef()
     : m_SharedBlock(*g_emptySharedBlock)
 {
 }
 template<class ManagedObjectSubcls>
-inline WeakPtr<ManagedObjectSubcls>::~WeakPtr()
+inline WeakRef<ManagedObjectSubcls>::~WeakRef()
 {
     m_SharedBlock.get().DecrementWeakRefcount();
 }
 template<class ManagedObjectSubcls>
-WeakPtr<ManagedObjectSubcls>& WeakPtr<ManagedObjectSubcls>::operator=(const ACUSharedPtr_Strong<ManagedObjectSubcls>& strongRef)
+WeakRef<ManagedObjectSubcls>& WeakRef<ManagedObjectSubcls>::operator=(const StrongRef<ManagedObjectSubcls>& strongRef)
 {
     SharedBlock& prevSharedBlock = m_SharedBlock.get();
     m_SharedBlock = strongRef.m_SharedBlock;

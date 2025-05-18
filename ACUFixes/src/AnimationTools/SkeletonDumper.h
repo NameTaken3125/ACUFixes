@@ -193,7 +193,7 @@ json::JSON SkeletonToJSON(Skeleton& skel)
 void ExportPlayerSkeletonAsJSON()
 {
     constexpr uint64 handle_skeleton_BaseMale = 28540328525; // = > NEW_SDN_CN_U_ArmorSet_02/ACU_BaseSkeleton_Male.Skeleton
-    ACUSharedPtr_Strong<Skeleton> sharedSkel_baseMale(handle_skeleton_BaseMale);
+    ACU::StrongRef<Skeleton> sharedSkel_baseMale(handle_skeleton_BaseMale);
     if (Skeleton* skel = sharedSkel_baseMale.GetPtr())
     {
         ImGui::LogToClipboard();

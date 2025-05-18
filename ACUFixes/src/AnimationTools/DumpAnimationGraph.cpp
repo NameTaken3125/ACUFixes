@@ -1315,7 +1315,7 @@ AtomGraph* CloneAtomGraph(AtomGraph& original)
 }
 void CloneAtomGraphExperiment()
 {
-    ACUSharedPtr_Strong<AtomGraph> shared_newdemodev(handle_PlayerAtomGraph);
+    ACU::StrongRef<AtomGraph> shared_newdemodev(handle_PlayerAtomGraph);
     static AtomGraph* lastClone = nullptr;
     ImGuiTextBuffer buf;
     buf.appendf("%llx", lastClone);
@@ -1336,15 +1336,15 @@ void CloneAtomGraphExperiment()
 #include "Raycasting/RaycastPicker.h"
 struct g_PickedAtomGraph
 {
-    ACUSharedPtr_Strong<AtomGraph> m_Graph;
+    ACU::StrongRef<AtomGraph> m_Graph;
     std::string m_BaseAddr;
 } g_PickedAtomGraph;
-ACUSharedPtr_Strong<AtomGraph> GetAtomGraph(Entity& ent)
+ACU::StrongRef<AtomGraph> GetAtomGraph(Entity& ent)
 {
     constexpr uint64 vtbl_AtomAnimComponent = 0x142E7F780;
     AtomAnimComponent* atomAnimCpnt = static_cast<AtomAnimComponent*>(ent.FindComponentByVTBL(vtbl_AtomAnimComponent));
     if (!atomAnimCpnt) return {};
-    return (ACUSharedPtr_Strong<AtomGraph>&)atomAnimCpnt->shared_AtomGraph_NewDemo_DEV;
+    return (ACU::StrongRef<AtomGraph>&)atomAnimCpnt->shared_AtomGraph_NewDemo_DEV;
 }
 void RaycastPicker_PickAtomGraph()
 {
@@ -1369,7 +1369,7 @@ void RaycastPicker_PickAtomGraph()
                 , hit.m_HitLocation.y
                 , hit.m_HitLocation.z
             );
-            ACUSharedPtr_Strong<AtomGraph> foundGraph = GetAtomGraph(*ent);
+            ACU::StrongRef<AtomGraph> foundGraph = GetAtomGraph(*ent);
             if (!foundGraph.GetPtr())
             {
                 buf.append("Has no AtomGraph");
@@ -1432,11 +1432,11 @@ void DrawAtomGraphDumper()
     {
         if (ImGui::Button("Pick player's animation graph"))
         {
-            auto GetPlayerAnimGraph = []() -> ACUSharedPtr_Strong<AtomGraph>
+            auto GetPlayerAnimGraph = []() -> ACU::StrongRef<AtomGraph>
                 {
                     auto* animCpnt = ACU::GetPlayerCpnt_AtomAnimComponent();
                     if (!animCpnt) return {};
-                    return (ACUSharedPtr_Strong<AtomGraph>&)animCpnt->shared_AtomGraph_NewDemo_DEV;
+                    return (ACU::StrongRef<AtomGraph>&)animCpnt->shared_AtomGraph_NewDemo_DEV;
                 };
             g_PickedAtomGraph.m_Graph = GetPlayerAnimGraph();
             g_PickedAtomGraph.m_BaseAddr = "[[[[[[[[[[[[14521AAD0]+40]]+10]+60]+218]+0]+c8]+710]+1c90]+d0]+670]";

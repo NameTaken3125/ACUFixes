@@ -90,7 +90,7 @@ std::vector<MyPlayableAnim> g_myAnimations = {
     {31011512747, "DataAI_GroupBehavior_Couple_TakeAway/xx_Climbing_Climb_tr_WallEjectSwing_Lt90Deg-Fd600cm-Up300cm.Animation"},
 };
 
-bool AnimationPicker::Draw(const char* label, ACUSharedPtr_Strong<Animation>& inOut)
+bool AnimationPicker::Draw(const char* label, ACU::StrongRef<Animation>& inOut)
 
 {
     ImGuiCTX::PushID _id(this);
@@ -124,7 +124,7 @@ bool AnimationPicker::Draw(const char* label, ACUSharedPtr_Strong<Animation>& in
             ImGui::EndCombo();
         }
     }
-    ACUSharedPtr_Strong<ManagedObject> foundSharedBlock(editedAnimHandle);
+    ACU::StrongRef<ManagedObject> foundSharedBlock(editedAnimHandle);
     if (ManagedObject* maybeAnim = foundSharedBlock.GetPtr())
     {
         uint64 vtbl = *(uint64*)maybeAnim;
@@ -163,7 +163,7 @@ bool AnimationPicker::Draw(const char* label, ACUSharedPtr_Strong<Animation>& in
                 , anim.Length
                 , anim.AnimationKey
             );
-            inOut = std::move(reinterpret_cast<ACUSharedPtr_Strong<Animation>&>(foundSharedBlock));
+            inOut = std::move(reinterpret_cast<ACU::StrongRef<Animation>&>(foundSharedBlock));
         }
         else
         {

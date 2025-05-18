@@ -7,23 +7,23 @@ class NewHandlesFactory
 {
 public:
     template<typename ManagedObjectSubcls>
-    ACUSharedPtr_Strong<ManagedObjectSubcls> AllocateNewHandle();
+    ACU::StrongRef<ManagedObjectSubcls> AllocateNewHandle();
     template<typename ManagedObjectSubcls, typename CallableThatInitializesTheObject>
-    ACUSharedPtr_Strong<ManagedObjectSubcls> CreateNewManagedObject(CallableThatInitializesTheObject initialize);
+    ACU::StrongRef<ManagedObjectSubcls> CreateNewManagedObject(CallableThatInitializesTheObject initialize);
 private:
     uint64 m_NextFreeHandle = handle_MaximumInACU + 1;
 };
 extern NewHandlesFactory g_NewHandlesFactory;
 
 template<typename ManagedObjectSubcls>
-ACUSharedPtr_Strong<ManagedObjectSubcls> NewHandlesFactory::AllocateNewHandle()
+ACU::StrongRef<ManagedObjectSubcls> NewHandlesFactory::AllocateNewHandle()
 {
     uint64 newHandle;
-    ACUSharedPtr_Strong<ManagedObjectSubcls> newSharedBlock;
+    ACU::StrongRef<ManagedObjectSubcls> newSharedBlock;
     do
     {
         newHandle = m_NextFreeHandle++;
-        newSharedBlock = ACUSharedPtr_Strong<ManagedObjectSubcls>(newHandle);
+        newSharedBlock = ACU::StrongRef<ManagedObjectSubcls>(newHandle);
     } while (newSharedBlock.GetSharedBlock().manObj); // Handle already taken.
     return newSharedBlock;
 }
@@ -32,9 +32,9 @@ ACUSharedPtr_Strong<ManagedObjectSubcls> NewHandlesFactory::AllocateNewHandle()
 DEFINE_GAME_FUNCTION(UsesTypeInfoCreate, 0x1426EB1A0, ManagedObject*, __fastcall, (__int64 p_handle, __int64 a2, TypeInfo* a3));
 DEFINE_GAME_FUNCTION(JoinManagedObjectAndHandle_mb, 0x142714230, ManagedObject*, __fastcall, (__int64 p_handle, ManagedObject* p_manObj));
 template<typename ManagedObjectSubcls, typename CallableThatInitializesTheObject>
-ACUSharedPtr_Strong<ManagedObjectSubcls> NewHandlesFactory::CreateNewManagedObject(CallableThatInitializesTheObject initialize)
+ACU::StrongRef<ManagedObjectSubcls> NewHandlesFactory::CreateNewManagedObject(CallableThatInitializesTheObject initialize)
 {
-    ACUSharedPtr_Strong<ManagedObjectSubcls> newSharedBlock = this->AllocateNewHandle<ManagedObjectSubcls>();
+    ACU::StrongRef<ManagedObjectSubcls> newSharedBlock = this->AllocateNewHandle<ManagedObjectSubcls>();
     uint64 newHandle = newSharedBlock.GetSharedBlock().handle;
     // Managed objects lock is unnecessarily released here.
     TypeInfo& ti = ManagedObjectSubcls::GetTI();

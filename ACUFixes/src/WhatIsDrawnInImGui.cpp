@@ -171,7 +171,7 @@ void ImGuiLayer_WhenMenuIsOpen()
                             , handleToSearch
                             , ACU::Handles::HandleToText(handleToSearch).c_str()
                         );
-                        ACU::WeakPtr<ManagedObject> weakRef(handleToSearch);
+                        ACU::WeakRef<ManagedObject> weakRef(handleToSearch);
                         ImGui::Text(
                             "Address:     %llX\n"
                             "SharedBlock: %llX\n"

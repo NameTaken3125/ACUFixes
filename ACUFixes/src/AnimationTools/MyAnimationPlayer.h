@@ -6,13 +6,13 @@
 class MyPlayedAnimation
 {
 public:
-    MyPlayedAnimation(const ACUSharedPtr_Strong<Animation>& animStrongRef, uint64 playStartTime);
+    MyPlayedAnimation(const ACU::StrongRef<Animation>& animStrongRef, uint64 playStartTime);
 
     float GetDuration();
     bool IsPaused();
 private:
     friend class MyAnimationPlayer;
-    ACUSharedPtr_Strong<Animation> m_playedAnimationStrongRef;
+    ACU::StrongRef<Animation> m_playedAnimationStrongRef;
     uint64 m_LastChangeTimestamp;
     float m_LastChangeAnimTime;
     bool m_IsPaused = false;
@@ -24,7 +24,7 @@ class MyAnimationPlayer
 {
 public:
     void DrawControls();
-    void StartAnimation(ACUSharedPtr_Strong<Animation>& sharedAnim);
+    void StartAnimation(ACU::StrongRef<Animation>& sharedAnim);
     uint64 GetAnimatorTime();
     void UpdateAnimations();
     void OnAnimationEdited(Animation& anim, AnimationKeyframeTime_t animTime);
@@ -52,8 +52,8 @@ extern MyAnimationPlayer g_MyAnimationPlayer;
 class NewAnimationsFactory
 {
 public:
-    ACUSharedPtr_Strong<Animation> LoadNewAnimationFromFile(const std::filesystem::path& filepath);
+    ACU::StrongRef<Animation> LoadNewAnimationFromFile(const std::filesystem::path& filepath);
 public:
-    ACUSharedPtr_Strong<Animation> AllocateNewAnimation();
+    ACU::StrongRef<Animation> AllocateNewAnimation();
 };
 extern NewAnimationsFactory g_NewAnimationsFactory;

@@ -166,7 +166,7 @@ std::optional<MyRaycastSuccessfulHit> CastRayToMouseOnScreen(float range)
         result = MyRaycastSuccessfulHit{
             (Vector3f&)hit.hitLocation
             , hit.shared_targetEntity->GetPtr()->GetPosition()
-            , ACUSharedPtr_Strong<Entity>(*hit.shared_targetEntity)
+            , ACU::StrongRef<Entity>(*hit.shared_targetEntity)
         };
     }
     ArrRaycastResults__Destroy(&nativeRaycast.raycastResults);

@@ -731,10 +731,10 @@ void FillAnimationFromJSON(Animation& thisAnim, json::JSON& jsonAnim)
         }
     }
 }
-ACUSharedPtr_Strong<Animation> NewAnimationsFactory::LoadNewAnimationFromFile(const fs::path& filepath)
+ACU::StrongRef<Animation> NewAnimationsFactory::LoadNewAnimationFromFile(const fs::path& filepath)
 {
     JSON jsonAnim = json::FromFile(filepath);
-    ACUSharedPtr_Strong<Animation> result = AllocateNewAnimation();
+    ACU::StrongRef<Animation> result = AllocateNewAnimation();
     if (Animation* anim = result.GetPtr())
     {
         FillAnimationFromJSON(*anim, jsonAnim);

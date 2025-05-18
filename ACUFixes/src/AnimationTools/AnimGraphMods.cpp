@@ -12,7 +12,7 @@ void AnimGraphMods_RemovableHoodAnimated_ApplyMod(AtomGraph& graph);
 
 void ApplyAnimationGraphMods()
 {
-    ACUSharedPtr_Strong<AtomGraph> shared_playerAtomGraph(handle_PlayerAtomGraph);
+    ACU::StrongRef<AtomGraph> shared_playerAtomGraph(handle_PlayerAtomGraph);
     if (AtomGraph* atomGraph = shared_playerAtomGraph.GetPtr())
     {
         AnimGraphMods_RemovableHoodAnimated_ApplyMod(*atomGraph);
