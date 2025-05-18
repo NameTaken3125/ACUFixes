@@ -169,7 +169,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\ACUAllocs.cpp" />
     <ClCompile Include="src\AnimationModdingInterface.cpp" />
     <ClCompile Include="src\Common_PluginSide.cpp" />
     <ClCompile Include="src\ACU_InputUtils.cpp" />
@@ -188,7 +187,6 @@
     <ClInclude Include="impl\Common_Plugins_impl\PluginLoaderSharedGlobals.h" />
     <ClInclude Include="public_headers\Common_Plugins\ACUPlugin.h" />
     <ClInclude Include="public_headers\Common_Plugins\ACU_InputUtils.h" />
-    <ClInclude Include="public_headers\Common_Plugins\ACUAllocs.h" />
     <ClInclude Include="public_headers\Common_Plugins\AnimationGraphMods\RTCPVariableDescriptor.h" />
     <ClInclude Include="public_headers\Common_Plugins\AnimationGraphMods\ReactToAnimationSignals.h" />
     <ClInclude Include="public_headers\Common_Plugins\Common_PluginSide.h" />

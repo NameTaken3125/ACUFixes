@@ -3,7 +3,7 @@
 #include "AnimationTools/AnimationEditor.h"
 #include "AnimationTools/MyAnimationPlayer.h"
 #include "AnimationTools/AnimationPicker.h"
-#include "Common_Plugins/ACUAllocs.h"
+#include "ACU/Memory/ACUAllocs.h"
 
 #include "vmath/vmath.h"
 #include "SimpleJSON/json.hpp"
@@ -182,7 +182,7 @@ public:
         SmallArray<uint16> keyframeTimes;
         SmallArray<Vector3f> keyframeValues;
         void* g_currentHeap_mb = *(void**)0x1452585D0;
-        SmallArrayReserve(keyframeTimes, numKeyframes, g_currentHeap_mb);
+        ACU::Memory::SmallArrayReserve(keyframeTimes, numKeyframes, g_currentHeap_mb);
         for (uint16 i = 0; i < numKeyframes; i++)
         {
             json::JSON& jsonFrame = jsonKeyframes[i];
@@ -190,8 +190,8 @@ public:
             Vector3f LocalPosition;
             READ_JSON_VARIABLE(jsonFrame, Frame, IntegerAdapter);
             READ_JSON_VARIABLE(jsonFrame, LocalPosition, Vector3fAdapter);
-            SmallArrayAppend(keyframeTimes, Frame);
-            SmallArrayAppend(keyframeValues, LocalPosition);
+            ACU::Memory::SmallArrayAppend(keyframeTimes, Frame);
+            ACU::Memory::SmallArrayAppend(keyframeValues, LocalPosition);
         }
         uint8 codecType = 27;
         NativeAnimationTrackdataCodec& codec = *GetAnimationTrackdataCodecs()[codecType];
@@ -404,7 +404,7 @@ public:
         SmallArray<uint16> keyframeTimes;
         SmallArray<UncompressedValue_t> keyframeValues;
         void* g_currentHeap_mb = *(void**)0x1452585D0;
-        SmallArrayReserve(keyframeTimes, numKeyframes, g_currentHeap_mb);
+        ACU::Memory::SmallArrayReserve(keyframeTimes, numKeyframes, g_currentHeap_mb);
         for (uint16 i = 0; i < numKeyframes; i++)
         {
             json::JSON& jsonFrame = jsonKeyframes[i];
@@ -412,8 +412,8 @@ public:
             UncompressedValue_t LocalRotation;
             READ_JSON_VARIABLE(jsonFrame, Frame, IntegerAdapter);
             READ_JSON_VARIABLE(jsonFrame, LocalRotation, Vector4fAdapter);
-            SmallArrayAppend(keyframeTimes, Frame);
-            SmallArrayAppend(keyframeValues, LocalRotation);
+            ACU::Memory::SmallArrayAppend(keyframeTimes, Frame);
+            ACU::Memory::SmallArrayAppend(keyframeValues, LocalRotation);
         }
         uint8 codecType = 1;
         NativeAnimationTrackdataCodec& codec = *GetAnimationTrackdataCodecs()[codecType];
@@ -528,7 +528,7 @@ public:
         SmallArray<uint16> keyframeTimes;
         SmallArray<UncompressedValue_t> keyframeValues;
         void* g_currentHeap_mb = *(void**)0x1452585D0;
-        SmallArrayReserve(keyframeTimes, numKeyframes, g_currentHeap_mb);
+        ACU::Memory::SmallArrayReserve(keyframeTimes, numKeyframes, g_currentHeap_mb);
         for (uint16 i = 0; i < numKeyframes; i++)
         {
             json::JSON& jsonFrame = jsonKeyframes[i];
@@ -536,8 +536,8 @@ public:
             UncompressedValue_t Int;
             READ_JSON_VARIABLE(jsonFrame, Frame, IntegerAdapter);
             READ_JSON_VARIABLE(jsonFrame, Int, IntegerAdapter);
-            SmallArrayAppend(keyframeTimes, Frame);
-            SmallArrayAppend(keyframeValues, Int);
+            ACU::Memory::SmallArrayAppend(keyframeTimes, Frame);
+            ACU::Memory::SmallArrayAppend(keyframeValues, Int);
         }
         uint8 codecType = 58;
         NativeAnimationTrackdataCodec& codec = *GetAnimationTrackdataCodecs()[codecType];
@@ -707,7 +707,7 @@ void FillAnimationFromJSON(Animation& thisAnim, json::JSON& jsonAnim)
     float& Length = thisAnim.Length;
     READ_JSON_VARIABLE(jsonAnim, Length, NumericAdapter);
 
-    AnimTrackData* newAnimTrackData = (AnimTrackData*)ACUAllocateBytes(sizeof(AnimTrackData), 0x10);
+    AnimTrackData* newAnimTrackData = (AnimTrackData*)ACU::Memory::ACUAllocateBytes(sizeof(AnimTrackData), 0x10);
     std::memset(newAnimTrackData, 0, sizeof(AnimTrackData));
     AnimTrackData__ctor(newAnimTrackData);
     thisAnim.AnimTrackData_ = newAnimTrackData;
@@ -726,8 +726,8 @@ void FillAnimationFromJSON(Animation& thisAnim, json::JSON& jsonAnim)
         {
             json::JSON& jsKeyframes = jsTrack["Keyframes"];
             byte* newTrackdata = solver->ImportKeyframesFromJSON(jsKeyframes);
-            SmallArrayAppend(thisAnim.AnimTrackData_->AnimTrackDataMapping_, AnimTrackDataMapping{ TrackID });
-            SmallArrayAppend(thisAnim.rawTracks, (void*)newTrackdata);
+            ACU::Memory::SmallArrayAppend(thisAnim.AnimTrackData_->AnimTrackDataMapping_, AnimTrackDataMapping{ TrackID });
+            ACU::Memory::SmallArrayAppend(thisAnim.rawTracks, (void*)newTrackdata);
         }
     }
 }
@@ -784,8 +784,8 @@ void AddNewOrReplaceAnimtrack(Animation& anim, uint32 trackID, uint8 trackdataTy
     }
     else
     {
-        SmallArrayInsert(anim.AnimTrackData_->AnimTrackDataMapping_, AnimTrackDataMapping{ trackID }, whereItShouldBePresentOrInserted);
-        SmallArrayInsert(anim.rawTracks, (void*)trackRawData, whereItShouldBePresentOrInserted);
+        ACU::Memory::SmallArrayInsert(anim.AnimTrackData_->AnimTrackDataMapping_, AnimTrackDataMapping{ trackID }, whereItShouldBePresentOrInserted);
+        ACU::Memory::SmallArrayInsert(anim.rawTracks, (void*)trackRawData, whereItShouldBePresentOrInserted);
     }
 }
 void ImportAnimationTracksFromJSON_KeepOthers(Animation& anim, json::JSON& jsonAnim)

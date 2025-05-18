@@ -17,7 +17,7 @@
 #include "ACU_DefineNativeFunction.h"
 #include "Common_Plugins/ACU_InputUtils.h"
 
-#include "ACU_SoundUtils.h"
+#include "ACU/Sound/ACU_SoundUtils.h"
 
 UISounds::UISoundsEnum g_WhistleChosenSoundIdx = UISounds::k_SomeInterestingSound_14;
 

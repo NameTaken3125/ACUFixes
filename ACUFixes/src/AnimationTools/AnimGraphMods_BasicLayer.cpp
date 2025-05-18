@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include "Common_Plugins/ACUAllocs.h"
+#include "ACU/Memory/ACUAllocs.h"
 #include "AnimationTools/AtomGraphModsCommon.h"
 #include "Common_Plugins/AnimationGraphMods/ReactToAnimationSignals.h"
 #include "Common_Plugins/Common_PluginSide.h"
@@ -9,6 +9,8 @@ namespace fs = std::filesystem;
 
 namespace AnimationTools
 {
+using namespace ACU::Memory;
+
 AtomAnimationDataNode& GraphStateNode_PushAnimationDataNode(AtomGraphStateNode& graphStateNode, uint64 animHandle)
 {
     AtomAnimationDataNode* node_animData = ACUAllocate<AtomAnimationDataNode>();

@@ -27,9 +27,6 @@
     <ClCompile Include="src\AnimationModdingInterface.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\ACUAllocs.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\ImGuiConsoleInterface.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -66,9 +63,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="public_headers\Common_Plugins\AnimationGraphMods\RTCPVariableDescriptor.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="public_headers\Common_Plugins\ACUAllocs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="impl\Common_Plugins_impl\ImGuiConsoleInterface.h">

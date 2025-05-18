@@ -3,7 +3,7 @@
 #include "ACU/ForgeManager.h"
 #include "Experimental_StrongPtr.h"
 #include "AssetOverrides.h"
-#include "Common_Plugins/ACUAllocs.h"
+#include "ACU/Memory/ACUAllocs.h"
 #include "Common_Plugins/Common_PluginSide.h"
 #include "Serialization/Serialization.h"
 #include "Serialization/NumericAdapters.h"
@@ -26,11 +26,14 @@ DEFINE_GAME_FUNCTION(BigArray__usedInEquipmentUnlocker, 0x142726010, void*, __fa
 DEFINE_GAME_FUNCTION(stringHashCRC32_Cstring, 0x142759CF0, uint32, __fastcall, (char*));
 
 
+namespace ACU::Memory
+{
 template<typename T>
 T* ACUAllocateDefaultConstruct()
 {
     void* placementAddr = ACUAllocateBytes(sizeof(T), alignof(T));
     return new(placementAddr)T;
+}
 }
 template<typename T>
 void BigArrayReserve(BigArray<T>& arr, uint32 newCapacity)
@@ -78,7 +81,7 @@ DEFINE_GAME_FUNCTION(ForgeManager__DecrementForgeEntryRefcount_mb, 0x142721FE0, 
 
 ForgeFile_38* AllocateVirtualForgeContents(ForgeFile& newForge)
 {
-    ForgeFile_38* newDatapacksDesc = ACUAllocateDefaultConstruct<ForgeFile_38>();
+    ForgeFile_38* newDatapacksDesc = ACU::Memory::ACUAllocateDefaultConstruct<ForgeFile_38>();
     newDatapacksDesc->p30 = &newForge.stru_240;
     newDatapacksDesc->qword_38 = newForge.header.qword_10_eq0x41A;
     return newDatapacksDesc;
@@ -90,7 +93,7 @@ void SetForgefilePathStrings(ForgeFile& newForge, const fs::path& targetFilepath
     strncpy_s(newForge.filename, 255, s.c_str(), 254);
     newForge.filename[255] = 0;
 
-    newForge.dirpathIfNotRootFolder_mb = ACUAllocateString(abspath.parent_path().string() + "\\");
+    newForge.dirpathIfNotRootFolder_mb = ACU::Memory::ACUAllocateString(abspath.parent_path().string() + "\\");
 }
 DEFINE_GAME_FUNCTION(sub_14276BC70, 0x14276BC70, __int64, __fastcall, (ForgeFile_240* a1, __int64 p_offsetInForgeFile, unsigned int a3));
 DEFINE_GAME_FUNCTION(ForgeFile__RecalculateNameHash_mb, 0x142721B50, __int64, __fastcall, (ForgeFile* a1));
@@ -139,7 +142,7 @@ ForgeFileEntry* MakeNewForgeFileEntry_impl(uint64 targetHandle, const fs::path& 
     const uint32 datapackSize = (uint32)fs::file_size(absoluteFilepath);
     auto* fm = ForgeManager::GetSingleton();
     if (!fm) { return {}; }
-    ForgeFile* newForge = ACUAllocateDefaultConstruct<ForgeFile>();
+    ForgeFile* newForge = ACU::Memory::ACUAllocateDefaultConstruct<ForgeFile>();
     newForge->someLock++;
     SetForgefilePathStrings(*newForge, absoluteFilepath);
     ForgeFile_DatapackPrefetchInfo* singleDatapackPrefetchInfo = BigArrayAppend(newForge->datapacksPrefetchInfoAscendingHandles);
@@ -147,7 +150,7 @@ ForgeFileEntry* MakeNewForgeFileEntry_impl(uint64 targetHandle, const fs::path& 
     singleDatapackPrefetchInfo->offsetInPrefetchData = 0;
     singleDatapackPrefetchInfo->prefetchDataSize = 4;
     singleDatapackPrefetchInfo->isCompressed_mb = false;
-    newForge->prefetchData = ACUAllocateBytes(4, 0x10);
+    newForge->prefetchData = ACU::Memory::ACUAllocateBytes(4, 0x10);
     std::memset(newForge->prefetchData, 0, 4);
 
     ForgeFile_38* newDatapacksDesc = AllocateVirtualForgeContents(*newForge);
@@ -159,7 +162,7 @@ ForgeFileEntry* MakeNewForgeFileEntry_impl(uint64 targetHandle, const fs::path& 
     singleDatapackDesc->packedSize = datapackSize;
     newDatapacksDesc->hashmap_datapackIdxByFirstHandle.Set(singleDatapackDesc->handleFirstInDatapack, 0);
 
-    ForgeFileEntry* newForgeEntry = ACUAllocateDefaultConstruct<ForgeFileEntry>();
+    ForgeFileEntry* newForgeEntry = ACU::Memory::ACUAllocateDefaultConstruct<ForgeFileEntry>();
     newForgeEntry->forgeIdx_mb = ++fm->nextForgeIdx;
     newForgeEntry->forgeContentsDescriptor = newForge;
 
@@ -172,11 +175,11 @@ ForgeFileEntry* MakeNewForgeFileEntry_impl(uint64 targetHandle, const fs::path& 
     switch (priority)
     {
     case LoadPriority::Lowest:
-        SmallArrayAppend(fm->forges, newForgeEntry);
+        ACU::Memory::SmallArrayAppend(fm->forges, newForgeEntry);
         break;
     case LoadPriority::Highest:
     default:
-        SmallArrayInsert(fm->forges, newForgeEntry, 0);
+        ACU::Memory::SmallArrayInsert(fm->forges, newForgeEntry, 0);
         break;
     }
 
@@ -796,7 +799,7 @@ public:
         }
         for (ForgeFileEntry* forgeEntry : orderedForgeEntries)
         {
-            SmallArrayInsert(fm.forges, forgeEntry, 0);
+            ACU::Memory::SmallArrayInsert(fm.forges, forgeEntry, 0);
         }
     }
 };
@@ -850,8 +853,8 @@ void WhenGatheringPrefetchInfoForDatapack_FindOriginalPrefetchInfo(AllRegisters*
     ForgeFile_DatapackPrefetchInfo& originalPrefetchInfo = nonmoddedForge->forgeContentsDescriptor->datapacksPrefetchInfoAscendingHandles[prefetchInfoIdx];
     if (forgeContents->prefetchData)
     {
-        ACUDeallocateBytes((byte*)forgeContents->prefetchData);
-        byte* duplicatedOriginalPrefetchData = ACUAllocateBytes(originalPrefetchInfo.prefetchDataSize, 16);
+        ACU::Memory::ACUDeallocateBytes((byte*)forgeContents->prefetchData);
+        byte* duplicatedOriginalPrefetchData = ACU::Memory::ACUAllocateBytes(originalPrefetchInfo.prefetchDataSize, 16);
         std::memcpy(
             duplicatedOriginalPrefetchData,
             &nonmoddedForge->forgeContentsDescriptor->prefetchData[originalPrefetchInfo.offsetInPrefetchData],

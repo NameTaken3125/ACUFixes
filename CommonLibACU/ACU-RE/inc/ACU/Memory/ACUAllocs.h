@@ -1,13 +1,24 @@
 #pragma once
 
+/*
+The "API" is a mess here, because I'm not sure how many heaps the game uses
+and how they interact with threads. These functions have been useful,
+but they definitely need attention. Wouldn't be surprised if they cause problems
+when used in new contexts.
+*/
+
+
 #include "ACU/basic_types.h"
 #include "ACU/TypeInfo.h"
 #include "ACU/SmallArray.h"
 #include "ACU_DefineNativeFunction.h"
 
+namespace ACU::Memory
+{
+
 byte* ACUAllocateBytes(uint32 numBytes, uint32 alignment);
 void ACUDeallocateBytes(byte* allocated);
-inline char* ACUAllocateString(std::string_view s)
+inline char* ACUAllocateString(const std::string_view& s)
 {
     char* cstring = reinterpret_cast<char*>(ACUAllocateBytes((uint32)s.size() + 1, 1));
     std::memcpy(cstring, s.data(), s.size());
@@ -151,3 +162,4 @@ void SmallArrayInsert(SmallArray<ElementType>& arr, ElementType newElem, uint16 
     arr[insertWhere] = newElem;
 }
 
+} // namespace ACU::Memory

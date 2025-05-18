@@ -179,7 +179,7 @@ void WhenLanternCpntIsUpdated_ManageLanternModes(AllRegisters* params)
     LanterndlcComponent& lanternCpnt = *(LanterndlcComponent*)*params->rax_;
     OnLanternComponentUpdate(lanternCpnt);
 }
-#include "ACU_SoundUtils.h"
+#include "ACU/Sound/ACU_SoundUtils.h"
 void WhenUnsheatheLanternAndPlaySound_FixBatlampNoise(AllRegisters* params)
 {
     LanterndlcComponent& lanternCpnt = *(LanterndlcComponent*)params->rcx_;

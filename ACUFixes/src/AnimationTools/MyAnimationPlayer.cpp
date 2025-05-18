@@ -22,7 +22,7 @@
 #include "Serialization/NumericAdapters.h"
 #include "ImGuiCTX.h"
 
-#include "Common_Plugins/ACUAllocs.h"
+#include "ACU/Memory/ACUAllocs.h"
 #include "AtomGraphControls.h"
 
 
@@ -1134,7 +1134,7 @@ template<class Keyframe_t>
 void SpoofAnimationRawTrackData(Animation& anim, const MyAnimTrackdata<Keyframe_t>& myTrackdata)
 {
     std::vector<byte> trackRawData = ConvertKeyframesToRawTrackBytes(myTrackdata.m_keyframes);
-    byte* trackRawDataDetached = ACUAllocateBytes((uint32)trackRawData.size(), 0x10);
+    byte* trackRawDataDetached = ACU::Memory::ACUAllocateBytes((uint32)trackRawData.size(), 0x10);
     std::memcpy(trackRawDataDetached, &trackRawData[0], trackRawData.size());
 
     auto FindWhereToPutNewTrackInSortedArray = [](uint32 newTrackID, SmallArray<AnimTrackDataMapping>& tracksArray)
@@ -1149,8 +1149,8 @@ void SpoofAnimationRawTrackData(Animation& anim, const MyAnimTrackdata<Keyframe_
         return tracksArray.size;
     };
     uint16 idxOfTheNewTrackInTheSortedArray = FindWhereToPutNewTrackInSortedArray(myTrackdata.m_TrackID, anim.AnimTrackData_->AnimTrackDataMapping_);
-    SmallArrayInsert(anim.AnimTrackData_->AnimTrackDataMapping_, AnimTrackDataMapping{ myTrackdata.m_TrackID }, idxOfTheNewTrackInTheSortedArray);
-    SmallArrayInsert<void*>(anim.rawTracks, trackRawDataDetached, idxOfTheNewTrackInTheSortedArray);
+    ACU::Memory::SmallArrayInsert(anim.AnimTrackData_->AnimTrackDataMapping_, AnimTrackDataMapping{ myTrackdata.m_TrackID }, idxOfTheNewTrackInTheSortedArray);
+    ACU::Memory::SmallArrayInsert<void*>(anim.rawTracks, trackRawDataDetached, idxOfTheNewTrackInTheSortedArray);
 }
 MySpoofAnimation::~MySpoofAnimation()
 {
@@ -1371,7 +1371,7 @@ std::optional<ACUSharedPtr_Strong<Animation>> CreatePosingAnimation(const std::v
 
     thisAnim.Length = (framesLength + 1) / 60.0f;
 
-    AnimTrackData* newAnimTrackData = (AnimTrackData*)ACUAllocateBytes(sizeof(AnimTrackData), 0x10);
+    AnimTrackData* newAnimTrackData = (AnimTrackData*)ACU::Memory::ACUAllocateBytes(sizeof(AnimTrackData), 0x10);
     std::memset(newAnimTrackData, 0, sizeof(AnimTrackData));
     AnimTrackData__ctor(newAnimTrackData);
     thisAnim.AnimTrackData_ = newAnimTrackData;

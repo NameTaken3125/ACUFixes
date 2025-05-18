@@ -30,7 +30,7 @@
 void AddNewRTCPVariableIfNotPresent(AtomGraph& atomGraph, const RTCPVariableDescriptor& newVarDescriptor);
 AtomOutputPort* CreateOutputPort(AtomGraphNode& graphNode)
 {
-    AtomOutputPort* defaultOutputPort = SmallArray_GameType_Append(graphNode.OutputPorts);
+    AtomOutputPort* defaultOutputPort = ACU::Memory::SmallArray_GameType_Append(graphNode.OutputPorts);
     defaultOutputPort->graphNode = &graphNode;
     return defaultOutputPort;
 }
@@ -44,7 +44,7 @@ union InputPortPossibleValue_t
 };
 AtomInputPort* CreateInputPort(AtomGraphNode& graphNode, uint32 bindingType, InputPortPossibleValue_t value)
 {
-    AtomInputPort* newInport = SmallArray_GameType_Append(graphNode.InputPorts);
+    AtomInputPort* newInport = ACU::Memory::SmallArray_GameType_Append(graphNode.InputPorts);
     newInport->BindingType = bindingType;
     (InputPortPossibleValue_t&)newInport->outputPortIfTypeEq9_graphVarIdxIfEq0 = value;
     return newInport;

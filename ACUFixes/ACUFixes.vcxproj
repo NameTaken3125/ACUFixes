@@ -217,7 +217,6 @@ REM robocopy "$(SolutionDir)NewAnimations" "$(TargetDir)NewAnimations" /MIR
     <ClCompile Include="src\VariousPatches\Hack_GunRange.cpp" />
     <ClCompile Include="src\VariousPatches\Hack_MoreReliableQuickshot.cpp" />
     <ClCompile Include="src\VariousPatches\Hack_NoMoreFailedBombThrows.cpp" />
-    <ClCompile Include="src\ACU_SoundUtils.cpp" />
     <ClCompile Include="src\BlenderCurveEditor.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -293,7 +292,6 @@ REM robocopy "$(SolutionDir)NewAnimations" "$(TargetDir)NewAnimations" /MIR
     <ClInclude Include="src\VariousPatches\Hack_GunRange.h" />
     <ClInclude Include="src\VariousPatches\Hack_MoreReliableQuickshot.h" />
     <ClInclude Include="src\VariousPatches\Hack_NoMoreFailedBombThrows.h" />
-    <ClInclude Include="src\ACU_SoundUtils.h" />
     <ClInclude Include="src\BlenderCurveEditor.h" />
     <ClInclude Include="src\VariousPatches\Cheat_Ammo.h" />
     <ClInclude Include="src\VariousPatches\Cheat_BatlampOfFranciade.h" />

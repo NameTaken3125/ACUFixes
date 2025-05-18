@@ -144,7 +144,7 @@ private:
 SlowMotionManager g_SlowmotionManager;
 
 #include "Common_Plugins/ACU_InputUtils.h"
-#include "ACU_SoundUtils.h"
+#include "ACU/Sound/ACU_SoundUtils.h"
 #include "ACU/SoundEvent.h"
 DEFINE_GAME_FUNCTION(SoundInstance__ctor_0, 0x141C79760, SoundInstance*, __fastcall, (SoundInstance* placeAt));
 void PlaySoundFromPlayer(SoundID soundID)

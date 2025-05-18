@@ -2,7 +2,7 @@
 
 #include "AnimationGraphEvaluationPatches.h"
 #include "Common_Plugins/AnimationGraphMods/RTCPVariableDescriptor.h"
-#include "Common_Plugins/ACUAllocs.h"
+#include "ACU/Memory/ACUAllocs.h"
 
 #include "ACU_DefineNativeFunction.h"
 DEFINE_GAME_FUNCTION(HashmapGeneric__AddElement, 0x14277B2A0, void*, __fastcall, (ACUHashmapGeneric* p_hashmap, unsigned __int64 p_key, __int64 p_errorOut_mb));
@@ -34,10 +34,10 @@ void* AddMyNewRTCPVariable_generic(AtomGraph& atomGraph, uint8 varAlignment, uin
     uint16 newNumOffsets = newNumHashes - numRtcpDescriptorsWithoutFixedOffset;
     atomGraph.FirstEntityRefRTCPIndex = newNumOffsets;
 
-    SmallArrayReserve(rtcpCached->graphVarsBuffer, newRTCPDataSize);
+    ACU::Memory::SmallArrayReserve(rtcpCached->graphVarsBuffer, newRTCPDataSize);
     rtcpCached->graphVarsBuffer.size = newRTCPDataSize;
-    SmallArrayInsert(rtcpCached->graphVarsOffsets, (uint32)positionInVarsBuffer, newVarIdx);
-    SmallArrayInsert(rtcpCached->graphVarHashes, varnameHash, newVarIdx);
+    ACU::Memory::SmallArrayInsert(rtcpCached->graphVarsOffsets, (uint32)positionInVarsBuffer, newVarIdx);
+    ACU::Memory::SmallArrayInsert(rtcpCached->graphVarHashes, varnameHash, newVarIdx);
     ACUHashmap_Set(rtcpCached->atomGraphVarsHashmap, varnameHash, (uint32)newVarIdx);
     // The graph has just two `entityref`-type RTCP variables:
     // entityref SyncParticipant1; // 0x324db80/52747136    // index==539
@@ -126,7 +126,7 @@ void DatabaseOfCustomReactionsToAnimationSignals::Hook_WhenInitializingArrayOfIn
 {
     for (SignalID_t signalInt : m_AppendedNewSignalReceiversInHumanStates)
     {
-        SmallArrayAppend(integerSignalReceiversManager.integerSignalReceivers, UsedDuringQuickshot_SignalReceiver(signalInt));
+        ACU::Memory::SmallArrayAppend(integerSignalReceiversManager.integerSignalReceivers, UsedDuringQuickshot_SignalReceiver(signalInt));
         UsedDuringQuickshot_SignalReceiver& signalReceiver = integerSignalReceiversManager.integerSignalReceivers[integerSignalReceiversManager.integerSignalReceivers.size - 1];
         signalReceiver.numListenersToThisSignal++;
         // "quickdrop" signal has `byte_C == 1`, while "unholster" and "shot fired" have it at `0`. idk.

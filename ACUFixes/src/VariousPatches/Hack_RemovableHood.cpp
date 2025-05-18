@@ -249,7 +249,7 @@ void ToggleHoodVisuals(HoodVariation& hood, bool doPutHoodOn)
         EnableVisibilityForVisualCpnt(*player, handle, !doPutHoodOn);
     FindPlayerFaceComponentAndApplyTheMaterialWithoutTheFakeHoodShadow(*player, !doPutHoodOn);
 }
-#include "ACU_SoundUtils.h"
+#include "ACU/Sound/ACU_SoundUtils.h"
 #include "ACU/ACUGlobalSoundSet.h"
 void PlaySound_ToggleHood(Entity& player, bool doPutItOn)
 {

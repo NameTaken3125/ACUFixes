@@ -100,6 +100,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(ProjectDir)inc\;$(ProjectDir)vmath\</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -156,6 +157,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(ProjectDir)inc\;$(ProjectDir)vmath\</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -216,11 +218,13 @@
     <ClInclude Include="inc\ACU\Skeleton.h" />
     <ClInclude Include="inc\ACU\SkeletonComponent.h" />
     <ClInclude Include="inc\ACU\SoftBodySettings.h" />
+    <ClInclude Include="inc\ACU\Sound\ACU_SoundUtils.h" />
     <ClInclude Include="inc\ACU\StandardPage.h" />
     <ClInclude Include="inc\ACU\TagDescriptor.h" />
     <ClInclude Include="inc\ACU\TagDictionnaries.h" />
     <ClInclude Include="inc\ACU\TagRules.h" />
     <ClInclude Include="inc\ACU\Threads\KnownThreads.h" />
+    <ClInclude Include="inc\ACU\Memory\ACUAllocs.h" />
     <ClInclude Include="inc\ACU\UniverseTagRules.h" />
     <ClInclude Include="inc\ACU\WorldTagRules.h" />
     <ClInclude Include="inc\ACU_DefineNativeFunction.h" />
@@ -348,11 +352,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\ACU-RE.cpp" />
+    <ClCompile Include="src\ACUAllocs.cpp" />
     <ClCompile Include="src\ACUGetSingletons.cpp" />
     <ClCompile Include="src\ACUGlobalSoundSet.cpp" />
     <ClCompile Include="src\ACUHashmap.cpp" />
     <ClCompile Include="src\ACUPlayerCameraComponent.cpp" />
     <ClCompile Include="src\ACU_SharedPtrs.cpp" />
+    <ClCompile Include="src\ACU_SoundUtils.cpp" />
     <ClCompile Include="src\AvatarConsumablesManager.cpp" />
     <ClCompile Include="src\AvatarGearManager.cpp" />
     <ClCompile Include="src\BallisticProjectileAimingControlsSettings.cpp" />
