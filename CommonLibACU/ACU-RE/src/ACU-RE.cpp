@@ -176,6 +176,7 @@
 #include "ACU/AtomPlayCustomActionNode.h"
 #include "ACU/AtomWriteParamNode.h"
 
+#include "ACU/AtomDataContainerWrapper.h"
 #include "ACU/AtomCondition.h"
 #include "ACU/AtomConditionExpression.h"
 #include "ACU/AtomStateTransitionTarget.h"
@@ -186,6 +187,7 @@
 #include "ACU/AtomLayeringStateNode.h"
 #include "ACU/AtomGraphStateNode.h"
 
+#include "ACU/AtomRTCPDescriptor.h"
 #include "ACU/AtomCustomTransitionSystem.h"
 #include "ACU/AtomTransitionCellDescription.h"
 #include "ACU/AtomGraph.h"

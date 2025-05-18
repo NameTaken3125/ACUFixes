@@ -348,14 +348,18 @@ void HandleExc_SetThreadName(::EXCEPTION_POINTERS* exception)
 {
     DWORD numParams = exception->ExceptionRecord->NumberParameters;
     LOG_DEBUG(CrashLog
-        , "    ThreadID: %x, NumParams: %d\n"
+        , "    CurrentThreadID: %x, NumParams: %d\n"
         , GetCurrentThreadId()
         , numParams
     );
     if (numParams == 6 || numParams == 3)
     {
-        LOG_DEBUG(CrashLog
-            , "    Name    : \"%s\"\n"
+        LOG_DEBUG(CrashLog,
+            "    TargetThreadID : %x\n"
+            , exception->ExceptionRecord->ExceptionInformation[2]
+        );
+        LOG_DEBUG(CrashLog,
+            "    Name           : \"%s\"\n"
             , (const char*)exception->ExceptionRecord->ExceptionInformation[1]
         );
     }

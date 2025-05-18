@@ -67,10 +67,12 @@ fs::path FindPreferredFontFile()
     if (!windirLength) return {};
     fs::path fontsDir = fs::path(windir) / "Fonts";
     if (!fs::is_directory(fontsDir)) return {};
-    fs::path preferredFont = fontsDir / "CascadiaCode.ttf";
+    fs::path preferredFont =        fontsDir / "CascadiaCode.ttf";  // Not present on Windows 8
+    fs::path secondPreferredFont =  fontsDir / "consola.ttf";       // Or maybe the Bold version, the consolab.ttf?
     std::error_code ec;
-    if (!fs::is_regular_file(preferredFont, ec)) return {};
-    return preferredFont;
+    if (fs::is_regular_file(preferredFont, ec))         return preferredFont;
+    if (fs::is_regular_file(secondPreferredFont, ec))   return secondPreferredFont;
+    return {};
 }
 void SetupFonts()
 {

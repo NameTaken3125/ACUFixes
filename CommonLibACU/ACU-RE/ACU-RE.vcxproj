@@ -173,6 +173,7 @@
     <ClInclude Include="inc\ACU\AtomCondition.h" />
     <ClInclude Include="inc\ACU\AtomConditionExpression.h" />
     <ClInclude Include="inc\ACU\AtomCustomTransitionSystem.h" />
+    <ClInclude Include="inc\ACU\AtomDataContainerWrapper.h" />
     <ClInclude Include="inc\ACU\AtomGraph.h" />
     <ClInclude Include="inc\ACU\AtomGraphEvaluation.h" />
     <ClInclude Include="inc\ACU\AtomGraphNode.h" />
@@ -181,6 +182,7 @@
     <ClInclude Include="inc\ACU\AtomNodeID.h" />
     <ClInclude Include="inc\ACU\AtomNullStateNode.h" />
     <ClInclude Include="inc\ACU\AtomPlayCustomActionNode.h" />
+    <ClInclude Include="inc\ACU\AtomRTCPDescriptor.h" />
     <ClInclude Include="inc\ACU\AtomStateMachineNode.h" />
     <ClInclude Include="inc\ACU\AtomStateNode.h" />
     <ClInclude Include="inc\ACU\AtomStateTransitionTarget.h" />

@@ -179,6 +179,8 @@
     <ClInclude Include="inc\ACU\GameBootstrap.h" />
     <ClInclude Include="inc\ACU\LoadInfo.h" />
     <ClInclude Include="inc\ACU\Threads\KnownThreads.h" />
+    <ClInclude Include="inc\ACU\AtomDataContainerWrapper.h" />
+    <ClInclude Include="inc\ACU\AtomRTCPDescriptor.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />
