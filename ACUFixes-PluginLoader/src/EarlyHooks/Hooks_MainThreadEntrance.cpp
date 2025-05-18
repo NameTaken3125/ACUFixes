@@ -250,6 +250,7 @@ LONG EarlyHooks_HardwareBreakpointsHandler(::_EXCEPTION_POINTERS* ExceptionInfo)
             //    "MIC DOA.\n"
             //);
             MainIntegrityCheckHasJustBeenDisabledWithoutStarting();
+            g_EarlyHooks_VEHandler.reset();
         }
         return EXCEPTION_CONTINUE_EXECUTION;
     }

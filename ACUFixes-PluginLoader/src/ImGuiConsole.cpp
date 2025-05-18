@@ -206,10 +206,13 @@ void ImGuiConsole::DrawIfVisible(const char* title, ConsoleMode consoleMode)
 		ImGuiWindowFlags_NoTitleBar
 		| ImGuiWindowFlags_NoResize
 		| ImGuiWindowFlags_NoMove
-		| ImGuiWindowFlags_MenuBar;
+		| ImGuiWindowFlags_MenuBar
+		| ImGuiWindowFlags_NoDocking
+		;
 	ImGuiWindowFlags scrolling_region_flags =
 		ImGuiWindowFlags_None;
 
+	static float window_bgAlphaWhenSemi = 0.35f;
 	float window_bgAlpha = 1.0f;
 	bool showFooter = false;
 	bool showMenuBar = true;
@@ -219,7 +222,7 @@ void ImGuiConsole::DrawIfVisible(const char* title, ConsoleMode consoleMode)
 		return;
 	case ConsoleMode::BackgroundSemitransparentAndUnfocusable:
 	{
-		window_bgAlpha = 0.35f;
+		window_bgAlpha = window_bgAlphaWhenSemi;
 		window_flags = window_flags
 			| ImGuiWindowFlags_NoInputs
 			| ImGuiWindowFlags_NoNav
@@ -246,7 +249,14 @@ void ImGuiConsole::DrawIfVisible(const char* title, ConsoleMode consoleMode)
 		return;
 	}
 
-	float window_height = 450;
+	static std::optional<float> forcedAlphaForThisFrame = {};
+	if (forcedAlphaForThisFrame)
+	{
+		window_bgAlpha = *forcedAlphaForThisFrame;
+		forcedAlphaForThisFrame.reset();
+	}
+	static float windowBaseHeight = 450;
+	float window_height = windowBaseHeight;
 	float scrollingRegionHeight = 0.0f;
 	ImGuiStyle& style = ImGui::GetStyle();
 	const bool showFooterCommandInput = false;
@@ -283,6 +293,14 @@ void ImGuiConsole::DrawIfVisible(const char* title, ConsoleMode consoleMode)
 	{
 		if (showMenuBar)
 		{
+			if (ImGui::BeginMenu("Options"))
+			{
+				ImGui::SliderFloat("Transparency when semitransparent", &window_bgAlphaWhenSemi, 0.1f, 1.0f, "%.3f", ImGuiSliderFlags_AlwaysClamp);
+				if (ImGui::IsItemActive()) forcedAlphaForThisFrame = window_bgAlphaWhenSemi;
+				const float windowBaseHeightMax = ImGui::GetIO().DisplaySize.y - ImGui::GetFrameHeightWithSpacing() * 3;
+				ImGui::SliderFloat("Height", &windowBaseHeight, 100.0f, windowBaseHeightMax, "%.3f", ImGuiSliderFlags_AlwaysClamp);
+				ImGui::EndMenu();
+			}
 			ImGui::Checkbox("Autoscroll", &AutoScroll);
 			ImGui::Separator();
 			ImGui::Checkbox("Spam", &doSpamInConsole);
