@@ -140,6 +140,7 @@ void Base::Hooks::GrabGraphicsDevicesInitializeImGuiAndDraw(IDXGISwapChain* this
 	}
 
     if (!Data::IsImGuiInitialized) return;
+    ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
     Base::Fonts::UpdateFonts();
 	ImGui_ImplDX11_NewFrame();

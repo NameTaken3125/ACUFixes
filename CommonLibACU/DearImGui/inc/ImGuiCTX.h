@@ -24,9 +24,9 @@ class WindowChild
 {
     bool m_isOpened = false;
 public:
-    WindowChild(const char* str_id, const ImVec2& size = ImVec2(0, 0), bool border = false, ImGuiWindowFlags flags = 0)
+    WindowChild(const char* str_id, const ImVec2& size = ImVec2(0, 0), ImGuiChildFlags child_flags = 0, ImGuiWindowFlags flags = 0)
     {
-        m_isOpened = ImGui::BeginChild(str_id, size, border, flags);
+        m_isOpened = ImGui::BeginChild(str_id, size, child_flags, flags);
     }
     ~WindowChild()
     {

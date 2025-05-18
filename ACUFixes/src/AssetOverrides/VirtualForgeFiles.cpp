@@ -434,9 +434,13 @@ public:
         ImGui::Separator();
         static ImGuiTextBuffer buf;
         const float leftPaneHeight = ImGui::GetTextLineHeightWithSpacing() * 20;
-        const float leftPaneWidth = -ImGui::GetWindowContentRegionWidth() * 0.6f;
+        const float leftPaneWidth = -ImGui::GetWindowWidth() * 0.6f;
         static AssetMod* selectedMod = nullptr;
-        if (ImGuiCTX::WindowChild _sectionMods{ "_sectionMods", ImVec2(leftPaneWidth, leftPaneHeight), true })
+        ImGuiChildFlags leftPaneFlags =
+            ImGuiChildFlags_ResizeX
+            | ImGuiChildFlags_Borders
+            ;
+        if (ImGuiCTX::WindowChild _sectionMods{ "_sectionMods", ImVec2(leftPaneWidth, leftPaneHeight), leftPaneFlags })
         {
             std::optional<size_t> idxDragged = {};
             std::optional<size_t> idxHovered = {};

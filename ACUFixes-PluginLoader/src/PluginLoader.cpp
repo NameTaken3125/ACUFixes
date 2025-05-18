@@ -6,11 +6,14 @@
 
 MyPluginLoader g_MyPluginLoader;
 
-bool IsPluginAPIversionCompatible(uint64 pluginLoaderVersion, uint64 pluginVersion)
+bool IsPluginAPIversionCompatible(uint64 apiVersion_pluginLoader, uint64 apiVersion_plugin)
 {
     // If the pluginloader updates introduce changes that would break old plugins,
     // I can list the breaking versions right here.
-    return pluginLoaderVersion >= pluginVersion;
+    if (apiVersion_pluginLoader >= MAKE_PLUGIN_LOADER_VERSION(0, 9, 0, 0) &&
+        apiVersion_plugin       <  MAKE_PLUGIN_LOADER_VERSION(0, 9, 0, 0))
+        return false;
+    return apiVersion_pluginLoader >= apiVersion_plugin;
 }
 #define PLUGIN_API_VERSION_GET_MAJOR(version) ((version >> 24) & 0xFF)
 #define PLUGIN_API_VERSION_GET_MINOR(version) ((version >> 16) & 0xFF)
