@@ -11,18 +11,6 @@
 
 AssetOverridesConfigTop g_AssetOverridesConfig;
 
-//https://stackoverflow.com/questions/6693010/how-do-i-use-multibytetowidechar/59617138#59617138
-static std::wstring ConvertAnsiToWide(const std::string& str)
-{
-    int count = MultiByteToWideChar(CP_ACP, 0, str.c_str(), (int)str.length(), NULL, 0);
-    std::wstring wstr(count, 0);
-    MultiByteToWideChar(CP_ACP, 0, str.c_str(), (int)str.length(), &wstr[0], count);
-    return wstr;
-}
-static std::wstring asciiString2WString(const std::string& str)
-{
-    return ConvertAnsiToWide(str);
-}
 namespace AssetOverridesConfig {
 fs::path g_AssetOverridesConfigFilepath;
 JSON ReadMainConfigFile()

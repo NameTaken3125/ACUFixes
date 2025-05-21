@@ -15,7 +15,6 @@
 
 #include "MyLog.h"
 static DEFINE_LOGGER_CONSOLE_AND_FILE(VirtualForgesLog, "[AssetOverrides]");
-std::wstring asciiString2WString(const std::string& str);
 
 
 

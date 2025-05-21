@@ -18,16 +18,16 @@ void ClearThe_BeingDebugged_Flag();
 
 
 std::optional<MyLogFileLifetime> g_LogLifetime;
+bool g_IsPluginLoaderFullyInitialized = false;
 DWORD WINAPI PluginLoaderSetup_AfterMICIsDisabled(LPVOID lpThreadParameter)
 {
-    HANDLE evPluginLoaderReady = (HANDLE)lpThreadParameter;
     PluginLoader_VariousHooks_Start();
     PluginLoader_FindAndLoadPlugins();
 
     PresentHookOuter::BasehookSettings_PresentHookOuter basehook;
     Base::Fonts::SetFontSize(g_PluginLoaderConfig.fontSize);
     Base::Start(basehook);
-    SetEvent(evPluginLoaderReady);
+    g_IsPluginLoaderFullyInitialized = true;
     while (!Base::Data::Detached)
     {
         // If the debugger is attached, the game can crash, though not immediately.
@@ -48,10 +48,50 @@ DWORD WINAPI PluginLoaderSetup_AfterMICIsDisabled(LPVOID lpThreadParameter)
 }
 void MainIntegrityCheckHasJustBeenDisabled()
 {
-    HANDLE evPluginLoaderReady = CreateEventA(0, 0, 0, 0);
-    CreateThread(nullptr, 0, PluginLoaderSetup_AfterMICIsDisabled, evPluginLoaderReady, 0, nullptr);
-    if (evPluginLoaderReady)
-        WaitForSingleObject(evPluginLoaderReady, INFINITE);
+    CreateThread(nullptr, 0, PluginLoaderSetup_AfterMICIsDisabled, nullptr, 0, nullptr);
+    auto WaitForPluginsToLoadAndShowMessageBoxesIfTakingTooLong = []() {
+        int secsBetweenNotifications = 20;
+        ULONGLONG tsStartedToLoadPlugins = GetTickCount64();
+        ULONGLONG tsLastNotification = tsStartedToLoadPlugins;
+        while (true)
+        {
+            if (g_IsPluginLoaderFullyInitialized)
+            {
+                break;
+            }
+            ULONGLONG now_ = GetTickCount64();
+            const ULONGLONG millisElapsedSinceLastNotification = now_ - tsLastNotification;
+            const ULONGLONG millisUntilNotification = secsBetweenNotifications * 1000;
+            if (millisElapsedSinceLastNotification > millisUntilNotification)
+            {
+                ImGuiTextBuffer buf;
+                buf.appendf(
+                    "It's been %.0f seconds since the plugins started getting loaded.\n"
+                    "The plugins are taking a long time to load.\n"
+                    "Check the \"" LOG_FILENAME "\" for errors if this is not normal.\n"
+                    "If this keeps happening, try removing some of the plugins.\n"
+                    "This notification is shown every %u seconds.\n"
+                    "Continue to wait? Press \"No\" to exit the process.\n"
+                    , ((now_ - tsStartedToLoadPlugins)) / 1000.0f
+                    , secsBetweenNotifications
+                );
+                int mbResult = MessageBoxA(NULL, buf.c_str(), THIS_DLL_PROJECT_NAME,
+                    MB_ICONWARNING |
+                    MB_YESNO |
+                    MB_SYSTEMMODAL |
+                    MB_SETFOREGROUND);
+                if (mbResult == IDNO)
+                {
+                    const int exitCode = 'PLTL'; // ==0x504c544c == "Plugin Loader Too Long"
+                    std::exit(exitCode);
+                }
+                now_ = GetTickCount64();
+                tsLastNotification = now_;
+            }
+            Sleep(500);
+        }
+        };
+    WaitForPluginsToLoadAndShowMessageBoxesIfTakingTooLong();
 }
 #include "ACU/Threads/KnownThreads.h"
 void BeforeGameMainThreadStarted_HookTheStartAddress();
