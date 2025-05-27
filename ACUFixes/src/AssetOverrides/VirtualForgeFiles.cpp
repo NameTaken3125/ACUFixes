@@ -344,6 +344,40 @@ std::optional<uint16> GetPrefetchInfoIndex(ForgeFileEntry& forge, uint64 handle)
     }
     return {};
 };
+void ResetPrefetchingInfoForVirtualForge(ForgeFile& moddedForge, uint64 targetHandle)
+{
+    if (moddedForge.prefetchData)
+    {
+        ACU::Memory::ACUDeallocateBytes((byte*)moddedForge.prefetchData);
+    }
+    ForgeFile_DatapackPrefetchInfo* singleDatapackPrefetchInfo = &moddedForge.datapacksPrefetchInfoAscendingHandles[0];
+    singleDatapackPrefetchInfo->firstHandle = targetHandle;
+    singleDatapackPrefetchInfo->offsetInPrefetchData = 0;
+    singleDatapackPrefetchInfo->prefetchDataSize = 4;
+    singleDatapackPrefetchInfo->isCompressed_mb = false;
+    moddedForge.prefetchData = ACU::Memory::ACUAllocateBytes(4, 0x10);
+    std::memset(moddedForge.prefetchData, 0, 4);
+}
+void StealPrefetchingInfoIntoVirtualForge(ForgeFile& cloneTo, ForgeFile& cloneFrom, uint16 prefetchInfoIdx)
+{
+    ForgeFile_DatapackPrefetchInfo& originalPrefetchInfo = cloneFrom.datapacksPrefetchInfoAscendingHandles[prefetchInfoIdx];
+    if (cloneTo.prefetchData)
+    {
+        ACU::Memory::ACUDeallocateBytes((byte*)cloneTo.prefetchData);
+    }
+    byte* duplicatedOriginalPrefetchData = ACU::Memory::ACUAllocateBytes(originalPrefetchInfo.prefetchDataSize, 16);
+    std::memcpy(
+        duplicatedOriginalPrefetchData,
+        &cloneFrom.prefetchData[originalPrefetchInfo.offsetInPrefetchData],
+        originalPrefetchInfo.prefetchDataSize
+    );
+    cloneTo.prefetchData = duplicatedOriginalPrefetchData;
+    // I'm assuming that in my "virtual forges" there is only a single datapack.
+    ForgeFile_DatapackPrefetchInfo& singularDatapackPrefetchInfo = cloneTo.datapacksPrefetchInfoAscendingHandles[0];
+    singularDatapackPrefetchInfo.isCompressed_mb = originalPrefetchInfo.isCompressed_mb;
+    singularDatapackPrefetchInfo.prefetchDataSize = originalPrefetchInfo.prefetchDataSize;
+    singularDatapackPrefetchInfo.offsetInPrefetchData = 0;
+}
 class AssetModlist
 {
 public:
@@ -739,6 +773,49 @@ public:
             }
         }
     }
+    void UpdatePrefetchDataForActiveDatapacks()
+    {
+        auto* fm = ForgeManager::GetSingleton();
+        if (!fm) return;
+        auto MakeForgeForDatapack = [fm](DetectedDatapack& datapack) -> bool
+            {
+                if (datapack.m_ForgeIdx && IsForgeAlive(*fm, *datapack.m_ForgeIdx))
+                    return true;
+                const uint64 handle = std::get<ResultForDetectedDatapack_LooksOk>(datapack.m_Result).m_Handle;
+                ForgeFileEntry* newForgeEntry = MakeNewForgeFileEntry(handle, datapack.m_AbsolutePath, LoadPriority::Highest);
+                if (!newForgeEntry) return false;
+                datapack.m_ForgeIdx = newForgeEntry->forgeIdx_mb;
+                return true;
+            };
+        for (auto& mod : m_Mods)
+        {
+            if (!mod->m_IsActiveInLoadOrder
+                || mod->m_IsError
+                || mod->m_Datapacks.size() == 0
+                )
+                continue;
+            for (auto& datapack : mod->m_Datapacks)
+            {
+                if (!datapack->m_ForgeIdx) continue;
+                const uint64 handle = std::get<ResultForDetectedDatapack_LooksOk>(datapack->m_Result).m_Handle;
+                auto FindForgeForIdx = [&](ForgeIndex_t forgeIdx) -> ForgeFileEntry*
+                    {
+                        for (ForgeFileEntry* forgeEntry : fm->forges)
+                        {
+                            if (forgeEntry->forgeIdx_mb == forgeIdx) return forgeEntry;
+                        }
+                        return nullptr;
+                    };
+                ForgeFileEntry* moddedForge = FindForgeForIdx(*datapack->m_ForgeIdx);
+                if (!moddedForge) continue;
+                auto [nonmoddedForge, prefetchInfoIdx] = this->FindOriginalPrefetchingInfoForHandle(handle);
+                if (nonmoddedForge)
+                    StealPrefetchingInfoIntoVirtualForge(*moddedForge->forgeContentsDescriptor, *nonmoddedForge->forgeContentsDescriptor, prefetchInfoIdx);
+                else
+                    ResetPrefetchingInfoForVirtualForge(*moddedForge->forgeContentsDescriptor, handle);
+            }
+        }
+    }
     void ToggleMod(AssetMod& mod, bool doActivate)
     {
         const bool wasActive = !doActivate;
@@ -805,11 +882,23 @@ public:
 AssetModlist g_AssetModlist;
 
 
-void WhenNewForgeEntryWasJustAdded_ApplyCustomSorting(AllRegisters* params)
+void AssetOverrides_PutForgesInCorrectOrder()
 {
     auto* fm = ForgeManager::GetSingleton();
     g_AssetModlist.MakeVirtualForgesForAllDatapacks();
+    //g_AssetModlist.UpdatePrefetchDataForActiveDatapacks();
     g_AssetModlist.ApplyCustomForgeOrder(*fm);
+}
+void WhenNewForgeEntryWasJustAdded_ApplyCustomSorting(AllRegisters* params)
+{
+    DEFINE_GAME_FUNCTION(ACU_enterCriticalSection, 0x14211F620, void, __fastcall, (uint64*));
+    DEFINE_GAME_FUNCTION(ACU_leaveCriticalSection, 0x14212CBC0, void, __fastcall, (uint64*));
+    auto* fm = ForgeManager::GetSingleton();
+    ACU_enterCriticalSection(&fm->criticalSection_forgeEntries);
+    g_AssetModlist.MakeVirtualForgesForAllDatapacks();
+    g_AssetModlist.ApplyCustomForgeOrder(*fm);
+    g_AssetModlist.UpdatePrefetchDataForActiveDatapacks();
+    ACU_leaveCriticalSection(&fm->criticalSection_forgeEntries);
 }
 
 void DrawAssetOverridesSettings()
@@ -849,23 +938,7 @@ void WhenGatheringPrefetchInfoForDatapack_FindOriginalPrefetchInfo(AllRegisters*
     if (!isOneOfMyVirtualForges) return;
     auto [nonmoddedForge, prefetchInfoIdx] = g_AssetModlist.FindOriginalPrefetchingInfoForHandle(handle);
     if (!nonmoddedForge) return;
-    ForgeFile_DatapackPrefetchInfo& originalPrefetchInfo = nonmoddedForge->forgeContentsDescriptor->datapacksPrefetchInfoAscendingHandles[prefetchInfoIdx];
-    if (forgeContents->prefetchData)
-    {
-        ACU::Memory::ACUDeallocateBytes((byte*)forgeContents->prefetchData);
-        byte* duplicatedOriginalPrefetchData = ACU::Memory::ACUAllocateBytes(originalPrefetchInfo.prefetchDataSize, 16);
-        std::memcpy(
-            duplicatedOriginalPrefetchData,
-            &nonmoddedForge->forgeContentsDescriptor->prefetchData[originalPrefetchInfo.offsetInPrefetchData],
-            originalPrefetchInfo.prefetchDataSize
-        );
-        forgeContents->prefetchData = duplicatedOriginalPrefetchData;
-        // I'm assuming that in my "virtual forges" there is only a single datapack.
-        ForgeFile_DatapackPrefetchInfo& singularDatapackPrefetchInfo = forgeContents->datapacksPrefetchInfoAscendingHandles[0];
-        singularDatapackPrefetchInfo.isCompressed_mb = originalPrefetchInfo.isCompressed_mb;
-        singularDatapackPrefetchInfo.prefetchDataSize = originalPrefetchInfo.prefetchDataSize;
-        singularDatapackPrefetchInfo.offsetInPrefetchData = 0;
-    }
+    StealPrefetchingInfoIntoVirtualForge(*forgeContents, *nonmoddedForge->forgeContentsDescriptor, prefetchInfoIdx);
 }
 void DrawAssetOverridesInstructions()
 {
@@ -1041,6 +1114,10 @@ void DrawAssetOverridesInstructions()
     else
         ImGui::PopStyleColor(3);
 }
+void AssetOverrides_InitFromLoadOrder()
+{
+    g_AssetModlist.InitFromLoadOrder();
+}
 
 
 
@@ -1067,17 +1144,21 @@ void DrawAssetOverridesInstructions()
 
 AddVirtualForges::AddVirtualForges()
 {
-    uintptr_t whenNewForgeEntryWasJustAdded = 0x142737D1D;
-    PresetScript_CCodeInTheMiddle(whenNewForgeEntryWasJustAdded, 7,
-        WhenNewForgeEntryWasJustAdded_ApplyCustomSorting, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
+    //uintptr_t whenNewForgeEntryWasJustAdded = 0x142737D1D;
+    //PresetScript_CCodeInTheMiddle(whenNewForgeEntryWasJustAdded, 7,
+    //    WhenNewForgeEntryWasJustAdded_ApplyCustomSorting, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
 
-    uintptr_t whenGatheringPrefetchInfoForDatapack = 0x1427338EA;
-    PresetScript_CCodeInTheMiddle(whenGatheringPrefetchInfoForDatapack, 7,
-        WhenGatheringPrefetchInfoForDatapack_FindOriginalPrefetchInfo, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
+    //uintptr_t whenGatheringPrefetchInfoForDatapack = 0x1427338EA;
+    //PresetScript_CCodeInTheMiddle(whenGatheringPrefetchInfoForDatapack, 7,
+    //    WhenGatheringPrefetchInfoForDatapack_FindOriginalPrefetchInfo, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
+
+    uintptr_t whenGameForgesJustOpened = 0x14272F794;
+    PresetScript_CCodeInTheMiddle(whenGameForgesJustOpened, 7,
+        WhenNewForgeEntryWasJustAdded_ApplyCustomSorting, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
 }
 void AddVirtualForges::OnBeforeActivate()
 {
-    g_AssetModlist.InitFromLoadOrder();
+    AssetOverrides_InitFromLoadOrder();
 }
 void AddVirtualForges::OnBeforeDeactivate()
 {

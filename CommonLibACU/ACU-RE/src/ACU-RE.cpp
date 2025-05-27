@@ -204,3 +204,5 @@
 
 #include "ACU/LoadInfo.h"
 #include "ACU/GameBootstrap.h"
+
+#include "ACU/LoadingThread.h"

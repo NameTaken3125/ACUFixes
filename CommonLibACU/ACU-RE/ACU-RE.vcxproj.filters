@@ -183,6 +183,7 @@
     <ClInclude Include="inc\ACU\Memory\ACUAllocs.h" />
     <ClInclude Include="inc\ACU\Sound\ACU_SoundUtils.h" />
     <ClInclude Include="inc\ACU\ManagedPtrs\ManagedPtrs.h" />
+    <ClInclude Include="inc\ACU\LoadingThread.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />
