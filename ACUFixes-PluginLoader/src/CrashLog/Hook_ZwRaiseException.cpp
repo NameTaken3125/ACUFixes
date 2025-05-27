@@ -14,12 +14,15 @@ extern "C" __declspec(dllimport) NTSTATUS NTAPI ZwRaiseException(
 );
 
 void LogTopLevelException(const std::string_view& whereCaught, ::EXCEPTION_RECORD& ExceptionRecord, ::CONTEXT& ContextRecord);
+bool g_Hook_ZwRaiseException_IsCanBeSafelyContinued = false;
 void ZwRaiseException_PrologueHook(AllRegisters* params)
 {
     EXCEPTION_RECORD* ExceptionRecord = (EXCEPTION_RECORD*)params->rcx_;
     CONTEXT* Context = (CONTEXT*)params->rdx_;
     LogTopLevelException("ZwRaiseException()", *ExceptionRecord, *Context);
 
+    if (g_Hook_ZwRaiseException_IsCanBeSafelyContinued)
+        return;
     ImGuiTextBuffer buf;
     buf.appendf(
         "Game cannot recover from this error and will be closed now.\n"
@@ -63,6 +66,35 @@ Hook_ZwRaiseException::Hook_ZwRaiseException()
     catch it in a VEH, then run a clean copy of ZwRaiseException? Would that be of some use?
     More like ZwRaiseInception, amirite?
     */
-    PresetScript_CCodeInTheMiddle((uintptr_t)pZwRaiseException, 8,
+
+
+    DEFINE_ADDR(ZwRaiseException_prologue, (uintptr_t)pZwRaiseException);
+    auto TryGetStandardSyscallPrologueBytes = [](SymbolWithAnAddress& symbolAddr) -> std::optional<ByteVector>
+        {
+            ByteVector firstTwoOpcodesHopefully = symbolAddr.CopyCurrentBytes(8);
+            std::array<byte, 4> standardSyscallPrologue = { {
+                    0x4C, 0x8B, 0xD1,               // - mov r10,rcx
+                    0xB8, /* syscall_dword */       // - mov eax,<syscall_dword>
+                } };
+            for (size_t i = 0; i < standardSyscallPrologue.size(); i++)
+            {
+                if (standardSyscallPrologue[i] != firstTwoOpcodesHopefully.m_bytes[i])
+                    return {};
+            }
+            return firstTwoOpcodesHopefully;
+        };
+    std::optional<ByteVector> firstTwoOpcodes = TryGetStandardSyscallPrologueBytes(ZwRaiseException_prologue);
+    size_t howManyBytesStolen;
+    if (firstTwoOpcodes)
+    {
+        howManyBytesStolen = firstTwoOpcodes->m_bytes.size();
+        g_Hook_ZwRaiseException_IsCanBeSafelyContinued = true;
+    }
+    else
+    {
+        howManyBytesStolen = 5;
+        g_Hook_ZwRaiseException_IsCanBeSafelyContinued = false;
+    }
+    PresetScript_CCodeInTheMiddle((uintptr_t)pZwRaiseException, howManyBytesStolen,
         ZwRaiseException_PrologueHook, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
 }

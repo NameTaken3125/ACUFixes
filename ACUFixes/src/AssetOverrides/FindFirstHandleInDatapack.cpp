@@ -184,7 +184,6 @@ std::optional<uint64> FindFirstHandleInDatapack(const fs::path& targetFilepath)
     infile.seekg(0);
 
 
-    fs::path parentPath = targetFilepath.parent_path().filename();
     Mock_CombinedRawBufsReader reader;
     reader.m_File = std::move(infile);
     reader.Init_2(filesize);

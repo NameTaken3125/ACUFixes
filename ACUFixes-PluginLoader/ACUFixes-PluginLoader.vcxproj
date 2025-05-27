@@ -154,7 +154,8 @@ if exist "$(ProjectDir)copy_output_to_directory.txt" (
     copy "$(TargetDir)$(TargetFileName)" "%%x"
   )
 ) else (
-  echo [-] The "copy_output_to_directory.txt" file does not exist. Just put a single line inside like so:
+  echo [-] The "copy_output_to_directory.txt" file does not exist.
+  echo.    Just put a single line inside like so ^(don't use quotation marks^):
   echo.    G:\ExampleDirectory\Where\ToPutCopy
 )
 </Command>
@@ -190,7 +191,8 @@ if exist "$(ProjectDir)copy_output_to_directory.txt" (
     copy "$(TargetDir)$(TargetFileName)" "%%x"
   )
 ) else (
-  echo [-] The "copy_output_to_directory.txt" file does not exist. Just put a single line inside like so:
+  echo [-] The "copy_output_to_directory.txt" file does not exist.
+  echo.    Just put a single line inside like so ^(don't use quotation marks^):
   echo.    G:\ExampleDirectory\Where\ToPutCopy
 )
 </Command>

@@ -56,6 +56,7 @@ void DrawFontControls()
 void DrawPluginListControls();
 void DrawPluginsWhenMenuOpen();
 void DrawPluginsEvenWhenMenuIsClosed();
+void CrashLog_CodePatches_DrawControls();
 void Base::ImGuiLayer_WhenMenuIsOpen()
 {
     static bool enableDemoWindow = false;
@@ -94,6 +95,7 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
                 ImGui::Checkbox("Show developer options", &g_PluginLoaderConfig.developerOptions->isActive.get());
                 if (g_PluginLoaderConfig.developerOptions->isActive)
                 {
+                    CrashLog_CodePatches_DrawControls();
                     ImGui::Checkbox("Allow uninject the PluginLoader", &g_PluginLoaderConfig.developerOptions->canUninjectPluginLoader->isActive.get());
                     if (ImGui::IsItemHovered())
                     {

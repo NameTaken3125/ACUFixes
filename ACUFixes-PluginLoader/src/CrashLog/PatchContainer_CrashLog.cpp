@@ -4,6 +4,9 @@
 #include "MyLog.h"
 
 #include "AutoAssemblerKinda/AutoAssemblerKinda.h"
+#include "PluginLoaderConfig.h"
+#include "ImGuiConfigUtils.h"
+
 void CrashLog_TestVariousWaysOfCrashing_DrawImGui()
 {
     if (ImGui::Button("CRASH: Write to nullptr"))
@@ -95,5 +98,21 @@ std::optional<PatchContainer_CrashLog> g_PatchContainer_CrashLog;
 void CrashLog_CodePatches_Start()
 {
     g_PatchContainer_CrashLog.emplace();
-    g_PatchContainer_CrashLog->zwExcHook.Activate();
+    if (g_PluginLoaderConfig.developerOptions->hungrierCrashLog_hookZwRaiseException)
+        g_PatchContainer_CrashLog->zwExcHook.Activate();
+}
+void CrashLog_CodePatches_DrawControls()
+{
+    if (!g_PatchContainer_CrashLog) return;
+    ImGui::DrawCheckboxForHack(g_PatchContainer_CrashLog->zwExcHook, "Hungrier CrashLog");
+    if (ImGui::IsItemHovered())
+    {
+        ImGui::SetTooltip(
+            "Additionally hook the ntdll.ZwRaiseException().\n"
+            "It allows the CrashLog to catch more kinds of crashes,\n"
+            "but might not play nice when a debugger is attached.\n"
+            "Try enabling this temporarily if you're trying to hunt down a cause\n"
+            "for some silent crash."
+        );
+    }
 }

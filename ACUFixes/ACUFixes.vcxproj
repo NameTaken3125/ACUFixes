@@ -125,14 +125,20 @@
       </AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>echo [+] COMPLETED BUILD: $(TargetDir)$(TargetFileName)
-echo [*] Copying animation files into output directory: $(TargetDir)NewAnimations
-echo.    From: $(SolutionDir)NewAnimations
-echo.    To:   $(TargetDir)NewAnimations
-xcopy "$(SolutionDir)NewAnimations" "$(TargetDir)NewAnimations\" /s /e /y /i
-REM "robocopy" is suggested to be better than xcopy, but its success exit code is 1, which is reported as error. Whatever.
-REM robocopy "$(SolutionDir)NewAnimations" "$(TargetDir)NewAnimations" /MIR
-</Command>
+      <Command>echo COMPLETED BUILD: $(TargetDir)$(TargetFileName)
+if exist "$(ProjectDir)copy_output_to_directory.txt" (
+  echo [+] The "copy_output_to_directory.txt" exists.
+  for /f "delims=" %%x in ('type "$(ProjectDir)copy_output_to_directory.txt"') do (
+    echo.    Copying "$(TargetFileName)" to "%%x"
+    copy "$(TargetDir)$(TargetFileName)" "%%x"
+    echo [*] Copying animation files into target directory: "%%x"
+    xcopy "$(SolutionDir)NewAnimations" "%%x\NewAnimations\" /s /e /y /i
+  )
+) else (
+  echo [-] The "copy_output_to_directory.txt" file does not exist.
+  echo.    Just put a single line inside like so ^(don't use quotation marks^):
+  echo.    G:\ExampleDirectory\Where\ToPutCopy
+)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -184,14 +190,20 @@ REM robocopy "$(SolutionDir)NewAnimations" "$(TargetDir)NewAnimations" /MIR
       </AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>echo [+] COMPLETED BUILD: $(TargetDir)$(TargetFileName)
-echo [*] Copying animation files into output directory: $(TargetDir)NewAnimations
-echo.    From: $(SolutionDir)NewAnimations
-echo.    To:   $(TargetDir)NewAnimations
-xcopy "$(SolutionDir)NewAnimations" "$(TargetDir)NewAnimations\" /s /e /y /i
-REM "robocopy" is suggested to be better than xcopy, but its success exit code is 1, which is reported as error. Whatever.
-REM robocopy "$(SolutionDir)NewAnimations" "$(TargetDir)NewAnimations" /MIR
-</Command>
+      <Command>echo COMPLETED BUILD: $(TargetDir)$(TargetFileName)
+if exist "$(ProjectDir)copy_output_to_directory.txt" (
+  echo [+] The "copy_output_to_directory.txt" exists.
+  for /f "delims=" %%x in ('type "$(ProjectDir)copy_output_to_directory.txt"') do (
+    echo.    Copying "$(TargetFileName)" to "%%x"
+    copy "$(TargetDir)$(TargetFileName)" "%%x"
+    echo [*] Copying animation files into target directory: "%%x"
+    xcopy "$(SolutionDir)NewAnimations" "%%x\NewAnimations\" /s /e /y /i
+  )
+) else (
+  echo [-] The "copy_output_to_directory.txt" file does not exist.
+  echo.    Just put a single line inside like so ^(don't use quotation marks^):
+  echo.    G:\ExampleDirectory\Where\ToPutCopy
+)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

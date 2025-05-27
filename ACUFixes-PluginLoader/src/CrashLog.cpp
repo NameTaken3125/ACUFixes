@@ -303,18 +303,25 @@ public:
         LOG_DEBUG(CrashLog,
             m_StackBackTrace.c_str()
         );
+        DWORD currentThreadId = GetCurrentThreadId();
         CrashLog_MessageBoxAF(
             "[CrashLog] %s: uncaught exception!\n"
+            "CurrentThreadID: %d/0x%x\n"
             "Code: %X%s\n"
             "At:   %llX\n"
             "Rsp:  %llX\n"
+            "ExceptionRecord:   %llX\n"
+            "ContextRecord:     %llX\n"
             "%s\n"
             "A crash log has been generated."
             , m_WhereCaught.c_str()
+            , currentThreadId, currentThreadId
             , ExceptionRecord.ExceptionCode
             , GetReadableExceptionCode(ExceptionRecord)
             , ExceptionRecord.ExceptionAddress
             , ContextRecord.Rsp
+            , &ExceptionRecord
+            , &ContextRecord
             , m_StackBackTrace.c_str()
         );
     }
@@ -435,15 +442,15 @@ Regardless of the reason...)
 I'd like to have the ability to catch all crashes, especially
 since I already know VMProtect likes to make crashes silent.
 This is why I also hook the ZwRaiseException() within the ntdll.dll
-as a last resort. Such a hook doesn't produce a good stacktrace
+as a last resort. Such a hook might not produce a good stacktrace
 and interacts poorly with an attached debugger by preventing UnhandledExceptionFilter()
 from running when it otherwise would.
 */
 void InstallCrashLog()
 {
     g_CrashLogVEH.emplace(0, CrashLogVectoredExceptionHandler);
-    //// Uncomment this to enable the ZwRaiseException() hook. It can catch more crashes,
-    //// but I force it to exit the process, and this might not be desirable
-    //// if a debugger is attached.
-    //CrashLog_CodePatches_Start();
+    // I can enable the ZwRaiseException() hook. It can catch more crashes,
+    // but I might force it to exit the process, and this might not be desirable
+    // if a debugger is attached.
+    CrashLog_CodePatches_Start();
 }

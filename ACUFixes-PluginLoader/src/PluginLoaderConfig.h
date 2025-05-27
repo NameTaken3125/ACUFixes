@@ -33,6 +33,7 @@ struct ConfigTop : YAConfigSection {
         };
         ACM(canUninjectPluginLoader, YACS_UninjectPluginLoader, YAConfigSectionAdapter, );
         ACM(hotkey_UnloadMod, VirtualKeys, EnumAdapter_template<VirtualKeys>, VirtualKeys::KEYBOARD_END);
+        ACM(hungrierCrashLog_hookZwRaiseException, bool, BooleanAdapter, false);
     };
     ACM(developerOptions, YACS_DeveloperOptions, YAConfigSectionAdapter, );
 };

@@ -10,7 +10,7 @@ But I found a need of an early hook with the Asset Overrides.
 You can read further below about why that feature needs earlier hooks than most.[*1]
 
 Placing very early hooks into ACU is problematic.
-- I cannot start the game under a debugger.
+- I cannot start the game under a debugger (*sometimes).
 - The game process is started twice, actually, presumably due to some kind of protection handshake.
   The Steam version of ACU does, at least.
   This makes CreateProcess(CREATE_SUSPENDED) useless (for now at least).
