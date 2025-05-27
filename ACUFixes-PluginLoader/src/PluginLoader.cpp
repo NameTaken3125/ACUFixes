@@ -21,9 +21,25 @@ bool IsPluginAPIversionCompatible(uint64 apiVersion_pluginLoader, uint64 apiVers
 #define PLUGIN_API_VERSION_GET_MINOREST(version) (version & 0xFF)
 void MyPluginLoader::LoadAndStartPlugin(MyPluginResult& pluginRecord)
 {
+    LoadPluginAndCheckCompatibility(pluginRecord);
+    if (!pluginRecord.m_successfulLoad) return;
+    auto& pluginInfo = pluginRecord.m_successfulLoad->m_pluginInterface;
+    HMODULE moduleHandle = pluginRecord.m_successfulLoad->m_moduleHandle;
+    const char* pluginName = pluginRecord.m_PluginName.c_str();
+    if (pluginInfo->m_InitStage_WhenCodePatchesAreSafeToApply)
+    {
+        if (!pluginInfo->m_InitStage_WhenCodePatchesAreSafeToApply(m_PluginLoaderInterfaces))
+        {
+            LOG_DEBUG(DefaultLogger, "[error][x] Plugin %s: The \"m_InitStage_WhenCodePatchesAreSafeToApply()\" procedure returned `false` indicating that the plugin doesn't want to start. Unloading.\n", pluginName);
+            FreeLibrary(moduleHandle);
+            return;
+        }
+    }
+}
+void MyPluginLoader::LoadPluginAndCheckCompatibility(MyPluginResult& pluginRecord)
+{
     std::wstring pluginFilepath = pluginRecord.m_filepath.wstring();
-    std::string _pluginName = (const char*)pluginRecord.m_filepath.filename().u8string().c_str();
-    const char* pluginName = _pluginName.c_str();
+    const char* pluginName = pluginRecord.m_PluginName.c_str();
     LOG_DEBUG(DefaultLogger, "[*] Plugin %s: Trying to load.\n", utf8_and_wide_string_conversion::utf8_encode(pluginFilepath).c_str());
     HMODULE moduleHandle = LoadLibraryW(pluginFilepath.c_str());
     if (!moduleHandle)
@@ -72,19 +88,9 @@ void MyPluginLoader::LoadAndStartPlugin(MyPluginResult& pluginRecord)
         FreeLibrary(moduleHandle);
         return;
     }
-    if (!pluginInfo->m_Start)
-    {
-        LOG_DEBUG(DefaultLogger, "[error][x] Plugin %s: Plugin didn't provide the `ACUPluginInfo.m_Start()` callback. Unloading.\n", pluginName);
-        FreeLibrary(moduleHandle);
-        return;
-    }
-    if (!pluginInfo->m_Start(m_PluginLoaderInterfaces))
-    {
-        LOG_DEBUG(DefaultLogger, "[error][x] Plugin %s: The start procedure returned `false` indicating that the plugin doesn't want to start. Unloading.\n", pluginName);
-        FreeLibrary(moduleHandle);
-        return;
-    }
-    LOG_DEBUG(DefaultLogger, "[+] Plugin %s: Successfully loaded.\n", pluginName);
+    if (pluginInfo->m_InitStage_WhenVersionsAreDeemedCompatible)
+        pluginInfo->m_InitStage_WhenVersionsAreDeemedCompatible(m_PluginLoaderInterfaces);
+    LOG_DEBUG(DefaultLogger, "[+] Plugin \"%s\": Initial loading and API compatibility check successful.\n", pluginName);
     pluginRecord.m_successfulLoad.emplace(moduleHandle, std::move(pluginInfo));
 }
 #undef PLUGIN_API_VERSION_GET_MAJOR
@@ -202,6 +208,30 @@ void MyPluginLoader::LoadAllFoundNonloadedPlugins()
             continue;
         }
         LoadAndStartPlugin(*plugin);
+    }
+}
+void MyPluginLoader::WhenSafeToApplyCodePatches()
+{
+    LOG_DEBUG(DefaultLogger, "[*] WhenSafeToApplyCodePatches():\n");
+    for (std::unique_ptr<MyPluginResult>& plugin : dllResults)
+    {
+        if (!plugin->m_successfulLoad)
+        {
+            continue;
+        }
+        plugin->m_successfulLoad->m_pluginInterface->m_InitStage_WhenCodePatchesAreSafeToApply(m_PluginLoaderInterfaces);
+    }
+}
+void MyPluginLoader::LoadAllFoundNonloadedPluginsAndCheckCompatibility()
+{
+    LOG_DEBUG(DefaultLogger, "[*] LoadAllFoundNonloadedPluginsAndCheckCompatibility():\n");
+    for (std::unique_ptr<MyPluginResult>& plugin : dllResults)
+    {
+        if (plugin->m_successfulLoad)
+        {
+            continue;
+        }
+        LoadPluginAndCheckCompatibility(*plugin);
     }
 }
 #include "Common_Plugins_impl/PluginLoaderSharedGlobals.h"
@@ -348,4 +378,14 @@ void PluginLoader_FindAndLoadPlugins()
 {
     g_MyPluginLoader.UpdateListOfAvailablePlugins();
     g_MyPluginLoader.LoadAllFoundNonloadedPlugins();
+}
+void PluginLoader_FirstTimeGatherPluginsAndCheckCompatibility()
+{
+    g_MyPluginLoader.UpdateListOfAvailablePlugins();
+    g_MyPluginLoader.LoadAllFoundNonloadedPluginsAndCheckCompatibility();
+    LOG_DEBUG(DefaultLogger, "[+] PluginLoader_FirstTimeGatherPluginsAndCheckCompatibility() finished.\n");
+}
+void PluginLoader_WhenSafeToApplyCodePatches()
+{
+    g_MyPluginLoader.WhenSafeToApplyCodePatches();
 }

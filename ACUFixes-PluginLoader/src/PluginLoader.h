@@ -5,8 +5,12 @@
 using ACUPluginStart_fnt = decltype(ACUPluginStart)*;
 struct MyPluginResult
 {
-    MyPluginResult(const fs::path& filepath) : m_filepath(filepath) {}
+    MyPluginResult(const fs::path& filepath)
+        : m_filepath(filepath)
+        , m_PluginName(filepath.filename().u8string())
+    {}
     const fs::path m_filepath;
+    const std::string m_PluginName;
     struct SuccessfulLoad
     {
         SuccessfulLoad(HMODULE moduleHandle, std::unique_ptr<ACUPluginInfo>&& pluginInterface)
@@ -27,6 +31,8 @@ class MyPluginLoader
 public:
     void UpdateListOfAvailablePlugins();
     void LoadAllFoundNonloadedPlugins();
+    void LoadAllFoundNonloadedPluginsAndCheckCompatibility();
+    void WhenSafeToApplyCodePatches();
     void UnloadAllPlugins();
     void DrawPluginListControls();
     void DrawImGuiForPlugins_WhenMenuIsOpened();
@@ -37,6 +43,7 @@ public:
     HMODULE GetPluginIfLoaded(const wchar_t* pluginName);
 private:
     void LoadAndStartPlugin(MyPluginResult& pluginRecord);
+    void LoadPluginAndCheckCompatibility(MyPluginResult& pluginRecord);
 public:
     void EveryFrameBeforeGraphicsUpdate();
 private:

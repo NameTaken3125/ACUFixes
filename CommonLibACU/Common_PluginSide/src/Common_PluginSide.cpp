@@ -49,11 +49,6 @@ static bool IsPluginInterfaceVirtualFunctionOverridden(int virtualFnIdx)
     void** pluginVTable = *(void***)g_ThisPluginSingletonAsBaseclass;
     return g_PluginInterfaceBaseclassVTable[virtualFnIdx] != pluginVTable[virtualFnIdx];
 }
-static bool EverythingAppearsToBeReadyToStart(ACUPluginLoaderInterface& pluginLoader)
-{
-    GrabPluginLoaderGlobalVariables(pluginLoader);
-    return g_ThisPluginSingletonAsBaseclass->Start(pluginLoader);
-}
 extern "C" __declspec(dllexport) bool ACUPluginStart(ACUPluginLoaderInterface& pluginLoader, ACUPluginInfo& yourPluginInfo_out)
 {
     if (pluginLoader.m_PluginLoaderVersion < g_CurrentPluginAPIversion) {
@@ -84,7 +79,11 @@ extern "C" __declspec(dllexport) bool ACUPluginStart(ACUPluginLoaderInterface& p
             g_ThisPluginSingletonAsBaseclass->EveryFrameEvenWhenMenuIsClosed();
         };
     }
-    yourPluginInfo_out.m_Start = EverythingAppearsToBeReadyToStart;
+    yourPluginInfo_out.m_InitStage_WhenVersionsAreDeemedCompatible = [](ACUPluginLoaderInterface& pluginLoader) {
+        GrabPluginLoaderGlobalVariables(pluginLoader);
+        g_ThisPluginSingletonAsBaseclass->InitStage_WhenPluginAPIDeemedCompatible();
+        };
+    yourPluginInfo_out.m_InitStage_WhenCodePatchesAreSafeToApply = [](ACUPluginLoaderInterface& pluginLoader) { return g_ThisPluginSingletonAsBaseclass->InitStage_WhenCodePatchesAreSafeToApply(pluginLoader); };;
     return true;
 }
 

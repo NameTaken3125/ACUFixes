@@ -25,13 +25,15 @@ public:
 	virtual ~ACUPluginInterfaceVirtuals() {}
 	// Will be called immediately if the plugin loader confirms that your plugin API version is compatible.
 	// Return `false` to unload the plugin.
-	virtual bool Start(ACUPluginLoaderInterface& pluginLoader) = 0;
+	virtual bool InitStage_WhenCodePatchesAreSafeToApply(ACUPluginLoaderInterface& pluginLoader) = 0;
 	// _Your_ plugin version. Currently is for logging only. (In the future, potentially for interplugin communications.)
 	virtual uint64 GetThisPluginVersion() = 0;
 	// Will be called every frame when the menu section for _your_ plugin is visible.
 	virtual void EveryFrameWhenMenuIsOpen();
 	// Will be called every frame.
 	virtual void EveryFrameEvenWhenMenuIsClosed();
+
+	virtual void InitStage_WhenPluginAPIDeemedCompatible() {}
 public:
 	ACUPluginInterfaceVirtuals();
 };

@@ -10,19 +10,29 @@
 
 
 fs::path AbsolutePathInMyDirectory(const fs::path& filenameRel);
-void PluginLoader_VariousHooks_Start();
-void PluginLoader_FindAndLoadPlugins();
 void InstallCrashLog();
-void SuspendThreadsUntilCheatEnginesVEHDebuggerIsAttached();
+std::optional<MyLogFileLifetime> g_LogLifetime;
 void ClearThe_BeingDebugged_Flag();
 
+void PluginLoader_VariousHooks_Start();
+void PluginLoader_FirstTimeGatherPluginsAndCheckCompatibility();
+void PluginLoader_WhenSafeToApplyCodePatches();
 
-std::optional<MyLogFileLifetime> g_LogLifetime;
+bool g_IsReadyToStart_PluginsInitialLoadAndVersionCheck = false;
+bool g_IsFinished_PluginsInitialLoadAndVersionCheck = false;
+bool g_IsMICDisabled = false;
+void WaitUntilMICIsDisabled();
 bool g_IsPluginLoaderFullyInitialized = false;
-DWORD WINAPI PluginLoaderSetup_AfterMICIsDisabled(LPVOID lpThreadParameter)
+
+void StartupTasksAndHeartbeat()
 {
+    while (!g_IsReadyToStart_PluginsInitialLoadAndVersionCheck)
+        Sleep(500);
+    PluginLoader_FirstTimeGatherPluginsAndCheckCompatibility();
+    g_IsFinished_PluginsInitialLoadAndVersionCheck = true;
+    WaitUntilMICIsDisabled();
     PluginLoader_VariousHooks_Start();
-    PluginLoader_FindAndLoadPlugins();
+    PluginLoader_WhenSafeToApplyCodePatches();
 
     PresentHookOuter::BasehookSettings_PresentHookOuter basehook;
     Base::Fonts::SetFontSize(g_PluginLoaderConfig.fontSize);
@@ -44,54 +54,74 @@ DWORD WINAPI PluginLoaderSetup_AfterMICIsDisabled(LPVOID lpThreadParameter)
     // // The best solution would be to not deallocate the Present() trampoline at all, like
     // // what I believe Cheat Engine's `globalalloc` does.
     Sleep(500);
+    return;
+}
+template<typename Callable>
+void WaitAndShowMessageBoxesIfTakingTooLong(const std::string_view& taskDescription, Callable&& checkIfFinished)
+{
+    int secsBetweenNotifications = 20;
+    ULONGLONG tsStartedToLoadPlugins = GetTickCount64();
+    ULONGLONG tsLastNotification = tsStartedToLoadPlugins;
+    while (true)
+    {
+        if (checkIfFinished())
+        {
+            break;
+        }
+        ULONGLONG now_ = GetTickCount64();
+        const ULONGLONG millisElapsedSinceLastNotification = now_ - tsLastNotification;
+        const ULONGLONG millisUntilNotification = secsBetweenNotifications * 1000;
+        if (millisElapsedSinceLastNotification > millisUntilNotification)
+        {
+            ImGuiTextBuffer buf;
+            buf.appendf(
+                "----------------------------------------------------\n"
+                "%s\n"
+                "----------------------------------------------------\n"
+                , taskDescription.data()
+            );
+            buf.appendf(
+                "It's been %.0f seconds since the wait started.\n"
+                "It's taking an unusually long time.\n"
+                "Check the \"" LOG_FILENAME "\" for errors if this is not normal.\n"
+                "If this keeps happening, try removing some of the plugins.\n"
+                "This notification is shown every %u seconds.\n"
+                "Continue to wait? Press \"No\" to exit the process.\n"
+                , ((now_ - tsStartedToLoadPlugins)) / 1000.0f
+                , secsBetweenNotifications
+            );
+            int mbResult = MessageBoxA(NULL, buf.c_str(), THIS_DLL_PROJECT_NAME,
+                MB_ICONWARNING |
+                MB_YESNO |
+                MB_SETFOREGROUND);
+            if (mbResult == IDNO)
+            {
+                const int exitCode = 'PLTL'; // ==0x504c544c == "Plugin Loader Too Long"
+                std::exit(exitCode);
+            }
+            now_ = GetTickCount64();
+            tsLastNotification = now_;
+        }
+        Sleep(500);
+    }
+}
+void WaitForInitialLoadingOfPluginsToFinish()
+{
+    WaitAndShowMessageBoxesIfTakingTooLong("Waiting to finish plugins' initial loading and version check.", []() { return g_IsFinished_PluginsInitialLoadAndVersionCheck; });
+}
+void WaitForFinishedPluginInit()
+{
+    WaitAndShowMessageBoxesIfTakingTooLong("Waiting for the plugins to finish loading.", []() { return g_IsPluginLoaderFullyInitialized; });
+}
+DWORD WINAPI PluginLoaderThread_StartupTasksAndHeartbeat(LPVOID lpThreadParameter)
+{
+    StartupTasksAndHeartbeat();
+    FreeLibraryAndExitThread((HMODULE)lpThreadParameter, TRUE);
     return TRUE;
 }
-void MainIntegrityCheckHasJustBeenDisabled()
+void WhenReadyForInitialLoadingOfPlugins()
 {
-    CreateThread(nullptr, 0, PluginLoaderSetup_AfterMICIsDisabled, nullptr, 0, nullptr);
-    auto WaitForPluginsToLoadAndShowMessageBoxesIfTakingTooLong = []() {
-        int secsBetweenNotifications = 20;
-        ULONGLONG tsStartedToLoadPlugins = GetTickCount64();
-        ULONGLONG tsLastNotification = tsStartedToLoadPlugins;
-        while (true)
-        {
-            if (g_IsPluginLoaderFullyInitialized)
-            {
-                break;
-            }
-            ULONGLONG now_ = GetTickCount64();
-            const ULONGLONG millisElapsedSinceLastNotification = now_ - tsLastNotification;
-            const ULONGLONG millisUntilNotification = secsBetweenNotifications * 1000;
-            if (millisElapsedSinceLastNotification > millisUntilNotification)
-            {
-                ImGuiTextBuffer buf;
-                buf.appendf(
-                    "It's been %.0f seconds since the plugins started getting loaded.\n"
-                    "The plugins are taking a long time to load.\n"
-                    "Check the \"" LOG_FILENAME "\" for errors if this is not normal.\n"
-                    "If this keeps happening, try removing some of the plugins.\n"
-                    "This notification is shown every %u seconds.\n"
-                    "Continue to wait? Press \"No\" to exit the process.\n"
-                    , ((now_ - tsStartedToLoadPlugins)) / 1000.0f
-                    , secsBetweenNotifications
-                );
-                int mbResult = MessageBoxA(NULL, buf.c_str(), THIS_DLL_PROJECT_NAME,
-                    MB_ICONWARNING |
-                    MB_YESNO |
-                    MB_SYSTEMMODAL |
-                    MB_SETFOREGROUND);
-                if (mbResult == IDNO)
-                {
-                    const int exitCode = 'PLTL'; // ==0x504c544c == "Plugin Loader Too Long"
-                    std::exit(exitCode);
-                }
-                now_ = GetTickCount64();
-                tsLastNotification = now_;
-            }
-            Sleep(500);
-        }
-        };
-    WaitForPluginsToLoadAndShowMessageBoxesIfTakingTooLong();
+    g_IsReadyToStart_PluginsInitialLoadAndVersionCheck = true;
 }
 #include "ACU/Threads/KnownThreads.h"
 void BeforeGameMainThreadStarted_HookTheStartAddress();
@@ -100,34 +130,26 @@ BOOL DllMainOnProcessAttach(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
     Base::Data::thisDLLModule = hModule;
     g_LogLifetime.emplace(AbsolutePathInMyDirectory(LOG_FILENAME));
     PluginLoaderConfig::FindAndLoadConfigFileOrCreateDefault();
+    InstallCrashLog();
+
+
+    CreateThread(nullptr, 0, PluginLoaderThread_StartupTasksAndHeartbeat, hModule, 0, nullptr);
+
+
     const bool isInMainThread = GetThreadStartAddress(GetCurrentThread()) == ACU::Threads::ThreadStartAddr_MainThread;
-    if (!isInMainThread)
+    const bool isEarlyHooksPossible = isInMainThread;
+    if (isEarlyHooksPossible)
     {
-        LOG_DEBUG(DefaultLogger,
-            "[EarlyHooks]\n"
-            "   Too late to install the early hooks.\n"
-            "   This version of ACUFixes is supposed to be installed in the following way:\n"
-            "   Place the files directly into the \"Assassin's Creed Unity\" folder (where the \"ACU.exe\" file is).\n"
-            "   Game's folder structure will look like this:\n"
-            "       Assassin's Creed Unity/\n"
-            "       +-- ACUFixes/\n"
-            "       |   +-- plugins/\n"
-            "       |   |   +--ACUFixes.dll\n"
-            "       |   +-- ACUFixes-PluginLoader.dll\n"
-            "       +-- ACU.exe\n"
-            "       +-- version.dll\n"
-        );
-        const char* msg =
-            "[" THIS_DLL_PROJECT_NAME "]:\n"
-            "Too late to install the early hooks.\n"
-            "The mod has probably been installed incorrectly.\n"
-            "The mod will not start.\n"
-            "See \"" LOG_FILENAME "\" log file for more details.\n"
-            ;
-        MessageBoxA(NULL, msg, THIS_DLL_PROJECT_NAME, MB_OK | MB_ICONWARNING);
-        return FALSE;
+        // Do multistage plugin initialization, with possible early hooks
+        // between the point the main thread starts and the point the main integrity check is disabled.
+        BeforeGameMainThreadStarted_HookTheStartAddress();
     }
-    BeforeGameMainThreadStarted_HookTheStartAddress();
+    else
+    {
+        // Too late to install early hooks, don't bother trying.
+        // Just load the plugins without blocking the main thread.
+        WhenReadyForInitialLoadingOfPlugins();
+    }
     return TRUE;
 }
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)

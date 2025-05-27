@@ -69,7 +69,6 @@ void WaitUntilGameIsInitializedEnoughSoThatTheMainIntegrityCheckCanBeDisabled()
         break;
     }
 }
-bool g_IsMICDisabled = false;
 extern bool g_IsMICDisabled;
 void WaitUntilMICIsDisabled()
 {

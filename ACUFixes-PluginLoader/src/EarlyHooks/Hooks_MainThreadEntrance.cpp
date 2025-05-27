@@ -226,13 +226,15 @@ void RemoveHardwareBreakpointFromThisThreadDuringException(_EXCEPTION_POINTERS* 
 }
 
 
-void MainIntegrityCheckHasJustBeenDisabled();
+void WaitForFinishedPluginInit();
+extern bool g_IsMICDisabled;
 void MainIntegrityCheckHasJustBeenDisabledWithoutStarting()
 {
+    g_IsMICDisabled = true;
     LOG_DEBUG(DefaultLogger,
-        "[+] Main Integrity Check has just been disabled without starting."
+        "[+] Main Integrity Check has just been disabled without starting.\n"
     );
-    MainIntegrityCheckHasJustBeenDisabled();
+    WaitForFinishedPluginInit();
 }
 static DWORD WINAPI EmptyThread(LPVOID lpThreadParameter) { return TRUE; }
 LONG EarlyHooks_HardwareBreakpointsHandler(::_EXCEPTION_POINTERS* ExceptionInfo)
@@ -265,7 +267,8 @@ LONG EarlyHooks_HardwareBreakpointsHandler(::_EXCEPTION_POINTERS* ExceptionInfo)
 
 
 
-void InstallCrashLog();
+void WhenReadyForInitialLoadingOfPlugins();
+void WaitForInitialLoadingOfPluginsToFinish();
 /*
 In here, I'm in the Context of the MainThread, free of the DLLMain and Loader Lock,
 which means I can use Hardware Breakpoints (on the threads I can access).
@@ -278,7 +281,8 @@ void DoImmediatelyAtTheStartOfGamesMainThread()
     LOG_DEBUG(DefaultLogger,
         "[+] Running at the very start of game's main thread...\n"
     );
-    InstallCrashLog();
+    WhenReadyForInitialLoadingOfPlugins();
+    WaitForInitialLoadingOfPluginsToFinish();
     g_EarlyHooks_VEHandler.emplace(1, EarlyHooks_HardwareBreakpointsHandler);
     HwBp::Set(CreateThread, 1, HwBp::When::Executed);
 }

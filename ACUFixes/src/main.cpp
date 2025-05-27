@@ -34,10 +34,13 @@ public:
     {
         return MAKE_VERSION_NUMBER_UINT64(0, 0, 1, 0);
     }
-    virtual bool Start(ACUPluginLoaderInterface& pluginLoader) override
+    virtual void InitStage_WhenPluginAPIDeemedCompatible() override
     {
         g_LogLifetime.emplace(AbsolutePathInThisDLLDirectory(LOG_FILENAME));
         MainConfig::FindAndLoadConfigFileOrCreateDefault(AbsolutePathInThisDLLDirectory(CONFIG_FILENAME));
+    }
+    virtual bool InitStage_WhenCodePatchesAreSafeToApply(ACUPluginLoaderInterface& pluginLoader) override
+    {
         MyVariousHacks::Start();
         HacksContainer_AssetOverrides_Start();
         ApplyAnimationGraphMods();
