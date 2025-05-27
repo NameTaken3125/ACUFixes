@@ -225,6 +225,8 @@ void RemoveHardwareBreakpointFromThisThreadDuringException(_EXCEPTION_POINTERS* 
     }
 }
 
+void PluginLoader_WhenGameCodeIsUnpacked();
+void PluginLoader_WhenNewForgeHasBeenLoaded();
 
 void WaitForFinishedPluginInit();
 extern bool g_IsMICDisabled;
@@ -237,6 +239,9 @@ void MainIntegrityCheckHasJustBeenDisabledWithoutStarting()
     WaitForFinishedPluginInit();
 }
 static DWORD WINAPI EmptyThread(LPVOID lpThreadParameter) { return TRUE; }
+void* g_CodeAddr_WhenEngineInit         = (void*)0x141CD56B0;
+void* g_CodeAddr_WhenNewForgeAdded      = (void*)0x142737D1D;
+#include "ACU/ForgeManager.h"
 LONG EarlyHooks_HardwareBreakpointsHandler(::_EXCEPTION_POINTERS* ExceptionInfo)
 {
     void* ExceptionAddress = ExceptionInfo->ExceptionRecord->ExceptionAddress;
@@ -252,8 +257,24 @@ LONG EarlyHooks_HardwareBreakpointsHandler(::_EXCEPTION_POINTERS* ExceptionInfo)
             //    "MIC DOA.\n"
             //);
             MainIntegrityCheckHasJustBeenDisabledWithoutStarting();
+            void SingleObjectOverride_HWBP_End(); SingleObjectOverride_HWBP_End();
             g_EarlyHooks_VEHandler.reset();
         }
+        return EXCEPTION_CONTINUE_EXECUTION;
+    }
+    else if (ExceptionAddress == g_CodeAddr_WhenEngineInit)
+    {
+        ExceptionInfo->ContextRecord->EFlags |= EFLAGS_MASK_RF;
+        RemoveHardwareBreakpointFromThisThreadDuringException(ExceptionInfo, g_CodeAddr_WhenEngineInit);
+        void SingleObjectOverride_HWBP_Start(); SingleObjectOverride_HWBP_Start();
+        PluginLoader_WhenGameCodeIsUnpacked();
+        return EXCEPTION_CONTINUE_EXECUTION;
+    }
+    else if (ExceptionAddress == g_CodeAddr_WhenNewForgeAdded)
+    {
+        ExceptionInfo->ContextRecord->EFlags |= EFLAGS_MASK_RF;
+        ForgeFileEntry* forgeEntry = (ForgeFileEntry*)ExceptionInfo->ContextRecord->Rsi;
+        PluginLoader_WhenNewForgeHasBeenLoaded();
         return EXCEPTION_CONTINUE_EXECUTION;
     }
     return EXCEPTION_CONTINUE_SEARCH;
@@ -285,6 +306,8 @@ void DoImmediatelyAtTheStartOfGamesMainThread()
     WaitForInitialLoadingOfPluginsToFinish();
     g_EarlyHooks_VEHandler.emplace(1, EarlyHooks_HardwareBreakpointsHandler);
     HwBp::Set(CreateThread, 1, HwBp::When::Executed);
+    HwBp::Set(g_CodeAddr_WhenEngineInit, 1, HwBp::When::Executed);
+    HwBp::Set(g_CodeAddr_WhenNewForgeAdded, 1, HwBp::When::Executed);
 }
 
 void BeforeGameMainThreadStarted_HookTheStartAddress()

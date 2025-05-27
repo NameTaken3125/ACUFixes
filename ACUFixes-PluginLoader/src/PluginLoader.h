@@ -32,6 +32,8 @@ public:
     void UpdateListOfAvailablePlugins();
     void LoadAllFoundNonloadedPlugins();
     void LoadAllFoundNonloadedPluginsAndCheckCompatibility();
+    void WhenGameCodeIsUnpacked();
+    void WhenNewForgeHasBeenLoaded();
     void WhenSafeToApplyCodePatches();
     void UnloadAllPlugins();
     void DrawPluginListControls();

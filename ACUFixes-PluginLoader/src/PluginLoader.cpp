@@ -210,6 +210,58 @@ void MyPluginLoader::LoadAllFoundNonloadedPlugins()
         LoadAndStartPlugin(*plugin);
     }
 }
+void MyPluginLoader::WhenGameCodeIsUnpacked()
+{
+    LOG_DEBUG(DefaultLogger,
+        "[*] Early hook: When Game code is unpacked.\n"
+    );
+    for (auto& plugin : this->dllResults)
+    {
+        if (!plugin->m_successfulLoad) continue;
+        auto* callback = plugin->m_successfulLoad->m_pluginInterface->m_InitStage_WhenGameCodeIsUnpacked;
+        if (callback)
+        {
+            LOG_DEBUG(DefaultLogger,
+                "[*] Plugin \"%s\": calling the \"m_InitStage_WhenGameCodeIsUnpacked()\" callback.\n"
+                , plugin->m_PluginName.c_str()
+            );
+            callback();
+        }
+        else
+        {
+            LOG_DEBUG(DefaultLogger,
+                "[*] Plugin \"%s\" does not provide a \"m_InitStage_WhenGameCodeIsUnpacked()\" callback.\n"
+                , plugin->m_PluginName.c_str()
+            );
+        }
+    }
+}
+void MyPluginLoader::WhenNewForgeHasBeenLoaded()
+{
+    LOG_DEBUG(DefaultLogger,
+        "[*] Early hook: WhenNewForgeHasBeenLoaded()\n"
+    );
+    for (auto& plugin : this->dllResults)
+    {
+        if (!plugin->m_successfulLoad) continue;
+        auto* callback = plugin->m_successfulLoad->m_pluginInterface->m_EarlyHook_WhenNewForgeHasBeenLoaded;
+        if (callback)
+        {
+            LOG_DEBUG(DefaultLogger,
+                "[*] Plugin \"%s\": calling the \"m_EarlyHook_WhenNewForgeHasBeenLoaded()\" callback.\n"
+                , plugin->m_PluginName.c_str()
+            );
+            callback();
+        }
+        else
+        {
+            LOG_DEBUG(DefaultLogger,
+                "[*] Plugin \"%s\" does not provide a \"m_EarlyHook_WhenNewForgeHasBeenLoaded()\" callback.\n"
+                , plugin->m_PluginName.c_str()
+            );
+        }
+    }
+}
 void MyPluginLoader::WhenSafeToApplyCodePatches()
 {
     LOG_DEBUG(DefaultLogger, "[*] WhenSafeToApplyCodePatches():\n");
@@ -384,6 +436,14 @@ void PluginLoader_FirstTimeGatherPluginsAndCheckCompatibility()
     g_MyPluginLoader.UpdateListOfAvailablePlugins();
     g_MyPluginLoader.LoadAllFoundNonloadedPluginsAndCheckCompatibility();
     LOG_DEBUG(DefaultLogger, "[+] PluginLoader_FirstTimeGatherPluginsAndCheckCompatibility() finished.\n");
+}
+void PluginLoader_WhenGameCodeIsUnpacked()
+{
+    g_MyPluginLoader.WhenGameCodeIsUnpacked();
+}
+void PluginLoader_WhenNewForgeHasBeenLoaded()
+{
+    g_MyPluginLoader.WhenNewForgeHasBeenLoaded();
 }
 void PluginLoader_WhenSafeToApplyCodePatches()
 {

@@ -1118,7 +1118,11 @@ void AssetOverrides_InitFromLoadOrder()
 {
     g_AssetModlist.InitFromLoadOrder();
 }
-
+void AssetOverrides_InitFromLoadOrder_EarlyHook()
+{
+    g_AssetModlist.InitFromLoadOrder();
+    g_AssetModlist.UpdatePrefetchDataForActiveDatapacks();
+}
 
 
 

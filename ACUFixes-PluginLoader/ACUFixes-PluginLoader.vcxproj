@@ -202,6 +202,7 @@ if exist "$(ProjectDir)copy_output_to_directory.txt" (
     <ClInclude Include="src\CrashLog\Hook_ZwRaiseException.h" />
     <ClInclude Include="src\EarlyHooks\VEH.h" />
     <ClInclude Include="src\external\HwBpLib\inc\HwBpLib.h" />
+    <ClInclude Include="src\external\hwbrk\hwbrk.h" />
     <ClInclude Include="src\ImGuiConsole.h" />
     <ClInclude Include="src\PluginLoader.h" />
     <ClInclude Include="src\PluginLoader_VariousHooks\Animation\AnimationGraphEvaluationPatches.h" />
@@ -219,7 +220,13 @@ if exist "$(ProjectDir)copy_output_to_directory.txt" (
     <ClCompile Include="src\CrashLog\Hook_ZwRaiseException.cpp" />
     <ClCompile Include="src\CrashLog\PatchContainer_CrashLog.cpp" />
     <ClCompile Include="src\EarlyHooks\Hooks_MainThreadEntrance.cpp" />
+    <ClCompile Include="src\EarlyHooks\SingleObjectOverride.cpp" />
+    <ClCompile Include="src\EarlyHooks\SingleObjectOverride_HWBP.cpp" />
     <ClCompile Include="src\EarlyHooks\ThreadOperations.cpp" />
+    <ClCompile Include="src\external\hwbrk\hwbrk.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="src\ImGuiConsole.cpp" />
     <ClCompile Include="src\ImGuiConsoleInterface_impl.cpp" />
     <ClCompile Include="src\PluginLoader.cpp" />

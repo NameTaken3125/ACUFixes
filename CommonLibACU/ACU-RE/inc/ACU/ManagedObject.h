@@ -2,7 +2,7 @@
 
 #include "basic_types.h"
 
-class DeserializationState;
+class DeserializationStream;
 class TypeInfo;
 
 class Object
@@ -10,7 +10,7 @@ class Object
 public:
     virtual void Unk000();
     virtual void Unk008();
-    virtual void Unk010_Deserialize(DeserializationState* deserializationStream);
+    virtual void Unk010_Deserialize(DeserializationStream* deserializationStream);
     virtual Object* Unk018_Clone(uint64 a2, uint32 a3);
     virtual void Unk020();
     virtual TypeInfo& Unk028_GetTI();
