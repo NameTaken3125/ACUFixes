@@ -398,13 +398,13 @@ LONG _stdcall CrashLogVectoredExceptionHandler(::EXCEPTION_POINTERS* exception) 
     else if (exception->ExceptionRecord->ExceptionCode == 0x40010006)
     {
         LOG_DEBUG(CrashLog
-            , "[*] Not logging, looks like Cheat Engine's VEH debugger just attached..."
+            , "[*] Not logging, looks like Cheat Engine's VEH debugger just attached...\n"
         );
     }
     else if (exception->ExceptionRecord->ExceptionCode == EXCEPTION_MSC_CPLUSPLUS && !isShouldLogCPPExceptions)
     {
         LOG_DEBUG(CrashLog
-            , "[*] Not logging the C++ exception..."
+            , "[*] Not logging the C++ exception...\n"
         );
     }
     else

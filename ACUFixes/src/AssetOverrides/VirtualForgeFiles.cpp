@@ -1122,6 +1122,7 @@ void AssetOverrides_InitFromLoadOrder_EarlyHook()
 {
     g_AssetModlist.InitFromLoadOrder();
     g_AssetModlist.UpdatePrefetchDataForActiveDatapacks();
+    AssetOverrides_PutForgesInCorrectOrder();
 }
 
 
@@ -1145,7 +1146,9 @@ void AssetOverrides_InitFromLoadOrder_EarlyHook()
 
 
 
-
+class ManagedObject;
+class DeserializationStream;
+void DeserializeManagedObject_FullReplacement(DeserializationStream* deserStream, ManagedObject** pManObj);
 AddVirtualForges::AddVirtualForges()
 {
     //uintptr_t whenNewForgeEntryWasJustAdded = 0x142737D1D;
@@ -1157,6 +1160,21 @@ AddVirtualForges::AddVirtualForges()
     //    WhenGatheringPrefetchInfoForDatapack_FindOriginalPrefetchInfo, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
 
     uintptr_t whenGameForgesJustOpened = 0x14272F794;
+    PresetScript_CCodeInTheMiddle(whenGameForgesJustOpened, 7,
+        WhenNewForgeEntryWasJustAdded_ApplyCustomSorting, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
+    uintptr_t deserializeManagedObjectFrom2ndByte_callsite0 = 0x1426F0DC2;
+    {
+        DEFINE_ADDR(deserializeSingleObj_callsite, deserializeManagedObjectFrom2ndByte_callsite0);
+        ALLOC(deserializeSingleObj_cave, 0x80, deserializeManagedObjectFrom2ndByte_callsite0);
+        deserializeSingleObj_callsite = {
+            db(0xE8), RIP(deserializeSingleObj_cave)
+        };
+        deserializeSingleObj_cave = {
+            db({ 0xFF, 0x25, 0x00, 0x00, 0x00, 0x00 }),     // jmp label_calleeAddr
+        //label_calleeAddr:
+            dq((uint64)&DeserializeManagedObject_FullReplacement)
+        };
+    }
     PresetScript_CCodeInTheMiddle(whenGameForgesJustOpened, 7,
         WhenNewForgeEntryWasJustAdded_ApplyCustomSorting, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
 }

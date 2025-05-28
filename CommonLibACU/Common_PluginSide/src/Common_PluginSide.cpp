@@ -86,7 +86,6 @@ extern "C" __declspec(dllexport) bool ACUPluginStart(ACUPluginLoaderInterface& p
     yourPluginInfo_out.m_InitStage_WhenGameCodeIsUnpacked = []() {
         g_ThisPluginSingletonAsBaseclass->InitStage_WhenGameCodeIsUnpacked();
         };
-    yourPluginInfo_out.m_EarlyHook_WhenNewForgeHasBeenLoaded = []() { return g_ThisPluginSingletonAsBaseclass->EarlyHook_WhenNewForgeHasBeenLoaded(); };
     yourPluginInfo_out.m_InitStage_WhenCodePatchesAreSafeToApply = [](ACUPluginLoaderInterface& pluginLoader) { return g_ThisPluginSingletonAsBaseclass->InitStage_WhenCodePatchesAreSafeToApply(pluginLoader); };;
     return true;
 }

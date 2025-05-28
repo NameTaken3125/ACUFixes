@@ -48,7 +48,6 @@ struct ACUPluginInfo
 	// or call game's functions from here.
 	void (*m_InitStage_WhenVersionsAreDeemedCompatible)(ACUPluginLoaderInterface& pluginLoader) = nullptr;
 	void (*m_InitStage_WhenGameCodeIsUnpacked)() = nullptr;
-	void (*m_EarlyHook_WhenNewForgeHasBeenLoaded)() = nullptr;
 };
 assert_offsetof(ACUPluginInfo, m_PluginAPIVersion, 0);
 assert_offsetof(ACUPluginInfo, m_PluginVersion, 8);

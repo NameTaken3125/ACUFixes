@@ -35,7 +35,6 @@ public:
 
 	virtual void InitStage_WhenPluginAPIDeemedCompatible() {}
 	virtual void InitStage_WhenGameCodeIsUnpacked() {}
-	virtual void EarlyHook_WhenNewForgeHasBeenLoaded() {}
 public:
 	ACUPluginInterfaceVirtuals();
 };

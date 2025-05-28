@@ -12,7 +12,7 @@
 #include "MyLog.h"
 static DEFINE_LOGGER_CONSOLE_AND_FILE(SOOLog, "[SOOverride]");
 
-fs::path AbsolutePathInMyDirectory(const fs::path& filenameRel);
+fs::path AbsolutePathInThisDLLDirectory(const fs::path& filenameRel);
 
 
 
@@ -204,15 +204,34 @@ std::optional<uint64> FindHandleFromLooseFile(const fs::path& targetFilepath)
     if (!infile) return {};
     infile.seekg(0, std::ios::end);
     uint32 filesize = (uint32)infile.tellg();
-    if (filesize < 10) return {};
-    infile.seekg(2);
-    uint64 handle{ 0 };
-    infile.read((char*)&handle, sizeof(handle));
+    if (filesize <= 14) return {};
+    byte byte0;             infile.seekg(0); infile.read((char*)&byte0, sizeof(byte0));
+    byte byte1;             infile.seekg(1); infile.read((char*)&byte1, sizeof(byte1));
+    uint64 handle;          infile.seekg(2); infile.read((char*)&handle, sizeof(handle));
+    uint32 typeNameHash;    infile.seekg(10); infile.read((char*)&typeNameHash, sizeof(typeNameHash));
+    // The game isn't going to check for malformed files,
+    // so I'll use some simple criteriums for initial check:
+    // I expect the first two bytes to be [0, 1] (seems to be the case
+    // for all loose files) and I also try to look up the TypeInfo
+    // by the typename hash (bytes [10:14]).
+    if (byte0 != 0) return {};
+    if (byte1 != 1) return {};
+    auto* tisRoot = (ACUHashmap<uint32, TypeInfo*>*)0x14525BA10;
+    TypeInfo** foundTI = tisRoot->Get(typeNameHash);
+    LOG_DEBUG(SOOLog,
+        "File: %s, handle: %13llu, typenameHash: %x, typeInfo: %llX, typeName: %s"
+        , targetFilepath.filename().u8string().c_str()
+        , handle
+        , typeNameHash
+        , foundTI ? *foundTI : 0
+        , foundTI ? (*foundTI)->typeName : "NO_TYPEINFO"
+    );
+    if (!foundTI) return {};
     return handle;
 }
 fs::path GetPathInAssetModsFolder(const fs::path& pathRel)
 {
-    return AbsolutePathInMyDirectory(AbsolutePathInMyDirectory("plugins\\AssetOverrides") / pathRel);
+    return AbsolutePathInThisDLLDirectory("AssetOverrides") / pathRel;
 }
 std::vector<fs::path> SingleObjectOverride_InitList_GatherLooseFilePaths()
 {
@@ -231,7 +250,7 @@ std::vector<fs::path> SingleObjectOverride_InitList_GatherLooseFilePaths()
     looseFiles.reserve(64);
     for (auto& dirRel : folders)
     {
-        fs::path absoluteDir = AbsolutePathInMyDirectory(AbsolutePathInMyDirectory("plugins\\AssetOverrides") / dirRel);
+        fs::path absoluteDir = GetPathInAssetModsFolder(dirRel);
         try {
             for (const auto& entry : fs::directory_iterator(absoluteDir)) {
                 if (entry.is_regular_file()) {
@@ -254,19 +273,20 @@ void SingleObjectOverride_InitList()
     std::vector<fs::path> looseFiles = SingleObjectOverride_InitList_GatherLooseFilePaths();
     for (auto& filepath : looseFiles)
     {
-        fs::path absolutePath = AbsolutePathInMyDirectory("plugins\\AssetOverrides") / filepath;
+        fs::path absolutePath = GetPathInAssetModsFolder(filepath);
         std::optional<uint64> retrievedHandle = FindHandleFromLooseFile(absolutePath);
         if (!retrievedHandle) continue;
         g_SingleObjectOverride_FilepathRelByHandle[*retrievedHandle] = absolutePath;
     }
 }
-static fs::path GetOverrideFilepath(uint64 handle)
+fs::path GetSingleObjectOverrideFilepath(uint64 handle)
 {
     if (!handle) return {};
     auto foundIt = g_SingleObjectOverride_FilepathRelByHandle.find(handle);
     if (foundIt == g_SingleObjectOverride_FilepathRelByHandle.end()) return {};
     return foundIt->second;
 }
+fs::path GetSingleObjectOverrideFilepath(uint64 handle);
 void DeserializeManagedObject_NormalHandling(DeserializationStream* deserStream, ManagedObject** pManObj
     , byte byteBeforeHandle
     , uint64 handle
@@ -319,13 +339,16 @@ void DeserializeManagedObject_FullReplacement(DeserializationStream* deserStream
     if (deserStream->currentPtr + sizeof(hashInTypeInfosSystem) > deserStream->readPastEnd) DeserializationStream::ReadMore_mb(deserStream);
     deserStream->ReadRawBytes(hashInTypeInfosSystem);
 
-    fs::path overrideFilepath = GetOverrideFilepath(handle);
+    fs::path overrideFilepath = GetSingleObjectOverrideFilepath(handle);
     if (overrideFilepath.empty())
     {
         DeserializeManagedObject_NormalHandling(deserStream, pManObj, byteBeforeHandle, handle, hashInTypeInfosSystem);
         return;
     }
-
+    LOG_DEBUG(SOOLog,
+        "Overriding single object: handle: %13llu, filepath: %s\n"
+        , handle, overrideFilepath.u8string().c_str()
+    );
 
     MockDeserializationStream myDeserStream{ overrideFilepath };
 

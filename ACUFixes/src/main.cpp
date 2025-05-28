@@ -44,18 +44,13 @@ public:
         LOG_DEBUG(DefaultLogger,
             "Early hook: InitStage_WhenGameCodeIsUnpacked()\n"
         );
+        void AssetOverrides_EarlyHooks_Start(); AssetOverrides_EarlyHooks_Start();
         void AssetOverrides_InitFromLoadOrder_EarlyHook(); AssetOverrides_InitFromLoadOrder_EarlyHook();
-    }
-    virtual void EarlyHook_WhenNewForgeHasBeenLoaded() override
-    {
-        LOG_DEBUG(DefaultLogger,
-            "Early hook: EarlyHook_WhenNewForgeHasBeenLoaded()\n"
-        );
-        void AssetOverrides_PutForgesInCorrectOrder(); AssetOverrides_PutForgesInCorrectOrder();
     }
     virtual bool InitStage_WhenCodePatchesAreSafeToApply(ACUPluginLoaderInterface& pluginLoader) override
     {
         MyVariousHacks::Start();
+        void AssetOverrides_EarlyHooks_Start_End(); AssetOverrides_EarlyHooks_Start_End();
         HacksContainer_AssetOverrides_Start();
         ApplyAnimationGraphMods();
         return true;
