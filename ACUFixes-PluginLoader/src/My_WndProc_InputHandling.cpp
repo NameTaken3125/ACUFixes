@@ -49,7 +49,17 @@ LRESULT CALLBACK WndProc_HackControls(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
             }
         }
     }
+    LRESULT result{};
     if (Base::Data::IsImGuiInitialized)
-        ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam);
-    return CallWindowProc(Base::Data::oWndProc, hWnd, uMsg, wParam, lParam);
+        result = ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam);
+    bool dontForwardToGame = false;
+    if (g_PluginLoaderConfig.developerOptions->continueLoadingGameWhileItIsNotFocused)
+        dontForwardToGame =
+            uMsg == WM_KILLFOCUS
+            || (uMsg == WM_ACTIVATE && wParam == 0)
+            || (uMsg == WM_ACTIVATEAPP && wParam == FALSE)
+            ;
+    if (!dontForwardToGame)
+        result = CallWindowProc(Base::Data::oWndProc, hWnd, uMsg, wParam, lParam);
+    return result;
 }

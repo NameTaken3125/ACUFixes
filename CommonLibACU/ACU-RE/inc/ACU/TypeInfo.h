@@ -2,16 +2,20 @@
 
 #include "basic_types.h"
 
-class DeserializationState;
+#include "ACUHashmap.h"
+
+class DeserializationStream;
 
 class TypeInfo
 {
 public:
+    using TypeNameHash_t = uint32;
+
     char pad_0000[16]; //0x0000
     void* methods_mb; //0x0010
     char* typeName; //0x0018
     char pad_0020[4]; //0x0020
-    __int32 lookupInTypeInfoSystem_mb; //0x0024
+    TypeNameHash_t lookupInTypeInfoSystem_mb; //0x0024
     __int32 structSize; //0x0028
     char pad_002C[12]; //0x002C
     TypeInfo* base; //0x0038
@@ -20,7 +24,7 @@ public:
     uint16 word_4E; //0x004E
     void* (__fastcall* Create)(void* createAtAddr); //0x0050
     char pad_0058[24]; //0x0058
-    void* (__fastcall* DeserializeIfNoVTBL)(void* thisObject, DeserializationState* deserializationStream); //0x0070
+    void* (__fastcall* DeserializeIfNoVTBL)(void* thisObject, DeserializationStream* deserializationStream); //0x0070
     char pad_0078[24]; //0x0078
     void* Destroy; //0x0090
     void* fn98; //0x0098
@@ -41,3 +45,18 @@ inline bool IsSubclass(TypeInfo& what, TypeInfo& ofWhat)
     int32 unkdiff = ofWhat.word_4C - what.word_4C;
     return ((unkdiff >> 31) | ~((unkdiff | -unkdiff) >> 31)) & (((v4 - ofWhat.word_4E) >> 31) | ~(((v4 - ofWhat.word_4E) | -(v4 - ofWhat.word_4E)) >> 31)) & 1;
 }
+
+namespace ACU::TypeInfos
+{
+inline ACUHashmap<TypeInfo::TypeNameHash_t, TypeInfo*>* GetTypeInfoSystem()
+{
+    auto* tisRoot = (ACUHashmap<uint32, TypeInfo*>*)0x14525BA10;
+    return tisRoot;
+}
+inline TypeInfo* FindTypeInfoByTypeNameHash(TypeInfo::TypeNameHash_t typeNameHash)
+{
+    auto* tisRoot = GetTypeInfoSystem();
+    TypeInfo** foundTI = tisRoot->Get(typeNameHash);
+    return foundTI ? *foundTI : nullptr;
+}
+} // namespace ACU::TypeInfos

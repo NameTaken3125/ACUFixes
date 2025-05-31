@@ -21,7 +21,7 @@ struct ConfigTop : YAConfigSection {
     YACSTOR(ConfigTop);
     ACM(imgui_showSuccessfulInjectionIndicator, bool, BooleanAdapter, true);
     ACM(hotkey_ToggleMenu, VirtualKeys, EnumAdapter_template<VirtualKeys>, VirtualKeys::KEYBOARD_INSERT);
-    ACM(hotkey_ToggleConsole, VirtualKeys, EnumAdapter_template<VirtualKeys>, VirtualKeys::KEYBOARD_OEM3);
+    ACM(hotkey_ToggleConsole, VirtualKeys, EnumAdapter_template<VirtualKeys>, VirtualKeys::KEYBOARD_OEM3_TILDE_BACKTICK);
     ACM(fontSize, float, NumericAdapter_template<float>, 16.0f);
     struct YACS_DeveloperOptions : YAConfigSection {
         YACSTOR(YACS_DeveloperOptions);
@@ -31,9 +31,10 @@ struct ConfigTop : YAConfigSection {
             ACM(isActive, bool, BooleanAdapter, false);
             ACM(hotkey_UninjectPluginLoader, VirtualKeys, EnumAdapter_template<VirtualKeys>, VirtualKeys::KEYBOARD_END);
         };
+        ACM(hungrierCrashLog_hookZwRaiseException, bool, BooleanAdapter, false);
+        ACM(continueLoadingGameWhileItIsNotFocused, bool, BooleanAdapter, true);
         ACM(canUninjectPluginLoader, YACS_UninjectPluginLoader, YAConfigSectionAdapter, );
         ACM(hotkey_UnloadMod, VirtualKeys, EnumAdapter_template<VirtualKeys>, VirtualKeys::KEYBOARD_END);
-        ACM(hungrierCrashLog_hookZwRaiseException, bool, BooleanAdapter, false);
     };
     ACM(developerOptions, YACS_DeveloperOptions, YAConfigSectionAdapter, );
 };

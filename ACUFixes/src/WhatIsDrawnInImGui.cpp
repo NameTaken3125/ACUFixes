@@ -165,7 +165,8 @@ void ImGuiLayer_WhenMenuIsOpen()
                             , g_HandlesMapFilename
                         );
                         static uint64 handleToSearch = 64839213519; // => ACU_Paris\ACU_Paris.World
-                        ImGui::InputScalar("Search handle", ImGuiDataType_U64, &handleToSearch);
+                        ImGui::InputScalar("Search handle (dec)", ImGuiDataType_U64, &handleToSearch, 0, 0, "%llu", ImGuiInputTextFlags_CharsDecimal);
+                        ImGui::InputScalar("Search handle (hex)", ImGuiDataType_U64, &handleToSearch, 0, 0, "%llX", ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_CharsUppercase);
                         ImGui::Text(
                             "%llu => %s"
                             , handleToSearch

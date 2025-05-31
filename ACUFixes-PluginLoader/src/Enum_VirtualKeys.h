@@ -144,7 +144,7 @@ These can be used in `WndProc` function for detecting WM_KEYDOWN, WM_KEYUP messa
     XX(KEYBOARD_OEMMINUS, = 0xBD) \
     XX(KEYBOARD_OEMPERIOD, = 0xBE) \
     XX(KEYBOARD_OEM2, = 0xBF) \
-    XX(KEYBOARD_OEM3, = 0xC0) \
+    XX(KEYBOARD_OEM3_TILDE_BACKTICK, = 0xC0) \
     XX(KEYBOARD_OEM4, = 0xDB) \
     XX(KEYBOARD_OEM5, = 0xDC) \
     XX(KEYBOARD_OEM6, = 0xDD) \

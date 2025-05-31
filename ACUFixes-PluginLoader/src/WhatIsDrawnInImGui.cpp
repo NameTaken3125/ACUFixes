@@ -95,11 +95,20 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
                 ImGui::Checkbox("Show developer options", &g_PluginLoaderConfig.developerOptions->isActive.get());
                 if (g_PluginLoaderConfig.developerOptions->isActive)
                 {
+                    ImGui::Checkbox("Continue loading the game while it isn't focused", &g_PluginLoaderConfig.developerOptions->continueLoadingGameWhileItIsNotFocused.get());
+                    if (ImGui::IsItemHovered())
+                        ImGui::SetTooltip("It's pretty helpful during development.");
                     CrashLog_CodePatches_DrawControls();
+                    ImGui::Separator();
+                    ImVec4 color_TextDangerZone(1.0f, 0.4f, 0.4f, 1.0f);
+                    const bool isInDangerZone = g_PluginLoaderConfig.developerOptions->canUninjectPluginLoader->isActive;
+                    if (isInDangerZone)
+                        ImGui::PushStyleColor(ImGuiCol_Text, color_TextDangerZone);
                     ImGui::Checkbox("Allow uninject the PluginLoader", &g_PluginLoaderConfig.developerOptions->canUninjectPluginLoader->isActive.get());
                     if (ImGui::IsItemHovered())
                     {
                         ImGui::SetTooltip(
+                            "WARNING: I strongly recommend leaving this off.\n"
                             "You aren't supposed to uninject the PluginLoader.\n"
                             "Doing so is likely to crash the game.\n"
                             "Furthermore, it's up to the plugins to decide\n"
@@ -145,6 +154,8 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
                             ImGui::SetTooltip("You can use this to unload all the plugins and the plugin loader itself.");
                         }
                     }
+                    if (isInDangerZone)
+                        ImGui::PopStyleColor();
                 }
             }
             if (g_PluginLoaderConfig.developerOptions->isActive)
