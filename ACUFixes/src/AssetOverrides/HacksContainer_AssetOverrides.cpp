@@ -55,9 +55,12 @@ void HacksContainer_AssetOverrides_DrawControls()
     }
 }
 
-void HacksContainer_AssetOverrides_Start()
+void AssetOverrides_ReadConfigOrCreateDefault()
 {
     AssetOverridesConfig::FindAndLoadConfigFileOrCreateDefault(AbsolutePathInThisDLLDirectory("AssetOverrides/asset_overrides_config.json"));
+}
+void AssetOverrides_CodePatches_Start()
+{
     g_HacksContainer_AssetOverrides.emplace();
     g_HacksContainer_AssetOverrides->ReadConfig();
 }

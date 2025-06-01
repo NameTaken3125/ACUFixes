@@ -8,6 +8,7 @@ Brings the app's components together.
 #include "MyVariousHacks.h"
 #include "MyLog.h"
 #include "MainConfig.h"
+#include "AssetOverrides/AssetOverrides.h"
 
 #include "Common_Plugins/Common_PluginSide.h"
 
@@ -18,7 +19,8 @@ std::optional<MyLogFileLifetime> g_LogLifetime;
 void ImGuiLayer_EvenWhenMenuIsClosed();
 void ImGuiLayer_WhenMenuIsOpen();
 void ApplyAnimationGraphMods();
-void HacksContainer_AssetOverrides_Start();
+namespace ACU::Handles { void LoadHandlesmapFile(); }
+
 class ACUFixes_TheFixesPlugin : public ACUPluginInterfaceVirtuals
 {
 public:
@@ -38,20 +40,22 @@ public:
     {
         g_LogLifetime.emplace(AbsolutePathInThisDLLDirectory(LOG_FILENAME));
         MainConfig::FindAndLoadConfigFileOrCreateDefault(AbsolutePathInThisDLLDirectory(CONFIG_FILENAME));
+        ACU::Handles::LoadHandlesmapFile();
+        AssetOverrides_ReadConfigOrCreateDefault();
     }
     virtual void InitStage_WhenGameCodeIsUnpacked() override
     {
         LOG_DEBUG(DefaultLogger,
             "Early hook: InitStage_WhenGameCodeIsUnpacked()\n"
         );
-        void AssetOverrides_EarlyHooks_Start(); AssetOverrides_EarlyHooks_Start();
-        void AssetOverrides_InitFromLoadOrder_EarlyHook(); AssetOverrides_InitFromLoadOrder_EarlyHook();
+        AssetOverrides_InitFromLoadOrder_EarlyHook();
+        AssetOverrides_EarlyHooks_Start();
     }
     virtual bool InitStage_WhenCodePatchesAreSafeToApply(ACUPluginLoaderInterface& pluginLoader) override
     {
+        AssetOverrides_EarlyHooks_End();
+        AssetOverrides_CodePatches_Start();
         MyVariousHacks::Start();
-        void AssetOverrides_EarlyHooks_Start_End(); AssetOverrides_EarlyHooks_Start_End();
-        HacksContainer_AssetOverrides_Start();
         ApplyAnimationGraphMods();
         return true;
     }

@@ -14,64 +14,10 @@ static DEFINE_LOGGER_CONSOLE_AND_FILE(SOOLog, "[SOOverride]");
 
 fs::path AbsolutePathInThisDLLDirectory(const fs::path& filenameRel);
 
-
+#include "DeserializationCycle.h"
 
 DEFINE_GAME_FUNCTION(DeserializationStream__CreateObjectForTypehashAndHandle, 0x1426EB3B0, ManagedObject*, __fastcall, (DeserializationStream* a1, unsigned int p_hashInTypeInfosSystem, unsigned __int64 p_handle));
 
-class CombinedRawBufsReader;
-class DeserializationStream_PostloadCallback
-{
-public:
-    using Callback_t = void(*)(ManagedObject*, uint32 someDword);
-
-    ManagedObject* receiverManagedObject; //0x0000
-    Callback_t callback; //0x0008
-    Callback_t secondOptionalCallback; //0x0010
-    uint32 dword_18; //0x0018
-    char pad_001C[4]; //0x001C
-}; //Size: 0x0020
-assert_sizeof(DeserializationStream_PostloadCallback, 0x20);
-using DeserializationStream_ArrPostloadCallbacks = BigArray<DeserializationStream_PostloadCallback>;
-assert_sizeof(DeserializationStream_ArrPostloadCallbacks, 0x10);
-class DeserializationStream_PostDeserializationCallbacks
-{
-public:
-    char pad_0000[128]; //0x0000
-    std::array<DeserializationStream_ArrPostloadCallbacks, 16> callbackStages_mb; //0x0080
-    char pad_0180[8]; //0x0180
-}; //Size: 0x0188
-class DeserializationStream
-{
-public:
-    char pad_0000[8]; //0x0000
-    DeserializationStream_PostDeserializationCallbacks* postLoadCallbacks; //0x0008
-    uint64 p10; //0x0010
-    char pad_0018[8]; //0x0018
-    void* readStart_from2ndByte; //0x0020
-    uintptr_t currentPtr; //0x0028
-    uintptr_t readPastEnd; //0x0030
-    class DeserializationStream_38* p_38; //0x0038
-    char pad_0040[24]; //0x0040
-    uint32 dword_58; //0x0058
-    char pad_005C[4]; //0x005C
-    CombinedRawBufsReader* combinedRawBufsReader; //0x0060
-    class UsedDuringLoadDataPackGetLinkedObjects* datapackParser; //0x0068
-    char pad_0070[8]; //0x0070
-    uint64 handle_FirstInData; //0x0078
-
-    // @helper_functions
-    template<typename POD>
-    void ReadRawBytes(POD& out)
-    {
-        std::memcpy(&out, (const void*)currentPtr, sizeof(POD));
-        currentPtr += sizeof(POD);
-    }
-    static void ReadMore_mb(DeserializationStream* this_)
-    {
-        using DeserializationStream__ReadMore_mb_fnt = void(__fastcall*)(DeserializationStream*);
-        ((DeserializationStream__ReadMore_mb_fnt)0x142705370)(this_);
-    }
-}; //Size: 0x0080
 // Thanks, https://stackoverflow.com/questions/15138353/how-to-read-a-binary-file-into-a-vector-of-unsigned-chars/21802936#21802936
 static std::vector<byte> readFile(const fs::path& filename)
 {
@@ -102,7 +48,7 @@ static std::vector<byte> readFile(const fs::path& filename)
 struct MockDeserializationStream
 {
     DeserializationStream deserStream;
-    DeserializationStream_PostDeserializationCallbacks deserStream_8;
+    DeserializationCycle deserStream_8;
     std::vector<byte> fileAsBytes;
 
     fs::path m_Filepath;
@@ -114,7 +60,7 @@ struct MockDeserializationStream
     MockDeserializationStream(const fs::path& filepath)
         : m_Filepath(filepath)
         , deserStream{ 0 }
-        , deserStream_8{ 0 }
+        , deserStream_8{}
         , fileAsBytes(readFile(filepath))
     {
         m_1stByte = (byte&)fileAsBytes[0];
@@ -197,8 +143,8 @@ void DeserializeManagedObject_FullReplacement_originalBehaviorOnly(Deserializati
     }
     return (*pManObj)->Unk010_Deserialize(deserStream);
 }
-std::unordered_map<uint64, fs::path> g_SingleObjectOverride_FilepathRelByHandle;
-std::optional<uint64> FindHandleFromLooseFile(const fs::path& targetFilepath)
+#include "SingleObjectOverride.h"
+std::optional<ScannedLooseFile> ScanGameObjectLooseFile(const fs::path& targetFilepath)
 {
     std::ifstream infile = std::ifstream(targetFilepath, std::ios::binary);
     if (!infile) return {};
@@ -211,80 +157,22 @@ std::optional<uint64> FindHandleFromLooseFile(const fs::path& targetFilepath)
     uint32 typeNameHash;    infile.seekg(10); infile.read((char*)&typeNameHash, sizeof(typeNameHash));
     // The game isn't going to check for malformed files,
     // so I'll use some simple criteriums for initial check:
-    // I expect the first two bytes to be [0, 1] (seems to be the case
-    // for all loose files) and I also try to look up the TypeInfo
+    // I expect the first two bytes to be [0, 1] (is the case
+    // for all loose files I checked except Animation) and I also try to look up the TypeInfo
     // by the typename hash (bytes [10:14]).
     if (byte0 != 0) return {};
     if (byte1 != 1) return {};
-    auto* tisRoot = (ACUHashmap<uint32, TypeInfo*>*)0x14525BA10;
-    TypeInfo** foundTI = tisRoot->Get(typeNameHash);
-    LOG_DEBUG(SOOLog,
-        "File: %s, handle: %13llu, typenameHash: %x, typeInfo: %llX, typeName: %s"
-        , targetFilepath.filename().u8string().c_str()
-        , handle
-        , typeNameHash
-        , foundTI ? *foundTI : 0
-        , foundTI ? (*foundTI)->typeName : "NO_TYPEINFO"
-    );
+    TypeInfo* foundTI = ACU::TypeInfos::FindTypeInfoByTypeNameHash(typeNameHash);
+    //LOG_DEBUG(SOOLog,
+    //    "File: %s, handle: %13llu, typenameHash: %x, typeInfo: %llX, typeName: %s"
+    //    , targetFilepath.filename().u8string().c_str()
+    //    , handle
+    //    , typeNameHash
+    //    , foundTI ? *foundTI : 0
+    //    , foundTI ? (*foundTI)->typeName : "NO_TYPEINFO"
+    //);
     if (!foundTI) return {};
-    return handle;
-}
-fs::path GetPathInAssetModsFolder(const fs::path& pathRel)
-{
-    return AbsolutePathInThisDLLDirectory("AssetOverrides") / pathRel;
-}
-std::vector<fs::path> SingleObjectOverride_InitList_GatherLooseFilePaths()
-{
-    std::vector<fs::path> folders = {
-        "_WPN_Excalibur\\LooseFiles",
-        "_WPN_Gungnir\\LooseFiles",
-        "_WPN_SwordOfAltair\\LooseFiles",
-        "_WPN_Mjolnir\\LooseFiles",
-        "_WPN_BasimSword\\LooseFiles",
-        "_WPN_Joyeuse\\LooseFiles",
-        "_WPN_ConnorsTomahawk\\LooseFiles",
-
-        "_AtomGraph\\LooseFiles",
-    };
-    std::vector<fs::path> looseFiles;
-    looseFiles.reserve(64);
-    for (auto& dirRel : folders)
-    {
-        fs::path absoluteDir = GetPathInAssetModsFolder(dirRel);
-        try {
-            for (const auto& entry : fs::directory_iterator(absoluteDir)) {
-                if (entry.is_regular_file()) {
-                    looseFiles.push_back(entry.path());
-                }
-            }
-        }
-        catch (const fs::filesystem_error& e) {
-            LOG_DEBUG(
-                SOOLog
-                , "Filesystem error: %s\n"
-                , e.what()
-            );
-        }
-    }
-    return looseFiles;
-}
-void SingleObjectOverride_InitList()
-{
-    std::vector<fs::path> looseFiles = SingleObjectOverride_InitList_GatherLooseFilePaths();
-    for (auto& filepath : looseFiles)
-    {
-        fs::path absolutePath = GetPathInAssetModsFolder(filepath);
-        std::optional<uint64> retrievedHandle = FindHandleFromLooseFile(absolutePath);
-        if (!retrievedHandle) continue;
-        g_SingleObjectOverride_FilepathRelByHandle[*retrievedHandle] = absolutePath;
-    }
-}
-fs::path GetSingleObjectOverrideFilepath(uint64 handle)
-{
-    if (!handle) return {};
-    auto foundIt = g_SingleObjectOverride_FilepathRelByHandle.find(handle);
-    if (foundIt == g_SingleObjectOverride_FilepathRelByHandle.end()) return {};
-    return foundIt->second;
+    return ScannedLooseFile{ handle, typeNameHash, *foundTI };
 }
 fs::path GetSingleObjectOverrideFilepath(uint64 handle);
 void DeserializeManagedObject_NormalHandling(DeserializationStream* deserStream, ManagedObject** pManObj

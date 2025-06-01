@@ -11,67 +11,9 @@
 #include "MyLog.h"
 static DEFINE_LOGGER_CONSOLE_AND_FILE(VirtualForgesLog, "[AssetOverrides]");
 
-class Mock_IReader
-{
-public:
+#include "DeserializationCycle.h"
 
-    // @vtbl == 14363EDC0
-
-    virtual void Unk000_Destroy() = 0;
-    virtual char Unk008() = 0;
-    virtual void Unk010() = 0;
-    virtual bool Unk018_IsEnd() = 0;
-    virtual void Unk020() = 0;
-    virtual void Unk028_Get_DwordC_Dword10() = 0;
-    virtual int  Unk030() = 0;
-    virtual int  Unk038() = 0;
-    virtual int  Unk040_Read8bytes(uint64* out) = 0;
-    virtual int  Unk048_Read4bytes(uint32* out) = 0;
-    virtual int  Unk050_Read2bytes(uint16* out) = 0;
-    virtual int  Unk058_Read1byte(byte* out) = 0;
-    virtual int  Unk060_ReadNBytes(char* out, int numBytes) = 0;
-};
-class CombinedRawBufsReader;
-struct UsedDuringLoadDataPackGetLinkedObjects
-{
-    char pad_0000[32]{ 0 };
-    uint64 qword_20{ 0 };
-    uint64 qword_28{ 0 };
-    CombinedRawBufsReader* p30{ 0 };
-    uint64 stru_38{ 0 };
-    char pad_0040[8]{ 0 };
-    uint32 dword_48{ 0 };
-    char pad_004C[4]{ 0 };
-    uint64 pDecryptedChunk{ 0 };
-    uint32 decryptedChunkSize{ 0 };
-    uint32 dword_5C{ 0 };
-    uint64 nondecryptedChunk{ 0 };
-    uint32 decryptedChunkLocalStreampos{ 0 };
-    char pad_006C[4]{ 0 };
-    uint32 dword_70{ 0 };
-    char pad_0074[4]{ 0 };
-    uint64 qword_78{ 0 };
-    uint32 dword_80{ 0 };
-    char pad_0084[4]{ 0 };
-    uint8 byte_88{ 0 };
-    uint8 byte_89{ 0 };
-    char pad_008A[6]{ 0 };
-
-    UsedDuringLoadDataPackGetLinkedObjects(CombinedRawBufsReader* p_mergedReader, unsigned __int8 a3, unsigned __int8 a4, char a5, unsigned int a6, unsigned __int8 a7, int a8, char a9, void* p_someAllocator);
-};
-// Implementation at 142747110
-UsedDuringLoadDataPackGetLinkedObjects::UsedDuringLoadDataPackGetLinkedObjects(CombinedRawBufsReader* p_mergedReader, unsigned __int8 a3, unsigned __int8 a4, char a5, unsigned int a6, unsigned __int8 a7, int a8, char a9, void* p_someAllocator)
-{
-    DEFINE_GAME_FUNCTION(
-        UsedDuringLoadDataPackGetLinkedObjects__ctor
-        , 0x142747110, UsedDuringLoadDataPackGetLinkedObjects*, __fastcall
-        , (UsedDuringLoadDataPackGetLinkedObjects* p_datapackParser, CombinedRawBufsReader* p_mergedReader, unsigned __int8 a3, unsigned __int8 a4, char a5, unsigned int a6, unsigned __int8 a7, int a8, char a9, void* p_someAllocator)
-    );
-    UsedDuringLoadDataPackGetLinkedObjects__ctor(this, p_mergedReader, a3, a4, a5, a6, a7, a8, a9, p_someAllocator);
-}
-assert_sizeof(UsedDuringLoadDataPackGetLinkedObjects, 0x90);
-
-class Mock_CombinedRawBufsReader : public Mock_IReader
+class Mock_CombinedRawBufsReader : public IReader
 {
 public:
     virtual void Unk000_Destroy() override {}
@@ -94,7 +36,7 @@ public:
     virtual char Unk088() { return 1; }
     virtual char Unk090() { return 1; }
     virtual char Unk098() { return 1; }
-    virtual void Unk0A0_MovePos_mb(int moveHowManyBytes);
+    virtual void Unk0A0_SeekRelative(int moveHowManyBytes);
     virtual void Unk0A8() {}
     virtual int  Unk0B0() { return 0; }
     virtual void Unk0B8() {}
@@ -147,23 +89,12 @@ int Mock_CombinedRawBufsReader::Unk060_ReadNBytes(char* out, int numBytes)
     m_File.read(out, numBytes);
     return 1;
 }
-void Mock_CombinedRawBufsReader::Unk0A0_MovePos_mb(int moveHowManyBytes)
+void Mock_CombinedRawBufsReader::Unk0A0_SeekRelative(int moveHowManyBytes)
 {
     m_File.seekg(moveHowManyBytes, std::ios_base::cur);
 }
-class DatapackPackedObjectDesc
-{
-public:
-    uint64 handle; //0x0000
-    SmallArraySemistatic<uint16, 4> arr8; //0x0008
-    uint8 byte_1C; //0x001C
-    char pad_001D[3]; //0x001D
-    uint32 filesizePlusCplusFilename; //0x0020
-    char pad_0024[20]; //0x0024
-}; //Size: 0x0038
-assert_sizeof(DatapackPackedObjectDesc, 0x38);
-DEFINE_GAME_FUNCTION(LinkedObjectDesc__Fill, 0x1426EBF50, int, __fastcall, (DatapackPackedObjectDesc* p_linkedObjInfo, UsedDuringLoadDataPackGetLinkedObjects* p_datapackParser));
-// WARNING: No error checking. It cannot even handle an empty file - just hangs forever.
+DEFINE_GAME_FUNCTION(LinkedObjectDesc__Fill, 0x1426EBF50, int, __fastcall, (DatapackPackedObjectDesc* p_linkedObjInfo, DatapackReader* p_datapackReader));
+
 std::optional<uint64> FindFirstHandleInDatapack(const fs::path& targetFilepath)
 {
     /*
@@ -192,7 +123,7 @@ std::optional<uint64> FindFirstHandleInDatapack(const fs::path& targetFilepath)
     void* someAllocatorUsedDuringLoadDatapack = *(void**)0x1452585E0;
     void* theMoreCommonAllocator = *(void**)0x1452585D0;
     // Constructor called at 142704D44.
-    UsedDuringLoadDataPackGetLinkedObjects retrieveDatapackStats(
+    DatapackReader retrieveDatapackStats(
         (CombinedRawBufsReader*)&reader,
         0, 1u, 0, 0x8000u, 0, 10, 0, theMoreCommonAllocator
     );
@@ -213,8 +144,7 @@ std::optional<uint64> FindFirstHandleInDatapack(const fs::path& targetFilepath)
     }
 
     uint16 numFilesInDatapack = 0;
-    using IReader = Mock_IReader;
-    ((IReader&)retrieveDatapackStats).Unk050_Read2bytes(&numFilesInDatapack);
+    retrieveDatapackStats.CastToReader().Unk050_Read2bytes(&numFilesInDatapack);
 
     if (!numFilesInDatapack) return {};
     DatapackPackedObjectDesc firstFileDesc;

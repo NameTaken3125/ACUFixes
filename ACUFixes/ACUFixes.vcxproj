@@ -295,6 +295,8 @@ if exist "$(ProjectDir)copy_output_to_directory.txt" (
     <ClInclude Include="src\AnimationTools\AtomGraphModsCommon.h" />
     <ClInclude Include="src\AssetOverrides\AssetOverrides.h" />
     <ClInclude Include="src\AssetOverrides\AssetOverridesConfig.h" />
+    <ClInclude Include="src\AssetOverrides\DeserializationCycle.h" />
+    <ClInclude Include="src\AssetOverrides\SingleObjectOverride.h" />
     <ClInclude Include="src\AssetOverrides\VEH.h" />
     <ClInclude Include="src\external\hwbrk\hwbrk.h" />
     <ClInclude Include="src\ParkourDebugging\Hack_PickEntityToShoot.h" />
