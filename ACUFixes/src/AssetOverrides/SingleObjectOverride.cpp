@@ -14,135 +14,220 @@ static DEFINE_LOGGER_CONSOLE_AND_FILE(SOOLog, "[SOOverride]");
 
 fs::path AbsolutePathInThisDLLDirectory(const fs::path& filenameRel);
 
+#include "AssetOverrides.h"
+
 #include "DeserializationCycle.h"
 
 DEFINE_GAME_FUNCTION(DeserializationStream__CreateObjectForTypehashAndHandle, 0x1426EB3B0, ManagedObject*, __fastcall, (DeserializationStream* a1, unsigned int p_hashInTypeInfosSystem, unsigned __int64 p_handle));
 
-// Thanks, https://stackoverflow.com/questions/15138353/how-to-read-a-binary-file-into-a-vector-of-unsigned-chars/21802936#21802936
-static std::vector<byte> readFile(const fs::path& filename)
-{
-    // open the file:
-    std::ifstream file(filename, std::ios::binary);
-
-    // Stop eating new lines in binary mode!!!
-    file.unsetf(std::ios::skipws);
-
-    // get its size:
-    std::streampos fileSize;
-
-    file.seekg(0, std::ios::end);
-    fileSize = file.tellg();
-    file.seekg(0, std::ios::beg);
-
-    // reserve capacity
-    std::vector<byte> vec;
-    vec.reserve(fileSize);
-
-    // read the data:
-    vec.insert(vec.begin(),
-        std::istream_iterator<byte>(file),
-        std::istream_iterator<byte>());
-
-    return vec;
-}
-struct MockDeserializationStream
-{
-    DeserializationStream deserStream;
-    DeserializationCycle deserStream_8;
-    std::vector<byte> fileAsBytes;
-
-    fs::path m_Filepath;
-    byte m_1stByte; // == 0
-    byte m_2ndByte; // == 1
-    uint64 m_Handle;
-    uint32 m_TypeNameHash;
-
-    MockDeserializationStream(const fs::path& filepath)
-        : m_Filepath(filepath)
-        , deserStream{ 0 }
-        , deserStream_8{}
-        , fileAsBytes(readFile(filepath))
-    {
-        m_1stByte = (byte&)fileAsBytes[0];
-        m_2ndByte = (byte&)fileAsBytes[1];
-        m_Handle = (uint64&)fileAsBytes[2];
-        m_TypeNameHash = (uint32&)fileAsBytes[10];
-
-        deserStream.currentPtr = (uintptr_t)&fileAsBytes.data()[2 + 8 + 4];
-        deserStream.readPastEnd = (uintptr_t)&fileAsBytes.data()[fileAsBytes.size()];
-        deserStream.postLoadCallbacks = &deserStream_8;
-    }
-};
 DEFINE_GAME_FUNCTION(JoinManagedObjectAndHandle_mb, 0x142714230, void, __fastcall, (__int64 p_handle, ManagedObject* p_manObj));
+DEFINE_GAME_FUNCTION(DeserializationStream__From2ndByte, 0x14270B510, void, __fastcall, (DeserializationStream* a1, ManagedObject** a2));
 
-
-class SmthDuringDeserializeManagedObj
+static uint32 ConsumeFilename(DatapackReader* a1, uint32* p_firstDwordOut, uint32* p_secondDwordOut)
 {
-public:
-    static SmthDuringDeserializeManagedObj& GetSingleton() { return *(SmthDuringDeserializeManagedObj*)0x1450A9628; }
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-void DeserializeManagedObject_FullReplacement_originalBehaviorOnly(DeserializationStream* deserStream, ManagedObject** pManObj)
+    a1->CastToReader().Unk048_Read4bytes(p_firstDwordOut);
+    a1->CastToReader().Unk048_Read4bytes(p_secondDwordOut);
+    uint32 lenFilename;
+    a1->CastToReader().Unk048_Read4bytes(&lenFilename);
+    a1->CastToReader().Unk0A0_SeekRelative(lenFilename);
+    uint32 numConsumedBytes = 0xC + lenFilename;
+    return numConsumedBytes;
+}
+static size_t ConsumePrologue(DatapackReader* a1, __int64 a2, uint32 a3, __int64 a6)
 {
-	//14270B510
-
-
-    DEFINE_GAME_FUNCTION(sub_142705D20, 0x142705D20, void, __fastcall, (SmthDuringDeserializeManagedObj* a1, ManagedObject * a2, unsigned __int64 p_handle));
-    DEFINE_GAME_FUNCTION(sub_142736FD0, 0x142736FD0, void, __fastcall, (__int64 a1));
-
-    byte byteBeforeHandle;
-    uint64 handle;
-    uint32 hashInTypeInfosSystem;
-
-    if (deserStream->currentPtr + sizeof(byteBeforeHandle) > deserStream->readPastEnd) DeserializationStream::ReadMore_mb(deserStream);
-    deserStream->ReadRawBytes(byteBeforeHandle);
-    if (deserStream->currentPtr + sizeof(handle) > deserStream->readPastEnd) DeserializationStream::ReadMore_mb(deserStream);
-    deserStream->ReadRawBytes(handle);
-    if (deserStream->currentPtr + sizeof(hashInTypeInfosSystem) > deserStream->readPastEnd) DeserializationStream::ReadMore_mb(deserStream);
-    deserStream->ReadRawBytes(hashInTypeInfosSystem);
-
-    if (byteBeforeHandle)
+    void* v7 = alloca(0x20E0);
+    byte isHasPrerequisitesSection;
+    a1->CastToReader().Unk058_Read1byte(&isHasPrerequisitesSection);
+    if (isHasPrerequisitesSection)
     {
-        if (*pManObj)
-        {
-            if (!handle)
-                return (*pManObj)->Unk010_Deserialize(deserStream);
-            sub_142705D20(&SmthDuringDeserializeManagedObj::GetSingleton(), *pManObj, handle);
-        }
-        else
-        {
-            *pManObj = DeserializationStream__CreateObjectForTypehashAndHandle(deserStream, hashInTypeInfosSystem, handle);
-        }
-        if (handle)
-            JoinManagedObjectAndHandle_mb(handle, *pManObj);
+        *(byte*)(a6 + 0x438) = 1;
+        DEFINE_GAME_FUNCTION(ParsePrerequisitesBeforeDeserialize_ctor, 0x142746FA0, void, __fastcall, (void* a1));
+        DEFINE_GAME_FUNCTION(sub_14276E780, 0x14276E780, void, __fastcall, (void* a1, DatapackReader * a2, char a3));
+        DEFINE_GAME_FUNCTION(ParsePrerequisitesBeforeDeserialize__ConsumePrerequisites, 0x1427081B0, void, __fastcall, (__int64 a1, void* rdx0));
+        DEFINE_GAME_FUNCTION(sub_142749E60, 0x142749E60, void, __fastcall, (void* a1));
+        ParsePrerequisitesBeforeDeserialize_ctor(v7);
+        sub_14276E780(v7, a1, 0);
+        ParsePrerequisitesBeforeDeserialize__ConsumePrerequisites(a6, v7);
+        sub_142749E60(v7);
     }
     else
     {
-        if ( !*pManObj )
-            *pManObj = DeserializationStream__CreateObjectForTypehashAndHandle(deserStream, hashInTypeInfosSystem, 0i64);
-        if (handle)
-        {
-            __int64 g_SomeAllocatorDuringParseDatapack = *(__int64*)0x1452585E0;;
-            sub_142736FD0(g_SomeAllocatorDuringParseDatapack);
-            auto* g_hashmapDuringDeserialize = (ACUHashmap<uint64, ManagedObject*>*)0x14525BAF8;
-            g_hashmapDuringDeserialize->Set(handle, *pManObj);
-            sub_142736FD0(0i64);
-        }
+        *(byte*)(a6 + 0x438) = 0;
     }
-    return (*pManObj)->Unk010_Deserialize(deserStream);
+    // Usually the "isHasPrerequisitesSection" byte is 0, so the total consumed is 1 byte.
+    // In the case of Animation files, "isHasPrerequisitesSection" is 1, and the 4 function calls above
+    // then actually do the work of consuming the "prerequisites section".
+    // As far as I can tell, the number of consumed bytes isn't stored anywhere,
+    // so I'd need to either pass a mock DatapackReader (and there are too many virtual functions
+    // I don't know the meaning of) or to replicate the logic of the function call 0x1427081B0,
+    // which seems like a fairly straightforward series of primitive reads.
+    // Regardless, right now I'm only supporting the case of 1-byte prologue.
+    // This is enough for Material, Mesh, TextureMap, AtomGraph, SoftBodySettings, Cloth...
+    size_t numConsumedBytesInPrologue = 1;
+    return numConsumedBytesInPrologue;
 }
+
+class SomeMissingLoggerMaybe
+{
+public:
+    virtual void Unk000();
+    virtual void Unk008();
+    virtual void Unk010();
+    virtual void Unk018(__int64, __int64, __int64);
+
+    static SomeMissingLoggerMaybe* GetSingleton() { return *(SomeMissingLoggerMaybe**)0x1452585A0; }
+};
+std::vector<byte> GetSingleObjectOverrideBytes(uint64 handle);
+void WhenStartDeserializeFileInDatapackTogetherWithPrologue_FullReplacement(uint64 rax, uint64 rbx, uint64 rsi, uint64 rbp, uint64 rsp, uint64 r13)
+{
+    DEFINE_GAME_FUNCTION(DatapackParser__SkipPrologueOfFileInDatapack, 0x1426EBBF0, void, __fastcall, (DatapackReader * a1, __int64 a2, uint32 a3, uint32 * p_firstDwordOut, uint32 * p_secondDwordOut, __int64 a6));
+    auto* deserCycle = (DeserializationCycle*)rbx;
+
+    auto* currentPackedObjectDesc = (DatapackPackedObjectDesc*)(rsi - 0x20);
+    uint32 originalObjectUnpackedSizePlusPrologue = currentPackedObjectDesc->filesizePlusCplusLenFilename;
+    uint64 handle = currentPackedObjectDesc->handle;
+
+    auto* datapackReader = deserCycle->deserStream.datapackReader;
+    std::vector<byte> modFileAsBytes = GetSingleObjectOverrideBytes(handle);
+    if (modFileAsBytes.empty())
+    {
+        // normal handling...
+        ConsumeFilename(
+            datapackReader,
+            (uint32*)(rsp + 0x54),
+            (uint32*)(rsp + 0x50));
+        ConsumePrologue(
+            datapackReader,
+            0,
+            (uint32&)rax,
+            rbp + 0x1D8
+        );
+
+        void* v37 = (void*)(rbp + 0x1D8);
+        if (!*(char*)(rbp + 0x610))
+            v37 = 0;
+        deserCycle->deserStream.p18 = v37;
+
+        if (*(uint64*)0x1452585A0)
+        {
+            //v38 = v1->numObjectsInDatapack;
+            //v39 = *(_QWORD*)qword_1452585A0;
+            //isLocalCache = *(_DWORD*)filesizePlusCplusFilename >> 31;
+            //v41 = *(_DWORD*)filesizePlusCplusFilename & 0x7FFFFFFF;
+            //v42 = sub_14275A7F0();
+            //bigfileOrLocalcache = (const __int64*)"Bigfile";
+            //if (isLocalCache & 1)
+            //    bigfileOrLocalcache = "LocalCache";
+            //v44 = stringFormat_mb("[%s] [%dK] %s", (__int64)bigfileOrLocalcache, (unsigned int)v41 >> 10, v42);
+            //(*(void(__fastcall**)(__int64, __int64, _QWORD, _QWORD))(v39 + 24))(qword_1452585A0, v44, vars28, v38);
+            //v23 = v75;
+            //filesizePlusCplusFilename = handleFirstInData_1;
+        }
+        uint64 v24 = r13;
+        *(uint64*)(rsp + 0x70) = v24;
+        deserCycle->deserStream.byte_75 = v24 != 0;
+        deserCycle->deserStream.p_38 = datapackReader;
+        deserCycle->deserStream.dword_40 = *(uint32*)(rsp + 0x50);
+        deserCycle->deserStream.dword_58 = *(uint32*)(rsp + 0x50);
+
+        DeserializationStream__From2ndByte(&deserCycle->deserStream, (ManagedObject**)(rsp + 0x70));
+        return;
+    }
+    uint32 numConsumedBytes = ConsumeFilename(
+        datapackReader,
+        (uint32*)(rsp + 0x54),
+        (uint32*)(rsp + 0x50));
+    datapackReader->CastToReader().Unk0A0_SeekRelative(originalObjectUnpackedSizePlusPrologue - numConsumedBytes);
+
+    //LOG_DEBUG(SOOLog,
+    //    "  filename: %u bytes, byte_89: %u, 1stDword: %x, 2ndDword: %x\n"
+    //    , numConsumedBytes - 0xC
+    //    , (uint32)datapackReader->byte_89
+    //    , *(uint32*)(rsp + 0x54)
+    //    , *(uint32*)(rsp + 0x50)
+    //);
+    struct
+    {
+        uint64 pDecryptedChunk;
+        uint32 decryptedChunkLocalStreampos;
+        uint32 decryptedChunkSize;
+        byte byte_89;
+    } mockDecryptedStreamState{
+            (uint64)&modFileAsBytes[0],
+            (uint32)0,
+            (uint32)modFileAsBytes.size(),
+            (byte)1
+    };
+    std::swap(datapackReader->pDecryptedChunk, mockDecryptedStreamState.pDecryptedChunk);
+    std::swap(datapackReader->decryptedChunkLocalStreampos, mockDecryptedStreamState.decryptedChunkLocalStreampos);
+    std::swap(datapackReader->decryptedChunkSize, mockDecryptedStreamState.decryptedChunkSize);
+    std::swap(datapackReader->byte_89, mockDecryptedStreamState.byte_89);
+    size_t numConsumedBytesInPrologue = ConsumePrologue(
+        datapackReader,
+        0,
+        (uint32&)rax,
+        rbp + 0x1D8
+    );
+    numConsumedBytesInPrologue = datapackReader->decryptedChunkLocalStreampos;
+    std::swap(datapackReader->pDecryptedChunk, mockDecryptedStreamState.pDecryptedChunk);
+    std::swap(datapackReader->decryptedChunkLocalStreampos, mockDecryptedStreamState.decryptedChunkLocalStreampos);
+    std::swap(datapackReader->decryptedChunkSize, mockDecryptedStreamState.decryptedChunkSize);
+    std::swap(datapackReader->byte_89, mockDecryptedStreamState.byte_89);
+    void* v37 = (void*)(rbp + 0x1D8);
+    if (!*(char*)(rbp + 0x610))
+        v37 = 0;
+    deserCycle->deserStream.p18 = v37;
+    if (auto* someLog = SomeMissingLoggerMaybe::GetSingleton())
+    {
+        // Never seen this section reached.
+        // Never seen this global being non-NULL.
+        bool isLocalCache = (currentPackedObjectDesc->filesizePlusCplusLenFilename >> 31) & 1;
+        uint32 v41 = currentPackedObjectDesc->filesizePlusCplusLenFilename & 0x7FFFFFFF;
+        DEFINE_GAME_FUNCTION(sub_14275A7F0, 0x14275A7F0, __int64, __fastcall, ());
+        __int64 v42 = sub_14275A7F0();
+        const char* bigfileOrLocalcache = "Bigfile";
+        if (isLocalCache)
+            bigfileOrLocalcache = "LocalCache";
+        //__int64 v44 = stringFormat_mb("[%s] [%dK] %s", (__int64)bigfileOrLocalcache, (unsigned int)v41 >> 10, v42);
+        //someLog->Unk018(v44, *(uint32*)(rbp + 0x688), deserCycle->objectsInCurrentRelatedDatapack.size);
+        //r15 = *(uint64*)(rbp - 0x78);
+        //rsi = *(uint64*)(rsp + 0x58);
+    }
+    uint64 v24 = r13;
+    *(uint64*)(rsp + 0x70) = v24;
+    deserCycle->deserStream.byte_75 = v24 != 0;
+    deserCycle->deserStream.p_38 = datapackReader;
+    deserCycle->deserStream.dword_40 = *(uint32*)(rsp + 0x50);
+    deserCycle->deserStream.dword_58 = *(uint32*)(rsp + 0x50);
+
+    struct
+    {
+        uint64 currentPtr;
+        uint64 readPastEnd;
+    } mockDeserStreamState{
+            (uint64)&modFileAsBytes[numConsumedBytesInPrologue],
+            (uint64)&modFileAsBytes[0] + modFileAsBytes.size(),
+    };
+    std::swap(deserCycle->deserStream.currentPtr, mockDeserStreamState.currentPtr);
+    std::swap(deserCycle->deserStream.readPastEnd, mockDeserStreamState.readPastEnd);
+    DeserializationStream__From2ndByte(&deserCycle->deserStream, (ManagedObject**)(rsp + 0x70));
+    std::swap(deserCycle->deserStream.currentPtr, mockDeserStreamState.currentPtr);
+    std::swap(deserCycle->deserStream.readPastEnd, mockDeserStreamState.readPastEnd);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #include "SingleObjectOverride.h"
 std::optional<ScannedLooseFile> ScanGameObjectLooseFile(const fs::path& targetFilepath)
 {
@@ -173,112 +258,4 @@ std::optional<ScannedLooseFile> ScanGameObjectLooseFile(const fs::path& targetFi
     //);
     if (!foundTI) return {};
     return ScannedLooseFile{ handle, typeNameHash, *foundTI };
-}
-fs::path GetSingleObjectOverrideFilepath(uint64 handle);
-void DeserializeManagedObject_NormalHandling(DeserializationStream* deserStream, ManagedObject** pManObj
-    , byte byteBeforeHandle
-    , uint64 handle
-    , uint32 hashInTypeInfosSystem)
-{
-    DEFINE_GAME_FUNCTION(sub_142705D20, 0x142705D20, void, __fastcall, (SmthDuringDeserializeManagedObj * a1, ManagedObject * a2, unsigned __int64 p_handle));
-    DEFINE_GAME_FUNCTION(sub_142736FD0, 0x142736FD0, void, __fastcall, (__int64 a1));
-    // Weird nested ifs in this section: I'm just reproducing the decompiled code.
-    if (byteBeforeHandle)
-    {
-        if (*pManObj)
-        {
-            if (!handle)
-                return (*pManObj)->Unk010_Deserialize(deserStream);
-            sub_142705D20(&SmthDuringDeserializeManagedObj::GetSingleton(), *pManObj, handle);
-        }
-        else
-        {
-            *pManObj = DeserializationStream__CreateObjectForTypehashAndHandle(deserStream, hashInTypeInfosSystem, handle);
-        }
-        if (handle)
-            JoinManagedObjectAndHandle_mb(handle, *pManObj);
-    }
-    else
-    {
-        if (!*pManObj)
-            *pManObj = DeserializationStream__CreateObjectForTypehashAndHandle(deserStream, hashInTypeInfosSystem, 0i64);
-        if (handle)
-        {
-            __int64 g_SomeAllocatorDuringParseDatapack = *(__int64*)0x1452585E0;
-            sub_142736FD0(g_SomeAllocatorDuringParseDatapack);
-            auto* g_hashmapDuringDeserialize = (ACUHashmap<uint64, ManagedObject*>*)0x14525BAF8;
-            g_hashmapDuringDeserialize->Set(handle, *pManObj);
-            sub_142736FD0(0i64);
-        }
-    }
-    return (*pManObj)->Unk010_Deserialize(deserStream);
-}
-// Based on DeserializationStream::From2ndByte() (14270B510)
-void DeserializeManagedObject_FullReplacement(DeserializationStream* deserStream, ManagedObject** pManObj)
-{
-    byte byteBeforeHandle;
-    uint64 handle;
-    uint32 hashInTypeInfosSystem;
-
-    if (deserStream->currentPtr + sizeof(byteBeforeHandle) > deserStream->readPastEnd) DeserializationStream::ReadMore_mb(deserStream);
-    deserStream->ReadRawBytes(byteBeforeHandle);
-    if (deserStream->currentPtr + sizeof(handle) > deserStream->readPastEnd) DeserializationStream::ReadMore_mb(deserStream);
-    deserStream->ReadRawBytes(handle);
-    if (deserStream->currentPtr + sizeof(hashInTypeInfosSystem) > deserStream->readPastEnd) DeserializationStream::ReadMore_mb(deserStream);
-    deserStream->ReadRawBytes(hashInTypeInfosSystem);
-
-    fs::path overrideFilepath = GetSingleObjectOverrideFilepath(handle);
-    if (overrideFilepath.empty())
-    {
-        DeserializeManagedObject_NormalHandling(deserStream, pManObj, byteBeforeHandle, handle, hashInTypeInfosSystem);
-        return;
-    }
-    LOG_DEBUG(SOOLog,
-        "Overriding single object: handle: %13llu, filepath: %s\n"
-        , handle, overrideFilepath.u8string().c_str()
-    );
-
-    MockDeserializationStream myDeserStream{ overrideFilepath };
-
-    /*
-    I'm going to create an object of the same type, deserialize it from the original data stream,
-    then discard it immediately.
-    I need to do this in order to make sure the original data stream
-    is properly "hollowed out", as if everything is proceeding as it was meant to.
-    Then I'll create another object and deserialize it from the overriding loose file,
-    Additionally, certain object types do schedule some
-    "post deserialization callbacks" and store those callbacks in the "deserialization stream".
-    I need to make sure the callbacks from the overriding objects are stored in the original stream
-    while the callbacks from original objects are stored (and discarded) in the "fake stream".
-    */
-    auto DeserializeSeparateNewObjectFromOriginalStreamThenDiscardIt = [&]()
-        {
-            /*
-            At this point there are already ~4 strong references to the shared block
-            with the original handle. If I create the discarded object and bind it to the same handle,
-            then e.g. the Mesh objects will be fine, but e.g. the TextureMap objects
-            seem to be doing some behind-the-scenes caching, bound to _handle_, not to the TextureMap _instance_ somehow
-            and only the first deserialization for the same handle will actually determine the texture.
-            So I create a fake handle, one that hopefully collides with no other,
-            I create a shared block for that handle, and after deserializing I discard the whole thing.
-            The largest handle in ACU is:
-                115976403725/0x1b00bb7b0d => GIDB_Cell429_LOD0_sid_61765a1f0\GIDB_Cell429_LOD0_sid_61765a1f0.GIDatablock
-            So for the discarded handle I use (original_handle + 0x100_0000_0000)
-            which hopefully will not produce any collisions.
-            UPD: using FindSharedBlock...() with handle==0 seems to allocate a shared block with an arbitrary free handle.
-            */
-            const uint64 GIVE_ME_A_FREE_HANDLE = 0;
-            uint64 handleForTheDiscardedOriginal = GIVE_ME_A_FREE_HANDLE;
-            ManagedObject* discardedOriginalObject = DeserializationStream__CreateObjectForTypehashAndHandle(deserStream, hashInTypeInfosSystem, handleForTheDiscardedOriginal);
-            auto& discardedShared = (SharedPtrNew<ManagedObject>&)FindSharedBlockByObjectAndIncrementStrongRefcount(*discardedOriginalObject);
-            discardedOriginalObject->Unk010_Deserialize(deserStream);
-            JoinManagedObjectAndHandle_mb(handleForTheDiscardedOriginal, discardedOriginalObject);
-            discardedShared.DecrementStrongRefcount();
-        };
-
-    std::swap(myDeserStream.deserStream.postLoadCallbacks, deserStream->postLoadCallbacks);
-    DeserializeSeparateNewObjectFromOriginalStreamThenDiscardIt();
-    DeserializeManagedObject_NormalHandling(&myDeserStream.deserStream, pManObj, byteBeforeHandle, handle, hashInTypeInfosSystem);
-    std::swap(myDeserStream.deserStream.postLoadCallbacks, deserStream->postLoadCallbacks);
-
 }

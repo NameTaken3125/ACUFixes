@@ -70,13 +70,6 @@ T* BigArrayAppend(BigArray<T>& arr)
     T* newElemPlacement = &arr[arr.size++];
     return (new (newElemPlacement) T);
 }
-constexpr uint64 handle_EntityBuilder_Altair = 150860920202; // CN_P_FR_LegacyAvatar_Altair\CN_P_FR_LegacyAvatar_Altair.EntityBuilder
-constexpr uint64 handle_EntityBuilder_SDN_Arno_BodyCust = 165671591321;
-constexpr uint64 handle_EntityBuilder_Ezio = 151531263276; // CN_P_FR_LegacyAvatar_Ezio\CN_P_FR_LegacyAvatar_Ezio.EntityBuilder
-constexpr uint64 handle_EntityBuilder_Connor = 150824510900; // CN_P_FR_LegacyAvatar_Connor\CN_P_FR_LegacyAvatar_Connor.EntityBuilder
-constexpr uint64 handle_EntityBuilder_Bellec = 151252548870; // CN_P_LegacyAvatar_Bellec\CN_P_LegacyAvatar_Bellec.EntityBuilder
-constexpr uint64 handle_EntityBuilder_Shay = 151641747367; // CN_A_FR_LegacyAvatar_Comet\CN_A_FR_LegacyAvatar_Comet.EntityBuilder
-constexpr uint64 handle_EntityBuilder_McFarlane = 153024721147; // CN_P_LegacyAvatar_McFarlane\CN_P_LegacyAvatar_McFarlane.EntityBuilder
 
 DEFINE_GAME_FUNCTION(ForgeManager__DecrementForgeEntryRefcount_mb, 0x142721FE0, void, __fastcall, (ForgeManager* a1, int p_forgeIdx));
 
@@ -224,8 +217,14 @@ struct ResultForDetectedDatapack_LooksOk
 {
     uint64 m_Handle;
 };
-struct ResultForDetectedDatapack_LooksInvalid {};
-struct ResultForDetectedDatapack_LookedOkButFailedToCreateVirtualForge {};
+struct ResultForDetectedDatapack_LooksInvalid
+{
+    std::u8string m_ErrorMsg;
+};
+struct ResultForDetectedDatapack_LookedOkButFailedToCreateVirtualForge
+{
+    std::u8string m_ErrorMsg;
+};
 using ResultForDetectedDatapack = std::variant<
     ResultForDetectedDatapack_LooksOk
     , ResultForDetectedDatapack_LooksInvalid
@@ -238,6 +237,17 @@ public:
     ResultForDetectedDatapack m_Result;
     std::optional<ForgeIndex_t> m_ForgeIdx;
 
+    ResultForDetectedDatapack_LooksOk* GetContentsIfDetected()
+    {
+        if (auto* datapackOk = std::get_if<ResultForDetectedDatapack_LooksOk>(&m_Result)) return datapackOk;
+        return nullptr;
+    }
+    std::u8string* GetError()
+    {
+        if (auto* datapackInvalid = std::get_if<ResultForDetectedDatapack_LooksInvalid>(&m_Result)) return &datapackInvalid->m_ErrorMsg;
+        if (auto* datapackFailedToLoad = std::get_if<ResultForDetectedDatapack_LookedOkButFailedToCreateVirtualForge>(&m_Result)) return &datapackFailedToLoad->m_ErrorMsg;
+        return nullptr;
+    }
     ~DetectedDatapack()
     {
         auto* fm = ForgeManager::GetSingleton();
@@ -253,19 +263,34 @@ struct ResultForDetectedLooseFile_LooksOk
     uint64 m_Handle;
     std::reference_wrapper<TypeInfo> m_TypeInfo;
 };
-struct ResultForDetectedLooseFile_LooksInvalid {};
+struct ResultForDetectedLooseFile_LooksInvalid
+{
+    std::u8string m_ErrorMsg;
+};
+struct ResultForDetectedLooseFile_LookedOkButFailedToLoad
+{
+    std::u8string m_ErrorMsg;
+};
 using ResultForDetectedLooseFile = std::variant<
     ResultForDetectedLooseFile_LooksOk
     , ResultForDetectedLooseFile_LooksInvalid
+    , ResultForDetectedLooseFile_LookedOkButFailedToLoad
 >;
 class DetectedLooseFile
 {
 public:
     fs::path m_AbsolutePath;
     ResultForDetectedLooseFile m_Result;
+    std::u8string* GetError()
+    {
+        if (auto* datapackInvalid = std::get_if<ResultForDetectedLooseFile_LooksInvalid>(&m_Result)) return &datapackInvalid->m_ErrorMsg;
+        if (auto* datapackFailedToLoad = std::get_if<ResultForDetectedLooseFile_LookedOkButFailedToLoad>(&m_Result)) return &datapackFailedToLoad->m_ErrorMsg;
+        return nullptr;
+    }
 };
 std::vector<std::unique_ptr<DetectedDatapack>> GetDatapacksFromFolder(const fs::path& modFolder)
 {
+    ImGuiTextBuffer buf;
     std::string extension = ".data";
     std::vector<std::unique_ptr<DetectedDatapack>> result;
     try {
@@ -281,7 +306,7 @@ std::vector<std::unique_ptr<DetectedDatapack>> GetDatapacksFromFolder(const fs::
                 {
                     LOG_DEBUG(
                         VirtualForgesLog
-                        , "  Handle  : %llu\n"
+                        , "    Handle: %llu\n"
                         , *correspondingHandle
                     );
                     result.emplace_back(std::make_unique<DetectedDatapack>(
@@ -291,15 +316,15 @@ std::vector<std::unique_ptr<DetectedDatapack>> GetDatapacksFromFolder(const fs::
                 }
                 else
                 {
-                    LOG_DEBUG(
-                        VirtualForgesLog
-                        , "[error]Not loading the folder \"%s\" because couldn't retrieve handle from \"%s\"\n"
-                        , modFolder.filename().u8string().c_str()
-                        , entry.path().filename().u8string().c_str()
+                    buf.clear();
+                    buf.appendf("Couldn't retrieve handle from \"%s\"", entry.path().filename().u8string().c_str());
+                    LOG_DEBUG(VirtualForgesLog,
+                        "[error]%s\n"
+                        , buf.c_str()
                     );
                     result.emplace_back(std::make_unique<DetectedDatapack>(
                         entry,
-                        ResultForDetectedDatapack_LooksInvalid{}
+                        ResultForDetectedDatapack_LooksInvalid{ (const char8_t*)buf.c_str() }
                     ));
                 }
             }
@@ -318,6 +343,7 @@ std::vector<std::unique_ptr<DetectedDatapack>> GetDatapacksFromFolder(const fs::
 #include "SingleObjectOverride.h"
 std::vector<std::unique_ptr<DetectedLooseFile>> GetLooseFilesFromFolder(const fs::path& modFolder)
 {
+    ImGuiTextBuffer buf;
     fs::path looseFilesFolder = modFolder / "LooseFiles";
     std::vector<std::unique_ptr<DetectedLooseFile>> result;
     if (!fs::is_directory(looseFilesFolder)) return result;
@@ -333,7 +359,7 @@ std::vector<std::unique_ptr<DetectedLooseFile>> GetLooseFilesFromFolder(const fs
                 if (scannedLooseFile)
                 {
                     LOG_DEBUG(VirtualForgesLog,
-                        "    Handle  : %12llu, Typename: %s\n"
+                        "    Handle : %12llu, Typename: %s\n"
                         , scannedLooseFile->m_Handle
                         , scannedLooseFile->m_CorrespondingTypeInfo.get().typeName
                     );
@@ -344,14 +370,15 @@ std::vector<std::unique_ptr<DetectedLooseFile>> GetLooseFilesFromFolder(const fs
                 }
                 else
                 {
-                    LOG_DEBUG(
-                        VirtualForgesLog
-                        , "[error]\"%s\" does not look like a valid game object file.\n"
-                        , entry.path().filename().u8string().c_str()
+                    buf.clear();
+                    buf.appendf("\"%s\" does not look like a valid game object file or is unsupported.", entry.path().filename().u8string().c_str());
+                    LOG_DEBUG(VirtualForgesLog,
+                        "[error]%s\n"
+                        , buf.c_str()
                     );
                     result.emplace_back(std::make_unique<DetectedLooseFile>(
                         entry,
-                        ResultForDetectedLooseFile_LooksInvalid{}
+                        ResultForDetectedLooseFile_LooksInvalid{ (const char8_t*)buf.c_str() }
                     ));
                 }
             }
@@ -389,13 +416,27 @@ public:
     {
         m_Datapacks = GetDatapacksFromFolder(m_ModFolder);
         m_LooseFiles = GetLooseFilesFromFolder(m_ModFolder);
-        m_IsErrorInDatapacks = std::find_if(m_Datapacks.begin(), m_Datapacks.end(), [](std::unique_ptr<DetectedDatapack>& datapack)
+        m_IsErrorInDatapacks = std::find_if(m_Datapacks.begin(), m_Datapacks.end(), [&](std::unique_ptr<DetectedDatapack>& datapack)
             {
-                return std::get_if<ResultForDetectedDatapack_LooksOk>(&datapack->m_Result) == nullptr;
+                auto* error = datapack->GetError();
+                if (!error) return false;
+                LOG_DEBUG(VirtualForgesLog,
+                    "[error]Not loading the folder \"%s\" because: %s\n"
+                    , m_ModFolder.filename().u8string().c_str()
+                    , error->c_str()
+                );
+                return true;
             }) != m_Datapacks.end();
-        m_IsErrorInLooseFiles = std::find_if(m_LooseFiles.begin(), m_LooseFiles.end(), [](std::unique_ptr<DetectedLooseFile>& datapack)
+        m_IsErrorInLooseFiles = std::find_if(m_LooseFiles.begin(), m_LooseFiles.end(), [&](std::unique_ptr<DetectedLooseFile>& looseFile)
             {
-                return std::get_if<ResultForDetectedLooseFile_LooksOk>(&datapack->m_Result) == nullptr;
+                auto* error = looseFile->GetError();
+                if (!error) return false;
+                LOG_DEBUG(VirtualForgesLog,
+                    "[error]Not loading the folder \"%s\" because: %s\n"
+                    , m_ModFolder.filename().u8string().c_str()
+                    , error->c_str()
+                );
+                return true;
             }) != m_LooseFiles.end();
         m_IsError = m_IsErrorInDatapacks || m_IsErrorInLooseFiles;
     }
@@ -946,16 +987,14 @@ public:
                                     else if (datapackInvalid)
                                     {
                                         ImGui::SetTooltip(
-                                            "Does not look like a valid datapack.\n"
+                                            "Does not look like a valid datapack:\n%s\n"
                                             "The game does not check for errors and can freeze, so I'm not loading this mod."
+                                            , datapackInvalid->m_ErrorMsg.c_str()
                                         );
                                     }
                                     else if (datapackFailedToLoad)
                                     {
-                                        ImGui::SetTooltip(
-                                            "Datapack looked OK when it was found, but the game failed to load it.\n"
-                                            "Was the file removed? Try refreshing the Load Order."
-                                        );
+                                        ImGui::SetTooltip((const char*)datapackFailedToLoad->m_ErrorMsg.c_str());
                                     }
                                 }
                                 if (datapackOk)
@@ -1018,7 +1057,6 @@ public:
                                 {
                                     auto& looseFile = mod->m_LooseFiles[i];
                                     auto* stateOk = std::get_if<ResultForDetectedLooseFile_LooksOk>(&looseFile->m_Result);
-                                    auto* stateInvalid = std::get_if<ResultForDetectedLooseFile_LooksInvalid>(&looseFile->m_Result);
                                     ImGui::TableNextRow();
                                     const bool isInvalid = stateOk == nullptr;
                                     ImGui::TableSetColumnIndex(0);
@@ -1028,12 +1066,10 @@ public:
 
                                     if (ImGui::IsItemHovered())
                                     {
-                                        if (stateInvalid)
+                                        auto* errorMsg = looseFile->GetError();
+                                        if (errorMsg)
                                         {
-                                            ImGui::SetTooltip(
-                                                "Does not look like a valid game object file.\n"
-                                                "The game does not check for errors and can freeze or crash, so I'm not loading this mod."
-                                            );
+                                            ImGui::SetTooltip((const char*)errorMsg->c_str());
                                         }
                                     }
                                     if (stateOk)
@@ -1210,7 +1246,11 @@ public:
                 bool isSuccess = MakeForgeForDatapack(*datapack);
                 if (!isSuccess)
                 {
-                    datapack->m_Result = ResultForDetectedDatapack_LookedOkButFailedToCreateVirtualForge();
+                    datapack->m_Result = ResultForDetectedDatapack_LookedOkButFailedToCreateVirtualForge{
+                        u8"Datapack looked OK when it was found, but the game failed to load it.\n"
+                        "Was the file removed? Try refreshing the Load Order."
+                    };
+                    mod->m_IsErrorInDatapacks = true;
                     mod->m_IsError = true;
                     break;
                 }
@@ -1327,54 +1367,14 @@ public:
     {
         return AbsolutePathInThisDLLDirectory("AssetOverrides") / pathRel;
     }
-    std::unordered_map<uint64, fs::path> m_SingleObjectOverride_FilepathRelByHandle;
-    std::vector<fs::path> SingleObjectOverride_InitList_GatherLooseFilePaths()
-    {
-        std::vector<fs::path> folders = {
-            "_WPN_Excalibur\\LooseFiles",
-            "_WPN_Gungnir\\LooseFiles",
-            "_WPN_SwordOfAltair\\LooseFiles",
-            "_WPN_Mjolnir\\LooseFiles",
-            "_WPN_BasimSword\\LooseFiles",
-            "_WPN_Joyeuse\\LooseFiles",
-            "_WPN_ConnorsTomahawk\\LooseFiles",
 
-            "_AtomGraph\\LooseFiles",
-        };
-        std::vector<fs::path> looseFiles;
-        looseFiles.reserve(64);
-        for (auto& dirRel : folders)
-        {
-            fs::path absoluteDir = GetPathInAssetModsFolder(dirRel);
-            try {
-                for (const auto& entry : fs::directory_iterator(absoluteDir)) {
-                    if (entry.is_regular_file()) {
-                        looseFiles.push_back(entry.path());
-                    }
-                }
-            }
-            catch (const fs::filesystem_error& e) {
-                LOG_DEBUG(
-                    VirtualForgesLog
-                    , "Filesystem error: %s\n"
-                    , e.what()
-                );
-            }
-        }
-        return looseFiles;
-    }
-    //void SingleObjectOverride_InitList()
-    //{
-    //    std::vector<fs::path> looseFiles = SingleObjectOverride_InitList_GatherLooseFilePaths();
-    //    for (auto& filepath : looseFiles)
-    //    {
-    //        fs::path absolutePath = GetPathInAssetModsFolder(filepath);
-    //        std::optional<ScannedLooseFile> scannedFile = ScanGameObjectLooseFile(absolutePath);
-    //        if (!scannedFile) continue;
-    //        uint64 retrievedHandle = scannedFile->m_Handle;
-    //        m_SingleObjectOverride_FilepathRelByHandle[retrievedHandle] = absolutePath;
-    //    }
-    //}
+    struct RegisteredSingleObjectOverride
+    {
+        AssetMod* m_Mod;
+        DetectedLooseFile* m_LooseFile;
+        fs::path m_AbsolutePath;
+    };
+    std::unordered_map<uint64, RegisteredSingleObjectOverride> m_SingleObjectOverride_FilepathRelByHandle;
     void RebuildLooseFilesLookup()
     {
         m_SingleObjectOverride_FilepathRelByHandle.clear();
@@ -1385,17 +1385,22 @@ public:
             for (auto& looseFile : assetMod->m_LooseFiles)
             {
                 auto& scannedLooseFile = std::get<ResultForDetectedLooseFile_LooksOk>(looseFile->m_Result);
-                m_SingleObjectOverride_FilepathRelByHandle[scannedLooseFile.m_Handle] = looseFile->m_AbsolutePath;
+                m_SingleObjectOverride_FilepathRelByHandle[scannedLooseFile.m_Handle] =
+                    RegisteredSingleObjectOverride{ assetMod.get(), looseFile.get(), looseFile->m_AbsolutePath };
             }
         }
     }
-    fs::path GetSingleObjectOverrideFilepath(uint64 handle)
+    struct ResultOfSingleObjectRequest
     {
-        if (!handle) return {};
-        auto foundIt = m_SingleObjectOverride_FilepathRelByHandle.find(handle);
-        if (foundIt == m_SingleObjectOverride_FilepathRelByHandle.end()) return {};
-        return foundIt->second;
-    }
+        AssetMod* m_Mod;
+        DetectedLooseFile* m_LooseFile;
+        fs::path m_AbsolutePath;
+        std::vector<byte> m_FileAsBytes;
+
+        bool IsSuccessfullyRead() { return m_FileAsBytes.size() != 0; }
+    };
+    ResultOfSingleObjectRequest GetSingleObjectOverrideFilepath(uint64 handle);
+    void ReportFailureInSingleObjectOverride(const RegisteredSingleObjectOverride& whichFailed, const std::u8string& errorMsg);
 };
 AssetModlist g_AssetModlist;
 
@@ -1404,7 +1409,6 @@ void AssetOverrides_PutForgesInCorrectOrder()
 {
     auto* fm = ForgeManager::GetSingleton();
     g_AssetModlist.MakeVirtualForgesForAllDatapacks();
-    //g_AssetModlist.UpdatePrefetchDataForActiveDatapacks();
     g_AssetModlist.ApplyCustomForgeOrder(*fm);
 }
 void WhenNewForgeEntryWasJustAdded_ApplyCustomSorting(AllRegisters* params)
@@ -1639,96 +1643,14 @@ void AssetOverrides_InitFromLoadOrder_EarlyHook()
     AssetOverrides_PutForgesInCorrectOrder();
 }
 
-fs::path GetSingleObjectOverrideFilepath(uint64 handle)
-{
-    return g_AssetModlist.GetSingleObjectOverrideFilepath(handle);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#include "DeserializationCycle.h"
-
-
-void WhenStartStartDeserializeFileInDatapackTogetherWithPrologue_FullReplacement_defaultBehaviorOnly(AllRegisters* params)
-{
-    //int __fastcall DatapackParser__SkipPrologueOfFileInDatapack(signed __int64 a1, __int64 a2, __int64 a3, __int64 p_firstDwordOut, __int64 p_secondDwordOut, __int64 a6)
-    DEFINE_GAME_FUNCTION(DatapackParser__SkipPrologueOfFileInDatapack, 0x1426EBBF0, void, __fastcall, (DatapackReader* a1, __int64 a2, uint32 a3, uintptr_t p_firstDwordOut, uintptr_t p_secondDwordOut, __int64 a6));
-    auto* deserCycle = (DeserializationCycle*)params->rbx_;
-
-    auto* currentPackedObjectDesc = (DatapackPackedObjectDesc*)(params->rsi_ - 0x20);
-    uint32 originalObjectUnpackedSizePlusPrologue = currentPackedObjectDesc->filesizePlusCplusLenFilename;
-    uint64 handle = currentPackedObjectDesc->handle;
-
-    fs::path overrideFilepath = GetSingleObjectOverrideFilepath(handle);
-    if (overrideFilepath.empty() || true)
-    {
-        // normal handling...
-        auto* datapackReader = deserCycle->deserStream.datapackReader;
-        DatapackParser__SkipPrologueOfFileInDatapack(
-            datapackReader,
-            0,
-            (uint32&)params->GetRAX(),
-            (params->GetRSP() + 0x54),
-            (params->GetRSP() + 0x50),
-            params->rbp_ + 0x1D8
-        );
-
-        void* v37 = (void*)(params->rbp_ + 0x1D8);
-        if (!*(char*)(params->rbp_ + 0x610))
-            v37 = 0;
-        deserCycle->deserStream.p18 = v37;
-
-        if (*(uint64*)0x1452585A0)
-        {
-            //v38 = v1->numObjectsInDatapack;
-            //v39 = *(_QWORD*)qword_1452585A0;
-            //isLocalCache = *(_DWORD*)filesizePlusCplusFilename >> 31;
-            //v41 = *(_DWORD*)filesizePlusCplusFilename & 0x7FFFFFFF;
-            //v42 = sub_14275A7F0();
-            //bigfileOrLocalcache = (const __int64*)"Bigfile";
-            //if (isLocalCache & 1)
-            //    bigfileOrLocalcache = "LocalCache";
-            //v44 = stringFormat_mb("[%s] [%dK] %s", (__int64)bigfileOrLocalcache, (unsigned int)v41 >> 10, v42);
-            //(*(void(__fastcall**)(__int64, __int64, _QWORD, _QWORD))(v39 + 24))(qword_1452585A0, v44, vars28, v38);
-            //v23 = v75;
-            //filesizePlusCplusFilename = handleFirstInData_1;
-        }
-        uint64 v24 = params->r13_;
-        *(uint64*)(params->GetRSP() + 0x70) = v24;
-        deserCycle->deserStream.byte_75 = v24 != 0;
-        deserCycle->deserStream.p_38 = datapackReader;
-        deserCycle->deserStream.dword_40 = *(uint32*)(params->GetRSP() + 0x50);
-        deserCycle->deserStream.dword_58 = *(uint32*)(params->GetRSP() + 0x50);
-
-        //int __fastcall DeserializationStream__From2ndByte(DeserializationStream *a1, ManagedObject** a2)
-        DEFINE_GAME_FUNCTION(DeserializationStream__From2ndByte, 0x14270B510, void, __fastcall, (DeserializationStream* a1, ManagedObject** a2));
-        DeserializationStream__From2ndByte(&deserCycle->deserStream, (ManagedObject**)(params->GetRSP() + 0x70));
-        return;
-    }
-    //auto* datapackReader = deserCycle->deserStream.datapackParser;
-    //datapackReader->Unk0A0_SeekRelative(originalObjectUnpackedSizePlusPrologue);
-    //DatapackParser__SkipPrologueOfFileInDatapack()
-}
-
-DEFINE_GAME_FUNCTION(DeserializationStream__CreateObjectForTypehashAndHandle, 0x1426EB3B0, ManagedObject*, __fastcall, (DeserializationStream* a1, unsigned int p_hashInTypeInfosSystem, unsigned __int64 p_handle));
-
 // Thanks, https://stackoverflow.com/questions/15138353/how-to-read-a-binary-file-into-a-vector-of-unsigned-chars/21802936#21802936
 static std::vector<byte> readFile(const fs::path& filename)
 {
+    std::vector<byte> vec;
+
     // open the file:
     std::ifstream file(filename, std::ios::binary);
+    if (!file) return vec;
 
     // Stop eating new lines in binary mode!!!
     file.unsetf(std::ios::skipws);
@@ -1741,7 +1663,6 @@ static std::vector<byte> readFile(const fs::path& filename)
     file.seekg(0, std::ios::beg);
 
     // reserve capacity
-    std::vector<byte> vec;
     vec.reserve(fileSize);
 
     // read the data:
@@ -1751,315 +1672,89 @@ static std::vector<byte> readFile(const fs::path& filename)
 
     return vec;
 }
-class Mock_IReader: public IReader
+// Empty result means a failure.
+std::vector<byte> ReadGameObjectFileWhole(const fs::path& filepath)
 {
-public:
-    virtual void Unk000_Destroy() override {}
-    virtual char Unk008() override { return 1; }
-    virtual void Unk010() override {}
-    virtual bool Unk018_IsEnd() override { return false; }
-    virtual void Unk020() override {}
-    virtual void Unk028_Get_DwordC_Dword10() override {}
-    virtual int  Unk030() override { return 0; }
-    virtual int  Unk038() override { return 0; }
-    virtual int  Unk040_Read8bytes(uint64* out) override { return Unk060_ReadNBytes((char*)out, 8); }
-    virtual int  Unk048_Read4bytes(uint32* out) override { return Unk060_ReadNBytes((char*)out, 4); }
-    virtual int  Unk050_Read2bytes(uint16* out) override { return Unk060_ReadNBytes((char*)out, 2); }
-    virtual int  Unk058_Read1byte(byte* out) override { return Unk060_ReadNBytes((char*)out, 1); }
-    virtual int  Unk060_ReadNBytes(char* out, int numBytes) override;
-    virtual char Unk068() { return 0; }
-    virtual int  Unk070() { return 0; }
-    virtual char Unk078() { return 1; }
-    virtual char Unk080() { return 1; }
-    virtual char Unk088() { return 1; }
-    virtual char Unk090() { return 1; }
-    virtual char Unk098() { return 1; }
-    virtual void Unk0A0_SeekRelative(int moveHowManyBytes);
-    virtual void Unk0A8() {}
-    virtual int  Unk0B0() { return 0; }
-    virtual void Unk0B8() {}
-    virtual void Unk0C0() {}
-    virtual int  Unk0C8() { return 0; }
-    virtual void Unk0D0() {}
-    virtual void Unk0D8() {}
-    virtual void Unk0E0() {}
-    virtual void Unk0E8() {}
-    virtual void Unk0F0_Clear_mb() {}
-    virtual char Unk0F8() { return 1; }
-    virtual void Unk100() {}
-
-
-    struct MockDeserializationStream2& moddedFileBytes;
-    int64 streamPos{ 0 };
-    Mock_IReader(MockDeserializationStream2& moddedFileBytes) : moddedFileBytes(moddedFileBytes) {}
-};
-struct MockDeserializationStream2
-{
-    Mock_IReader m_ireader;
-    DeserializationStream deserStream;
-    std::vector<byte> fileAsBytes;
-
-    fs::path m_Filepath;
-
-    MockDeserializationStream2(const fs::path& filepath, DeserializationCycle& deserCycle)
-        : m_ireader{ *this }
-        , m_Filepath(filepath)
-        , deserStream{ 0 }
-        , fileAsBytes(readFile(filepath))
+    std::vector<byte> fileAsBytes = readFile(filepath);
+    // A quick last check that it still kinda looks like a valid game object file.
+    if (fileAsBytes.size() <= 14)
     {
-        deserStream.currentPtr = (uintptr_t)&fileAsBytes.data()[0];
-        deserStream.readPastEnd = (uintptr_t)&fileAsBytes.data()[fileAsBytes.size()];
-        deserStream.postLoadCallbacks = &deserCycle;
-        deserStream.datapackReader = (DatapackReader*)&m_ireader;
+        fileAsBytes.clear();
+        return fileAsBytes;
     }
-};
-int Mock_IReader::Unk060_ReadNBytes(char* out, int numBytes)
-{
-    std::memcpy(out, &moddedFileBytes.fileAsBytes[streamPos], numBytes);
-    streamPos += numBytes;
-    return 1;
+    return fileAsBytes;
 }
-void Mock_IReader::Unk0A0_SeekRelative(int moveHowManyBytes)
+// Empty result means a failure.
+AssetModlist::ResultOfSingleObjectRequest AssetModlist::GetSingleObjectOverrideFilepath(uint64 handle)
 {
-    streamPos += moveHowManyBytes;
-}
-DEFINE_GAME_FUNCTION(JoinManagedObjectAndHandle_mb, 0x142714230, void, __fastcall, (__int64 p_handle, ManagedObject* p_manObj));
-DEFINE_GAME_FUNCTION(DeserializationStream__From2ndByte, 0x14270B510, void, __fastcall, (DeserializationStream* a1, ManagedObject** a2));
-
-uint32 ConsumeFilename(DatapackReader* a1, uint32* p_firstDwordOut, uint32* p_secondDwordOut)
-{
-    a1->CastToReader().Unk048_Read4bytes(p_firstDwordOut);
-    a1->CastToReader().Unk048_Read4bytes(p_secondDwordOut);
-    uint32 lenFilename;
-    a1->CastToReader().Unk048_Read4bytes(&lenFilename);
-    a1->CastToReader().Unk0A0_SeekRelative(lenFilename);
-    uint32 numConsumedBytes = 0xC + lenFilename;
-    return numConsumedBytes;
-}
-size_t ConsumePrologue(DatapackReader* a1, __int64 a2, uint32 a3, __int64 a6)
-{
-    void* v7 = alloca(0x20E0);
-    byte isHasPrerequisitesSection;
-    a1->CastToReader().Unk058_Read1byte(&isHasPrerequisitesSection);
-    if (isHasPrerequisitesSection)
+    if (!handle) return {};
+    auto foundIt = m_SingleObjectOverride_FilepathRelByHandle.find(handle);
+    if (foundIt == m_SingleObjectOverride_FilepathRelByHandle.end()) return {};
+    RegisteredSingleObjectOverride registeredOverride = foundIt->second;
+    std::vector<byte> modFileAsBytes;
+    modFileAsBytes = ReadGameObjectFileWhole(registeredOverride.m_AbsolutePath);
+    const bool failedToReadModfile = modFileAsBytes.size() == 0;
+    if (failedToReadModfile)
     {
-        *(byte*)(a6 + 0x438) = 1;
-        DEFINE_GAME_FUNCTION(ParsePrerequisitesBeforeDeserialize_ctor, 0x142746FA0, void, __fastcall, (void* a1));
-        DEFINE_GAME_FUNCTION(sub_14276E780, 0x14276E780, void, __fastcall, (void* a1, DatapackReader * a2, char a3));
-        DEFINE_GAME_FUNCTION(ParsePrerequisitesBeforeDeserialize__ConsumePrerequisites, 0x1427081B0, void, __fastcall, (__int64 a1, void* rdx0));
-        DEFINE_GAME_FUNCTION(sub_142749E60, 0x142749E60, void, __fastcall, (void* a1));
-        ParsePrerequisitesBeforeDeserialize_ctor(v7);
-        sub_14276E780(v7, a1, 0);
-        ParsePrerequisitesBeforeDeserialize__ConsumePrerequisites(a6, v7);
-        sub_142749E60(v7);
-    }
-    else
-    {
-        *(byte*)(a6 + 0x438) = 0;
-    }
-    // Usually the "isHasPrerequisitesSection" byte is 0, so the total consumed is 1 byte.
-    // In the case of Animation files, "isHasPrerequisitesSection" is 1, and the 4 function calls above
-    // then actually do the work of consuming the "prerequisites section".
-    // As far as I can tell, the number of consumed bytes isn't stored anywhere,
-    // so I'd need to either pass a mock DatapackReader (and there are too many virtual functions
-    // I don't know the meaning of) or to replicate the logic of the function call 0x1427081B0,
-    // which seems like a fairly straightforward series of primitive reads.
-    // Regardless, right now I'm only supporting the case of 1-byte prologue.
-    // This is enough for Material, Mesh, TextureMap, AtomGraph, SoftBodySettings, Cloth...
-    size_t numConsumedBytesInPrologue = 1;
-    return numConsumedBytesInPrologue;
-}
-
-class SomeMissingLoggerMaybe
-{
-public:
-    virtual void Unk000();
-    virtual void Unk008();
-    virtual void Unk010();
-    virtual void Unk018(__int64, __int64, __int64);
-
-    static SomeMissingLoggerMaybe* GetSingleton() { return *(SomeMissingLoggerMaybe**)0x1452585A0; }
-};
-void WhenStartStartDeserializeFileInDatapackTogetherWithPrologue_FullReplacement(uint64 rax, uint64 rbx, uint64 rsi, uint64 rbp, uint64 rsp, uint64 r13)
-{
-    //int __fastcall DatapackParser__SkipPrologueOfFileInDatapack(signed __int64 a1, __int64 a2, __int64 a3, __int64 p_firstDwordOut, __int64 p_secondDwordOut, __int64 a6)
-    DEFINE_GAME_FUNCTION(DatapackParser__SkipPrologueOfFileInDatapack, 0x1426EBBF0, void, __fastcall, (DatapackReader* a1, __int64 a2, uint32 a3, uint32* p_firstDwordOut, uint32* p_secondDwordOut, __int64 a6));
-    auto* deserCycle = (DeserializationCycle*)rbx;
-
-    auto* currentPackedObjectDesc = (DatapackPackedObjectDesc*)(rsi - 0x20);
-    uint32 originalObjectUnpackedSizePlusPrologue = currentPackedObjectDesc->filesizePlusCplusLenFilename;
-    uint64 handle = currentPackedObjectDesc->handle;
-
-    auto* datapackReader = deserCycle->deserStream.datapackReader;
-    fs::path overrideFilepath = GetSingleObjectOverrideFilepath(handle);
-    if (overrideFilepath.empty())
-    {
-        // normal handling...
-        ConsumeFilename(
-            datapackReader,
-            (uint32*)(rsp + 0x54),
-            (uint32*)(rsp + 0x50));
-        ConsumePrologue(
-            datapackReader,
-            0,
-            (uint32&)rax,
-            rbp + 0x1D8
+        ReportFailureInSingleObjectOverride(registeredOverride,
+            u8"Game object Loose File looked OK when first found, but then failed to load.\n"
+            "Was it removed? Try refreshing the Load Order."
         );
-
-        void* v37 = (void*)(rbp + 0x1D8);
-        if (!*(char*)(rbp + 0x610))
-            v37 = 0;
-        deserCycle->deserStream.p18 = v37;
-
-        if (*(uint64*)0x1452585A0)
-        {
-            //v38 = v1->numObjectsInDatapack;
-            //v39 = *(_QWORD*)qword_1452585A0;
-            //isLocalCache = *(_DWORD*)filesizePlusCplusFilename >> 31;
-            //v41 = *(_DWORD*)filesizePlusCplusFilename & 0x7FFFFFFF;
-            //v42 = sub_14275A7F0();
-            //bigfileOrLocalcache = (const __int64*)"Bigfile";
-            //if (isLocalCache & 1)
-            //    bigfileOrLocalcache = "LocalCache";
-            //v44 = stringFormat_mb("[%s] [%dK] %s", (__int64)bigfileOrLocalcache, (unsigned int)v41 >> 10, v42);
-            //(*(void(__fastcall**)(__int64, __int64, _QWORD, _QWORD))(v39 + 24))(qword_1452585A0, v44, vars28, v38);
-            //v23 = v75;
-            //filesizePlusCplusFilename = handleFirstInData_1;
-        }
-        uint64 v24 = r13;
-        *(uint64*)(rsp + 0x70) = v24;
-        deserCycle->deserStream.byte_75 = v24 != 0;
-        deserCycle->deserStream.p_38 = datapackReader;
-        deserCycle->deserStream.dword_40 = *(uint32*)(rsp + 0x50);
-        deserCycle->deserStream.dword_58 = *(uint32*)(rsp + 0x50);
-
-        DeserializationStream__From2ndByte(&deserCycle->deserStream, (ManagedObject**)(rsp + 0x70));
-        return;
+        return ResultOfSingleObjectRequest{ nullptr, nullptr, {}, {} };
     }
-    MockDeserializationStream2 mockDeserStream{ overrideFilepath, *deserCycle };
-    LOG_DEBUG(VirtualForgesLog,
-        "FULLDESER: %s\n", overrideFilepath.u8string().c_str());
 
-    uint32 numConsumedBytes = ConsumeFilename(
-        datapackReader,
-        (uint32*)(rsp + 0x54),
-        (uint32*)(rsp + 0x50));
-    datapackReader->CastToReader().Unk0A0_SeekRelative(originalObjectUnpackedSizePlusPrologue - numConsumedBytes);
-
-    LOG_DEBUG(VirtualForgesLog,
-        "  filename: %u bytes, byte_89: %u, 1stDword: %x, 2ndDword: %x\n"
-        , numConsumedBytes - 0xC
-        , (uint32)datapackReader->byte_89
-        , *(uint32*)(rsp + 0x54)
-        , *(uint32*)(rsp + 0x50)
-    );
-    struct
-    {
-        uint64 pDecryptedChunk;
-        uint32 decryptedChunkLocalStreampos;
-        uint32 decryptedChunkSize;
-        byte byte_89;
-    } mockDecryptedStreamState{
-            (uint64)&mockDeserStream.fileAsBytes[0],
-            (uint32)0,
-            mockDeserStream.fileAsBytes.size(),
-            (byte)1
+    return ResultOfSingleObjectRequest{
+        registeredOverride.m_Mod,
+        registeredOverride.m_LooseFile,
+        std::move(registeredOverride.m_AbsolutePath),
+        std::move(modFileAsBytes)
     };
-    std::swap(datapackReader->pDecryptedChunk, mockDecryptedStreamState.pDecryptedChunk);
-    std::swap(datapackReader->decryptedChunkLocalStreampos, mockDecryptedStreamState.decryptedChunkLocalStreampos);
-    std::swap(datapackReader->decryptedChunkSize, mockDecryptedStreamState.decryptedChunkSize);
-    std::swap(datapackReader->byte_89, mockDecryptedStreamState.byte_89);
-    size_t numConsumedBytesInPrologue = ConsumePrologue(
-        datapackReader,
-        0,
-        (uint32&)rax,
-        rbp + 0x1D8
-    );
-    numConsumedBytesInPrologue = datapackReader->decryptedChunkLocalStreampos;
-    std::swap(datapackReader->pDecryptedChunk, mockDecryptedStreamState.pDecryptedChunk);
-    std::swap(datapackReader->decryptedChunkLocalStreampos, mockDecryptedStreamState.decryptedChunkLocalStreampos);
-    std::swap(datapackReader->decryptedChunkSize, mockDecryptedStreamState.decryptedChunkSize);
-    std::swap(datapackReader->byte_89, mockDecryptedStreamState.byte_89);
-    void* v37 = (void*)(rbp + 0x1D8);
-    if (!*(char*)(rbp + 0x610))
-        v37 = 0;
-    deserCycle->deserStream.p18 = v37;
-    if (auto* someLog = SomeMissingLoggerMaybe::GetSingleton())
-    {
-        // Never seen this section reached.
-        // Never seen this global being non-NULL.
-        bool isLocalCache = (currentPackedObjectDesc->filesizePlusCplusLenFilename >> 31) & 1;
-        uint32 v41 = currentPackedObjectDesc->filesizePlusCplusLenFilename & 0x7FFFFFFF;
-        DEFINE_GAME_FUNCTION(sub_14275A7F0, 0x14275A7F0, __int64, __fastcall, ());
-        __int64 v42 = sub_14275A7F0();
-        const char* bigfileOrLocalcache = "Bigfile";
-        if (isLocalCache)
-            bigfileOrLocalcache = "LocalCache";
-        //__int64 v44 = stringFormat_mb("[%s] [%dK] %s", (__int64)bigfileOrLocalcache, (unsigned int)v41 >> 10, v42);
-        //someLog->Unk018(v44, *(uint32*)(rbp + 0x688), deserCycle->objectsInCurrentRelatedDatapack.size);
-        //r15 = *(uint64*)(rbp - 0x78);
-        //rsi = *(uint64*)(rsp + 0x58);
-    }
-    uint64 v24 = r13;
-    *(uint64*)(rsp + 0x70) = v24;
-    deserCycle->deserStream.byte_75 = v24 != 0;
-    deserCycle->deserStream.p_38 = datapackReader;
-    deserCycle->deserStream.dword_40 = *(uint32*)(rsp + 0x50);
-    deserCycle->deserStream.dword_58 = *(uint32*)(rsp + 0x50);
-
-    struct
-    {
-        uint64 currentPtr;
-        uint64 readPastEnd;
-    } mockDeserStreamState{
-            (uint64)&mockDeserStream.fileAsBytes[numConsumedBytesInPrologue],
-            (uint64)&mockDeserStream.fileAsBytes[0] + mockDeserStream.fileAsBytes.size(),
-    };
-    std::swap(deserCycle->deserStream.currentPtr, mockDeserStreamState.currentPtr);
-    std::swap(deserCycle->deserStream.readPastEnd, mockDeserStreamState.readPastEnd);
-    DeserializationStream__From2ndByte(&deserCycle->deserStream, (ManagedObject**)(rsp + 0x70));
-    std::swap(deserCycle->deserStream.currentPtr, mockDeserStreamState.currentPtr);
-    std::swap(deserCycle->deserStream.readPastEnd, mockDeserStreamState.readPastEnd);
+}
+void AssetModlist::ReportFailureInSingleObjectOverride(const RegisteredSingleObjectOverride& whichFailed, const std::u8string& errorMsg)
+{
+    whichFailed.m_LooseFile->m_Result = ResultForDetectedLooseFile_LookedOkButFailedToLoad{ errorMsg };
+    whichFailed.m_Mod->m_IsErrorInLooseFiles = true;
+    whichFailed.m_Mod->m_IsError = true;
+}
+std::vector<byte> GetSingleObjectOverrideBytes(uint64 handle)
+{
+    auto lookupResult = g_AssetModlist.GetSingleObjectOverrideFilepath(handle);
+    if (!lookupResult.IsSuccessfullyRead()) return {};
+    LOG_DEBUG(VirtualForgesLog,
+        "FULLDESER: %s\n", lookupResult.m_AbsolutePath.u8string().c_str());
+    return std::move(lookupResult.m_FileAsBytes);
 }
 
-void WhenStartStartDeserializeFileInDatapackTogetherWithPrologue_FullReplacement(AllRegisters* params)
+
+
+
+
+
+
+
+
+
+
+
+
+void WhenStartDeserializeFileInDatapackTogetherWithPrologue_FullReplacement(uint64 rax, uint64 rbx, uint64 rsi, uint64 rbp, uint64 rsp, uint64 r13);
+void WhenStartDeserializeFileInDatapackTogetherWithPrologue_FullReplacement(AllRegisters* params)
 {
-    WhenStartStartDeserializeFileInDatapackTogetherWithPrologue_FullReplacement(params->GetRAX(), params->rbx_, params->rsi_, params->rbp_, params->GetRSP(), params->r13_);
+    WhenStartDeserializeFileInDatapackTogetherWithPrologue_FullReplacement(params->GetRAX(), params->rbx_, params->rsi_, params->rbp_, params->GetRSP(), params->r13_);
 }
 
 
 class ManagedObject;
 class DeserializationStream;
-void DeserializeManagedObject_FullReplacement(DeserializationStream* deserStream, ManagedObject** pManObj);
 AddVirtualForges::AddVirtualForges()
 {
-    //uintptr_t whenNewForgeEntryWasJustAdded = 0x142737D1D;
-    //PresetScript_CCodeInTheMiddle(whenNewForgeEntryWasJustAdded, 7,
-    //    WhenNewForgeEntryWasJustAdded_ApplyCustomSorting, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
-
-    //uintptr_t whenGatheringPrefetchInfoForDatapack = 0x1427338EA;
-    //PresetScript_CCodeInTheMiddle(whenGatheringPrefetchInfoForDatapack, 7,
-    //    WhenGatheringPrefetchInfoForDatapack_FindOriginalPrefetchInfo, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
-
     uintptr_t whenGameForgesJustOpened = 0x14272F794;
     PresetScript_CCodeInTheMiddle(whenGameForgesJustOpened, 7,
         WhenNewForgeEntryWasJustAdded_ApplyCustomSorting, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
-    //uintptr_t deserializeManagedObjectFrom2ndByte_callsite0 = 0x1426F0DC2;
-    //{
-    //    DEFINE_ADDR(deserializeSingleObj_callsite, deserializeManagedObjectFrom2ndByte_callsite0);
-    //    ALLOC(deserializeSingleObj_cave, 0x80, deserializeManagedObjectFrom2ndByte_callsite0);
-    //    deserializeSingleObj_callsite = {
-    //        db(0xE8), RIP(deserializeSingleObj_cave),
-    //    };
-    //    deserializeSingleObj_cave = {
-    //        db({ 0xFF, 0x25, 0x00, 0x00, 0x00, 0x00 }),     // jmp label_calleeAddr
-    //    //label_calleeAddr:
-    //        dq((uint64)&DeserializeManagedObject_FullReplacement)
-    //    };
-    //}
-    uintptr_t whenStartStartDeserializeFileInDatapackTogetherWithPrologue = 0x1426F0CF7;
-    PresetScript_CCodeInTheMiddle(whenStartStartDeserializeFileInDatapackTogetherWithPrologue, 5,
-        WhenStartStartDeserializeFileInDatapackTogetherWithPrologue_FullReplacement, 0x1426F0DC7, false);
+
+    uintptr_t whenStartDeserializeFileInDatapackTogetherWithPrologue = 0x1426F0CF7;
+    PresetScript_CCodeInTheMiddle(whenStartDeserializeFileInDatapackTogetherWithPrologue, 5,
+        WhenStartDeserializeFileInDatapackTogetherWithPrologue_FullReplacement, 0x1426F0DC7, false);
 }
 void AddVirtualForges::OnBeforeActivate()
 {

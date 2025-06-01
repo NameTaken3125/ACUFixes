@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ACU/basic_types.h"
+
 #include "AutoAssemblerKinda/AutoAssemblerKinda.h"
 
 struct AddVirtualForges : public AutoAssemblerCodeHolder_Base
