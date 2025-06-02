@@ -11,10 +11,20 @@ JSON FromFile(const fs::path& path)
     std::string loadedString = ss.str();
     return JSON::Load(loadedString);
 }
-void ToFile(const JSON& obj, const fs::path& path)
+bool ToFile(const JSON& obj, const fs::path& path)
 {
-    fs::create_directories(path.parent_path());
-    std::ofstream ofs(path);
-    ofs << obj.dump();
+    try
+    {
+        fs::create_directories(path.parent_path());
+        std::ofstream ofs(path);
+        ofs << obj.dump();
+        return true;
+    }
+    catch (const fs::filesystem_error&)
+    {
+        // fs::create_directories() can throw e.g. if trying to create a directory
+        // that actually already corresponds to a symlink that lost its target.
+        return false;
+    }
 }
 }

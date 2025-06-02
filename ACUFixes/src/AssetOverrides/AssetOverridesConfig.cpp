@@ -28,7 +28,13 @@ void WriteToFile()
     fs::path& configFullPath = g_AssetOverridesConfigFilepath;
     LOG_DEBUG(DefaultLogger, "Writing to config file \"%s\":\n%s\n", configFullPath.u8string().c_str(),
         cfg.dump().c_str());
-    json::ToFile(cfg, configFullPath);
+    if (!json::ToFile(cfg, configFullPath))
+    {
+        LOG_DEBUG(DefaultLogger,
+            "[error]Failed to write to %s\n"
+            , configFullPath.u8string().c_str()
+        );
+    }
 }
 void FindAndLoadConfigFileOrCreateDefault(const fs::path& filename)
 {

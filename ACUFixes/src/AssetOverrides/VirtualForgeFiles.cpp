@@ -502,9 +502,12 @@ void StealPrefetchingInfoIntoVirtualForge(ForgeFile& cloneTo, ForgeFile& cloneFr
 }
 namespace ImGui
 {
-void CopyToClipboardOnClick(const char* s)
+inline void CopyToClipboardOnClick(const char* s, const char* fmtTooltip = "Click to copy to clipboard", ...)
 {
-    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Click to copy to clipboard");
+    va_list args;
+    va_start(args, fmtTooltip);
+    if (ImGui::IsItemHovered()) ImGui::SetTooltipV(fmtTooltip, args);
+    va_end(args);
     if (ImGui::IsItemClicked()) ImGui::SetClipboardText(s);
 }
 }
@@ -949,7 +952,31 @@ public:
                             ImGui::TableSetupColumn("Name");
                             ImGui::TableSetupColumn("Handle");
                             ImGui::TableSetupColumn("Refs");
-                            ImGui::TableHeadersRow();
+                            {
+                                ImGui::TableNextRow(ImGuiTableRowFlags_Headers);
+
+                                if (ImGui::TableSetColumnIndex(0))
+                                    ImGui::TableHeader(ImGui::TableGetColumnName(0));
+                                    //if (ImGui::IsItemHovered())
+                                    //    ImGui::SetTooltip(
+                                    //        "NAME"
+                                    //    );
+                                if (ImGui::TableSetColumnIndex(1))
+                                    ImGui::TableHeader(ImGui::TableGetColumnName(1));
+                                    //if (ImGui::IsItemHovered())
+                                    //    ImGui::SetTooltip(
+                                    //        "HANDLE"
+                                    //    );
+                                if (ImGui::TableSetColumnIndex(2))
+                                    ImGui::TableHeader(ImGui::TableGetColumnName(2));
+                                    if (ImGui::IsItemHovered())
+                                        ImGui::SetTooltip(
+                                            "Green means that the object with this handle is currently in use.\n"
+                                            "You will not see any changes until it stops being used\n"
+                                            "(number of refs reaches 0). Some object will not be unloaded\n"
+                                            "until you restart the game."
+                                        );
+                            }
 
                             for (size_t i = 0; i < mod->m_Datapacks.size(); i++)
                             {
@@ -1046,12 +1073,36 @@ public:
                                 | ImGuiTableFlags_Borders
                                 | ImGuiTableFlags_Resizable
                                 ;
-                            if (ImGui::BeginTable("##tableDatapacksInMod", 3, flags))
+                            if (ImGui::BeginTable("##tableLooseFilesInMod", 3, flags))
                             {
                                 ImGui::TableSetupColumn("Name");
                                 ImGui::TableSetupColumn("Handle");
                                 ImGui::TableSetupColumn("Refs");
-                                ImGui::TableHeadersRow();
+                                {
+                                    ImGui::TableNextRow(ImGuiTableRowFlags_Headers);
+
+                                    if (ImGui::TableSetColumnIndex(0))
+                                        ImGui::TableHeader(ImGui::TableGetColumnName(0));
+                                    //if (ImGui::IsItemHovered())
+                                    //    ImGui::SetTooltip(
+                                    //        "NAME"
+                                    //    );
+                                    if (ImGui::TableSetColumnIndex(1))
+                                        ImGui::TableHeader(ImGui::TableGetColumnName(1));
+                                    //if (ImGui::IsItemHovered())
+                                    //    ImGui::SetTooltip(
+                                    //        "HANDLE"
+                                    //    );
+                                    if (ImGui::TableSetColumnIndex(2))
+                                        ImGui::TableHeader(ImGui::TableGetColumnName(2));
+                                    if (ImGui::IsItemHovered())
+                                        ImGui::SetTooltip(
+                                            "Green means that the object with this handle is currently in use.\n"
+                                            "You will not see any changes until it stops being used\n"
+                                            "(number of refs reaches 0). Some object will not be unloaded\n"
+                                            "until you restart the game."
+                                        );
+                                }
 
                                 for (size_t i = 0; i < mod->m_LooseFiles.size(); i++)
                                 {
@@ -1399,7 +1450,7 @@ public:
 
         bool IsSuccessfullyRead() { return m_FileAsBytes.size() != 0; }
     };
-    ResultOfSingleObjectRequest GetSingleObjectOverrideFilepath(uint64 handle);
+    ResultOfSingleObjectRequest FindSingleObjectOverrideForHandle(uint64 handle);
     void ReportFailureInSingleObjectOverride(const RegisteredSingleObjectOverride& whichFailed, const std::u8string& errorMsg);
 };
 AssetModlist g_AssetModlist;
@@ -1480,7 +1531,7 @@ void DrawAssetOverridesInstructions()
             "\nThe game does not check for errors, so please read carefully"
             "\nand _do_ make a backup of your savegame."
         );
-        if (ImGuiCTX::TreeNode _exampleUsage{ "Example: How to install a new outfit" })
+        if (ImGuiCTX::TreeNode _exampleUsage{ "Example: How to install a new outfit replacer" })
         {
             //if (ImGuiCTX::TreeNode _tldr{ "TL;DR:" })
             //{
@@ -1493,17 +1544,34 @@ void DrawAssetOverridesInstructions()
             //    );
             //}
             ImGui::Text(
+                "I'll use the \"Assassins Creed Victory Outfit\" v1.0 for AC Unity by LordOfThe9 as an example.\n"
+            );
+            ImGui::CopyToClipboardOnClick("https://www.nexusmods.com/assassinscreedunity/mods/136", "Click to copy link to clipboard");
+            ImGui::Text(
                 "Typical usage: installing a new outfit replacer.\n"
-                "I'll use the \"Assassins Creed Victory Outfit\" v1.0 for AC Unity as an example.\n"
                 "1. Download the mod.\n"
                 "2. From the downloaded .zip file, extract the\n"
                 "       \"1_-_CN_P_FR_LegacyAvatar_Altair.data\"\n"
                 "       (you can rename the file, but the datapack needs to have extension \".data\")\n"
                 "   into\n"
-                "       \"Assassin's Creed Unity/ACUFixes/plugins/AssetOverrides/VictoryOutfit/\"\n"
-                "       (if your mod has multiple .data files\n"
-                "       (for example the \"Templar Extremist Retexture + Remove Distance Glow\" by MaceoniK\n"
-                "       has 30 .data files), put them all in the same folder.)\n"
+                "       \"Assassin's Creed Unity/ACUFixes/plugins/AssetOverrides/VictoryOutfit/\":\n"
+            );
+            if (ImGuiCTX::TreeNodeEx _{ "Assassins's Creed Unity/", ImGuiTreeNodeFlags_DefaultOpen }) {
+                if (ImGuiCTX::TreeNodeEx _{ "ACUFixes/", ImGuiTreeNodeFlags_DefaultOpen }) {
+                    if (ImGuiCTX::TreeNodeEx _{ "plugins/", ImGuiTreeNodeFlags_DefaultOpen }) {
+                        if (ImGuiCTX::TreeNodeEx _{ "AssetOverrides/", ImGuiTreeNodeFlags_DefaultOpen }) {
+                            ImGuiCTX::PushStyleColor _ct(ImGuiCol_Text, ImVec4(0.000f, 0.764f, 1.000f, 1.000f));
+                            if (ImGuiCTX::TreeNodeEx _modFld{ "VictoryOutfit/   <<<--- All the .data files for your mod go here", ImGuiTreeNodeFlags_DefaultOpen }) {
+                                ImGui::BulletText("1_-_CN_P_FR_LegacyAvatar_Altair.data");
+                            }
+                        }
+                    }
+                }
+            }
+            ImGui::Text(
+                "   If your mod has multiple .data files\n"
+                "   (for example the \"Templar Extremist Retexture + Remove Distance Glow\" by MaceoniK\n"
+                "   has 30 .data files), put them all in the same folder.\n"
                 "3. In game, in the Asset Overrides menu, in the Load Order section,\n"
                 "   click \"Refresh load order\"\n"
                 "   You should now see\n"
@@ -1514,6 +1582,53 @@ void DrawAssetOverridesInstructions()
                 "5. If you now equip the Altair Outfit from the Customization Menu->Outfits,\n"
                 "   you should see the Victory Outfit instead.\n"
                 "6. Now please, do read the rest of the instructions."
+            );
+        }
+        if (ImGuiCTX::TreeNode _exampleUsage{ "Example: How to install a new weapon replacer (\"loose files\")" })
+        {
+            ImGui::Text(
+                "Weapon meshes are all contained in the same datapack,\n"
+                "so for compatibility with other mods the replacers usually\n"
+                "provide the Meshes as separate, \"loose\" files.\n"
+                "All the \"Loose Files\" for a mod need to be put into a separate folder."
+            );
+            ImGui::Text(
+                "I'll use the \"Sword of Altair\" v0.0.2 by Halzoid98 as an example.\n"
+            );
+            ImGui::CopyToClipboardOnClick("https://www.nexusmods.com/assassinscreedunity/mods/123", "Click to copy link to clipboard");
+            ImGui::Text(
+                "1. Download the mod and unzip the files.\n"
+                "2. The mod contains 5 files: 4 datapacks and 1 \"loose\" Mesh.\n"
+                "   Arrange them like so (you can rename the files if you want to):"
+            );
+            if (ImGuiCTX::TreeNodeEx _{ "Assassins's Creed Unity/", ImGuiTreeNodeFlags_DefaultOpen }) {
+                if (ImGuiCTX::TreeNodeEx _{ "ACUFixes/", ImGuiTreeNodeFlags_DefaultOpen }) {
+                    if (ImGuiCTX::TreeNodeEx _{ "plugins/", ImGuiTreeNodeFlags_DefaultOpen }) {
+                        if (ImGuiCTX::TreeNodeEx _{ "AssetOverrides/", ImGuiTreeNodeFlags_DefaultOpen }) {
+                            if (ImGuiCTX::TreeNodeEx _{ "Connor's Tomahawk/", ImGuiTreeNodeFlags_DefaultOpen }) {
+                                {
+                                    ImGuiCTX::PushStyleColor _ct(ImGuiCol_Text, ImVec4(0.425f, 0.780f, 0.392f, 1.000f));
+                                    ImGuiCTX::TreeNodeEx _lfFolder{ "LooseFiles/   <<<--- All the \"loose files\" (non .data files) go here", ImGuiTreeNodeFlags_DefaultOpen };
+                                    if (_lfFolder) {
+                                        ImGui::BulletText("1_-_SwordOfEden_LOD0.mesh");
+                                    }
+                                }
+                                ImGuiCTX::PushStyleColor _ct(ImGuiCol_Text, ImVec4(0.000f, 0.764f, 1.000f, 1.000f));
+                                ImGui::BulletText("0_-_GFX_SwordOfEden_Glow_DiffuseMap.data");
+                                ImGui::BulletText("1_-_CN_W_SwordOfEden_DiffuseMap.data");
+                                ImGui::BulletText("1_-_CN_W_SwordOfEden_NormalMap.data");
+                                ImGui::BulletText("1_-_CN_W_SwordOfEden_SpecularMap.data");
+                            }
+                        }
+                    }
+                }
+            }
+            ImGui::Text(
+                "3. Enable the mod in the Load Order, same as with the outfit example.\n"
+                "   You will probably have to restart the game\n"
+                "   if you want to turn _weapon_ mods on and off.\n"
+                "   They are loaded very early after the game starts and don't get unloaded at all.\n"
+                "   See the \"Limitations\" section."
             );
         }
         if (ImGuiCTX::TreeNode _limitations{ "Limitations:" })
@@ -1530,12 +1645,6 @@ void DrawAssetOverridesInstructions()
                 "then just remove the\n"
                 "    \"Assassin's Creed Unity/ACUFixes/plugins/ACUFixes/AssetOverrides/\"\n"
                 "folder to completely disable all Asset Overrides."
-            );
-            ImGui::BulletText(
-                "I cannot override some datapacks that are loaded very early.\n"
-                "For example, I cannot override the\n"
-                "    \"110_-_Game Bootstrap Settings.data\" from \"DataPC.forge\"\n"
-                "You'll have to use the AnvilToolkit for these.\n"
             );
             ImGui::BulletText(
                 "If the game object that you're trying to replace is _currently_being_used_\n"
@@ -1559,9 +1668,8 @@ void DrawAssetOverridesInstructions()
                 "with this handle is currently in use.\n"
                 "When the number of references reaches 0, the datapack will be unloaded,\n"
                 "at which point the overrides can become active.\n"
-                "Sometimes you'll need to restart the game so that the datapack can be freshly loaded\n"
-                "(and again, some datapacks are loaded too early for me to override at all - see\n"
-                "   \"Game Bootstrap Settings.data\")."
+                "Sometimes you'll need to restart the game so that a mod can be freshly loaded,\n"
+                "This is the case for all _weapon_ replacers, for example."
             );
             ImGui::BulletText(
                 "Some AnvilToolkit mods are supposed to be installed in a particular World\n"
@@ -1574,7 +1682,7 @@ void DrawAssetOverridesInstructions()
                 "your mod the usual way via the AnvilToolkit."
             );
         }
-        if (ImGuiCTX::TreeNode _knownMods{ "Compatible mods" })
+        if (ImGuiCTX::TreeNode _knownMods{ "Supported mods" })
         {
             ImGui::Text("Examples of mods I've confirmed to work when installed through Asset Overrides\n"
                 "(right click to copy to clipboard):");
@@ -1606,6 +1714,13 @@ void DrawAssetOverridesInstructions()
             ModTextAndLink("ACU play as young Arno by Petrichor23", "https://www.nexusmods.com/assassinscreedunity/mods/197");
             ModTextAndLink("Lucy Thorne Outfit by Kuza49", "https://www.nexusmods.com/assassinscreedunity/mods/198");
             ModTextAndLink("Parkour Front flip and Jump mod by Petrichor23", "https://www.nexusmods.com/assassinscreedunity/mods/222");
+            ModTextAndLink("Connor's Tomahawk by Halzoid98", "https://www.nexusmods.com/assassinscreedunity/mods/114");
+            ModTextAndLink("AC Valhalla Basim Sword by IBSARP", "https://www.nexusmods.com/assassinscreedunity/mods/147");
+            ModTextAndLink("Excalibur Sword by Johntaber", "https://www.nexusmods.com/assassinscreedunity/mods/278");
+            ModTextAndLink("Sword of Altair by Halzoid98", "https://www.nexusmods.com/assassinscreedunity/mods/123");
+            ModTextAndLink("Classic Style Sync (Health) Regeneration by Petrichor23", "https://www.nexusmods.com/assassinscreedunity/mods/272");
+            ModTextAndLink("Less Frequent World Events (Paris) by knEke", "https://www.nexusmods.com/assassinscreedunity/mods/299");
+            ModTextAndLink("ACU-Alternate Walking animation by Petrichor23", "https://www.nexusmods.com/assassinscreedunity/mods/280");
 
             ImGui::PushStyleColor(ImGuiCol_Text, colorWarning);
             ModTextAndLink(
@@ -1621,12 +1736,8 @@ void DrawAssetOverridesInstructions()
                 , "https://www.nexusmods.com/assassinscreedunity/mods/225");
             ImGui::PopStyleColor();
 
-            ImGui::PushStyleColor(ImGuiCol_Text, colorIncompatible);
-            ImGui::BulletText(
-                "Pretty much all weapon replacers, because they use \"Game Bootstrap Settings.data\"\n"
-                "which is loaded too early for me to hook."
-            );
-            ImGui::PopStyleColor();
+            //ImGui::PushStyleColor(ImGuiCol_Text, colorIncompatible);
+            //ImGui::PopStyleColor();
         }
     }
     else
@@ -1685,7 +1796,7 @@ std::vector<byte> ReadGameObjectFileWhole(const fs::path& filepath)
     return fileAsBytes;
 }
 // Empty result means a failure.
-AssetModlist::ResultOfSingleObjectRequest AssetModlist::GetSingleObjectOverrideFilepath(uint64 handle)
+AssetModlist::ResultOfSingleObjectRequest AssetModlist::FindSingleObjectOverrideForHandle(uint64 handle)
 {
     if (!handle) return {};
     auto foundIt = m_SingleObjectOverride_FilepathRelByHandle.find(handle);
@@ -1718,10 +1829,10 @@ void AssetModlist::ReportFailureInSingleObjectOverride(const RegisteredSingleObj
 }
 std::vector<byte> GetSingleObjectOverrideBytes(uint64 handle)
 {
-    auto lookupResult = g_AssetModlist.GetSingleObjectOverrideFilepath(handle);
+    auto lookupResult = g_AssetModlist.FindSingleObjectOverrideForHandle(handle);
     if (!lookupResult.IsSuccessfullyRead()) return {};
     LOG_DEBUG(VirtualForgesLog,
-        "FULLDESER: %s\n", lookupResult.m_AbsolutePath.u8string().c_str());
+        "[+] Loading Single Object: %s\n", lookupResult.m_AbsolutePath.u8string().c_str());
     return std::move(lookupResult.m_FileAsBytes);
 }
 

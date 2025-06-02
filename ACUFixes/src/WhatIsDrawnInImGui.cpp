@@ -19,6 +19,17 @@ void VisualizeLocationFromClipboard()
 }
 
 
+namespace ImGui
+{
+inline void CopyToClipboardOnClick(const char* s, const char* fmtTooltip = "Click to copy to clipboard", ...)
+{
+    va_list args;
+    va_start(args, fmtTooltip);
+    if (ImGui::IsItemHovered()) ImGui::SetTooltipV(fmtTooltip, args);
+    va_end(args);
+    if (ImGui::IsItemClicked()) ImGui::SetClipboardText(s);
+}
+}
 void VisualizeCurrentPlayerLocation()
 {
     Entity* player = ACU::GetPlayer();
@@ -173,7 +184,9 @@ void ImGuiLayer_WhenMenuIsOpen()
                             , ACU::Handles::HandleToText(handleToSearch).c_str()
                         );
                         ACU::WeakRef<ManagedObject> weakRef(handleToSearch);
-                        ImGui::Text(
+                        static ImGuiTextBuffer buf;
+                        buf.clear();
+                        buf.appendf(
                             "Address:     %llX\n"
                             "SharedBlock: %llX\n"
                             "StrongRefs:  %u\n"
@@ -183,6 +196,8 @@ void ImGuiLayer_WhenMenuIsOpen()
                             , weakRef.GetSharedBlock().GetRefcountStrong()
                             , weakRef.GetSharedBlock().weakRefCount
                         );
+                        ImGui::Text(buf.c_str());
+                        ImGui::CopyToClipboardOnClick(buf.c_str());
                     }
                 };
             if (ImGuiCTX::Tab _tab_devExtras{ "Dev extras" })

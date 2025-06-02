@@ -95,7 +95,7 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
                 ImGui::Checkbox("Show developer options", &g_PluginLoaderConfig.developerOptions->isActive.get());
                 if (g_PluginLoaderConfig.developerOptions->isActive)
                 {
-                    ImGui::Checkbox("Continue loading the game while it isn't focused", &g_PluginLoaderConfig.developerOptions->continueLoadingGameWhileItIsNotFocused.get());
+                    ImGui::Checkbox("Continue loading the game while it isn't focused (for Borderless Window, not Fullscreen)", &g_PluginLoaderConfig.developerOptions->continueLoadingGameWhileItIsNotFocused.get());
                     if (ImGui::IsItemHovered())
                         ImGui::SetTooltip("It's pretty helpful during development.");
                     CrashLog_CodePatches_DrawControls();

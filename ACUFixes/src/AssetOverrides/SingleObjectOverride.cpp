@@ -236,26 +236,69 @@ std::optional<ScannedLooseFile> ScanGameObjectLooseFile(const fs::path& targetFi
     infile.seekg(0, std::ios::end);
     uint32 filesize = (uint32)infile.tellg();
     if (filesize <= 14) return {};
-    byte byte0;             infile.seekg(0); infile.read((char*)&byte0, sizeof(byte0));
-    byte byte1;             infile.seekg(1); infile.read((char*)&byte1, sizeof(byte1));
-    uint64 handle;          infile.seekg(2); infile.read((char*)&handle, sizeof(handle));
-    uint32 typeNameHash;    infile.seekg(10); infile.read((char*)&typeNameHash, sizeof(typeNameHash));
     // The game isn't going to check for malformed files,
     // so I'll use some simple criteriums for initial check:
     // I expect the first two bytes to be [0, 1] (is the case
     // for all loose files I checked except Animation) and I also try to look up the TypeInfo
     // by the typename hash (bytes [10:14]).
-    if (byte0 != 0) return {};
-    if (byte1 != 1) return {};
-    TypeInfo* foundTI = ACU::TypeInfos::FindTypeInfoByTypeNameHash(typeNameHash);
+    byte isHasPrerequisites; infile.seekg(0); infile.read((char*)&isHasPrerequisites, sizeof(isHasPrerequisites));
+    std::streampos endOfPrerequisitesSection;
+    auto ScanFromFirstByteAfterPrerequisitesSection = [&]() -> std::optional<ScannedLooseFile>
+        {
+            byte byte1;             infile.read((char*)&byte1, sizeof(byte1));
+            uint64 handle;          infile.read((char*)&handle, sizeof(handle));
+            uint32 typeNameHash;    infile.read((char*)&typeNameHash, sizeof(typeNameHash));
+            if (byte1 != 1) return {};
+            TypeInfo* foundTI = ACU::TypeInfos::FindTypeInfoByTypeNameHash(typeNameHash);
+            if (!foundTI) return {};
+            return ScannedLooseFile{ handle, typeNameHash, *foundTI };
+        };
+    if (!isHasPrerequisites)
+    {
+        return ScanFromFirstByteAfterPrerequisitesSection();
+    }
+    // Replicating the logic at 1427081B0.
+    uint16 Version; infile.read((char*)&Version, sizeof(Version));
+    if (Version == 2) {
+        byte PartialSerialization;  infile.read((char*)&PartialSerialization, sizeof(PartialSerialization));
+        uint32 numPrereqs;          infile.read((char*)&numPrereqs, sizeof(numPrereqs));
+        for (uint32 i = 0; i < numPrereqs; i++) {
+            uint64 Type;            infile.read((char*)&Type, sizeof(Type));
+            uint32 Size;            infile.read((char*)&Size, sizeof(Size));
+        }
+        if (PartialSerialization) {
+            uint32 PartialSerializationSize; infile.read((char*)&PartialSerializationSize, sizeof(PartialSerializationSize));
+            for (uint32 i = 0; i < PartialSerializationSize; i++) {
+                uint64 Type;        infile.read((char*)&Type, sizeof(Type));
+                uint32 Size;        infile.read((char*)&Size, sizeof(Size));
+            }
+        }
+    }
+    else if (Version == 1) {
+        uint32 numPrereqs;          infile.read((char*)&numPrereqs, sizeof(numPrereqs));
+        for (uint32 i = 0; i < numPrereqs; i++) {
+            uint64 Type;            infile.read((char*)&Type, sizeof(Type));
+            uint32 Size;            infile.read((char*)&Size, sizeof(Size));
+        }
+    }
+    else if (!Version) {
+        uint32 numPrereqs;          infile.read((char*)&numPrereqs, sizeof(numPrereqs));
+        for (uint32 i = 0; i < numPrereqs; i++) {
+            uint32 ClassID;         infile.read((char*)&ClassID, sizeof(ClassID));
+            uint32 Size;            infile.read((char*)&Size, sizeof(Size));
+        }
+    }
+    uint32 endOfPrereqs = infile.tellg();
+    auto result = ScanFromFirstByteAfterPrerequisitesSection();
+    if (!result) return {};
     //LOG_DEBUG(SOOLog,
-    //    "File: %s, handle: %13llu, typenameHash: %x, typeInfo: %llX, typeName: %s"
-    //    , targetFilepath.filename().u8string().c_str()
-    //    , handle
-    //    , typeNameHash
-    //    , foundTI ? *foundTI : 0
-    //    , foundTI ? (*foundTI)->typeName : "NO_TYPEINFO"
+    //    "Prerequisites parsed. Version: %hd, Good: %d, EoP: %3x, H:%12llu, type: %12s, file: %s"
+    //    , Version
+    //    , (int)infile.good()
+    //    , endOfPrereqs
+    //    , result->m_Handle
+    //    , result->m_CorrespondingTypeInfo.get().typeName
+    //    , targetFilepath.u8string().c_str()
     //);
-    if (!foundTI) return {};
-    return ScannedLooseFile{ handle, typeNameHash, *foundTI };
+    return result;
 }

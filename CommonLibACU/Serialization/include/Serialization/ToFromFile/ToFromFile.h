@@ -9,6 +9,6 @@ namespace fs = std::filesystem;
 namespace json {
 
 JSON FromFile(const fs::path& path);
-void ToFile(const JSON& obj, const fs::path& path);
+bool ToFile(const JSON& obj, const fs::path& path);
 
 }
