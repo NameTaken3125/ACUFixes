@@ -219,6 +219,7 @@ if exist "$(ProjectDir)copy_output_to_directory.txt" (
     <ClCompile Include="src\AssetOverrides\SingleObjectOverride.cpp" />
     <ClCompile Include="src\AssetOverrides\AssetOverrides_EarlyHooks_HWBP.cpp" />
     <ClCompile Include="src\AssetOverrides\VirtualForgeFiles.cpp" />
+    <ClCompile Include="src\AssetOverrides\VirtualForgeFiles_impl.cpp" />
     <ClCompile Include="src\external\hwbrk\hwbrk.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
@@ -296,6 +297,7 @@ if exist "$(ProjectDir)copy_output_to_directory.txt" (
     <ClInclude Include="src\AssetOverrides\AssetOverrides.h" />
     <ClInclude Include="src\AssetOverrides\AssetOverridesConfig.h" />
     <ClInclude Include="src\AssetOverrides\DeserializationCycle.h" />
+    <ClInclude Include="src\AssetOverrides\ReadFile.h" />
     <ClInclude Include="src\AssetOverrides\SingleObjectOverride.h" />
     <ClInclude Include="src\AssetOverrides\VEH.h" />
     <ClInclude Include="src\external\hwbrk\hwbrk.h" />
@@ -355,6 +357,7 @@ if exist "$(ProjectDir)copy_output_to_directory.txt" (
     <ClInclude Include="src\pch.h" />
     <ClInclude Include="src\VariousPatches\Request_FreezeFOV.h" />
     <ClInclude Include="src\VariousPatches\Request_Spindescent.h" />
+    <ClInclude Include="src\AssetOverrides\VirtualForgeFiles_impl.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="assets\readme.txt" />
