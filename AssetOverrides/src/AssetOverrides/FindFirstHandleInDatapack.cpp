@@ -53,6 +53,10 @@ std::optional<uint64> FindFirstHandleInDatapack(const fs::path& targetFilepath)
     // an invalid datapack (e.g. just an empty file) will freeze the game.
     // I need to discern ahead of time the datapacks that will cause a freeze.
     // This criterium below seems to be working alright, though I don't know what it means.
+    // UPD: Doesn't always work. For example, take the savegame file Save002.sav
+    //      and change its extension to .data: this consistently crashes at startup.
+    //      I don't want to reverse the compression algorithm, so I'll just try to make it clear
+    //      in the instructions that the mod folders shouldn't contain junk.
     const bool isLooksLikeValidDatapack = retrieveDatapackStats.byte_89 == 9;
     if (!isLooksLikeValidDatapack)
     {

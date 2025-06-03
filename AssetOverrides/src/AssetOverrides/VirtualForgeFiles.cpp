@@ -868,7 +868,9 @@ void AssetModlist::DrawMenu()
             "Green means lower priority, red means higher priority.\n"
             "This is not necessarily a problem: if e.g. two different mods both replace\n"
             "the Ezio outfit, then they are of course \"in conflict\", but only one\n"
-            "will be used at a time, so you might not face any issues."
+            "will be used at a time, so you might not face any issues.\n"
+            "The opposite is also true: no detected conflicts does not necessarily mean\n"
+            "that the mods will work together. It's safest to test new mods one by one."
         );
     ImGui::Separator();
     ImGui::Text("Load Order (drag to reorder, right click on a mod to toggle)");
@@ -893,7 +895,7 @@ void AssetModlist::DrawMenu()
             selectedMod = nullptr;
     }
 
-    const float leftPaneHeight = ImGui::GetTextLineHeightWithSpacing() * 20;
+    const float leftPaneHeight = -ImGui::GetTextLineHeightWithSpacing(); // ImGui::GetTextLineHeightWithSpacing() * 20;
     const float leftPaneWidth = -ImGui::GetWindowWidth() * 0.6f;
     ImGuiChildFlags leftPaneFlags =
         ImGuiChildFlags_ResizeX
@@ -976,6 +978,7 @@ void AssetModlist::DrawMenu()
                 );
                 if (mod->m_WasLoadedFromLoadOrderButNotFoundAnymore)
                 {
+                    ImGuiCTX::PushStyleColor _colorModMissing(ImGuiCol_Text, ImVec4(1.0f, 0.4f, 0.4f, 1.0f));
                     if (ImGui::SmallButton("Delete"))
                     {
                         doDelete = true;
@@ -1457,14 +1460,14 @@ void DrawAssetOverridesInstructions()
                 "This is not a replacement for AnvilToolkit, merely a convenience feature\n"
                 "to avoid unpacking/repacking large .forge files in _some_ cases.\n"
                 "It is inconclusive for now whether or not the very act of swapping assets\n"
-                "at runtime leads to more crashes.\n"
+                "at runtime leads to _more_ crashes, but it doesn't seem to be the case.\n"
                 "If you're experiencing crashes, you can install your mods\n"
-                "The usual way via the AnvilToolkit\n"
+                "the usual way via the AnvilToolkit\n"
                 "which will always give you the most stable results.\n"
                 "If you're suspecting that some crashes are caused by this feature,\n"
-                "then just remove the\n"
-                "    \"Assassin's Creed Unity/ACUFixes/plugins/ACUFixes/AssetOverrides/\"\n"
-                "folder to completely disable all Asset Overrides."
+                "then just delete the\n"
+                "    \"Assassin's Creed Unity/ACUFixes/plugins/AssetOverrides.dll\"\n"
+                "to completely disable all Asset Overrides."
             );
             ImGui::BulletText(
                 "If the game object that you're trying to replace is _currently_being_used_\n"
@@ -1500,6 +1503,12 @@ void DrawAssetOverridesInstructions()
                 "in a way they weren't supposed to be.\n"
                 "If you're experiencing problems, just disable Asset Overrides and try installing\n"
                 "your mod the usual way via the AnvilToolkit."
+            );
+            ImGui::BulletText(
+                "The game does not check for file errors, so don't put junk files\n"
+                "into your mod folders.\n"
+                "In particular, the game can freeze or crash even at startup\n"
+                "if a .data file is not a correct datapack."
             );
         }
         if (ImGuiCTX::TreeNode _knownMods{ "Supported mods" })

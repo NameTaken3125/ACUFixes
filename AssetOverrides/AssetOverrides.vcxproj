@@ -131,8 +131,6 @@ if exist "$(ProjectDir)copy_output_to_directory.txt" (
   for /f "delims=" %%x in ('type "$(ProjectDir)copy_output_to_directory.txt"') do (
     echo.    Copying "$(TargetFileName)" to "%%x"
     copy "$(TargetDir)$(TargetFileName)" "%%x"
-    echo [*] Copying animation files into target directory: "%%x"
-    xcopy "$(SolutionDir)NewAnimations" "%%x\NewAnimations\" /s /e /y /i
   )
 ) else (
   echo [-] The "copy_output_to_directory.txt" file does not exist.
@@ -196,8 +194,6 @@ if exist "$(ProjectDir)copy_output_to_directory.txt" (
   for /f "delims=" %%x in ('type "$(ProjectDir)copy_output_to_directory.txt"') do (
     echo.    Copying "$(TargetFileName)" to "%%x"
     copy "$(TargetDir)$(TargetFileName)" "%%x"
-    echo [*] Copying animation files into target directory: "%%x"
-    xcopy "$(SolutionDir)NewAnimations" "%%x\NewAnimations\" /s /e /y /i
   )
 ) else (
   echo [-] The "copy_output_to_directory.txt" file does not exist.

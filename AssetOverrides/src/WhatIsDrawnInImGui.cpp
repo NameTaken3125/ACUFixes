@@ -29,7 +29,7 @@ inline void CopyToClipboardOnClick(const char* s, const char* fmtTooltip = "Clic
 #include "Common_Plugins/Common_PluginSide.h"
 void DrawModMenuControls()
 {
-    if (ImGui::Button("Open DLL's folder in File Explorer (has config)"))
+    if (ImGui::Button("Open DLL's folder in File Explorer"))
     {
         system(("explorer \"" + g_ThisDLLAbsoluteFilepath.parent_path().string() + "\"").c_str());
     }
