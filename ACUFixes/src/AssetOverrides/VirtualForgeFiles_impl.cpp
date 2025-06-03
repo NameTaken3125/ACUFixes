@@ -65,11 +65,11 @@ ForgeFile_38* AllocateVirtualForgeContents(ForgeFile& newForge)
 void SetForgefilePathStrings(ForgeFile& newForge, const fs::path& targetFilepath)
 {
     fs::path abspath = targetFilepath;
-    std::string s = abspath.filename().string();
+    std::string s = (const char*)abspath.filename().u8string().c_str();
     strncpy_s(newForge.filename, 255, s.c_str(), 254);
     newForge.filename[255] = 0;
 
-    newForge.dirpathIfNotRootFolder_mb = ACU::Memory::ACUAllocateString(abspath.parent_path().string() + "\\");
+    newForge.dirpathIfNotRootFolder_mb = ACU::Memory::ACUAllocateString((const char*)(abspath.parent_path().u8string() + u8"\\").c_str());
 }
 DEFINE_GAME_FUNCTION(sub_14276BC70, 0x14276BC70, __int64, __fastcall, (ForgeFile_240* a1, __int64 p_offsetInForgeFile, unsigned int a3));
 DEFINE_GAME_FUNCTION(ForgeFile__RecalculateNameHash_mb, 0x142721B50, __int64, __fastcall, (ForgeFile* a1));
@@ -104,7 +104,7 @@ void WhenOpenedVirtualForge_Initialize(ForgeFile& newForge, char a3_from14272EE1
 DEFINE_GAME_FUNCTION(ForgeFile_240__OpenFile_mb, 0x142764C90, char, __fastcall, (ForgeFile_240* a1, const char* p_filepath, unsigned int p_1whenOpenForge));
 
 
-ForgeFileEntry* MakeNewForgeFileEntry_impl(uint64 targetHandle, const fs::path& absoluteFilepath, LoadPriority priority)
+ForgeFileEntry* MakeNewForgeFileEntry_impl(uint64 targetHandle, const fs::path& absoluteFilepath)
 {
     const uint32 datapackSize = (uint32)fs::file_size(absoluteFilepath);
     auto* fm = ForgeManager::GetSingleton();
@@ -133,37 +133,28 @@ ForgeFileEntry* MakeNewForgeFileEntry_impl(uint64 targetHandle, const fs::path& 
     newForgeEntry->forgeIdx_mb = ++fm->nextForgeIdx;
     newForgeEntry->forgeContentsDescriptor = newForge;
 
-    const bool isSuccessfullyOpened = ForgeFile_240__OpenFile_mb(&newForge->stru_240, absoluteFilepath.string().c_str(), 1);
+    const bool isSuccessfullyOpened = ForgeFile_240__OpenFile_mb(&newForge->stru_240, (const char*)absoluteFilepath.u8string().c_str(), 1);
     if (isSuccessfullyOpened)
     {
         WhenOpenedVirtualForge_Initialize(*newForge, 1);
     }
 
-    switch (priority)
-    {
-    case LoadPriority::Lowest:
-        ACU::Memory::SmallArrayAppend(fm->forges, newForgeEntry);
-        break;
-    case LoadPriority::Highest:
-    default:
-        ACU::Memory::SmallArrayInsert(fm->forges, newForgeEntry, 0);
-        break;
-    }
+    ACU::Memory::SmallArrayInsert(fm->forges, newForgeEntry, 0);
 
     newForgeEntry->refcount_mb = 1;
     if (!isSuccessfullyOpened)
     {
-        ForgeManager__DecrementForgeEntryRefcount_mb(fm, newForgeEntry->forgeIdx_mb);
+        fm->DecrementForgeRefcount(newForgeEntry->forgeIdx_mb);
         return {};
     }
 
     return newForgeEntry;
 }
-ForgeFileEntry* MakeNewForgeFileEntry(uint64 targetHandle, const fs::path& absoluteFilepath, LoadPriority priority)
+ForgeFileEntry* MakeNewForgeFileEntry(uint64 targetHandle, const fs::path& absoluteFilepath)
 {
     try
     {
-        return MakeNewForgeFileEntry_impl(targetHandle, absoluteFilepath, priority);
+        return MakeNewForgeFileEntry_impl(targetHandle, absoluteFilepath);
     }
     catch (const fs::filesystem_error&)
     {
@@ -174,12 +165,3 @@ ForgeFileEntry* MakeNewForgeFileEntry(uint64 targetHandle, const fs::path& absol
     }
     return nullptr;
 }
-bool IsForgeAlive(ForgeManager& fm, ForgeIndex_t forgeIdx)
-{
-    auto& forges = fm.forges;
-    return std::find_if(forges.begin(), forges.end(), [&](ForgeFileEntry* forgeEntry)
-        {
-            return forgeEntry->forgeIdx_mb == forgeIdx;
-        }) != forges.end();
-}
-

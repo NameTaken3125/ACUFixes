@@ -33,7 +33,7 @@ static uint32 ConsumeFilename(DatapackReader* a1, uint32* p_firstDwordOut, uint3
     uint32 numConsumedBytes = 0xC + lenFilename;
     return numConsumedBytes;
 }
-static size_t ConsumePrologue(DatapackReader* a1, __int64 a2, uint32 a3, __int64 a6)
+static size_t ConsumePrerequisites(DatapackReader* a1, __int64 a2, uint32 a3, __int64 a6)
 {
     void* v7 = alloca(0x20E0);
     byte isHasPrerequisitesSection;
@@ -96,7 +96,7 @@ void WhenStartDeserializeFileInDatapackTogetherWithPrologue_FullReplacement(uint
             datapackReader,
             (uint32*)(rsp + 0x54),
             (uint32*)(rsp + 0x50));
-        ConsumePrologue(
+        ConsumePrerequisites(
             datapackReader,
             0,
             (uint32&)rax,
@@ -162,7 +162,7 @@ void WhenStartDeserializeFileInDatapackTogetherWithPrologue_FullReplacement(uint
     std::swap(datapackReader->decryptedChunkLocalStreampos, mockDecryptedStreamState.decryptedChunkLocalStreampos);
     std::swap(datapackReader->decryptedChunkSize, mockDecryptedStreamState.decryptedChunkSize);
     std::swap(datapackReader->byte_89, mockDecryptedStreamState.byte_89);
-    size_t numConsumedBytesInPrologue = ConsumePrologue(
+    size_t numConsumedBytesInPrologue = ConsumePrerequisites(
         datapackReader,
         0,
         (uint32&)rax,

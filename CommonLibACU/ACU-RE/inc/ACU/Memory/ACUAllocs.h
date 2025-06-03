@@ -7,6 +7,7 @@ but they definitely need attention. Wouldn't be surprised if they cause problems
 when used in new contexts.
 */
 
+#include <string_view>
 
 #include "ACU/basic_types.h"
 #include "ACU/TypeInfo.h"

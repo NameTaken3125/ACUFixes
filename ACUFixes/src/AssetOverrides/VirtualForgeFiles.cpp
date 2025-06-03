@@ -15,6 +15,8 @@
 #include "ImGuiCTX.h"
 
 #include "VirtualForgeFiles_impl.h"
+#include "SingleObjectOverride.h"
+
 
 std::optional<uint64> FindFirstHandleInDatapack(const fs::path& targetFilepath);
 
@@ -56,11 +58,8 @@ public:
     ~DetectedDatapack()
     {
         auto* fm = ForgeManager::GetSingleton();
-        if (!fm) return;
-        if (m_ForgeIdx && IsForgeAlive(*fm, *m_ForgeIdx))
-        {
-            ForgeManager__DecrementForgeEntryRefcount_mb(fm, *m_ForgeIdx);
-        }
+        if (m_ForgeIdx && fm->IsForgeAlive(*m_ForgeIdx))
+            fm->DecrementForgeRefcount(*m_ForgeIdx);
     }
 };
 struct ResultForDetectedLooseFile_LooksOk
@@ -145,7 +144,6 @@ std::vector<std::unique_ptr<DetectedDatapack>> GetDatapacksFromFolder(const fs::
     }
     return result;
 }
-#include "SingleObjectOverride.h"
 std::vector<std::unique_ptr<DetectedLooseFile>> GetLooseFilesFromFolder(const fs::path& modFolder)
 {
     ImGuiTextBuffer buf;
@@ -268,6 +266,7 @@ bool IsModHasConflicts(AssetMod& lhs, AssetMod& rhs)
 std::optional<uint16> GetPrefetchInfoIndex(ForgeFileEntry& forge, uint64 handle)
 {
     auto& prefetchInfos = forge.forgeContentsDescriptor->datapacksPrefetchInfoAscendingHandles;
+    if (!prefetchInfos.size) return {};
     int left = 0;
     int right = prefetchInfos.size;
     while (left <= right)
@@ -323,17 +322,6 @@ void StealPrefetchingInfoIntoVirtualForge(ForgeFile& cloneTo, ForgeFile& cloneFr
     singularDatapackPrefetchInfo.prefetchDataSize = originalPrefetchInfo.prefetchDataSize;
     singularDatapackPrefetchInfo.offsetInPrefetchData = 0;
 }
-namespace ImGui
-{
-inline void CopyToClipboardOnClick(const char* s, const char* fmtTooltip = "Click to copy to clipboard", ...)
-{
-    va_list args;
-    va_start(args, fmtTooltip);
-    if (ImGui::IsItemHovered()) ImGui::SetTooltipV(fmtTooltip, args);
-    va_end(args);
-    if (ImGui::IsItemClicked()) ImGui::SetClipboardText(s);
-}
-}
 class AssetModlist
 {
     std::vector<std::unique_ptr<AssetMod>> m_Mods;
@@ -342,7 +330,6 @@ public:
     void MakeVirtualForgesForAllDatapacks();
     void UpdatePrefetchDataForActiveDatapacks();
     void ApplyCustomForgeOrder();
-    void ApplyCustomForgeOrder(ForgeManager& fm);
 
     std::pair<ForgeFileEntry*, uint16> FindOriginalPrefetchingInfoForHandle(uint64 handle);
     void FindAndFormatOriginalPrefetchingInfoForHandle(ImGuiTextBuffer& buf, uint64 handle);
@@ -445,16 +432,303 @@ void AssetModlist::FindAndFormatOriginalPrefetchingInfoForHandle(ImGuiTextBuffer
     }
     ForgeFile_DatapackPrefetchInfo& prefetchInfo = nonmoddedForge->forgeContentsDescriptor->datapacksPrefetchInfoAscendingHandles[prefetchInfoIdx];
     uintptr_t prefetchInfoAddr = (uintptr_t)nonmoddedForge->forgeContentsDescriptor->prefetchData + prefetchInfo.offsetInPrefetchData;
+    std::string_view nonmoddedForgeName = nonmoddedForge->forgeContentsDescriptor->filename;
+    if (!nonmoddedForgeName.size())
+        nonmoddedForgeName = nonmoddedForge->forgeName;
     buf.appendf(
         "Found prefetching info in forge #%d (%s) at idx %hd (size=%u, isCompressed=%s, addr=%llX)"
         , nonmoddedForge->forgeIdx_mb
-        , nonmoddedForge->forgeName
+        , nonmoddedForgeName.data()
         , prefetchInfoIdx
         , prefetchInfo.prefetchDataSize
         , prefetchInfo.isCompressed_mb ? "true" : "false"
         , prefetchInfoAddr
     );
     return;
+}
+AssetMod* AssetModlist::FindHigherPriorityOverride(DetectedDatapack& datapack)
+{
+    auto* datapackOk = std::get_if<ResultForDetectedDatapack_LooksOk>(&datapack.m_Result);
+    if (!datapackOk) return nullptr;
+    uint64 handle = datapackOk->m_Handle;
+    for (size_t i = m_Mods.size() - 1; i != static_cast<size_t>(-1); --i)
+    {
+        auto& mod = m_Mods[i];
+        if (!mod->m_IsActiveInLoadOrder) continue;
+        if (mod->m_IsError) continue;
+        for (auto& dp : mod->m_Datapacks)
+        {
+            if (auto* datapackOk = std::get_if<ResultForDetectedDatapack_LooksOk>(&dp->m_Result))
+            {
+                if (datapackOk->m_Handle == handle)
+                {
+                    if (dp.get() == &datapack) return nullptr;
+                    else return mod.get();
+                }
+            }
+        }
+    }
+    return nullptr;
+}
+json::JSON AssetModlist::LoadOrderToJSON()
+{
+    JSON jsLoadOrderArray = JSON::Make(JSON::Class::Array);
+    for (auto& mod : m_Mods)
+    {
+        fs::path relPath = fs::relative(mod->m_ModFolder, GetAssetModsFolder());
+        JSON jsModRecord = JSON::Make(JSON::Class::Object);
+        jsModRecord["Name"] = FilepathAdapter(relPath).ToJSON();
+        jsModRecord["Enable"] = mod->m_IsActiveInLoadOrder;
+        jsLoadOrderArray.append(std::move(jsModRecord));
+    }
+    return jsLoadOrderArray;
+}
+void AssetModlist::LoadOrder_Save()
+{
+    JSON jsLoadOrder = LoadOrderToJSON();
+    LOG_DEBUG(VirtualForgesLog
+        , "Save load order:\n%s"
+        , jsLoadOrder.dump().c_str()
+    );
+    json::ToFile(jsLoadOrder, GetLoadOrderFilepath());
+}
+void AssetModlist::InitFromLoadOrder()
+{
+    fs::path assetModsFolder = GetAssetModsFolder();
+    m_Mods.clear();
+
+    const bool assetModsDirExists = fs::is_directory(assetModsFolder);
+    if (!assetModsDirExists)
+    {
+        LOG_DEBUG(VirtualForgesLog,
+            "Asset mods folder not found:\n%s"
+            , assetModsFolder.u8string().c_str()
+        );
+        return;
+    }
+    JSON jsLoadOrder = json::FromFile(GetLoadOrderFilepath());
+    LOG_DEBUG(VirtualForgesLog
+        , "Read load order:\n%s\n"
+        , jsLoadOrder.dump().c_str()
+    );
+    JSON& jsLoadOrderArray = jsLoadOrder;
+    if (jsLoadOrderArray.JSONType() == JSON::Class::Array)
+    {
+        for (JSON& jsMod : jsLoadOrderArray.ArrayRange())
+        {
+            fs::path Name;
+            if (!READ_JSON_VARIABLE(jsMod, Name, FilepathAdapter)) continue;
+            if (Name.empty()) continue;
+            bool Enable = false;
+            READ_JSON_VARIABLE(jsMod, Enable, BooleanAdapter);
+            auto& newMod = m_Mods.emplace_back(std::make_unique<AssetMod>(assetModsFolder / Name));
+            newMod->m_IsActiveInLoadOrder = Enable;
+            newMod->m_WasLoadedFromLoadOrderButNotFoundAnymore = true;
+        }
+    }
+    try {
+        for (const auto& entry : fs::directory_iterator(assetModsFolder)) {
+            if (!entry.is_directory()) continue;
+            LOG_DEBUG(VirtualForgesLog
+                , "Found mod folder: %s\n"
+                , entry.path().filename().u8string().c_str()
+            );
+            auto itAlreadyPresent = std::find_if(m_Mods.begin(), m_Mods.end(), [&entry](std::unique_ptr<AssetMod>& mod)
+                {
+                    return mod->m_ModFolder == entry;
+                });
+            std::unique_ptr<AssetMod>& mod = (itAlreadyPresent == m_Mods.end())
+                ? m_Mods.emplace_back(std::make_unique<AssetMod>(entry))
+                : *itAlreadyPresent
+                ;
+            mod->GatherDatapacksAndLooseFiles();
+            mod->m_WasLoadedFromLoadOrderButNotFoundAnymore = false;
+        }
+    }
+    catch (const fs::filesystem_error& e) {
+        LOG_DEBUG(
+            VirtualForgesLog
+            , "[AddVirtualForges] Filesystem error: %s\n"
+            , e.what()
+        );
+    }
+    MakeVirtualForgesForAllDatapacks();
+    ApplyCustomForgeOrder();
+    UpdatePrefetchDataForActiveDatapacks();
+    RebuildLooseFilesLookup();
+}
+std::vector<DetectedDatapack*> AssetModlist::GatherDatapackOrder()
+{
+    std::vector<DetectedDatapack*> gatheredLoadOrder;
+    for (auto& mod : m_Mods)
+    {
+        if (!mod->m_IsActiveInLoadOrder
+            || mod->m_IsError
+            || mod->m_Datapacks.size() == 0
+            )
+            continue;
+        for (auto& datapack : mod->m_Datapacks)
+        {
+            gatheredLoadOrder.push_back(datapack.get());
+        }
+    }
+    return gatheredLoadOrder;
+}
+void AssetModlist::MakeVirtualForgesForAllDatapacks()
+{
+    auto* fm = ForgeManager::GetSingleton();
+    if (!fm) return;
+    auto MakeForgeForDatapack = [fm](DetectedDatapack& datapack) -> bool
+        {
+            if (datapack.m_ForgeIdx && fm->IsForgeAlive(*datapack.m_ForgeIdx))
+                return true;
+            const uint64 handle = std::get<ResultForDetectedDatapack_LooksOk>(datapack.m_Result).m_Handle;
+            ForgeFileEntry* newForgeEntry = MakeNewForgeFileEntry(handle, datapack.m_AbsolutePath);
+            if (!newForgeEntry) return false;
+            datapack.m_ForgeIdx = newForgeEntry->forgeIdx_mb;
+            return true;
+        };
+    for (auto& mod : m_Mods)
+    {
+        if (!mod->m_IsActiveInLoadOrder
+            || mod->m_IsError
+            || mod->m_Datapacks.size() == 0
+            )
+            continue;
+        for (auto& datapack : mod->m_Datapacks)
+        {
+            bool isSuccess = MakeForgeForDatapack(*datapack);
+            if (!isSuccess)
+            {
+                datapack->m_Result = ResultForDetectedDatapack_LookedOkButFailedToCreateVirtualForge{
+                    u8"Datapack looked OK when it was found, but the game failed to load it.\n"
+                    "Was the file removed? Try refreshing the Load Order."
+                };
+                mod->m_IsErrorInDatapacks = true;
+                mod->m_IsError = true;
+                break;
+            }
+        }
+    }
+}
+void AssetModlist::UpdatePrefetchDataForActiveDatapacks()
+{
+    auto* fm = ForgeManager::GetSingleton();
+    if (!fm) return;
+    auto MakeForgeForDatapack = [fm](DetectedDatapack& datapack) -> bool
+        {
+            if (datapack.m_ForgeIdx && fm->IsForgeAlive(*datapack.m_ForgeIdx))
+                return true;
+            const uint64 handle = std::get<ResultForDetectedDatapack_LooksOk>(datapack.m_Result).m_Handle;
+            ForgeFileEntry* newForgeEntry = MakeNewForgeFileEntry(handle, datapack.m_AbsolutePath);
+            if (!newForgeEntry) return false;
+            datapack.m_ForgeIdx = newForgeEntry->forgeIdx_mb;
+            return true;
+        };
+    for (auto& mod : m_Mods)
+    {
+        if (!mod->m_IsActiveInLoadOrder
+            || mod->m_IsError
+            || mod->m_Datapacks.size() == 0
+            )
+            continue;
+        for (auto& datapack : mod->m_Datapacks)
+        {
+            if (!datapack->m_ForgeIdx) continue;
+            const uint64 handle = std::get<ResultForDetectedDatapack_LooksOk>(datapack->m_Result).m_Handle;
+            ForgeFileEntry* moddedForge = fm->FindForgeForIdx(*datapack->m_ForgeIdx);
+            if (!moddedForge) continue;
+            auto [nonmoddedForge, prefetchInfoIdx] = this->FindOriginalPrefetchingInfoForHandle(handle);
+            if (nonmoddedForge)
+                StealPrefetchingInfoIntoVirtualForge(*moddedForge->forgeContentsDescriptor, *nonmoddedForge->forgeContentsDescriptor, prefetchInfoIdx);
+            else
+                ResetPrefetchingInfoForVirtualForge(*moddedForge->forgeContentsDescriptor, handle);
+        }
+    }
+}
+void AssetModlist::ToggleMod(AssetMod& mod, bool doActivate)
+{
+    const bool wasActive = !doActivate;
+    mod.m_IsActiveInLoadOrder = !mod.m_IsActiveInLoadOrder;
+    auto* fm = ForgeManager::GetSingleton();
+    if (wasActive)
+    {
+        for (auto& datapack : mod.m_Datapacks)
+        {
+            if (datapack->m_ForgeIdx && fm->IsForgeAlive(*datapack->m_ForgeIdx))
+            {
+                fm->DecrementForgeRefcount(*datapack->m_ForgeIdx);
+                datapack->m_ForgeIdx.reset();
+            }
+        }
+    }
+    else
+    {
+        MakeVirtualForgesForAllDatapacks();
+        ApplyCustomForgeOrder();
+    }
+    RebuildLooseFilesLookup();
+}
+void AssetModlist::ToggleMod(AssetMod& mod)
+{
+    ToggleMod(mod, !mod.m_IsActiveInLoadOrder);
+}
+void AssetModlist::ApplyCustomForgeOrder()
+{
+    auto& fm = *ForgeManager::GetSingleton();
+    std::vector<DetectedDatapack*> gatheredLoadOrder = GatherDatapackOrder();
+    // Move the corresponding forge entries to the front, sort them accordingly.
+    std::vector<ForgeFileEntry*> orderedForgeEntries;
+    orderedForgeEntries.reserve(gatheredLoadOrder.size());
+    for (DetectedDatapack* datapack : gatheredLoadOrder)
+    {
+        if (!datapack->m_ForgeIdx) continue;
+        for (ForgeFileEntry* forgeEntry : fm.forges)
+        {
+            if (forgeEntry->forgeIdx_mb == *datapack->m_ForgeIdx)
+                orderedForgeEntries.push_back(forgeEntry);
+        }
+    }
+    auto firstRemovedIt = std::remove_if(fm.forges.begin(), fm.forges.end(), [&](ForgeFileEntry* forgeEntry)
+        {
+            return std::find(orderedForgeEntries.begin(), orderedForgeEntries.end(), forgeEntry) != orderedForgeEntries.end();
+        });
+    const uint16 numRemovedEntries = (fm.forges.end() - firstRemovedIt);
+    if (numRemovedEntries)
+    {
+        fm.forges.size = fm.forges.size - numRemovedEntries;
+    }
+    for (ForgeFileEntry* forgeEntry : orderedForgeEntries)
+    {
+        ACU::Memory::SmallArrayInsert(fm.forges, forgeEntry, 0);
+    }
+}
+void AssetModlist::RebuildLooseFilesLookup()
+{
+    m_SingleObjectOverride_FilepathRelByHandle.clear();
+    for (auto& assetMod : m_Mods)
+    {
+        if (assetMod->m_IsError) continue;
+        if (!assetMod->m_IsActiveInLoadOrder) continue;
+        for (auto& looseFile : assetMod->m_LooseFiles)
+        {
+            auto& scannedLooseFile = std::get<ResultForDetectedLooseFile_LooksOk>(looseFile->m_Result);
+            m_SingleObjectOverride_FilepathRelByHandle[scannedLooseFile.m_Handle] =
+                RegisteredSingleObjectOverride{ assetMod.get(), looseFile.get(), looseFile->m_AbsolutePath };
+        }
+    }
+}
+
+namespace ImGui
+{
+inline void CopyToClipboardOnClick(const char* s, const char* fmtTooltip = "Click to copy to clipboard", ...)
+{
+    va_list args;
+    va_start(args, fmtTooltip);
+    if (ImGui::IsItemHovered()) ImGui::SetTooltipV(fmtTooltip, args);
+    va_end(args);
+    if (ImGui::IsItemClicked()) ImGui::SetClipboardText(s);
+}
 }
 void AssetModlist::OpenPopup_DatapackDetails(AssetMod& selectedMod, DetectedDatapack& datapack)
 {
@@ -956,290 +1230,6 @@ void AssetModlist::DrawMenu()
         }
     }
 }
-AssetMod* AssetModlist::FindHigherPriorityOverride(DetectedDatapack& datapack)
-{
-    auto* datapackOk = std::get_if<ResultForDetectedDatapack_LooksOk>(&datapack.m_Result);
-    if (!datapackOk) return nullptr;
-    uint64 handle = datapackOk->m_Handle;
-    for (size_t i = m_Mods.size() - 1; i != static_cast<size_t>(-1); --i)
-    {
-        auto& mod = m_Mods[i];
-        if (!mod->m_IsActiveInLoadOrder) continue;
-        if (mod->m_IsError) continue;
-        for (auto& dp : mod->m_Datapacks)
-        {
-            if (auto* datapackOk = std::get_if<ResultForDetectedDatapack_LooksOk>(&dp->m_Result))
-            {
-                if (datapackOk->m_Handle == handle)
-                {
-                    if (dp.get() == &datapack) return nullptr;
-                    else return mod.get();
-                }
-            }
-        }
-    }
-    return nullptr;
-}
-json::JSON AssetModlist::LoadOrderToJSON()
-{
-    JSON jsLoadOrderArray = JSON::Make(JSON::Class::Array);
-    for (auto& mod : m_Mods)
-    {
-        fs::path relPath = fs::relative(mod->m_ModFolder, GetAssetModsFolder());
-        JSON jsModRecord = JSON::Make(JSON::Class::Object);
-        jsModRecord["Name"] = FilepathAdapter(relPath).ToJSON();
-        jsModRecord["Enable"] = mod->m_IsActiveInLoadOrder;
-        jsLoadOrderArray.append(std::move(jsModRecord));
-    }
-    return jsLoadOrderArray;
-}
-void AssetModlist::LoadOrder_Save()
-{
-    JSON jsLoadOrder = LoadOrderToJSON();
-    LOG_DEBUG(VirtualForgesLog
-        , "Save load order:\n%s"
-        , jsLoadOrder.dump().c_str()
-    );
-    json::ToFile(jsLoadOrder, GetLoadOrderFilepath());
-}
-void AssetModlist::InitFromLoadOrder()
-{
-    fs::path assetModsFolder = GetAssetModsFolder();
-    m_Mods.clear();
-
-    const bool assetModsDirExists = fs::is_directory(assetModsFolder);
-    if (!assetModsDirExists)
-    {
-        LOG_DEBUG(VirtualForgesLog,
-            "Asset mods folder not found:\n%s"
-            , assetModsFolder.u8string().c_str()
-        );
-        return;
-    }
-    JSON jsLoadOrder = json::FromFile(GetLoadOrderFilepath());
-    LOG_DEBUG(VirtualForgesLog
-        , "Read load order:\n%s\n"
-        , jsLoadOrder.dump().c_str()
-    );
-    JSON& jsLoadOrderArray = jsLoadOrder;
-    if (jsLoadOrderArray.JSONType() == JSON::Class::Array)
-    {
-        for (JSON& jsMod : jsLoadOrderArray.ArrayRange())
-        {
-            fs::path Name;
-            if (!READ_JSON_VARIABLE(jsMod, Name, FilepathAdapter)) continue;
-            if (Name.empty()) continue;
-            bool Enable = false;
-            READ_JSON_VARIABLE(jsMod, Enable, BooleanAdapter);
-            auto& newMod = m_Mods.emplace_back(std::make_unique<AssetMod>(assetModsFolder / Name));
-            newMod->m_IsActiveInLoadOrder = Enable;
-            newMod->m_WasLoadedFromLoadOrderButNotFoundAnymore = true;
-        }
-    }
-    try {
-        for (const auto& entry : fs::directory_iterator(assetModsFolder)) {
-            if (!entry.is_directory()) continue;
-            LOG_DEBUG(VirtualForgesLog
-                , "Found mod folder: %s\n"
-                , entry.path().filename().u8string().c_str()
-            );
-            auto itAlreadyPresent = std::find_if(m_Mods.begin(), m_Mods.end(), [&entry](std::unique_ptr<AssetMod>& mod)
-                {
-                    return mod->m_ModFolder == entry;
-                });
-            std::unique_ptr<AssetMod>& mod = (itAlreadyPresent == m_Mods.end())
-                ? m_Mods.emplace_back(std::make_unique<AssetMod>(entry))
-                : *itAlreadyPresent
-                ;
-            mod->GatherDatapacksAndLooseFiles();
-            mod->m_WasLoadedFromLoadOrderButNotFoundAnymore = false;
-        }
-    }
-    catch (const fs::filesystem_error& e) {
-        LOG_DEBUG(
-            VirtualForgesLog
-            , "[AddVirtualForges] Filesystem error: %s\n"
-            , e.what()
-        );
-    }
-    MakeVirtualForgesForAllDatapacks();
-    ApplyCustomForgeOrder();
-    RebuildLooseFilesLookup();
-}
-std::vector<DetectedDatapack*> AssetModlist::GatherDatapackOrder()
-{
-    std::vector<DetectedDatapack*> gatheredLoadOrder;
-    for (auto& mod : m_Mods)
-    {
-        if (!mod->m_IsActiveInLoadOrder
-            || mod->m_IsError
-            || mod->m_Datapacks.size() == 0
-            )
-            continue;
-        for (auto& datapack : mod->m_Datapacks)
-        {
-            gatheredLoadOrder.push_back(datapack.get());
-        }
-    }
-    return gatheredLoadOrder;
-}
-void AssetModlist::MakeVirtualForgesForAllDatapacks()
-{
-    auto* fm = ForgeManager::GetSingleton();
-    if (!fm) return;
-    auto MakeForgeForDatapack = [fm](DetectedDatapack& datapack) -> bool
-        {
-            if (datapack.m_ForgeIdx && IsForgeAlive(*fm, *datapack.m_ForgeIdx))
-                return true;
-            const uint64 handle = std::get<ResultForDetectedDatapack_LooksOk>(datapack.m_Result).m_Handle;
-            ForgeFileEntry* newForgeEntry = MakeNewForgeFileEntry(handle, datapack.m_AbsolutePath, LoadPriority::Highest);
-            if (!newForgeEntry) return false;
-            datapack.m_ForgeIdx = newForgeEntry->forgeIdx_mb;
-            return true;
-        };
-    for (auto& mod : m_Mods)
-    {
-        if (!mod->m_IsActiveInLoadOrder
-            || mod->m_IsError
-            || mod->m_Datapacks.size() == 0
-            )
-            continue;
-        for (auto& datapack : mod->m_Datapacks)
-        {
-            bool isSuccess = MakeForgeForDatapack(*datapack);
-            if (!isSuccess)
-            {
-                datapack->m_Result = ResultForDetectedDatapack_LookedOkButFailedToCreateVirtualForge{
-                    u8"Datapack looked OK when it was found, but the game failed to load it.\n"
-                    "Was the file removed? Try refreshing the Load Order."
-                };
-                mod->m_IsErrorInDatapacks = true;
-                mod->m_IsError = true;
-                break;
-            }
-        }
-    }
-}
-void AssetModlist::UpdatePrefetchDataForActiveDatapacks()
-{
-    auto* fm = ForgeManager::GetSingleton();
-    if (!fm) return;
-    auto MakeForgeForDatapack = [fm](DetectedDatapack& datapack) -> bool
-        {
-            if (datapack.m_ForgeIdx && IsForgeAlive(*fm, *datapack.m_ForgeIdx))
-                return true;
-            const uint64 handle = std::get<ResultForDetectedDatapack_LooksOk>(datapack.m_Result).m_Handle;
-            ForgeFileEntry* newForgeEntry = MakeNewForgeFileEntry(handle, datapack.m_AbsolutePath, LoadPriority::Highest);
-            if (!newForgeEntry) return false;
-            datapack.m_ForgeIdx = newForgeEntry->forgeIdx_mb;
-            return true;
-        };
-    for (auto& mod : m_Mods)
-    {
-        if (!mod->m_IsActiveInLoadOrder
-            || mod->m_IsError
-            || mod->m_Datapacks.size() == 0
-            )
-            continue;
-        for (auto& datapack : mod->m_Datapacks)
-        {
-            if (!datapack->m_ForgeIdx) continue;
-            const uint64 handle = std::get<ResultForDetectedDatapack_LooksOk>(datapack->m_Result).m_Handle;
-            auto FindForgeForIdx = [&](ForgeIndex_t forgeIdx) -> ForgeFileEntry*
-                {
-                    for (ForgeFileEntry* forgeEntry : fm->forges)
-                    {
-                        if (forgeEntry->forgeIdx_mb == forgeIdx) return forgeEntry;
-                    }
-                    return nullptr;
-                };
-            ForgeFileEntry* moddedForge = FindForgeForIdx(*datapack->m_ForgeIdx);
-            if (!moddedForge) continue;
-            auto [nonmoddedForge, prefetchInfoIdx] = this->FindOriginalPrefetchingInfoForHandle(handle);
-            if (nonmoddedForge)
-                StealPrefetchingInfoIntoVirtualForge(*moddedForge->forgeContentsDescriptor, *nonmoddedForge->forgeContentsDescriptor, prefetchInfoIdx);
-            else
-                ResetPrefetchingInfoForVirtualForge(*moddedForge->forgeContentsDescriptor, handle);
-        }
-    }
-}
-void AssetModlist::ToggleMod(AssetMod& mod, bool doActivate)
-{
-    const bool wasActive = !doActivate;
-    mod.m_IsActiveInLoadOrder = !mod.m_IsActiveInLoadOrder;
-    auto* fm = ForgeManager::GetSingleton();
-    if (wasActive)
-    {
-        for (auto& datapack : mod.m_Datapacks)
-        {
-            if (datapack->m_ForgeIdx && IsForgeAlive(*fm, *datapack->m_ForgeIdx))
-            {
-                ForgeManager__DecrementForgeEntryRefcount_mb(fm, *datapack->m_ForgeIdx);
-                datapack->m_ForgeIdx.reset();
-            }
-        }
-    }
-    else
-    {
-        MakeVirtualForgesForAllDatapacks();
-        ApplyCustomForgeOrder();
-    }
-    RebuildLooseFilesLookup();
-}
-void AssetModlist::ToggleMod(AssetMod& mod)
-{
-    ToggleMod(mod, !mod.m_IsActiveInLoadOrder);
-}
-void AssetModlist::ApplyCustomForgeOrder()
-{
-    auto* fm = ForgeManager::GetSingleton();
-    if (!fm) return;
-    ApplyCustomForgeOrder(*fm);
-}
-void AssetModlist::ApplyCustomForgeOrder(ForgeManager& fm)
-{
-    std::vector<DetectedDatapack*> gatheredLoadOrder = GatherDatapackOrder();
-    // Move the corresponding forge entries to the front, sort them accordingly.
-    std::vector<ForgeFileEntry*> orderedForgeEntries;
-    orderedForgeEntries.reserve(gatheredLoadOrder.size());
-    for (DetectedDatapack* datapack : gatheredLoadOrder)
-    {
-        if (!datapack->m_ForgeIdx) continue;
-        for (ForgeFileEntry* forgeEntry : fm.forges)
-        {
-            if (forgeEntry->forgeIdx_mb == *datapack->m_ForgeIdx)
-                orderedForgeEntries.push_back(forgeEntry);
-        }
-    }
-    auto firstRemovedIt = std::remove_if(fm.forges.begin(), fm.forges.end(), [&](ForgeFileEntry* forgeEntry)
-        {
-            return std::find(orderedForgeEntries.begin(), orderedForgeEntries.end(), forgeEntry) != orderedForgeEntries.end();
-        });
-    const uint16 numRemovedEntries = (fm.forges.end() - firstRemovedIt);
-    if (numRemovedEntries)
-    {
-        fm.forges.size = fm.forges.size - numRemovedEntries;
-    }
-    for (ForgeFileEntry* forgeEntry : orderedForgeEntries)
-    {
-        ACU::Memory::SmallArrayInsert(fm.forges, forgeEntry, 0);
-    }
-}
-void AssetModlist::RebuildLooseFilesLookup()
-{
-    m_SingleObjectOverride_FilepathRelByHandle.clear();
-    for (auto& assetMod : m_Mods)
-    {
-        if (assetMod->m_IsError) continue;
-        if (!assetMod->m_IsActiveInLoadOrder) continue;
-        for (auto& looseFile : assetMod->m_LooseFiles)
-        {
-            auto& scannedLooseFile = std::get<ResultForDetectedLooseFile_LooksOk>(looseFile->m_Result);
-            m_SingleObjectOverride_FilepathRelByHandle[scannedLooseFile.m_Handle] =
-                RegisteredSingleObjectOverride{ assetMod.get(), looseFile.get(), looseFile->m_AbsolutePath };
-        }
-    }
-}
 
 // Empty result means a failure.
 std::vector<byte> ReadGameObjectFileWhole(const fs::path& filepath);
@@ -1283,18 +1273,12 @@ void AssetModlist::ReportFailureInSingleObjectOverride(const RegisteredSingleObj
 
 void AssetOverrides_PutForgesInCorrectOrder()
 {
-    auto* fm = ForgeManager::GetSingleton();
-    g_AssetModlist.MakeVirtualForgesForAllDatapacks();
-    g_AssetModlist.ApplyCustomForgeOrder(*fm);
-}
-void WhenNewForgeEntryWasJustAdded_ApplyCustomSorting(AllRegisters* params)
-{
     DEFINE_GAME_FUNCTION(ACU_enterCriticalSection, 0x14211F620, void, __fastcall, (uint64*));
     DEFINE_GAME_FUNCTION(ACU_leaveCriticalSection, 0x14212CBC0, void, __fastcall, (uint64*));
     auto* fm = ForgeManager::GetSingleton();
     ACU_enterCriticalSection(&fm->criticalSection_forgeEntries);
     g_AssetModlist.MakeVirtualForgesForAllDatapacks();
-    g_AssetModlist.ApplyCustomForgeOrder(*fm);
+    g_AssetModlist.ApplyCustomForgeOrder();
     g_AssetModlist.UpdatePrefetchDataForActiveDatapacks();
     ACU_leaveCriticalSection(&fm->criticalSection_forgeEntries);
 }
@@ -1303,8 +1287,6 @@ void DrawAssetOverridesSettings()
 {
     g_AssetModlist.DrawMenu();
 }
-
-
 void DrawAssetOverridesInstructions()
 {
     static ImVec4 colorAttentionHeader(0.847f, 0.337f, 0.323f, 1.0f);
@@ -1581,15 +1563,15 @@ void DrawAssetOverridesInstructions()
     else
         ImGui::PopStyleColor(3);
 }
+
+
 void AssetOverrides_InitFromLoadOrder()
 {
     g_AssetModlist.InitFromLoadOrder();
 }
 void AssetOverrides_InitFromLoadOrder_EarlyHook()
 {
-    g_AssetModlist.InitFromLoadOrder();
-    g_AssetModlist.UpdatePrefetchDataForActiveDatapacks();
-    AssetOverrides_PutForgesInCorrectOrder();
+    AssetOverrides_InitFromLoadOrder();
 }
 
 #include "ReadFile.h"
@@ -1621,42 +1603,9 @@ std::vector<byte> GetSingleObjectOverrideBytes(uint64 handle)
 
 
 
-
-
-
-
-void WhenGatheringPrefetchInfoForDatapack_FindOriginalPrefetchInfo(AllRegisters* params)
+void WhenNewForgeEntryWasJustAdded_ApplyCustomSorting(AllRegisters* params)
 {
-    auto* fm = ForgeManager::GetSingleton();
-    std::vector<DetectedDatapack*> activeModdedDatapacks = g_AssetModlist.GatherDatapackOrder();
-
-    ForgeFile* forgeContents = (ForgeFile*)params->r11_;
-    uint64 handle = (uint64&)params->rdi_;
-    auto FindCorrespondingForgeIfItsOneOfMine = [&]() -> ForgeFileEntry*
-        {
-            for (ForgeFileEntry* forge : fm->forges)
-            {
-                if (forge->forgeContentsDescriptor != forgeContents) continue;
-                for (DetectedDatapack* moddedDatapack : activeModdedDatapacks)
-                {
-                    if (moddedDatapack->m_ForgeIdx && *moddedDatapack->m_ForgeIdx == forge->forgeIdx_mb)
-                    {
-                        LOG_DEBUG(VirtualForgesLog
-                            , "Trying to load a modded datapack:\n    %s\n"
-                            , moddedDatapack->m_AbsolutePath.u8string().c_str()
-                        );
-                        return forge;
-                    }
-                }
-            }
-            return nullptr;
-        };
-    ForgeFileEntry* correspondingForge = FindCorrespondingForgeIfItsOneOfMine();
-    const bool isOneOfMyVirtualForges = correspondingForge != nullptr;
-    if (!isOneOfMyVirtualForges) return;
-    auto [nonmoddedForge, prefetchInfoIdx] = g_AssetModlist.FindOriginalPrefetchingInfoForHandle(handle);
-    if (!nonmoddedForge) return;
-    StealPrefetchingInfoIntoVirtualForge(*forgeContents, *nonmoddedForge->forgeContentsDescriptor, prefetchInfoIdx);
+    AssetOverrides_PutForgesInCorrectOrder();
 }
 void WhenStartDeserializeFileInDatapackTogetherWithPrologue_FullReplacement(uint64 rax, uint64 rbx, uint64 rsi, uint64 rbp, uint64 rsp, uint64 r13);
 void WhenStartDeserializeFileInDatapackTogetherWithPrologue_FullReplacement_ccimp(AllRegisters* params)
@@ -1665,8 +1614,6 @@ void WhenStartDeserializeFileInDatapackTogetherWithPrologue_FullReplacement_ccim
 }
 
 
-class ManagedObject;
-class DeserializationStream;
 AddVirtualForges::AddVirtualForges()
 {
     uintptr_t whenGameForgesJustOpened = 0x14272F794;

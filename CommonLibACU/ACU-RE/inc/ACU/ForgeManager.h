@@ -125,19 +125,21 @@ public:
 }; //Size: 0x0348
 assert_sizeof(ForgeFile, 0x348);
 
+using ForgeIndex_t = uint32;
+
 class ForgeFileEntry
 {
 public:
     // @members
     char* forgeName; //0x0000
-    uint32 forgeIdx_mb; //0x0008
+    ForgeIndex_t forgeIdx_mb; //0x0008
     char pad_000C[4]; //0x000C
     ForgeFile* forgeContentsDescriptor; //0x0010
     uint64 qword_18; //0x0018
     uint64 qword_20; //0x0020
     uint32 dword_28; //0x0028
     uint32 refcount_mb; //0x002C
-    SmallArray<uint32> forgeIndicesOfDependentForges; //0x0030
+    SmallArray<ForgeIndex_t> forgeIndicesOfDependentForges; //0x0030
     uint8 byte_3C; //0x003C
     char pad_003D[3]; //0x003D
 
@@ -207,10 +209,9 @@ public:
     virtual void Unk158();
     virtual void Unk160_GetDatapackSizeAndOffset(unsigned __int64 p_handleFirstInDatapack, uint32* p_forgeIdxOut, ForgeFile** p_forgeDescriptorOut, __int64 p_offsetInForgeFileOut, __int64 p_sizePackedOut, SmallArray<uint32>* p_arrForgeIndicesOut); // 142733330
 
-
     // @members
     char pad_0008[184]; //0x0008
-    uint32 nextForgeIdx; //0x00C0
+    ForgeIndex_t nextForgeIdx; //0x00C0
     SmallArray<ForgeFileEntry*> forges; //0x00C4
     uint64 criticalSection_forgeEntries; //0x00D0
     char pad_00D8[60]; //0x00D8
@@ -219,5 +220,25 @@ public:
 
     // @helper_functions
     static ForgeManager* GetSingleton() { return *(ForgeManager**)0x14525BDB0; }
+    bool IsForgeAlive(ForgeIndex_t forgeIdx)
+    {
+        return std::find_if(forges.begin(), forges.end(), [&](ForgeFileEntry* forgeEntry)
+            {
+                return forgeEntry->forgeIdx_mb == forgeIdx;
+            }) != forges.end();
+    }
+    ForgeFileEntry* FindForgeForIdx(ForgeIndex_t forgeIdx)
+    {
+        for (ForgeFileEntry* forgeEntry : forges)
+        {
+            if (forgeEntry->forgeIdx_mb == forgeIdx) return forgeEntry;
+        }
+        return nullptr;
+    }
+    void DecrementForgeRefcount(ForgeIndex_t forgeIdx)
+    {
+        auto* ForgeManager__DecrementForgeEntryRefcount_mb = (void (*__fastcall)(ForgeManager* a1, ForgeIndex_t p_forgeIdx))0x142721FE0;
+        ForgeManager__DecrementForgeEntryRefcount_mb(this, forgeIdx);
+    }
 }; //Size: 0x0118
 assert_sizeof(ForgeManager, 0x118);

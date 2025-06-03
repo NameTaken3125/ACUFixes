@@ -6,13 +6,6 @@
 #include "MyLog.h"
 static DEFINE_LOGGER_CONSOLE_AND_FILE(VirtualForgesLog, "[AssetOverrides]");
 
-// Pay no attention to this for now.
-enum class LoadPriority
-{
-    Lowest = 0,
-    Highest = 1,
-};
-using ForgeIndex_t = uint32;
-ForgeFileEntry* MakeNewForgeFileEntry(uint64 targetHandle, const fs::path& absoluteFilepath, LoadPriority priority);
-bool IsForgeAlive(ForgeManager& fm, ForgeIndex_t forgeIdx);
-DEFINE_GAME_FUNCTION(ForgeManager__DecrementForgeEntryRefcount_mb, 0x142721FE0, void, __fastcall, (ForgeManager* a1, int p_forgeIdx));
+// Inserts a new ForgeFileEntry* into the ForgeManager->forges
+// at position 0 (topmost priority when looking up datapacks by handle).
+ForgeFileEntry* MakeNewForgeFileEntry(uint64 targetHandle, const fs::path& absoluteFilepath);
