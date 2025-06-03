@@ -43,12 +43,8 @@ public:
         ACU::Handles::LoadHandlesmapFile();
         AssetOverrides_ReadConfigOrCreateDefault();
     }
-    virtual void InitStage_WhenGameCodeIsUnpacked() override
+    virtual void EarlyHook_WhenGameCodeIsUnpacked() override
     {
-        LOG_DEBUG(DefaultLogger,
-            "Early hook: InitStage_WhenGameCodeIsUnpacked()\n"
-        );
-        AssetOverrides_InitFromLoadOrder_EarlyHook();
         AssetOverrides_EarlyHooks_Start();
     }
     virtual bool InitStage_WhenCodePatchesAreSafeToApply(ACUPluginLoaderInterface& pluginLoader) override

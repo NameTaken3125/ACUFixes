@@ -1531,6 +1531,58 @@ void DrawAssetOverridesInstructions()
             "\nThe game does not check for errors, so please read carefully"
             "\nand _do_ make a backup of your savegame."
         );
+        auto ExampleModInstall = [](const auto& callblInAssetOverridesFolder) {
+            if (ImGuiCTX::TreeNodeEx _{ "Assassins's Creed Unity/", ImGuiTreeNodeFlags_DefaultOpen }) {
+                if (ImGuiCTX::TreeNodeEx _{ "ACUFixes/", ImGuiTreeNodeFlags_DefaultOpen }) {
+                    if (ImGuiCTX::TreeNodeEx _{ "plugins/", ImGuiTreeNodeFlags_DefaultOpen }) {
+                        if (ImGuiCTX::TreeNodeEx _{ "AssetOverrides/", ImGuiTreeNodeFlags_DefaultOpen }) {
+                            callblInAssetOverridesFolder();
+                        }
+                    }
+                }
+            }
+            };
+        ImVec4 color_ModFolder(0.979f, 0.523f, 0.395f, 1.000f);
+        ImVec4 color_Datapack(0.000f, 0.764f, 1.000f, 1.000f);
+        ImVec4 color_LooseFile(0.425f, 0.780f, 0.392f, 1.000f);
+        auto ExampleModInstall_VictoryOutfit = [&]() {
+            ImGuiCTX::PushStyleColor _ct(ImGuiCol_Text, color_ModFolder);
+            if (ImGuiCTX::TreeNodeEx _modFld{ "VictoryOutfit/   <<<--- All the .data files for your mod go here", ImGuiTreeNodeFlags_DefaultOpen }) {
+                ImGuiCTX::PushStyleColor _ct(ImGuiCol_Text, color_Datapack);
+                ImGui::BulletText("1_-_CN_P_FR_LegacyAvatar_Altair.data");
+            }
+            };
+        auto ExampleModInstall_SwordOfAltair = [&]() {
+            ImGuiCTX::PushStyleColor _ct(ImGuiCol_Text, color_ModFolder);
+            if (ImGuiCTX::TreeNodeEx _{ "Sword of Altair/", ImGuiTreeNodeFlags_DefaultOpen }) {
+                {
+                    ImGuiCTX::PushStyleColor _ct(ImGuiCol_Text, color_LooseFile);
+                    ImGuiCTX::TreeNodeEx _lfFolder{ "LooseFiles/   <<<--- All the \"loose files\" (non .data files) go here", ImGuiTreeNodeFlags_DefaultOpen };
+                    if (_lfFolder) {
+                        ImGui::BulletText("1_-_SwordOfEden_LOD0.mesh");
+                    }
+                }
+                ImGuiCTX::PushStyleColor _ct(ImGuiCol_Text, color_Datapack);
+                ImGui::BulletText("0_-_GFX_SwordOfEden_Glow_DiffuseMap.data");
+                ImGui::BulletText("1_-_CN_W_SwordOfEden_DiffuseMap.data");
+                ImGui::BulletText("1_-_CN_W_SwordOfEden_NormalMap.data");
+                ImGui::BulletText("1_-_CN_W_SwordOfEden_SpecularMap.data");
+            }
+            };
+        auto ExampleModInstall_AlternateWalk = [&]() {
+            ImGuiCTX::PushStyleColor _ct(ImGuiCol_Text, color_ModFolder);
+            if (ImGuiCTX::TreeNodeEx _{ "Alternate Walking Animation/", ImGuiTreeNodeFlags_DefaultOpen }) {
+                {
+                    ImGuiCTX::PushStyleColor _ct(ImGuiCol_Text, color_LooseFile);
+                    ImGuiCTX::TreeNodeEx _lfFolder{ "LooseFiles/   <<<--- All the \"loose files\" (non .data files) go here", ImGuiTreeNodeFlags_DefaultOpen };
+                    if (_lfFolder) {
+                        ImGui::BulletText("1_-_xx_Nav_Walk_3-Loop.Animation");
+                        ImGui::BulletText("1_-_xx_Nav_Walk_ShoulderTurnLt.Animation");
+                        ImGui::BulletText("1_-_xx_Nav_Walk_ShoulderTurnRt.Animation");
+                    }
+                }
+            }
+            };
         if (ImGuiCTX::TreeNode _exampleUsage{ "Example: How to install a new outfit replacer" })
         {
             //if (ImGuiCTX::TreeNode _tldr{ "TL;DR:" })
@@ -1556,18 +1608,7 @@ void DrawAssetOverridesInstructions()
                 "   into\n"
                 "       \"Assassin's Creed Unity/ACUFixes/plugins/AssetOverrides/VictoryOutfit/\":\n"
             );
-            if (ImGuiCTX::TreeNodeEx _{ "Assassins's Creed Unity/", ImGuiTreeNodeFlags_DefaultOpen }) {
-                if (ImGuiCTX::TreeNodeEx _{ "ACUFixes/", ImGuiTreeNodeFlags_DefaultOpen }) {
-                    if (ImGuiCTX::TreeNodeEx _{ "plugins/", ImGuiTreeNodeFlags_DefaultOpen }) {
-                        if (ImGuiCTX::TreeNodeEx _{ "AssetOverrides/", ImGuiTreeNodeFlags_DefaultOpen }) {
-                            ImGuiCTX::PushStyleColor _ct(ImGuiCol_Text, ImVec4(0.000f, 0.764f, 1.000f, 1.000f));
-                            if (ImGuiCTX::TreeNodeEx _modFld{ "VictoryOutfit/   <<<--- All the .data files for your mod go here", ImGuiTreeNodeFlags_DefaultOpen }) {
-                                ImGui::BulletText("1_-_CN_P_FR_LegacyAvatar_Altair.data");
-                            }
-                        }
-                    }
-                }
-            }
+            ExampleModInstall(ExampleModInstall_VictoryOutfit);
             ImGui::Text(
                 "   If your mod has multiple .data files\n"
                 "   (for example the \"Templar Extremist Retexture + Remove Distance Glow\" by MaceoniK\n"
@@ -1601,32 +1642,37 @@ void DrawAssetOverridesInstructions()
                 "2. The mod contains 5 files: 4 datapacks and 1 \"loose\" Mesh.\n"
                 "   Arrange them like so (you can rename the files if you want to):"
             );
-            if (ImGuiCTX::TreeNodeEx _{ "Assassins's Creed Unity/", ImGuiTreeNodeFlags_DefaultOpen }) {
-                if (ImGuiCTX::TreeNodeEx _{ "ACUFixes/", ImGuiTreeNodeFlags_DefaultOpen }) {
-                    if (ImGuiCTX::TreeNodeEx _{ "plugins/", ImGuiTreeNodeFlags_DefaultOpen }) {
-                        if (ImGuiCTX::TreeNodeEx _{ "AssetOverrides/", ImGuiTreeNodeFlags_DefaultOpen }) {
-                            if (ImGuiCTX::TreeNodeEx _{ "Connor's Tomahawk/", ImGuiTreeNodeFlags_DefaultOpen }) {
-                                {
-                                    ImGuiCTX::PushStyleColor _ct(ImGuiCol_Text, ImVec4(0.425f, 0.780f, 0.392f, 1.000f));
-                                    ImGuiCTX::TreeNodeEx _lfFolder{ "LooseFiles/   <<<--- All the \"loose files\" (non .data files) go here", ImGuiTreeNodeFlags_DefaultOpen };
-                                    if (_lfFolder) {
-                                        ImGui::BulletText("1_-_SwordOfEden_LOD0.mesh");
-                                    }
-                                }
-                                ImGuiCTX::PushStyleColor _ct(ImGuiCol_Text, ImVec4(0.000f, 0.764f, 1.000f, 1.000f));
-                                ImGui::BulletText("0_-_GFX_SwordOfEden_Glow_DiffuseMap.data");
-                                ImGui::BulletText("1_-_CN_W_SwordOfEden_DiffuseMap.data");
-                                ImGui::BulletText("1_-_CN_W_SwordOfEden_NormalMap.data");
-                                ImGui::BulletText("1_-_CN_W_SwordOfEden_SpecularMap.data");
-                            }
-                        }
-                    }
-                }
-            }
+            ExampleModInstall(ExampleModInstall_SwordOfAltair);
             ImGui::Text(
                 "3. Enable the mod in the Load Order, same as with the outfit example.\n"
                 "   You will probably have to restart the game\n"
                 "   if you want to turn _weapon_ mods on and off.\n"
+                "   They are loaded very early after the game starts and don't get unloaded at all.\n"
+                "   See the \"Limitations\" section."
+            );
+        }
+        if (ImGuiCTX::TreeNode _exampleUsage{ "Example: How to install a few animation replacers (\"loose files\")" })
+        {
+            ImGui::Text(
+                "There are no special steps to take here compared to other mods.\n"
+                "Just read the previous two examples.\n"
+                "Mod files are either the \".data\" or the \"loose files\".\n"
+            );
+            ImGui::Text(
+                "I'll use the \"ACU-Alternate Walking animation\" V1 by Petrichor23\n"
+            );
+            ImGui::CopyToClipboardOnClick("https://www.nexusmods.com/assassinscreedunity/mods/280", "Click to copy link to clipboard");
+            ImGui::Text(
+                "just as another example: a mod that only has loose files.\n"
+            );
+            ImGui::Text(
+                "1. Download the mod and arrange the files in the following way:\n"
+            );
+            ExampleModInstall(ExampleModInstall_AlternateWalk);
+            ImGui::Text(
+                "2. Enable the mod in the Load Order, same as with the outfit example.\n"
+                "   You will probably have to restart the game\n"
+                "   if you want to turn _animation_ mods on and off.\n"
                 "   They are loaded very early after the game starts and don't get unloaded at all.\n"
                 "   See the \"Limitations\" section."
             );
@@ -1685,7 +1731,7 @@ void DrawAssetOverridesInstructions()
         if (ImGuiCTX::TreeNode _knownMods{ "Supported mods" })
         {
             ImGui::Text("Examples of mods I've confirmed to work when installed through Asset Overrides\n"
-                "(right click to copy to clipboard):");
+                "(click to copy to clipboard):");
             auto ModTextAndLink = [](const char* modName, const char* link)
                 {
                     ImGui::BulletText(modName);
@@ -1693,7 +1739,7 @@ void DrawAssetOverridesInstructions()
                     {
                         ImGui::SetTooltip(link);
                     }
-                    if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+                    if (ImGui::IsItemClicked())
                     {
                         ImGui::SetClipboardText(link);
                     }
@@ -1849,7 +1895,7 @@ std::vector<byte> GetSingleObjectOverrideBytes(uint64 handle)
 
 
 void WhenStartDeserializeFileInDatapackTogetherWithPrologue_FullReplacement(uint64 rax, uint64 rbx, uint64 rsi, uint64 rbp, uint64 rsp, uint64 r13);
-void WhenStartDeserializeFileInDatapackTogetherWithPrologue_FullReplacement(AllRegisters* params)
+void WhenStartDeserializeFileInDatapackTogetherWithPrologue_FullReplacement_ccimp(AllRegisters* params)
 {
     WhenStartDeserializeFileInDatapackTogetherWithPrologue_FullReplacement(params->GetRAX(), params->rbx_, params->rsi_, params->rbp_, params->GetRSP(), params->r13_);
 }
@@ -1864,8 +1910,42 @@ AddVirtualForges::AddVirtualForges()
         WhenNewForgeEntryWasJustAdded_ApplyCustomSorting, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
 
     uintptr_t whenStartDeserializeFileInDatapackTogetherWithPrologue = 0x1426F0CF7;
-    PresetScript_CCodeInTheMiddle(whenStartDeserializeFileInDatapackTogetherWithPrologue, 5,
-        WhenStartDeserializeFileInDatapackTogetherWithPrologue_FullReplacement, 0x1426F0DC7, false);
+    //PresetScript_CCodeInTheMiddle(whenStartDeserializeFileInDatapackTogetherWithPrologue, 5,
+    //    WhenStartDeserializeFileInDatapackTogetherWithPrologue_FullReplacement_ccimp, 0x1426F0DC7, false);
+
+    // Normally the PresetScript_CCodeInTheMiddle() is good enough, but being a "JIT" code
+    // it doesn't have the "unwind information", and so it breaks the stackwalk if any errors
+    // occur during deserialization.
+    // This means the error won't be caught by the CrashLogUnhandledExceptionHandler().
+    // It can still be caught by the ZwRaiseException hook, but that one isn't enabled by default.
+    // Same as Swapchain::Present(), the Deserialization is a "sensitive spot"
+    // in terms of potential crashes because the game doesn't check for errors.
+    // I want to give the CrashLog the best chance, so I'm using a customized bit of shellcode
+    // to get only the registers I need and to preserve the intended return address stored in RSP.
+    {
+        DEFINE_ADDR(startDeserialize, whenStartDeserializeFileInDatapackTogetherWithPrologue);
+        ALLOC(startDeserialize_cave, 0x80, whenStartDeserializeFileInDatapackTogetherWithPrologue);
+        LABEL(label_startDeserialize_returnAddr);
+        startDeserialize = {
+            db(0xE8), RIP(startDeserialize_cave)
+        };
+        startDeserialize_cave = {
+            "48 8b 0d", RIP(label_startDeserialize_returnAddr), //  - mov    rcx,QWORD PTR [label_startDeserialize_returnAddr]
+            "48 89 0c 24"                                       //  - mov    QWORD PTR [rsp],rcx
+            "48 89 c1"                                          //  - mov    rcx,rax
+            "48 89 da"                                          //  - mov    rdx,rbx
+            "49 89 f0"                                          //  - mov    r8,rsi
+            "49 89 e9"                                          //  - mov    r9,rbp
+            "48 89 64 24 28"                                    //  - mov    QWORD PTR [rsp+0x28],rsp
+            "48 83 44 24 28 08"                                 //  - add    QWORD PTR [rsp+0x28],0x8
+            "4c 89 6c 24 30"                                    //  - mov    QWORD PTR [rsp+0x30],r13
+            "ff 25 00 00 00 00"                                 //  - jmp    QWORD PTR [rip+0]
+            , dq((uintptr_t)&WhenStartDeserializeFileInDatapackTogetherWithPrologue_FullReplacement)
+            //label_startDeserialize_returnAddr:
+                , PutLabel(label_startDeserialize_returnAddr)
+                , dq((uintptr_t)0x1426F0DC7)
+        };
+    }
 }
 void AddVirtualForges::OnBeforeActivate()
 {

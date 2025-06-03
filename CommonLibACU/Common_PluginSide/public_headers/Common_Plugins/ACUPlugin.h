@@ -47,7 +47,7 @@ struct ACUPluginInfo
 	// This can be very early during game load. It's not safe to apply normal code patches
 	// or call game's functions from here.
 	void (*m_InitStage_WhenVersionsAreDeemedCompatible)(ACUPluginLoaderInterface& pluginLoader) = nullptr;
-	void (*m_InitStage_WhenGameCodeIsUnpacked)() = nullptr;
+	void (*m_EarlyHook_WhenGameCodeIsUnpacked)() = nullptr;
 };
 assert_offsetof(ACUPluginInfo, m_PluginAPIVersion, 0);
 assert_offsetof(ACUPluginInfo, m_PluginVersion, 8);

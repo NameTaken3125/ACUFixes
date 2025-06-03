@@ -34,7 +34,7 @@ public:
 	virtual void EveryFrameEvenWhenMenuIsClosed();
 
 	virtual void InitStage_WhenPluginAPIDeemedCompatible() {}
-	virtual void InitStage_WhenGameCodeIsUnpacked() {}
+	virtual void EarlyHook_WhenGameCodeIsUnpacked() {}
 public:
 	ACUPluginInterfaceVirtuals();
 };

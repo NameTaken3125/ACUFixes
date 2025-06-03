@@ -19,6 +19,12 @@ bool IsPluginAPIversionCompatible(uint64 apiVersion_pluginLoader, uint64 apiVers
 #define PLUGIN_API_VERSION_GET_MINOR(version) ((version >> 16) & 0xFF)
 #define PLUGIN_API_VERSION_GET_MINORER(version) ((version >> 8) & 0xFF)
 #define PLUGIN_API_VERSION_GET_MINOREST(version) (version & 0xFF)
+BOOL FreeDLL(HMODULE hLibModule)
+{
+    BOOL result = FreeLibrary(hLibModule);
+    //CoFreeUnusedLibraries();
+    return result;
+}
 void MyPluginLoader::LoadAndStartPlugin(MyPluginResult& pluginRecord)
 {
     LoadPluginAndCheckCompatibility(pluginRecord);
@@ -31,7 +37,8 @@ void MyPluginLoader::LoadAndStartPlugin(MyPluginResult& pluginRecord)
         if (!pluginInfo->m_InitStage_WhenCodePatchesAreSafeToApply(m_PluginLoaderInterfaces))
         {
             LOG_DEBUG(DefaultLogger, "[error][x] Plugin %s: The \"m_InitStage_WhenCodePatchesAreSafeToApply()\" procedure returned `false` indicating that the plugin doesn't want to start. Unloading.\n", pluginName);
-            FreeLibrary(moduleHandle);
+            pluginRecord.m_successfulLoad.reset();
+            FreeDLL(moduleHandle);
             return;
         }
     }
@@ -52,7 +59,7 @@ void MyPluginLoader::LoadPluginAndCheckCompatibility(MyPluginResult& pluginRecor
     if (!startFn)
     {
         LOG_DEBUG(DefaultLogger, "[error][x] Plugin %s: Doesn't export the `ACUPluginStart()` function. Unloading.\n", pluginName);
-        FreeLibrary(moduleHandle);
+        FreeDLL(moduleHandle);
         return;
     }
     LOG_DEBUG(DefaultLogger, "[*] Plugin %s: Address of the `ACUPluginStart()` function: %llX\n", pluginName, startFn);
@@ -61,7 +68,7 @@ void MyPluginLoader::LoadPluginAndCheckCompatibility(MyPluginResult& pluginRecor
     if (!isPluginThinksIsReadyToStart)
     {
         LOG_DEBUG(DefaultLogger, "[error][x] Plugin %s: `ACUPluginStart()` returned `false`. Unloading.\n", pluginName);
-        FreeLibrary(moduleHandle);
+        FreeDLL(moduleHandle);
         return;
     }
     LOG_DEBUG(DefaultLogger, "[*] Plugin %s: `ACUPluginStart()` returned `true`. Plugin API version: %d.%d.%d.%d. Plugin's version: 0x%llX.\n"
@@ -85,7 +92,7 @@ void MyPluginLoader::LoadPluginAndCheckCompatibility(MyPluginResult& pluginRecor
             , PLUGIN_API_VERSION_GET_MINORER(g_CurrentPluginAPIversion)
             , PLUGIN_API_VERSION_GET_MINOREST(g_CurrentPluginAPIversion)
         );
-        FreeLibrary(moduleHandle);
+        FreeDLL(moduleHandle);
         return;
     }
     if (pluginInfo->m_InitStage_WhenVersionsAreDeemedCompatible)
@@ -103,7 +110,7 @@ void MyPluginLoader::UnloadAllPlugins()
     {
         if (dll->m_successfulLoad)
         {
-            FreeLibrary(dll->m_successfulLoad->m_moduleHandle);
+            FreeDLL(dll->m_successfulLoad->m_moduleHandle);
             dll->m_successfulLoad.reset();
         }
     }
@@ -218,11 +225,11 @@ void MyPluginLoader::WhenGameCodeIsUnpacked()
     for (auto& plugin : this->dllResults)
     {
         if (!plugin->m_successfulLoad) continue;
-        auto* callback = plugin->m_successfulLoad->m_pluginInterface->m_InitStage_WhenGameCodeIsUnpacked;
+        auto* callback = plugin->m_successfulLoad->m_pluginInterface->m_EarlyHook_WhenGameCodeIsUnpacked;
         if (callback)
         {
             LOG_DEBUG(DefaultLogger,
-                "[*] Plugin \"%s\": calling the \"m_InitStage_WhenGameCodeIsUnpacked()\" callback.\n"
+                "[*] Plugin \"%s\": calling the \"m_EarlyHook_WhenGameCodeIsUnpacked()\" callback.\n"
                 , plugin->m_PluginName.c_str()
             );
             callback();
@@ -230,7 +237,7 @@ void MyPluginLoader::WhenGameCodeIsUnpacked()
         else
         {
             LOG_DEBUG(DefaultLogger,
-                "[*] Plugin \"%s\" does not provide a \"m_InitStage_WhenGameCodeIsUnpacked()\" callback.\n"
+                "[*] Plugin \"%s\" does not provide a \"m_EarlyHook_WhenGameCodeIsUnpacked()\" callback.\n"
                 , plugin->m_PluginName.c_str()
             );
         }
@@ -245,7 +252,13 @@ void MyPluginLoader::WhenSafeToApplyCodePatches()
         {
             continue;
         }
-        plugin->m_successfulLoad->m_pluginInterface->m_InitStage_WhenCodePatchesAreSafeToApply(m_PluginLoaderInterfaces);
+        const bool isWantsToContinue = plugin->m_successfulLoad->m_pluginInterface->m_InitStage_WhenCodePatchesAreSafeToApply(m_PluginLoaderInterfaces);
+        if (!isWantsToContinue)
+        {
+            HMODULE moduleHandle = plugin->m_successfulLoad->m_moduleHandle;
+            plugin->m_successfulLoad.reset();
+            FreeDLL(moduleHandle);
+        }
     }
 }
 void MyPluginLoader::LoadAllFoundNonloadedPluginsAndCheckCompatibility()
@@ -376,7 +389,7 @@ void MyPluginLoader::EveryFrameBeforeGraphicsUpdate()
             if (loadedPlugin->m_successfulLoad
                 && loadedPlugin->m_successfulLoad->m_isRequestedToUnload)
             {
-                FreeLibrary(loadedPlugin->m_successfulLoad->m_moduleHandle);
+                FreeDLL(loadedPlugin->m_successfulLoad->m_moduleHandle);
                 loadedPlugin->m_successfulLoad.reset();
             }
         }

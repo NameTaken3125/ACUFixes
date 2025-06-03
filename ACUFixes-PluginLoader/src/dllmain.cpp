@@ -125,8 +125,37 @@ void WhenReadyForInitialLoadingOfPlugins()
 }
 #include "ACU/Threads/KnownThreads.h"
 void BeforeGameMainThreadStarted_HookTheStartAddress();
+bool IsCompatibleGameVersion()
+{
+    // I check some bytes at the start of the Main Thread's code.
+    // I don't have other game versions, but I trust their entry points ought to be different.
+    void* mainThreadStart_Addr = (void*)ACU::Threads::ThreadStartAddr_MainThread;
+    unsigned char mainThreadStart_Bytes[] = {
+        0xE9, 0x0B, 0x25, 0x00, 0x00, 0xE9, 0x34, 0x37,
+        0xDF, 0xFE, 0xE9, 0x0A, 0x87, 0xC4, 0xFE, 0x69,
+        0xD2, 0x0A, 0x00, 0x00, 0x00, 0x66, 0x85, 0xE9,
+        0xF6, 0xC1, 0x03, 0x01, 0xC2, 0xE9, 0x96, 0x74
+    };
+    constexpr std::size_t numBytesToRead = std::size(mainThreadStart_Bytes);
+    std::array<char, numBytesToRead> buf{ 0 };
+    SIZE_T numBytesRead{};
+    if (!ReadProcessMemory(GetCurrentProcess(), (void*)mainThreadStart_Addr, &buf[0], numBytesToRead, &numBytesRead)) return false;
+    return (std::array<char, numBytesToRead>&)mainThreadStart_Bytes == buf;
+}
 BOOL DllMainOnProcessAttach(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
 {
+    if (!IsCompatibleGameVersion())
+    {
+        MessageBoxA(NULL,
+            "Game version is incompatible.\n"
+            "Assassin's Creed Unity Version 1.5.0 is required.\n"
+            "The mod will not start.\n"
+            , THIS_DLL_PROJECT_NAME,
+            MB_OK |
+            MB_ICONERROR |
+            MB_SETFOREGROUND);
+        return FALSE;
+    }
     Base::Data::thisDLLModule = hModule;
     g_LogLifetime.emplace(AbsolutePathInMyDirectory(LOG_FILENAME));
     PluginLoaderConfig::FindAndLoadConfigFileOrCreateDefault();
