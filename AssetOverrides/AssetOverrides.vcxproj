@@ -20,10 +20,10 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
-    <ProjectGuid>{c879930e-6867-4a29-af44-6625490fc549}</ProjectGuid>
-    <RootNamespace>ACUFixes</RootNamespace>
+    <ProjectGuid>{6FAF71A6-483B-4F48-ADDF-7A3CEEFB9F6A}</ProjectGuid>
+    <RootNamespace>AssetOverrides</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>ACUFixes</ProjectName>
+    <ProjectName>AssetOverrides</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -207,63 +207,19 @@ if exist "$(ProjectDir)copy_output_to_directory.txt" (
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\AnimationTools\AnimationEditor.cpp" />
-    <ClCompile Include="src\AnimationTools\AnimationPicker.cpp" />
-    <ClCompile Include="src\AnimationTools\AnimationsLog\AnimationGraphEvaluationLog.cpp" />
-    <ClCompile Include="src\AnimationTools\AnimGraphMods.cpp" />
-    <ClCompile Include="src\AnimationTools\AnimGraphMods_BasicLayer.cpp" />
-    <ClCompile Include="src\AnimationTools\Animtools_ImGui.cpp" />
-    <ClCompile Include="src\ParkourDebugging\Hack_PickEntityToShoot.cpp" />
-    <ClCompile Include="src\HacksContainer_DevExtras.cpp" />
-    <ClCompile Include="src\ImGui3D\ImGui3DLayer.cpp" />
-    <ClCompile Include="src\ParkourDebugging\LoggingTheHumanStates.cpp" />
-    <ClCompile Include="src\ParkourDebugging\ParkourDebuggingPatch.cpp" />
-    <ClCompile Include="src\VariousPatches\Cheat_WeatherControls.cpp" />
-    <ClCompile Include="src\AnimationTools\DumpAnimationGraph.cpp" />
-    <ClCompile Include="src\VariousPatches\Hack_AllowCustomizeEquipment.cpp" />
-    <ClCompile Include="src\VariousPatches\Hack_DontRandomlyTurn180Degrees.cpp" />
-    <ClCompile Include="src\VariousPatches\Hack_GunRange.cpp" />
-    <ClCompile Include="src\VariousPatches\Hack_MoreReliableQuickshot.cpp" />
-    <ClCompile Include="src\VariousPatches\Hack_NoMoreFailedBombThrows.cpp" />
-    <ClCompile Include="src\BlenderCurveEditor.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    <ClCompile Include="src\AssetOverrides\AssetOverridesConfig.cpp" />
+    <ClCompile Include="src\AssetOverrides\FindFirstHandleInDatapack.cpp" />
+    <ClCompile Include="src\AssetOverrides\HacksContainer_AssetOverrides.cpp" />
+    <ClCompile Include="src\AssetOverrides\SingleObjectOverride.cpp" />
+    <ClCompile Include="src\AssetOverrides\AssetOverrides_EarlyHooks_HWBP.cpp" />
+    <ClCompile Include="src\AssetOverrides\VirtualForgeFiles.cpp" />
+    <ClCompile Include="src\AssetOverrides\VirtualForgeFiles_impl.cpp" />
+    <ClCompile Include="src\external\hwbrk\hwbrk.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="src\BuiltinDebugCommands.cpp" />
-    <ClCompile Include="src\VariousPatches\Cheat_BatlampOfFranciade.cpp" />
-    <ClCompile Include="src\VariousPatches\Cheat_DisguiseUpgrades.cpp" />
-    <ClCompile Include="src\VariousPatches\Cheat_Health.cpp" />
-    <ClCompile Include="src\VariousPatches\Hack_AimFromPeaks.cpp" />
-    <ClCompile Include="src\VariousPatches\Hack_BreakfallAndLedgeGrab.cpp" />
-    <ClCompile Include="src\VariousPatches\Hack_CycleEquipmentWhenScrollingMousewheel.cpp" />
-    <ClCompile Include="src\Hacks_ImGuiControl.cpp" />
-    <ClCompile Include="src\VariousPatches\Hack_DontForceUnsheatheWhenInDisguise.cpp" />
-    <ClCompile Include="src\VariousPatches\Hack_EnterWindowsWhenRisPressed.cpp" />
-    <ClCompile Include="src\VariousPatches\Hack_LookbehindButton.cpp" />
-    <ClCompile Include="src\VariousPatches\Hack_ModifyAimingFOV.cpp" />
-    <ClCompile Include="src\VariousPatches\Hack_MoreResponsiveBombQuickDrop.cpp" />
-    <ClCompile Include="src\VariousPatches\Hack_NoWaitForUnsafeEject.cpp" />
-    <ClCompile Include="src\VariousPatches\Hack_ReloadRangedWeaponsWhenRefillAllInShop.cpp" />
-    <ClCompile Include="src\VariousPatches\Hack_RemovableHood.cpp" />
-    <ClCompile Include="src\VariousPatches\Hack_ReworkedTakeCover.cpp" />
-    <ClCompile Include="src\VariousPatches\Hack_SlowMenacingWalkAndAutowalk.cpp" />
-    <ClCompile Include="src\VariousPatches\Hack_SlowMotionTrick.cpp" />
-    <ClCompile Include="src\VariousPatches\Hack_UnequipPistol.cpp" />
-    <ClCompile Include="src\VariousPatches\Hack_WhistleAbility.cpp" />
     <ClCompile Include="src\Handles.cpp" />
-    <ClCompile Include="src\ImGui3D\ImGui3D.cpp" />
-    <ClCompile Include="src\ImGui3D\ImGui3DRenderer.cpp" />
-    <ClCompile Include="src\AnimationTools\imGuIZMO.quat\imGuIZMOquat.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\MainConfig.cpp" />
-    <ClCompile Include="src\AnimationTools\MyAnimationPlayer.cpp" />
     <ClCompile Include="src\MyLog.cpp" />
     <ClCompile Include="src\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -271,74 +227,22 @@ if exist "$(ProjectDir)copy_output_to_directory.txt" (
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="src\Raycasting\Raycasting.cpp" />
-    <ClCompile Include="src\VariousPatches\Request_FreezeFOV.cpp" />
-    <ClCompile Include="src\VariousPatches\Request_Spindescent.cpp" />
-    <ClCompile Include="src\TypeInfoSystemDump.cpp" />
     <ClCompile Include="src\WhatIsDrawnInImGui.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\AnimationTools\AnimationEditor.h" />
-    <ClInclude Include="src\AnimationTools\AnimationPicker.h" />
-    <ClInclude Include="src\AnimationTools\AnimationsLog\AnimationGraphEvaluationLog.h" />
-    <ClInclude Include="src\AnimationTools\AtomGraphControls.h" />
-    <ClInclude Include="src\AnimationTools\AtomGraphModsCommon.h" />
-    <ClInclude Include="src\ParkourDebugging\Hack_PickEntityToShoot.h" />
-    <ClInclude Include="src\AnimationTools\Hack_RemovableHood_Animations.h" />
-    <ClInclude Include="src\AnimationTools\NewHandlesFactory.h" />
-    <ClInclude Include="src\ParkourDebugging\LoggingTheHumanStates.h" />
-    <ClInclude Include="src\ParkourDebugging\ParkourDebuggingPatch.h" />
-    <ClInclude Include="src\Raycasting\Raycasting.h" />
-    <ClInclude Include="src\Raycasting\RaycastPicker.h" />
-    <ClInclude Include="src\AnimationTools\SkeletonDumper.h" />
-    <ClInclude Include="src\AnimationTools\UsefulHandles.h" />
-    <ClInclude Include="src\VariousPatches\Hack_AllowCustomizeEquipment.h" />
-    <ClInclude Include="src\VariousPatches\Hack_DontRandomlyTurn180Degrees.h" />
-    <ClInclude Include="src\VariousPatches\Hack_GunRange.h" />
-    <ClInclude Include="src\VariousPatches\Hack_MoreReliableQuickshot.h" />
-    <ClInclude Include="src\VariousPatches\Hack_NoMoreFailedBombThrows.h" />
-    <ClInclude Include="src\BlenderCurveEditor.h" />
-    <ClInclude Include="src\VariousPatches\Cheat_Ammo.h" />
-    <ClInclude Include="src\VariousPatches\Cheat_BatlampOfFranciade.h" />
-    <ClInclude Include="src\VariousPatches\Cheat_DisguiseUpgrades.h" />
-    <ClInclude Include="src\VariousPatches\Cheat_Health.h" />
-    <ClInclude Include="src\VariousPatches\Cheat_PretendYoureInFranciade.h" />
-    <ClInclude Include="src\VariousPatches\Hacks_VariousExperiments.h" />
-    <ClInclude Include="src\VariousPatches\Hack_AimFromPeaks.h" />
-    <ClInclude Include="src\VariousPatches\Hack_BreakfallAndLedgeGrab.h" />
-    <ClInclude Include="src\VariousPatches\Hack_CrouchFix.h" />
-    <ClInclude Include="src\VariousPatches\Hack_CycleEquipmentWhenScrollingMousewheel.h" />
-    <ClInclude Include="src\VariousPatches\Hack_DontForceUnsheatheWhenInDisguise.h" />
-    <ClInclude Include="src\VariousPatches\Hack_EasierTurnWhenSwinging.h" />
-    <ClInclude Include="src\VariousPatches\Hack_EnterWindowsWhenRisPressed.h" />
-    <ClInclude Include="src\VariousPatches\Hack_LookbehindButton.h" />
-    <ClInclude Include="src\VariousPatches\Hack_ModifyAimingFOV.h" />
-    <ClInclude Include="src\VariousPatches\Hack_MoreResponsiveBombQuickDrop.h" />
-    <ClInclude Include="src\VariousPatches\Hack_NoWaitForUnsafeEject.h" />
-    <ClInclude Include="src\VariousPatches\Hack_ReloadRangedWeaponsWhenRefillAllInShop.h" />
-    <ClInclude Include="src\VariousPatches\Hack_ReworkedTakeCover.h" />
-    <ClInclude Include="src\VariousPatches\Hack_SlowMenacingWalkAndAutowalk.h" />
-    <ClInclude Include="src\VariousPatches\Hack_UnequipPistol.h" />
-    <ClInclude Include="src\VariousPatches\Hack_WhistleAbility.h" />
+    <ClInclude Include="src\AssetOverrides\AssetOverrides.h" />
+    <ClInclude Include="src\AssetOverrides\AssetOverridesConfig.h" />
+    <ClInclude Include="src\AssetOverrides\DeserializationCycle.h" />
+    <ClInclude Include="src\AssetOverrides\Mock_CombinedRawBufsReader.h" />
+    <ClInclude Include="src\AssetOverrides\ReadFile.h" />
+    <ClInclude Include="src\AssetOverrides\SingleObjectOverride.h" />
+    <ClInclude Include="src\AssetOverrides\VEH.h" />
+    <ClInclude Include="src\external\hwbrk\hwbrk.h" />
     <ClInclude Include="src\Handles.h" />
-    <ClInclude Include="src\ImGui3D\ImGui3D.h" />
-    <ClInclude Include="src\ImGui3D\ImGui3DCustomDraw.h" />
-    <ClInclude Include="src\ImGui3D\ImGui3DRenderer.h" />
     <ClInclude Include="src\ImGuiConfigUtils.h" />
-    <ClInclude Include="src\AnimationTools\imGuIZMO.quat\imGuIZMOquat.h" />
-    <ClInclude Include="src\AnimationTools\imGuIZMO.quat\vgConfig.h" />
-    <ClInclude Include="src\AnimationTools\imGuIZMO.quat\vGizmo.h" />
-    <ClInclude Include="src\AnimationTools\imGuIZMO.quat\vGizmoMath.h" />
-    <ClInclude Include="src\AnimationTools\imGuIZMO.quat\vgMath.h" />
-    <ClInclude Include="src\MainConfig.h" />
-    <ClInclude Include="src\MovabilityUtils.h" />
-    <ClInclude Include="src\AnimationTools\MyAnimationPlayer.h" />
     <ClInclude Include="src\MyLog.h" />
-    <ClInclude Include="src\MyVariousHacks.h" />
-    <ClInclude Include="src\ParkourDebugging\EnumParkourAction.h" />
     <ClInclude Include="src\pch.h" />
-    <ClInclude Include="src\VariousPatches\Request_FreezeFOV.h" />
-    <ClInclude Include="src\VariousPatches\Request_Spindescent.h" />
+    <ClInclude Include="src\AssetOverrides\VirtualForgeFiles_impl.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="assets\readme.txt" />

@@ -5,9 +5,8 @@ Brings the app's components together.
 
 #include "pch.h"
 
-#include "MyVariousHacks.h"
 #include "MyLog.h"
-#include "MainConfig.h"
+#include "AssetOverrides/AssetOverrides.h"
 
 #include "Common_Plugins/Common_PluginSide.h"
 
@@ -38,16 +37,17 @@ public:
     virtual void InitStage_WhenPluginAPIDeemedCompatible() override
     {
         g_LogLifetime.emplace(AbsolutePathInThisDLLDirectory(LOG_FILENAME));
-        MainConfig::FindAndLoadConfigFileOrCreateDefault(AbsolutePathInThisDLLDirectory(CONFIG_FILENAME));
         ACU::Handles::LoadHandlesmapFile();
+        AssetOverrides_ReadConfigOrCreateDefault();
     }
     virtual void EarlyHook_WhenGameCodeIsUnpacked() override
     {
+        AssetOverrides_EarlyHooks_Start();
     }
     virtual bool InitStage_WhenCodePatchesAreSafeToApply(ACUPluginLoaderInterface& pluginLoader) override
     {
-        MyVariousHacks::Start();
-        ApplyAnimationGraphMods();
+        AssetOverrides_EarlyHooks_End();
+        AssetOverrides_CodePatches_Start();
         return true;
     }
 } g_thisPlugin;

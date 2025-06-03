@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.28803.202
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36109.1 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ACUFixes", "ACUFixes\ACUFixes.vcxproj", "{C879930E-6867-4A29-AF44-6625490FC549}"
 EndProject
@@ -24,6 +24,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DearImGui", "CommonLibACU\DearImGui\DearImGui.vcxproj", "{A7A4F65C-61C0-42DA-A457-2558090657A3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libs", "Libs", "{F488EDCA-7311-4B19-8F18-24B9961336D4}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AssetOverrides", "AssetOverrides\AssetOverrides.vcxproj", "{6FAF71A6-483B-4F48-ADDF-7A3CEEFB9F6A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -113,6 +115,14 @@ Global
 		{A7A4F65C-61C0-42DA-A457-2558090657A3}.Release|x64.Build.0 = Release|x64
 		{A7A4F65C-61C0-42DA-A457-2558090657A3}.Release|x86.ActiveCfg = Release|Win32
 		{A7A4F65C-61C0-42DA-A457-2558090657A3}.Release|x86.Build.0 = Release|Win32
+		{6FAF71A6-483B-4F48-ADDF-7A3CEEFB9F6A}.Debug|x64.ActiveCfg = Debug|x64
+		{6FAF71A6-483B-4F48-ADDF-7A3CEEFB9F6A}.Debug|x64.Build.0 = Debug|x64
+		{6FAF71A6-483B-4F48-ADDF-7A3CEEFB9F6A}.Debug|x86.ActiveCfg = Debug|Win32
+		{6FAF71A6-483B-4F48-ADDF-7A3CEEFB9F6A}.Debug|x86.Build.0 = Debug|Win32
+		{6FAF71A6-483B-4F48-ADDF-7A3CEEFB9F6A}.Release|x64.ActiveCfg = Release|x64
+		{6FAF71A6-483B-4F48-ADDF-7A3CEEFB9F6A}.Release|x64.Build.0 = Release|x64
+		{6FAF71A6-483B-4F48-ADDF-7A3CEEFB9F6A}.Release|x86.ActiveCfg = Release|Win32
+		{6FAF71A6-483B-4F48-ADDF-7A3CEEFB9F6A}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
