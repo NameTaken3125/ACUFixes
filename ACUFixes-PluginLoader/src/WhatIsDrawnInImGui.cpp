@@ -99,6 +99,18 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
                     if (ImGui::IsItemHovered())
                         ImGui::SetTooltip("It's pretty helpful during development.");
                     CrashLog_CodePatches_DrawControls();
+                    ImGui::Checkbox("Show a MessageBox at the start of game's Main Thread", &g_PluginLoaderConfig.developerOptions->showMessageBoxAtStartOfMainThread.get());
+                    if (ImGui::IsItemHovered())
+                        ImGui::SetTooltip(
+                            "You probably won't need this.\n"
+                            "If you're developing the PluginLoader itself and are specifically interested\n"
+                            "in the \"early hooks\" (before the game's window opens,\n"
+                            "before the code can be safely patched), then you might want\n"
+                            "to pause the game's process as early as possible. Except attaching a normal debugger this early\n"
+                            "can be difficult due to the game's code protection.\n"
+                            "If I display a MessageBox immediately at the start of game's Main Thread,\n"
+                            "then you'll at least be able to attach the Cheat Engine's VEH debugger."
+                        );
                     ImGui::Separator();
                     ImVec4 color_TextDangerZone(1.0f, 0.4f, 0.4f, 1.0f);
                     const bool isInDangerZone = g_PluginLoaderConfig.developerOptions->canUninjectPluginLoader->isActive;

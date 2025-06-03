@@ -130,6 +130,8 @@ during the game's initialization.
 #include "AutoAssemblerKinda/AutoAssemblerKinda.h"
 #include "external/HwBpLib/inc/HwBpLib.h"
 
+#include "PluginLoaderConfig.h"
+
 #include "MyLog.h"
 
 
@@ -194,6 +196,16 @@ public:
     }
 };
 std::optional<MainThreadEntryHook_PatchContainer> g_PatchesToTheVeryStartOfTheGamesMainThread;
+// When logging isn't immediate enough, and debuggers aren't reliable enough, here come the MessageBoxes.
+static void MessageBoxAF(const char* fmt, ...)
+{
+    ImGuiTextBuffer buf;
+    va_list args;
+    va_start(args, fmt);
+    buf.appendfv(fmt, args);
+    va_end(args);
+    MessageBoxA(NULL, buf.c_str(), THIS_DLL_PROJECT_NAME, 0);
+}
 
 void RestoreMainThreadStartAddressOriginalCode()
 {
@@ -287,6 +299,18 @@ until the MainIntegrityCheck starts.
 void DoImmediatelyAtTheStartOfGamesMainThread()
 {
     RestoreMainThreadStartAddressOriginalCode();
+    if (g_PluginLoaderConfig.developerOptions->showMessageBoxAtStartOfMainThread)
+        MessageBoxAF(
+            "The game process is paused right now at the start of the Main Thread.\n"
+            "If you're a developer and are working on something that happens\n"
+            "very-very early during the game startup, then this gives you a way\n"
+            "to start debugging early. For example,\n"
+            "you can attach the Cheat Engine's VEH debugger now then close this message.\n"
+            "\n"
+            "You can disable this message in the mod menu:\n"
+            "\"Extra->Show developer options->Show a MessageBox at the start of game's Main Thread\"\n"
+            "or in the Plugin Loader config file."
+        );
     LOG_DEBUG(DefaultLogger,
         "[+] Running at the very start of game's main thread...\n"
     );

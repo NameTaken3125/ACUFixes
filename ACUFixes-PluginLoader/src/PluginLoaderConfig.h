@@ -33,8 +33,8 @@ struct ConfigTop : YAConfigSection {
         };
         ACM(hungrierCrashLog_hookZwRaiseException, bool, BooleanAdapter, false);
         ACM(continueLoadingGameWhileItIsNotFocused, bool, BooleanAdapter, true);
+        ACM(showMessageBoxAtStartOfMainThread, bool, BooleanAdapter, false);
         ACM(canUninjectPluginLoader, YACS_UninjectPluginLoader, YAConfigSectionAdapter, );
-        ACM(hotkey_UnloadMod, VirtualKeys, EnumAdapter_template<VirtualKeys>, VirtualKeys::KEYBOARD_END);
     };
     ACM(developerOptions, YACS_DeveloperOptions, YAConfigSectionAdapter, );
 };

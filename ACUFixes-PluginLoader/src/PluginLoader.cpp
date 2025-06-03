@@ -48,7 +48,32 @@ void MyPluginLoader::LoadPluginAndCheckCompatibility(MyPluginResult& pluginRecor
     std::wstring pluginFilepath = pluginRecord.m_filepath.wstring();
     const char* pluginName = pluginRecord.m_PluginName.c_str();
     LOG_DEBUG(DefaultLogger, "[*] Plugin %s: Trying to load.\n", utf8_and_wide_string_conversion::utf8_encode(pluginFilepath).c_str());
-    HMODULE moduleHandle = LoadLibraryW(pluginFilepath.c_str());
+    HMODULE moduleHandle = nullptr;
+    {
+        // Below is a way to check the plugin DLLs for exported functions
+        // without running the DllMain or any of global constructors.
+        // Seems to work OK, I'm just not sure I need this.
+        // I guess this can prevent some crashes when a completely arbitrary DLL
+        // is thrown into the plugins/ folder by accident, then was loaded,
+        // then was very quickly unloaded without warning.
+        moduleHandle = LoadLibraryExW(pluginFilepath.c_str(), NULL, DONT_RESOLVE_DLL_REFERENCES);
+        if (!moduleHandle)
+        {
+            LOG_DEBUG(DefaultLogger, "[error][x] Plugin %s: Failed to load.\n", pluginName);
+            return;
+        }
+        LOG_DEBUG(DefaultLogger, "[*] Plugin %s: Temporary handle: %llX\n", pluginName, moduleHandle);
+        ACUPluginStart_fnt startFn = reinterpret_cast<ACUPluginStart_fnt>(GetProcAddress(moduleHandle, "ACUPluginStart"));
+        if (!startFn)
+        {
+            LOG_DEBUG(DefaultLogger, "[error][x] Plugin %s: Doesn't export the `ACUPluginStart()` function. Unloading.\n", pluginName);
+            FreeDLL(moduleHandle);
+            return;
+        }
+        FreeDLL(moduleHandle);
+        moduleHandle = nullptr;
+    }
+    moduleHandle = LoadLibraryW(pluginFilepath.c_str());
     if (!moduleHandle)
     {
         LOG_DEBUG(DefaultLogger, "[error][x] Plugin %s: Failed to load.\n", pluginName);

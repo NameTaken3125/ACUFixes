@@ -297,6 +297,7 @@ if exist "$(ProjectDir)copy_output_to_directory.txt" (
     <ClInclude Include="src\AssetOverrides\AssetOverrides.h" />
     <ClInclude Include="src\AssetOverrides\AssetOverridesConfig.h" />
     <ClInclude Include="src\AssetOverrides\DeserializationCycle.h" />
+    <ClInclude Include="src\AssetOverrides\Mock_CombinedRawBufsReader.h" />
     <ClInclude Include="src\AssetOverrides\ReadFile.h" />
     <ClInclude Include="src\AssetOverrides\SingleObjectOverride.h" />
     <ClInclude Include="src\AssetOverrides\VEH.h" />

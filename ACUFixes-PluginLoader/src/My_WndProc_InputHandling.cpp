@@ -17,6 +17,15 @@ LRESULT CALLBACK WndProc_HackControls(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
     // this fails to receive WM_MOUSEWHEEL and mouse button events
     // such as WM_LBUTTONDOWN.
     // WM_MOUSEMOVE is ok, go figure.
+
+    // https://stackoverflow.com/questions/7252398/convert-windows-message-ids-to-text
+    //if (uMsg != WM_NCHITTEST
+    //    && uMsg != WM_MOUSEMOVE
+    //    && uMsg != WM_SETCURSOR
+    //    )
+    //{
+    //    LOG_DEBUG(DefaultLogger, "[WndProc]Msg: %u, wParam: %llx, lParam: %llX\n", uMsg, wParam, lParam);
+    //}
     constexpr unsigned __int64 isPreviouslyPressedMask = 1 << 30;
     if (uMsg == WM_KEYDOWN)
     {
