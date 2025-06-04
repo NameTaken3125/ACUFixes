@@ -214,7 +214,6 @@ if exist "$(ProjectDir)copy_output_to_directory.txt" (
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="src\Handles.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\MyLog.cpp" />
     <ClCompile Include="src\pch.cpp">
@@ -234,7 +233,6 @@ if exist "$(ProjectDir)copy_output_to_directory.txt" (
     <ClInclude Include="src\AssetOverrides\SingleObjectOverride.h" />
     <ClInclude Include="src\AssetOverrides\VEH.h" />
     <ClInclude Include="src\external\hwbrk\hwbrk.h" />
-    <ClInclude Include="src\Handles.h" />
     <ClInclude Include="src\ImGuiConfigUtils.h" />
     <ClInclude Include="src\MyLog.h" />
     <ClInclude Include="src\pch.h" />

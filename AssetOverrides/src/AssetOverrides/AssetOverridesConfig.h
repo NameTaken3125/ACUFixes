@@ -8,7 +8,6 @@ void WriteToFile();
 } // namespace AssetOverridesConfig
 
 #include "OLYAFSer/OLYAFSer.h"
-#include "Serialization/EnumAdapter.h"
 
 #define ACM(varName, VarType, AdapterCls, optionalDefaultValue) ADD_CONFIG_MEMBER(varName, VarType, AdapterCls, optionalDefaultValue)
 #define YACSTOR(SubclsName) YACONFIGSECTION_SUBCLASS_CTOR(SubclsName)

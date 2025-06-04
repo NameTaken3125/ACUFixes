@@ -1,7 +1,5 @@
 #pragma once
 
-#include "ACU/basic_types.h"
-
 #include "AutoAssemblerKinda/AutoAssemblerKinda.h"
 
 struct AddVirtualForges : public AutoAssemblerCodeHolder_Base
@@ -10,7 +8,6 @@ struct AddVirtualForges : public AutoAssemblerCodeHolder_Base
     virtual void OnBeforeDeactivate() override;
 };
 
-void AssetOverrides_ReadConfigOrCreateDefault();
 void AssetOverrides_InitFromLoadOrder();
 void AssetOverrides_EarlyHooks_Start();
 void AssetOverrides_EarlyHooks_End();

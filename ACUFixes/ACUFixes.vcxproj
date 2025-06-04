@@ -111,7 +111,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)CommonLibACU\ACU-RE\vmath;$(SolutionDir)CommonLibACU\ACU-RE\inc;$(SolutionDir)CommonLibACU\DearImGui\inc;$(SolutionDir)CommonLibACU\Serialization\include;$(SolutionDir)CommonLibACU\AutoAssemblerKinda\include;$(SolutionDir)CommonLibACU\Common_PluginSide\public_headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)CommonLibACU\ACU-RE\vmath;$(SolutionDir)CommonLibACU\ACU-RE\inc\Handles;$(SolutionDir)CommonLibACU\ACU-RE\inc;$(SolutionDir)CommonLibACU\DearImGui\inc;$(SolutionDir)CommonLibACU\Serialization\include;$(SolutionDir)CommonLibACU\AutoAssemblerKinda\include;$(SolutionDir)CommonLibACU\Common_PluginSide\public_headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
@@ -173,7 +173,7 @@ if exist "$(ProjectDir)copy_output_to_directory.txt" (
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)CommonLibACU\ACU-RE\vmath;$(SolutionDir)CommonLibACU\ACU-RE\inc;$(SolutionDir)CommonLibACU\DearImGui\inc;$(SolutionDir)CommonLibACU\Serialization\include;$(SolutionDir)CommonLibACU\AutoAssemblerKinda\include;$(SolutionDir)CommonLibACU\Common_PluginSide\public_headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)CommonLibACU\ACU-RE\vmath;$(SolutionDir)CommonLibACU\ACU-RE\inc\Handles;$(SolutionDir)CommonLibACU\ACU-RE\inc;$(SolutionDir)CommonLibACU\DearImGui\inc;$(SolutionDir)CommonLibACU\Serialization\include;$(SolutionDir)CommonLibACU\AutoAssemblerKinda\include;$(SolutionDir)CommonLibACU\Common_PluginSide\public_headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
@@ -252,7 +252,6 @@ if exist "$(ProjectDir)copy_output_to_directory.txt" (
     <ClCompile Include="src\VariousPatches\Hack_SlowMotionTrick.cpp" />
     <ClCompile Include="src\VariousPatches\Hack_UnequipPistol.cpp" />
     <ClCompile Include="src\VariousPatches\Hack_WhistleAbility.cpp" />
-    <ClCompile Include="src\Handles.cpp" />
     <ClCompile Include="src\ImGui3D\ImGui3D.cpp" />
     <ClCompile Include="src\ImGui3D\ImGui3DRenderer.cpp" />
     <ClCompile Include="src\AnimationTools\imGuIZMO.quat\imGuIZMOquat.cpp">
@@ -320,7 +319,6 @@ if exist "$(ProjectDir)copy_output_to_directory.txt" (
     <ClInclude Include="src\VariousPatches\Hack_SlowMenacingWalkAndAutowalk.h" />
     <ClInclude Include="src\VariousPatches\Hack_UnequipPistol.h" />
     <ClInclude Include="src\VariousPatches\Hack_WhistleAbility.h" />
-    <ClInclude Include="src\Handles.h" />
     <ClInclude Include="src\ImGui3D\ImGui3D.h" />
     <ClInclude Include="src\ImGui3D\ImGui3DCustomDraw.h" />
     <ClInclude Include="src\ImGui3D\ImGui3DRenderer.h" />

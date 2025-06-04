@@ -18,15 +18,46 @@ Its structure is simply as follows:
 with handles sorted in ascending order.
 */
 
-#include "Handles.h"
+#include "Handles/Handles.h"
 
-namespace fs = std::filesystem;
 
 #define DICT_OF_HANDLES_FILENAME "HandlesLUT-ACUnity.handlesmapcpp"
 const char* g_HandlesMapFilename = DICT_OF_HANDLES_FILENAME;
 
+
 namespace ACU::Handles
 {
+static fs::path GetThisDLLAbsoluteFilepath()
+{
+    auto GetThisDLLHandle = []() -> HMODULE
+        {
+            // A variable within the module.
+            static char dummyChar;
+            HMODULE dllHandle = NULL;
+            GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
+                GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                (LPCSTR)&dummyChar,
+                &dllHandle);
+            return dllHandle;
+        };
+
+    fs::path result;
+    HMODULE dllHandle = GetThisDLLHandle();
+    if (dllHandle == NULL) return result;
+    wchar_t path[MAX_PATH];
+
+    GetModuleFileNameW(dllHandle, path, (DWORD)std::size(path));
+    return fs::path(path);
+}
+static fs::path AbsolutePathInThisDLLDirectory(const fs::path& filenameRel)
+{
+    fs::path result;
+    static fs::path thisDLLPath = GetThisDLLAbsoluteFilepath();
+    if (thisDLLPath.empty()) return result;
+    return thisDLLPath.parent_path() / filenameRel;
+}
+
+
 class HandlesMap
 {
 public:

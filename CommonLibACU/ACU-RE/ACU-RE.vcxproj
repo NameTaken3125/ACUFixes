@@ -99,7 +99,7 @@
       <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(ProjectDir)inc\;$(ProjectDir)vmath\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)inc\;$(ProjectDir)vmath\;$(ProjectDir)src</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -155,7 +155,7 @@
       <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(ProjectDir)inc\;$(ProjectDir)vmath\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)inc\;$(ProjectDir)vmath\;$(ProjectDir)src</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -167,6 +167,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="inc\Handles\Handles.h" />
     <ClInclude Include="inc\ACU\LoadingThread.h" />
     <ClInclude Include="inc\ACU\ManagedPtrs\AllManagedObjects.h" />
     <ClInclude Include="inc\ACU\Animation.h" />
@@ -367,6 +368,7 @@
     <ClCompile Include="src\CLAssassin.cpp" />
     <ClCompile Include="src\Entity.cpp" />
     <ClCompile Include="src\ForgeManager.cpp" />
+    <ClCompile Include="src\Handles\Handles.cpp" />
     <ClCompile Include="src\Human.cpp" />
     <ClCompile Include="src\HumanStatesHolder.cpp" />
     <ClCompile Include="src\LocalizationManager.cpp" />

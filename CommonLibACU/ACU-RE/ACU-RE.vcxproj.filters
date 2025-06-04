@@ -184,6 +184,7 @@
     <ClInclude Include="inc\ACU\Sound\ACU_SoundUtils.h" />
     <ClInclude Include="inc\ACU\ManagedPtrs\ManagedPtrs.h" />
     <ClInclude Include="inc\ACU\LoadingThread.h" />
+    <ClInclude Include="inc\Handles\Handles.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />
@@ -213,6 +214,7 @@
     <ClCompile Include="src\ForgeManager.cpp" />
     <ClCompile Include="src\ACUAllocs.cpp" />
     <ClCompile Include="src\ACU_SoundUtils.cpp" />
+    <ClCompile Include="src\Handles\Handles.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="misc\debuggers\SmallArray.natvis" />

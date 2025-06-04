@@ -9,7 +9,7 @@ Brings the app's components together.
 #include "AssetOverrides/AssetOverrides.h"
 #include "AssetOverrides/AssetOverridesConfig.h"
 
-#include "Handles.h"
+#include "Handles/Handles.h"
 #include "Common_Plugins/Common_PluginSide.h"
 
 #define LOG_FILENAME    THIS_DLL_PROJECT_NAME "-log.log"

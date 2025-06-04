@@ -6,7 +6,7 @@
 #include "ACU_DefineNativeFunction.h"
 #include "Common_Plugins/Common_PluginSide.h"
 
-#include "Handles.h"
+#include "Handles/Handles.h"
 
 #include "MyLog.h"
 static DEFINE_LOGGER_CONSOLE_AND_FILE(VirtualForgesLog, "[AssetOverrides]");

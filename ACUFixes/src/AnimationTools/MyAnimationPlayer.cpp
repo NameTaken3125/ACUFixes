@@ -1,5 +1,7 @@
 #include "pch.h"
 
+#include "Common_Plugins/Common_PluginSide.h"
+
 #include "MyAnimationPlayer.h"
 #include "AnimationEditor.h"
 #include "AnimationPicker.h"

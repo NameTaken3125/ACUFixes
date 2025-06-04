@@ -1,11 +1,10 @@
 #pragma once
 
-#include <array>
-#include "Common_Plugins/Common_PluginSide.h"
+#include "ACU/basic_types.h"
 
 /*
 The game uses 8-byte Handles to identify its data resources.
-This namespace provides a function that can convert a handle into the corresponding filename.
+This namespace provides a function that finds a filename corresponding to a given handle.
 This utilizes an external "dictionary of handles" file. The ACUFixes Github page should contain
 this "HandlesLUT-ACUnity.handlesmapcpp" file, maybe somewhere in the Releases files.
 It needs to be placed in the folder with the plugin DLL:

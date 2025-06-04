@@ -5,6 +5,10 @@
 
 #include <intrin.h>
 #include <string_view>
+#include <fstream>
+#include <filesystem>
+namespace fs = std::filesystem;
+#include <optional>
 
 #include "ACU/basic_types.h"
 #include "vmath/vmath.h"
