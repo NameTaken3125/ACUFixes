@@ -26,6 +26,11 @@ public:
         {
             WriteConfig();
         }
+        ImGui::SameLine();
+        if (ImGui::Button("Open DLL's folder in File Explorer"))
+        {
+            system(("explorer \"" + g_ThisDLLAbsoluteFilepath.parent_path().string() + "\"").c_str());
+        }
         if (virtualForges.IsActive())
         {
             ImGui::Separator();
@@ -55,10 +60,6 @@ void HacksContainer_AssetOverrides_DrawControls()
     }
 }
 
-void AssetOverrides_ReadConfigOrCreateDefault()
-{
-    AssetOverridesConfig::FindAndLoadConfigFileOrCreateDefault(AbsolutePathInThisDLLDirectory("AssetOverrides/asset_overrides_config.json"));
-}
 void AssetOverrides_CodePatches_Start()
 {
     g_HacksContainer_AssetOverrides.emplace();

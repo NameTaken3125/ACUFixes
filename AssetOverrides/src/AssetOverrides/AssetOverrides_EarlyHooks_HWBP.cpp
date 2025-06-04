@@ -65,12 +65,8 @@ LONG HWBP_SingleObjectOverride_HandleException(::_EXCEPTION_POINTERS* ExceptionI
     return EXCEPTION_CONTINUE_SEARCH;
 }
 
-#include "AssetOverridesConfig.h"
-void AssetOverrides_InitFromLoadOrder_EarlyHook();
 void AssetOverrides_EarlyHooks_Start()
 {
-    if (!g_AssetOverridesConfig.enableOnStartup) return;
-    AssetOverrides_InitFromLoadOrder_EarlyHook();
     g_EarlyHooks_SingleObjectOverride_VEHandler.emplace(1, HWBP_SingleObjectOverride_HandleException);
     AssetOverrides_EarlyHooks_HWBP_SetBP();
 }

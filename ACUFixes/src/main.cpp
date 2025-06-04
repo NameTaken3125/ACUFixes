@@ -8,6 +8,7 @@ Brings the app's components together.
 #include "MyVariousHacks.h"
 #include "MyLog.h"
 #include "MainConfig.h"
+#include "Handles.h"
 
 #include "Common_Plugins/Common_PluginSide.h"
 
@@ -18,9 +19,7 @@ std::optional<MyLogFileLifetime> g_LogLifetime;
 void ImGuiLayer_EvenWhenMenuIsClosed();
 void ImGuiLayer_WhenMenuIsOpen();
 void ApplyAnimationGraphMods();
-namespace ACU::Handles { void LoadHandlesmapFile(); }
-
-class ACUFixes_TheFixesPlugin : public ACUPluginInterfaceVirtuals
+class AssetOverridesPlugin : public ACUPluginInterfaceVirtuals
 {
 public:
     virtual void EveryFrameWhenMenuIsOpen() override

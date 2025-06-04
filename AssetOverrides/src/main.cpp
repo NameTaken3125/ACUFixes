@@ -7,7 +7,9 @@ Brings the app's components together.
 
 #include "MyLog.h"
 #include "AssetOverrides/AssetOverrides.h"
+#include "AssetOverrides/AssetOverridesConfig.h"
 
+#include "Handles.h"
 #include "Common_Plugins/Common_PluginSide.h"
 
 #define LOG_FILENAME    THIS_DLL_PROJECT_NAME "-log.log"
@@ -16,10 +18,8 @@ Brings the app's components together.
 std::optional<MyLogFileLifetime> g_LogLifetime;
 void ImGuiLayer_EvenWhenMenuIsClosed();
 void ImGuiLayer_WhenMenuIsOpen();
-void ApplyAnimationGraphMods();
-namespace ACU::Handles { void LoadHandlesmapFile(); }
 
-class ACUFixes_TheFixesPlugin : public ACUPluginInterfaceVirtuals
+class AssetOverridesPlugin : public ACUPluginInterfaceVirtuals
 {
 public:
     virtual void EveryFrameWhenMenuIsOpen() override
@@ -37,16 +37,27 @@ public:
     virtual void InitStage_WhenPluginAPIDeemedCompatible() override
     {
         g_LogLifetime.emplace(AbsolutePathInThisDLLDirectory(LOG_FILENAME));
+        AssetOverridesConfig::FindAndLoadConfigFileOrCreateDefault(AbsolutePathInThisDLLDirectory(CONFIG_FILENAME));
         ACU::Handles::LoadHandlesmapFile();
-        AssetOverrides_ReadConfigOrCreateDefault();
     }
+    bool m_IsEarlyInitializationHappened = false;
     virtual void EarlyHook_WhenGameCodeIsUnpacked() override
     {
-        AssetOverrides_EarlyHooks_Start();
+        if (g_AssetOverridesConfig.enableOnStartup)
+        {
+            AssetOverrides_InitFromLoadOrder();
+            m_IsEarlyInitializationHappened = true;
+            AssetOverrides_EarlyHooks_Start();
+        }
     }
     virtual bool InitStage_WhenCodePatchesAreSafeToApply(ACUPluginLoaderInterface& pluginLoader) override
     {
         AssetOverrides_EarlyHooks_End();
+        if (g_AssetOverridesConfig.enableOnStartup && !m_IsEarlyInitializationHappened)
+        {
+            // This can happen e.g. if the plugin was unloaded from the GUI then loaded again.
+            AssetOverrides_InitFromLoadOrder();
+        }
         AssetOverrides_CodePatches_Start();
         return true;
     }

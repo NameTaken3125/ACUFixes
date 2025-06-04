@@ -95,10 +95,13 @@ public:
 std::vector<std::unique_ptr<DetectedDatapack>> GetDatapacksFromFolder(const fs::path& modFolder)
 {
     ImGuiTextBuffer buf;
+    fs::path datapacksFolder = modFolder / "Datapacks";
     std::string extension = ".data";
     std::vector<std::unique_ptr<DetectedDatapack>> result;
+    std::error_code ec;
+    if (!fs::is_directory(datapacksFolder, ec)) return result;
     try {
-        for (const auto& entry : fs::directory_iterator(modFolder)) {
+        for (const auto& entry : fs::directory_iterator(datapacksFolder)) {
             if (entry.is_regular_file() && entry.path().extension() == extension) {
                 LOG_DEBUG(
                     VirtualForgesLog
@@ -149,7 +152,8 @@ std::vector<std::unique_ptr<DetectedLooseFile>> GetLooseFilesFromFolder(const fs
     ImGuiTextBuffer buf;
     fs::path looseFilesFolder = modFolder / "LooseFiles";
     std::vector<std::unique_ptr<DetectedLooseFile>> result;
-    if (!fs::is_directory(looseFilesFolder)) return result;
+    std::error_code ec;
+    if (!fs::is_directory(looseFilesFolder, ec)) return result;
     try {
         for (const auto& entry : fs::directory_iterator(looseFilesFolder)) {
             if (entry.is_regular_file()) {
@@ -901,6 +905,7 @@ void AssetModlist::DrawMenu()
         ImGuiChildFlags_ResizeX
         | ImGuiChildFlags_Borders
         ;
+    ImGui::SetNextWindowSizeConstraints(ImVec2(0, ImGui::GetTextLineHeightWithSpacing() * 20), ImVec2(FLT_MAX, FLT_MAX));
     if (ImGuiCTX::WindowChild _sectionMods{ "_sectionMods", ImVec2(leftPaneWidth, leftPaneHeight), leftPaneFlags })
     {
         std::optional<size_t> idxDragged = {};
@@ -956,6 +961,7 @@ void AssetModlist::DrawMenu()
     }
     ImGui::SameLine();
 
+    ImGui::SetNextWindowSizeConstraints(ImVec2(0, ImGui::GetTextLineHeightWithSpacing() * 20), ImVec2(FLT_MAX, FLT_MAX));
     if (ImGuiCTX::WindowChild _sectionSelectedModContents{ "_sectionSelectedModContents", ImVec2(0, leftPaneHeight), false })
     {
         DrawPopup_DatapackDetails();
@@ -1297,7 +1303,7 @@ void DrawAssetOverridesInstructions()
     ImGui::PushStyleColor(ImGuiCol_Header,          ImVec4(colorAttentionHeader.x, colorAttentionHeader.y, colorAttentionHeader.z, 0.55f));
     ImGui::PushStyleColor(ImGuiCol_HeaderHovered,   ImVec4(colorAttentionHeader.x, colorAttentionHeader.y, colorAttentionHeader.z, 0.80f));
     ImGui::PushStyleColor(ImGuiCol_HeaderActive,    ImVec4(colorAttentionHeader.x, colorAttentionHeader.y, colorAttentionHeader.z, 1.00f));
-    if (ImGuiCTX::TreeNodeEx _virtualForgesReadme{ "EXPERIMENTAL - PLEASE READ", ImGuiTreeNodeFlags_Framed })
+    if (ImGuiCTX::TreeNodeEx _virtualForgesReadme{ "INSTRUCTIONS - PLEASE READ", ImGuiTreeNodeFlags_Framed })
     {
         ImGui::PopStyleColor(3);
         ImGui::Text(
@@ -1324,26 +1330,31 @@ void DrawAssetOverridesInstructions()
         ImVec4 color_LooseFile(0.425f, 0.780f, 0.392f, 1.000f);
         auto ExampleModInstall_VictoryOutfit = [&]() {
             ImGuiCTX::PushStyleColor _ct(ImGuiCol_Text, color_ModFolder);
-            if (ImGuiCTX::TreeNodeEx _modFld{ "VictoryOutfit/   <<<--- All the .data files for your mod go here", ImGuiTreeNodeFlags_DefaultOpen }) {
+            if (ImGuiCTX::TreeNodeEx _modFld{ "VictoryOutfit/", ImGuiTreeNodeFlags_DefaultOpen }) {
                 ImGuiCTX::PushStyleColor _ct(ImGuiCol_Text, color_Datapack);
-                ImGui::BulletText("1_-_CN_P_FR_LegacyAvatar_Altair.data");
+                if (ImGuiCTX::TreeNodeEx _dp{ "Datapacks/   <<<--- All the .data files for your mod go here", ImGuiTreeNodeFlags_DefaultOpen }) {
+                    ImGui::BulletText("1_-_CN_P_FR_LegacyAvatar_Altair.data");
+                }
             }
             };
         auto ExampleModInstall_SwordOfAltair = [&]() {
             ImGuiCTX::PushStyleColor _ct(ImGuiCol_Text, color_ModFolder);
             if (ImGuiCTX::TreeNodeEx _{ "Sword of Altair/", ImGuiTreeNodeFlags_DefaultOpen }) {
                 {
+                    ImGuiCTX::PushStyleColor _ct(ImGuiCol_Text, color_Datapack);
+                    if (ImGuiCTX::TreeNodeEx _lfFolder{ "Datapacks/   <<<--- All the .data files for your mod go here", ImGuiTreeNodeFlags_DefaultOpen }) {
+                        ImGui::BulletText("0_-_GFX_SwordOfEden_Glow_DiffuseMap.data");
+                        ImGui::BulletText("1_-_CN_W_SwordOfEden_DiffuseMap.data");
+                        ImGui::BulletText("1_-_CN_W_SwordOfEden_NormalMap.data");
+                        ImGui::BulletText("1_-_CN_W_SwordOfEden_SpecularMap.data");
+                    }
+                }
+                {
                     ImGuiCTX::PushStyleColor _ct(ImGuiCol_Text, color_LooseFile);
-                    ImGuiCTX::TreeNodeEx _lfFolder{ "LooseFiles/   <<<--- All the \"loose files\" (non .data files) go here", ImGuiTreeNodeFlags_DefaultOpen };
-                    if (_lfFolder) {
+                    if (ImGuiCTX::TreeNodeEx _lfFolder{ "LooseFiles/   <<<--- All the \"loose files\" (non .data files) go here", ImGuiTreeNodeFlags_DefaultOpen }) {
                         ImGui::BulletText("1_-_SwordOfEden_LOD0.mesh");
                     }
                 }
-                ImGuiCTX::PushStyleColor _ct(ImGuiCol_Text, color_Datapack);
-                ImGui::BulletText("0_-_GFX_SwordOfEden_Glow_DiffuseMap.data");
-                ImGui::BulletText("1_-_CN_W_SwordOfEden_DiffuseMap.data");
-                ImGui::BulletText("1_-_CN_W_SwordOfEden_NormalMap.data");
-                ImGui::BulletText("1_-_CN_W_SwordOfEden_SpecularMap.data");
             }
             };
         auto ExampleModInstall_AlternateWalk = [&]() {
@@ -1383,7 +1394,7 @@ void DrawAssetOverridesInstructions()
                 "       \"1_-_CN_P_FR_LegacyAvatar_Altair.data\"\n"
                 "       (you can rename the file, but the datapack needs to have extension \".data\")\n"
                 "   into\n"
-                "       \"Assassin's Creed Unity/ACUFixes/plugins/AssetOverrides/VictoryOutfit/\":\n"
+                "       \"Assassin's Creed Unity/ACUFixes/plugins/AssetOverrides/VictoryOutfit/Datapacks/\":\n"
             );
             ExampleModInstall(ExampleModInstall_VictoryOutfit);
             ImGui::Text(
@@ -1578,10 +1589,6 @@ void AssetOverrides_InitFromLoadOrder()
 {
     g_AssetModlist.InitFromLoadOrder();
 }
-void AssetOverrides_InitFromLoadOrder_EarlyHook()
-{
-    AssetOverrides_InitFromLoadOrder();
-}
 
 #include "ReadFile.h"
 std::vector<byte> ReadGameObjectFileWhole(const fs::path& filepath)
@@ -1666,10 +1673,6 @@ AddVirtualForges::AddVirtualForges()
                 , dq((uintptr_t)0x1426F0DC7)
         };
     }
-}
-void AddVirtualForges::OnBeforeActivate()
-{
-    AssetOverrides_InitFromLoadOrder();
 }
 void AddVirtualForges::OnBeforeDeactivate()
 {

@@ -11,6 +11,7 @@ namespace fs = std::filesystem;
 
 #define DEFINE_LOGGER_CONSOLE_AND_FILE(VariableName, textualName) Logger_ConsoleAndFile VariableName(textualName);
 #define DEFINE_LOGGER_CONSOLE(VariableName, textualName) Logger_Console VariableName(textualName);
+#define DEFINE_LOGGER_FILE(VariableName, textualName) Logger_File VariableName(textualName);
 #define DEFINE_LOGGER_NULL(VariableName, textualName) Logger_Null VariableName;
 
 /*
@@ -116,6 +117,23 @@ struct Logger_Console
         buf.appendfv(fmt, args);
         va_end(args);
         ImGuiConsole::AddLog(buf.c_str());
+    }
+};
+struct Logger_File
+{
+    const std::string m_Name;
+    Logger_File(std::string_view name) : m_Name(name) {}
+    void LogDebug(const char* fmt, ...)
+    {
+        ImGuiTextBuffer buf;
+        buf.reserve(1024);
+        buf.append(m_Name.c_str());
+        va_list args;
+        va_start(args, fmt);
+        buf.appendfv(fmt, args);
+        va_end(args);
+        fprintf(g_LogFile, buf.c_str());
+        fflush(g_LogFile);
     }
 };
 
