@@ -47,6 +47,13 @@ struct ACUPluginInfo
 	// This can be very early during game load. It's not safe to apply normal code patches
 	// or call game's functions from here.
 	void (*m_InitStage_WhenVersionsAreDeemedCompatible)(ACUPluginLoaderInterface& pluginLoader) = nullptr;
+
+	// "Early Hooks" are the ones that run before the MainIntegrityCheck is killed,
+	// before the game's window is opened, before it is safe to patch the game's code.
+	// You probably don't need to use any of the early hooks in your plugin.
+	// For example, none of the Early Hooks will be run
+	// if you manually load the plugin from the ImGui menu.
+
 	void (*m_EarlyHook_WhenGameCodeIsUnpacked)() = nullptr;
 };
 assert_offsetof(ACUPluginInfo, m_PluginAPIVersion, 0);

@@ -40,9 +40,6 @@ public:
         MainConfig::FindAndLoadConfigFileOrCreateDefault(AbsolutePathInThisDLLDirectory(CONFIG_FILENAME));
         ACU::Handles::LoadHandlesmapFile();
     }
-    virtual void EarlyHook_WhenGameCodeIsUnpacked() override
-    {
-    }
     virtual bool InitStage_WhenCodePatchesAreSafeToApply(ACUPluginLoaderInterface& pluginLoader) override
     {
         MyVariousHacks::Start();

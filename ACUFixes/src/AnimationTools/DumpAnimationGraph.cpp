@@ -741,7 +741,7 @@ public:
             "%s%llu => %s\n"
             , m_currentIndent.c_str()
             , sharedAnim->handle
-            , ACU::Handles::HandleToText(sharedAnim->handle).c_str()
+            , ACU::Handles::HandleToText(sharedAnim->handle)
         );
     }
     void DumpGraphNodeCustom(AtomGraphNode& graphNode)
@@ -769,7 +769,7 @@ public:
                 "%s%llu => %s\n"
                 , m_currentIndent.c_str()
                 , sharedAnim->handle
-                , ACU::Handles::HandleToText(sharedAnim->handle).c_str()
+                , ACU::Handles::HandleToText(sharedAnim->handle)
             );
         }
         ImGui::LogText(
@@ -1346,6 +1346,17 @@ ACU::StrongRef<AtomGraph> GetAtomGraph(Entity& ent)
     if (!atomAnimCpnt) return {};
     return (ACU::StrongRef<AtomGraph>&)atomAnimCpnt->shared_AtomGraph_NewDemo_DEV;
 }
+namespace ImGui
+{
+    inline void CopyToClipboardOnClick(const char* s, const char* fmtTooltip = "Click to copy to clipboard", ...)
+    {
+        va_list args;
+        va_start(args, fmtTooltip);
+        if (ImGui::IsItemHovered()) ImGui::SetTooltipV(fmtTooltip, args);
+        va_end(args);
+        if (ImGui::IsItemClicked()) ImGui::SetClipboardText(s);
+    }
+}
 void RaycastPicker_PickAtomGraph()
 {
     static RaycastPickerModal picker;
@@ -1379,7 +1390,7 @@ void RaycastPicker_PickAtomGraph()
                 buf.appendf(
                     "AtomGraph: %llu => %s"
                     , foundGraph.GetHandle()
-                    , ACU::Handles::HandleToText(foundGraph.GetHandle()).c_str()
+                    , ACU::Handles::HandleToText(foundGraph.GetHandle())
                 );
             }
             ImGui::Text(
@@ -1416,12 +1427,11 @@ void RaycastPicker_PickAtomGraph()
         buf.appendf(
             "Handle: %llu => %s"
             , g_PickedAtomGraph.m_Graph.GetHandle()
-            , ACU::Handles::HandleToText(g_PickedAtomGraph.m_Graph.GetHandle()).c_str()
+            , ACU::Handles::HandleToText(g_PickedAtomGraph.m_Graph.GetHandle())
         );
     }
     ImGui::Text(buf.c_str());
-    if (ImGui::IsItemClicked(0))
-        ImGui::SetClipboardText(buf.c_str());
+    ImGui::CopyToClipboardOnClick(buf.c_str());
 }
 void DrawAtomGraphDumper()
 {

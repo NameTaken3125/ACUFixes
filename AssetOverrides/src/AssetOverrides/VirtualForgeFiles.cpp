@@ -793,7 +793,7 @@ void AssetModlist::DrawPopup_DatapackDetails()
         buf.appendf(
             "Handle: %llu/%llX => %s"
             , selectedHandle, selectedHandle
-            , ACU::Handles::HandleToText(selectedHandle).c_str()
+            , ACU::Handles::HandleToText(selectedHandle)
         );
         ImGui::Text(buf.c_str());
         ImGui::CopyToClipboardOnClick(buf.c_str());

@@ -22,7 +22,8 @@ with handles sorted in ascending order.
 
 namespace fs = std::filesystem;
 
-const char* g_HandlesMapFilename = "HandlesLUT-ACUnity.handlesmapcpp";
+#define DICT_OF_HANDLES_FILENAME "HandlesLUT-ACUnity.handlesmapcpp"
+const char* g_HandlesMapFilename = DICT_OF_HANDLES_FILENAME;
 
 namespace ACU::Handles
 {
@@ -36,12 +37,9 @@ public:
         return singleton;
     }
 };
-HandleString HandleToText(uint64 handle)
+const char* HandleToText(uint64 handle)
 {
-    HandleString result;
-    std::string foundText = HandlesMap::GetSingleton().FindNameForHandle(handle);
-    memcpy_s(&result.m_buffer[0], result.m_buffer.size(), foundText.c_str(), foundText.size() + 1);
-    return result;
+    return HandlesMap::GetSingleton().FindNameForHandle(handle);
 }
 } // namespace ACU::Handles
 namespace ACU::Handles
@@ -86,11 +84,11 @@ void LoadHandlesmapFile()
 };
 const char* MakeHandleString_HandlesmapNotLoaded(uint64 handle)
 {
-    return "";
+    return "<HANDLE NOT RECOGNIZED: \"" DICT_OF_HANDLES_FILENAME "\" FILE NOT LOADED>";
 }
 const char* MakeHandleString_HandleNotRecognized(uint64 handle)
 {
-    return "";
+    return "<HANDLE NOT RECOGNIZED>";
 }
 enum class HandlesDictionaryNotLoadedWhy
 {

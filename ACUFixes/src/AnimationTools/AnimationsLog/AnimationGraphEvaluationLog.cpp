@@ -51,7 +51,7 @@ void WhenJustRetrievedAnimationForNewlyInitializedAnimationDataNode_DoLog(AllReg
         , animDataNode
         , anim
         , animHandle
-        , ACU::Handles::HandleToText(animHandle).c_str()
+        , ACU::Handles::HandleToText(animHandle)
     );
 }
 

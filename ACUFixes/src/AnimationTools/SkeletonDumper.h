@@ -122,7 +122,7 @@ public:
                 "%s%llu => %s:\n"
                 , m_currentIndent.c_str()
                 , skelCpnt.MainSkeleton->handle
-                , ACU::Handles::HandleToText(skelCpnt.MainSkeleton->handle).c_str());
+                , ACU::Handles::HandleToText(skelCpnt.MainSkeleton->handle));
             if (Skeleton* mainSkel = skelCpnt.MainSkeleton->GetPtr())
             {
                 DumpSkeleton(*mainSkel);
@@ -137,7 +137,7 @@ public:
                     "%s%llu => %s:\n"
                     , m_currentIndent.c_str()
                     , sharedSkel->handle
-                    , ACU::Handles::HandleToText(sharedSkel->handle).c_str());
+                    , ACU::Handles::HandleToText(sharedSkel->handle));
                 if (Skeleton* skel = sharedSkel->GetPtr())
                 {
                     DumpSkeleton(*skel);

@@ -173,13 +173,16 @@ void ImGuiLayer_WhenMenuIsOpen()
                         static uint64 handleToSearch = 64839213519; // => ACU_Paris\ACU_Paris.World
                         ImGui::InputScalar("Search handle (dec)", ImGuiDataType_U64, &handleToSearch, 0, 0, "%llu", ImGuiInputTextFlags_CharsDecimal);
                         ImGui::InputScalar("Search handle (hex)", ImGuiDataType_U64, &handleToSearch, 0, 0, "%llX", ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_CharsUppercase);
-                        ImGui::Text(
+                        static ImGuiTextBuffer buf;
+                        buf.clear();
+                        buf.appendf(
                             "%llu => %s"
                             , handleToSearch
-                            , ACU::Handles::HandleToText(handleToSearch).c_str()
+                            , ACU::Handles::HandleToText(handleToSearch)
                         );
+                        ImGui::Text(buf.c_str());
+                        ImGui::CopyToClipboardOnClick(buf.c_str());
                         ACU::WeakRef<ManagedObject> weakRef(handleToSearch);
-                        static ImGuiTextBuffer buf;
                         buf.clear();
                         buf.appendf(
                             "Address:     %llX\n"

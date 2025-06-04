@@ -484,7 +484,7 @@ void DrawEntityVisualsControls(Entity& entity)
         fmt.appendf(
             "%llu => %s"
             , vis->shared_LODSelector->handle
-            , ACU::Handles::HandleToText(vis->shared_LODSelector->handle).c_str()
+            , ACU::Handles::HandleToText(vis->shared_LODSelector->handle)
         );
         if (ImGui::Checkbox(fmt.c_str(), &isVisible))
         {

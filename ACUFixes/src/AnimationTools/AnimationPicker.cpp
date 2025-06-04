@@ -135,7 +135,7 @@ bool AnimationPicker::Draw(const char* label, ACU::StrongRef<Animation>& inOut)
             Animation& anim = *static_cast<Animation*>(maybeAnim);
             ImGui::Text(
                 "%s"
-                , ACU::Handles::HandleToText(foundSharedBlock.GetSharedBlock().handle).c_str()
+                , ACU::Handles::HandleToText(foundSharedBlock.GetSharedBlock().handle)
             );
             ImGui::Text(
                 "Addr: %llX"

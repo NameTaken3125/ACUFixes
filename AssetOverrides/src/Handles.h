@@ -13,17 +13,8 @@ It needs to be placed in the folder with the plugin DLL:
 */
 namespace ACU::Handles
 {
-class HandleString
-{
-public:
-    std::array<char, 0x100> m_buffer = { 0 };
-    operator const char* () { return m_buffer.data(); }
-    const char* c_str() const { return m_buffer.data(); }
-    size_t size() const { return strnlen_s(m_buffer.data(), m_buffer.size()); }
-    bool empty() const { return this->size() == 0; }
-};
-HandleString HandleToText(uint64 handle);
 
+const char* HandleToText(uint64 handle);
 
 
 // Try to load the "dictionary of handles".

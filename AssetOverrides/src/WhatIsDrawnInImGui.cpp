@@ -12,22 +12,7 @@ void ImGuiLayer_WhenMenuIsOpen()
     if (ImGui::Button("Unload this plugin")) RequestUnloadThisPlugin();
     ImGui::Separator();
 #endif // _DEBUG
-    //if (ImGuiCTX::TabBar _tabbar{ "MainWindowTabs" })
-    //{
-    //    if (ImGuiCTX::Tab _mainTab{ "Asset Overrides" })
-    //    {
-            HacksContainer_AssetOverrides_DrawControls();
-    //    }
-    //    if (ImGuiCTX::Tab _extraoptions{ "Extra" })
-    //    {
-    //        DrawModMenuControls();
-    //        ImGui::Separator();
-    //        if (ImGui::Button("Unload this plugin"))
-    //        {
-    //            RequestUnloadThisPlugin();
-    //        }
-    //    }
-    //}
+    HacksContainer_AssetOverrides_DrawControls();
 }
 
 void ImGuiLayer_EvenWhenMenuIsClosed()
