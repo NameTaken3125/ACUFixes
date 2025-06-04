@@ -1371,18 +1371,37 @@ void DrawAssetOverridesInstructions()
                 }
             }
             };
+        if (ImGuiCTX::TreeNode _exampleUsage{ "Short tutorial: Three different mods" })
+        {
+            ImGui::Text(
+                "I'll use three different asset mods as an example:"
+            );
+            ImGui::BulletText("Assassins Creed Victory Outfit v1.0 by LordOfThe9");
+            ImGui::CopyToClipboardOnClick("https://www.nexusmods.com/assassinscreedunity/mods/136", "Click to copy link to clipboard");
+            ImGui::BulletText("Sword of Altair by Halzoid98");
+            ImGui::CopyToClipboardOnClick("https://www.nexusmods.com/assassinscreedunity/mods/123", "Click to copy link to clipboard");
+            ImGui::BulletText("ACU-Alternate Walking animation by Petrichor23");
+            ImGui::CopyToClipboardOnClick("https://www.nexusmods.com/assassinscreedunity/mods/280", "Click to copy link to clipboard");
+            ImGui::Text(
+                "Each mod goes in a different folder:\n"
+                "1. Download the mods.\n"
+                "2. Unzip and arrange the files in folders as shown below.\n"
+                "3. Click \"Refresh load order\".\n"
+                "4. Select and right click to activate each one.\n"
+                "5. Press \"Save load order\".\n"
+                "6. Make sure \"Enable Asset Overrides\" and \"Enable on startup\" checkboxes are enabled.\n"
+                "7. Press \"Save config\".\n"
+                "8. Restart the game.\n"
+                "That should be enough, but please do read the rest of the instructions."
+            );
+            ExampleModInstall([&]() {
+                ExampleModInstall_VictoryOutfit();
+                ExampleModInstall_AlternateWalk();
+                ExampleModInstall_SwordOfAltair();
+                });
+        }
         if (ImGuiCTX::TreeNode _exampleUsage{ "Example: How to install a new outfit replacer" })
         {
-            //if (ImGuiCTX::TreeNode _tldr{ "TL;DR:" })
-            //{
-            //    ImGui::Text(
-            //        "Typical usage: how to install a new outfit replacer.\n"
-            //        "Put the outfit's \".data\" file into\n"
-            //        "       \"Assassin's Creed Unity/ACUFixes/plugins/ACUFixes/AssetOverrides/YOUR_MOD_NAME/\",\n"
-            //        "then click \"Refresh load order\", then right click \"YOUR_MOD_NAME\" to activate.\n"
-            //        "Please read the rest of the instructions."
-            //    );
-            //}
             ImGui::Text(
                 "I'll use the \"Assassins Creed Victory Outfit\" v1.0 for AC Unity by LordOfThe9 as an example.\n"
             );
