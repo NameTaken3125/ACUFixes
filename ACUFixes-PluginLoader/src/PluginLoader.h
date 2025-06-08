@@ -30,8 +30,11 @@ class MyPluginLoader
 {
 public:
     void UpdateListOfAvailablePlugins();
-    void LoadAllFoundNonloadedPlugins();
     void LoadAllFoundNonloadedPluginsAndCheckCompatibility();
+    // Called when the Plugin Loader starts. Does not perform complete initialization yet.
+    void FirstTimeGatherPluginsAndCheckCompatibility();
+    // Called from ImGui. "Early Hooks" will be skipped.
+    void LoadAllFoundNonloadedPluginsCheckCompatibilityAndCompleteInitialization();
     void WhenGameCodeIsUnpacked();
     void WhenSafeToApplyCodePatches();
     void UnloadAllPlugins();
@@ -43,7 +46,7 @@ public:
     void RequestUnloadDLL(HMODULE dllHandle);
     HMODULE GetPluginIfLoaded(const wchar_t* pluginName);
 private:
-    void LoadAndStartPlugin(MyPluginResult& pluginRecord);
+    void LoadPluginCheckCompatibilityAndCompleteInitialization(MyPluginResult& pluginRecord);
     void LoadPluginAndCheckCompatibility(MyPluginResult& pluginRecord);
 public:
     void EveryFrameBeforeGraphicsUpdate();

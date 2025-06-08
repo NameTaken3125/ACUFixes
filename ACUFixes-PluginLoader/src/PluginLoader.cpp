@@ -3,9 +3,6 @@
 #include "PluginLoader.h"
 #include "MyLog.h"
 
-
-MyPluginLoader g_MyPluginLoader;
-
 bool IsPluginAPIversionCompatible(uint64 apiVersion_pluginLoader, uint64 apiVersion_plugin)
 {
     // If the pluginloader updates introduce changes that would break old plugins,
@@ -25,7 +22,7 @@ BOOL FreeDLL(HMODULE hLibModule)
     //CoFreeUnusedLibraries();
     return result;
 }
-void MyPluginLoader::LoadAndStartPlugin(MyPluginResult& pluginRecord)
+void MyPluginLoader::LoadPluginCheckCompatibilityAndCompleteInitialization(MyPluginResult& pluginRecord)
 {
     LoadPluginAndCheckCompatibility(pluginRecord);
     if (!pluginRecord.m_successfulLoad) return;
@@ -147,21 +144,12 @@ void MyPluginLoader::RequestUnloadDLL(HMODULE dllHandle)
         if (loadedPlugin->m_successfulLoad
             && loadedPlugin->m_successfulLoad->m_moduleHandle == dllHandle)
         {
-            LOG_DEBUG(DefaultLogger, "[*] Plugin %s: Requested to unload.\n", loadedPlugin->m_filepath.filename().u8string().c_str());
+            LOG_DEBUG(DefaultLogger, "[*] Plugin %s: Requested to unload.\n", loadedPlugin->m_PluginName.c_str());
             loadedPlugin->m_successfulLoad->m_isRequestedToUnload = true;
             m_IsRequestedToUnloadPlugin = true;
             break;
         }
     }
-}
-
-HMODULE PluginLoader_GetPluginIfLoaded(const wchar_t* pluginName)
-{
-    return g_MyPluginLoader.GetPluginIfLoaded(pluginName);
-}
-void PluginLoader_RequestUnloadPlugin(HMODULE dllHandle)
-{
-    g_MyPluginLoader.RequestUnloadDLL(dllHandle);
 }
 HMODULE MyPluginLoader::GetPluginIfLoaded(const wchar_t* pluginName)
 {
@@ -230,17 +218,35 @@ void MyPluginLoader::UpdateListOfAvailablePlugins()
         dllResults.push_back(std::move(result));
     }
 }
-void MyPluginLoader::LoadAllFoundNonloadedPlugins()
+void MyPluginLoader::LoadAllFoundNonloadedPluginsCheckCompatibilityAndCompleteInitialization()
 {
-    LOG_DEBUG(DefaultLogger, "[*] LoadAllFoundNonloadedPlugins():\n");
+    LOG_DEBUG(DefaultLogger, "[*] LoadAllFoundNonloadedPluginsCheckCompatibilityAndCompleteInitialization():\n");
     for (std::unique_ptr<MyPluginResult>& plugin : dllResults)
     {
         if (plugin->m_successfulLoad)
         {
             continue;
         }
-        LoadAndStartPlugin(*plugin);
+        LoadPluginCheckCompatibilityAndCompleteInitialization(*plugin);
     }
+}
+void MyPluginLoader::LoadAllFoundNonloadedPluginsAndCheckCompatibility()
+{
+    LOG_DEBUG(DefaultLogger, "[*] LoadAllFoundNonloadedPluginsAndCheckCompatibility():\n");
+    for (std::unique_ptr<MyPluginResult>& plugin : dllResults)
+    {
+        if (plugin->m_successfulLoad)
+        {
+            continue;
+        }
+        LoadPluginAndCheckCompatibility(*plugin);
+    }
+}
+void MyPluginLoader::FirstTimeGatherPluginsAndCheckCompatibility()
+{
+    UpdateListOfAvailablePlugins();
+    LoadAllFoundNonloadedPluginsAndCheckCompatibility();
+    LOG_DEBUG(DefaultLogger, "[+] FirstTimeGatherPluginsAndCheckCompatibility() finished.\n");
 }
 void MyPluginLoader::WhenGameCodeIsUnpacked()
 {
@@ -286,18 +292,6 @@ void MyPluginLoader::WhenSafeToApplyCodePatches()
         }
     }
 }
-void MyPluginLoader::LoadAllFoundNonloadedPluginsAndCheckCompatibility()
-{
-    LOG_DEBUG(DefaultLogger, "[*] LoadAllFoundNonloadedPluginsAndCheckCompatibility():\n");
-    for (std::unique_ptr<MyPluginResult>& plugin : dllResults)
-    {
-        if (plugin->m_successfulLoad)
-        {
-            continue;
-        }
-        LoadPluginAndCheckCompatibility(*plugin);
-    }
-}
 #include "Common_Plugins_impl/PluginLoaderSharedGlobals.h"
 extern ImGuiContext* GImGui;
 void MyPluginLoader::DrawPluginListControls()
@@ -310,7 +304,7 @@ void MyPluginLoader::DrawPluginListControls()
     ImGui::SameLine();
     if (ImGui::Button("Load all nonloaded"))
     {
-        LoadAllFoundNonloadedPlugins();
+        LoadAllFoundNonloadedPluginsCheckCompatibilityAndCompleteInitialization();
     }
     ImGuiTextBuffer buf;
 
@@ -319,7 +313,7 @@ void MyPluginLoader::DrawPluginListControls()
     for (size_t i = 0; i < dllResults.size(); i++)
     {
         std::unique_ptr<MyPluginResult>& plugin = dllResults[i];
-        buf.appendf("%d. %s", i + 1, plugin->m_filepath.filename().u8string().c_str());
+        buf.appendf("%d. %s", i + 1, plugin->m_PluginName.c_str());
         ImGui::PushID(&plugin);
         if (plugin->m_successfulLoad)
         {
@@ -369,7 +363,7 @@ void MyPluginLoader::DrawPluginListControls()
             ImGui::SameLine();
             if (ImGui::Button("Load"))
             {
-                LoadAndStartPlugin(*plugin);
+                LoadPluginCheckCompatibilityAndCompleteInitialization(*plugin);
             }
         }
         ImGui::PopID();
@@ -380,14 +374,14 @@ void MyPluginLoader::DrawImGuiForPlugins_WhenMenuIsOpened()
 {
     ImGuiShared imguiShared{ *GImGui };
     ImGui::GetAllocatorFunctions(&imguiShared.alloc_func, &imguiShared.free_func, &imguiShared.user_data);
-    for (std::unique_ptr<MyPluginResult>& plugin : g_MyPluginLoader.dllResults)
+    for (std::unique_ptr<MyPluginResult>& plugin : dllResults)
     {
         if (!plugin->m_successfulLoad) { continue; }
         if (!plugin->m_successfulLoad->m_isMenuOpen) { continue; }
         ImGui::SetNextWindowPos(ImVec2(100, 100), ImGuiCond_FirstUseEver);
         ImGui::SetNextWindowSize(ImVec2(500, 500), ImGuiCond_FirstUseEver);
         if (auto* menuCallback = plugin->m_successfulLoad->m_pluginInterface->m_EveryFrameWhenMenuIsOpen) {
-            if (ImGui::Begin(plugin->m_filepath.filename().string().c_str(), &plugin->m_successfulLoad->m_isMenuOpen)) {
+            if (ImGui::Begin(plugin->m_PluginName.c_str(), &plugin->m_successfulLoad->m_isMenuOpen, ImGuiWindowFlags_NoFocusOnAppearing)) {
                 menuCallback(imguiShared);
             }
             ImGui::End();
@@ -398,7 +392,7 @@ void MyPluginLoader::DrawImGuiForPlugins_EvenWhenMenuIsClosed()
 {
     ImGuiShared imguiShared{ *GImGui };
     ImGui::GetAllocatorFunctions(&imguiShared.alloc_func, &imguiShared.free_func, &imguiShared.user_data);
-    for (const std::unique_ptr<MyPluginResult>& plugin : g_MyPluginLoader.dllResults)
+    for (const std::unique_ptr<MyPluginResult>& plugin : dllResults)
     {
         if (!plugin->m_successfulLoad) { continue; }
         if (auto* everyFrameCallback = plugin->m_successfulLoad->m_pluginInterface->m_EveryFrameEvenWhenMenuIsClosed)
@@ -425,6 +419,18 @@ void MyPluginLoader::EveryFrameBeforeGraphicsUpdate()
     }
 }
 
+
+MyPluginLoader g_MyPluginLoader;
+
+
+HMODULE PluginLoader_GetPluginIfLoaded(const wchar_t* pluginName)
+{
+    return g_MyPluginLoader.GetPluginIfLoaded(pluginName);
+}
+void PluginLoader_RequestUnloadPlugin(HMODULE dllHandle)
+{
+    g_MyPluginLoader.RequestUnloadDLL(dllHandle);
+}
 void EveryFrameBeforeGraphicsUpdate()
 {
     g_MyPluginLoader.EveryFrameBeforeGraphicsUpdate();
@@ -441,16 +447,9 @@ void DrawPluginsEvenWhenMenuIsClosed()
 {
     g_MyPluginLoader.DrawImGuiForPlugins_EvenWhenMenuIsClosed();
 }
-void PluginLoader_FindAndLoadPlugins()
-{
-    g_MyPluginLoader.UpdateListOfAvailablePlugins();
-    g_MyPluginLoader.LoadAllFoundNonloadedPlugins();
-}
 void PluginLoader_FirstTimeGatherPluginsAndCheckCompatibility()
 {
-    g_MyPluginLoader.UpdateListOfAvailablePlugins();
-    g_MyPluginLoader.LoadAllFoundNonloadedPluginsAndCheckCompatibility();
-    LOG_DEBUG(DefaultLogger, "[+] PluginLoader_FirstTimeGatherPluginsAndCheckCompatibility() finished.\n");
+    g_MyPluginLoader.FirstTimeGatherPluginsAndCheckCompatibility();
 }
 void PluginLoader_WhenGameCodeIsUnpacked()
 {
