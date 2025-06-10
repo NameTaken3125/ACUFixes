@@ -6,6 +6,8 @@
 #include "PluginLoaderConfig.h"
 #include "ImGuiConfigUtils.h"
 
+#include "Common_Plugins/ACUPlugin.h"
+
 void DrawSuccessfulInjectionIndicatorOverlay()
 {
     ImGui::SetNextWindowBgAlpha(0.3f); // Transparent background
@@ -76,6 +78,21 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
             }
             if (ImGuiCTX::Tab _extraoptions{ "Extra" })
             {
+#define PLUGIN_API_VERSION_GET_MAJOR(version) ((version >> 24) & 0xFF)
+#define PLUGIN_API_VERSION_GET_MINOR(version) ((version >> 16) & 0xFF)
+#define PLUGIN_API_VERSION_GET_MINORER(version) ((version >> 8) & 0xFF)
+#define PLUGIN_API_VERSION_GET_MINOREST(version) (version & 0xFF)
+                ImGui::Separator();
+                ImGui::Text(THIS_DLL_PROJECT_NAME " v%d.%d.%d"
+                    , PLUGIN_API_VERSION_GET_MAJOR(g_CurrentPluginAPIversion)
+                    , PLUGIN_API_VERSION_GET_MINOR(g_CurrentPluginAPIversion)
+                    , PLUGIN_API_VERSION_GET_MINORER(g_CurrentPluginAPIversion)
+                );
+                ImGui::Separator();
+#undef PLUGIN_API_VERSION_GET_MAJOR
+#undef PLUGIN_API_VERSION_GET_MINOR
+#undef PLUGIN_API_VERSION_GET_MINORER
+#undef PLUGIN_API_VERSION_GET_MINOREST
                 if (ImGui::Button("Save Plugin Loader config"))
                 {
                     PluginLoaderConfig::WriteToFile();

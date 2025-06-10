@@ -1,13 +1,14 @@
 # ACUFixes
 Addon/fixes for Assassin's Creed Unity 1.5.0\
-A small mod that aims to fix some of the annoying things about Assassin's Creed Unity.
+A small mod that aims to fix some of the annoying things about Assassin's Creed Unity.\
+Now with a Plugin Loader.
 
 > <a href="//imgur.com/a/RpFYGXX">Demo GIFs</a>
 
 ## Features:
 - Enter windows by pressing R like in Assassin's Creed Syndicate (when climbing walls)
 - More reliable "Breakfall" (Hold ParkourDown/Interact (E) to Catch Ledge when in uncontrolled freefall)
-- Can drop bombs in more situations (while hanging on a wall, during a jump etc.)
+- Can drop bombs and perform Quickshot in more situations (while hanging on a wall, during a jump etc.)
 - No more imaginary bomb throws
 - Wider FOV when aiming bombs and the Guillotine Gun, zoom can be adjusted by pressing Right Mouse Button
 - Select Bombs Equipment Type by scrolling the Mouse Wheel
@@ -17,48 +18,53 @@ A small mod that aims to fix some of the annoying things about Assassin's Creed 
 - Easier turn on horizontal swings
 - Can aim bombs while sitting on perches
 - Slightly more responsive Crouch button
+- Unequip Pistol in the Pistols menu
+- FOV slider (in the "Personal requests" section of the mod menu)
 - Some other minor things
 
 #### Some cheats:
+- Weather Controls
 - Use the Head of Saint Denis outside missions (Thanks Jinouga on YouTube for the idea https://www.youtube.com/@jinouga-assassinscreedmodd3155)
 - Unbreakable Disguise
 
 ## Requirements
 Assassin's Creed Unity 1.5.0.
-Specifically the Steam version, I think.
-Any other version will most likely crash when mod is injected.
 
 ## How to use
-### TL;DR
-Place `ACUFixes.dll` and `ACUFixesLoader.exe` into the same folder.  
-Start the `ACUFixesLoader.exe` (*might* need to start the game first).  
-### Details
-Place `ACUFixes.dll` and `ACUFixesLoader.exe` into the same folder.  
-The mod itself is in the `ACUFixes.dll`. To use it, the DLL needs to be injected into the `ACU.exe` process.  
-The Loader is supposed to do that, but it is not required (though recommended).  
-After injection, a transparent overlay will be visible in the top left corner (it can be disabled in the menu).  
-Press `Insert` to open the menu, press `End` to unload the mod.  
-There are 2 ways of loading the DLL mod:
-#### - Use the new Loader
-The included `ACUFixesLoader.exe` can start the `ACU.exe` process (or automatically find the running process) and inject the DLL.
-The Loader and the DLL need to be placed in the same folder.
-The Loader opens a console window. You can make it go away automatically by setting
-```json
-"automaticallyCloseConsoleWindow" : true
+To install:\
+Place the files directly into the "Assassin's Creed Unity" folder (where the "ACU.exe" file is).\
+Game's folder structure will look like this:
 ```
-in `acufixesloader-config.json` that will be created next to the `ACUFixesLoader.exe` after the first time it is started.
-##### If the game is already running
-If the game version is correct, there should be no problems with this method.
-- Start the `ACUFixesLoader.exe`.
-- Done.
-##### If the game process is NOT running
-The Loader will try to start the game and inject the DLL. This was only tested on my PC.
-- Start the `ACUFixesLoader.exe`.
-- The first time this is done, you'll be asked to find the `ACU.exe` file. It will be remembered on subsequent launches.
-- The Loader will try to start the game (I'm actually not sure if it will interact with Steam). If it succeeds, the game will start and the mod will be loaded automatically.
-- Now the `ACUFixesLoader.exe` can be used to launch the game and load the mod at the same time.
-#### - NOT using the new Loader
-Use any DLL Injector to inject the `ACUFixes.dll` into a running `ACU.exe` process.
+    Assassin's Creed Unity/
+    ├── ACUFixes/
+    │   ├── plugins/
+    │   │   ├── NewAnimations/
+    │   │   └── ACUFixes.dll
+    │   └── ACUFixes-PluginLoader.dll
+    ├── ACU.exe
+    └── version.dll
+```
+Start the game, press `Insert` to open the menu.
+
+To uninstall:
+1. Go to the game's folder.
+2. Delete the `version.dll`. The mod will not be loaded automatically anymore.
+3. Delete the `ACUFixes/` folder.
+
+
+## For plugin developers: the Plugin Loader
+The `ACUFixes-PluginLoader.dll` can load DLL plugins from the `Assassin's Creed Unity/ACUFixes/plugins` folder.\
+If you want to develop code-patching mods for AC Unity, consider building them as a plugin. You get:
+- **Automatic injection** when the game's window opens.
+- **An ImGui graphical interface immediately compatible with ReShade** (and other plugins).
+- **An in-game ImGui Console** for logging (toggled by hotkey, default is "Keyboard OEM3"/"Tilde" (\~)/"Backtick" (\`))
+- A small **CrashLog**, which helps during development because this kind of modding does entail crashes, and ACU likes to make them silent.
+- A small C++ library containing some reverse engineered classes for AC Unity (the "ACU-RE" project in the source code).
+- You can use the `ACUFixes-PluginLoader.dll` without the `ACUFixes.dll` plugin, if you want to.
+- The Plugin Loader will disable the **Main Integrity Check** for you.
+- The Plugin Loader allows you to attach the **Visual Studio debugger** (after the game's window is opened, at least).
+
+Example plugins: Asset Overrides ([source code](//github.com/NameTaken3125/AssetOverrides-ACUnity)), Halzoid98CPP ([source code](//github.com/NameTaken3125/Halzoid98CPP)) and the `ACUFixes.dll` plugin itself.
 
 ## Warning
-Consider backing up your savegame. Also, not tested in multiplayer.
+Consider backing up your savegame.
