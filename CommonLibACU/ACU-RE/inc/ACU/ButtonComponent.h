@@ -6,7 +6,9 @@
 class WidgetComponent : public DataBindingComponent
 {
 public:
-	char pad_0098[162]; //0x0098
+	char pad_0098[8]; //0x0098
+	uint64 thisMenuOptionIDInHomePage; //0x00A0
+	char pad_00A8[146]; //0x00A8
 	uint8 isSlotHighlighted; //0x013A
 	char pad_013B[5]; //0x013B
 	uint8 isNotGreyedOut_mb; //0x0140

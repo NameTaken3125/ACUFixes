@@ -3,14 +3,6 @@
 #include "MyLog.h"
 
 FILE* g_LogFile = nullptr;
-void LOG_DEBUG_onlyFile(const wchar_t* fmt, ...)
-{
-    va_list args;
-    va_start(args, fmt);
-    vfwprintf(g_LogFile, fmt, args);
-    fflush(g_LogFile);
-    va_end(args);
-}
 MyLogFileLifetime::MyLogFileLifetime(const fs::path& filepath)
     : m_filepath(filepath)
 {

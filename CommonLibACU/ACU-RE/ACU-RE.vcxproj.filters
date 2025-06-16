@@ -185,6 +185,9 @@
     <ClInclude Include="inc\ACU\ManagedPtrs\ManagedPtrs.h" />
     <ClInclude Include="inc\ACU\LoadingThread.h" />
     <ClInclude Include="inc\Handles\Handles.h" />
+    <ClInclude Include="inc\ACU\UIEventReaction.h" />
+    <ClInclude Include="inc\ACU\ScrollingListComponent.h" />
+    <ClInclude Include="inc\ACU\HomePage.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />

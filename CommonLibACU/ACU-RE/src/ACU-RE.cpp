@@ -157,6 +157,7 @@
 #include "ACU/MenuPage.h"
 #include "ACU/StandardPage.h"
 #include "ACU/GearPage.h"
+#include "ACU/HomePage.h"
 #include "ACU/MenuManager.h"
 
 #include "ACU/GearUIInfo.h"
@@ -206,3 +207,6 @@
 #include "ACU/GameBootstrap.h"
 
 #include "ACU/LoadingThread.h"
+
+#include "ACU/ScrollingListComponent.h"
+#include "ACU/UIEventReaction.h"

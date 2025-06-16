@@ -23,6 +23,7 @@ struct enum_reflection {
     static constexpr const char* GetString(EnumType value);
     static constexpr std::optional<EnumType> GetValue(const std::string_view& str);
     static constexpr size_t GetNumItems();
+    static constexpr bool Contains(long long value);
     static constexpr auto GetAllStrings();
     static constexpr auto GetAllValues();
     static constexpr auto GetAllPairs();
@@ -41,6 +42,9 @@ constexpr const std::string_view INVALID_ENUM_TO_STRING = "INVALID_TO_STRING";
 
 // expansion macro for counting the number of elements
 #define ENUM_COUNTER(name,assign) "1"
+
+// expansion macro for checking if enum contains a given integer value
+#define ENUM_CONTAINS(name,assign) case static_cast<long long>(current_enum_type::name): return true;
 
 #define ENUM_STRING_AND_COMMA(name,assign) #name,
 #define ENUM_VALUE_AND_COMMA(name,assign) current_enum_type::name,
@@ -74,6 +78,16 @@ constexpr const std::string_view INVALID_ENUM_TO_STRING = "INVALID_TO_STRING";
   { \
     constexpr std::string_view one_char_for_every_element = ENUM_DEF(ENUM_COUNTER); \
     return one_char_for_every_element.size(); \
+  } \
+  template<> \
+  constexpr bool enum_reflection<EnumType>::Contains(long long value) \
+  { \
+    using current_enum_type = EnumType; \
+    switch(value) \
+    { \
+      ENUM_DEF(ENUM_CONTAINS) \
+      default: return false; \
+    } \
   } \
   template<> \
   constexpr auto enum_reflection<EnumType>::GetAllStrings() \
