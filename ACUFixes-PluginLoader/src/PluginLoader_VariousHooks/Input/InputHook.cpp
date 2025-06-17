@@ -53,9 +53,12 @@ void UpdateImGuiMouseInput(MouseState& mouseState)
     io.MouseWheel += (float)(mouseState.mouseWheelDeltaInt_usedInMenus) / (float)WHEEL_DELTA;
 }
 #include "ImGuiConsole.h"
-bool IsNeedToBlockGameInput()
+std::pair<bool, bool> IsNeedToBlockGameInput()
 {
-    return Base::Data::ShowMenu || g_ConsoleMode == ConsoleMode::ForegroundAndFocusable;
+    ImGuiIO& io = ImGui::GetIO();
+    const bool blockMouse = io.WantCaptureMouse;
+    const bool blockKeyboard = io.WantCaptureKeyboard;
+    return { blockMouse, blockKeyboard };
 }
 void GameRawInputHook_ImGuiLayer(InputContainerBig& inpCont)
 {
@@ -64,13 +67,17 @@ void GameRawInputHook_ImGuiLayer(InputContainerBig& inpCont)
         return;
     }
     UpdateImGuiMouseInput(inpCont.mouseState);
-    if (IsNeedToBlockGameInput())
+    auto [blockMouse, blockKeyboard] = IsNeedToBlockGameInput();
+    if (blockMouse)
     {
-        std::memset(inpCont.isPressed_byScancode, 0, sizeof(inpCont.isPressed_byScancode));
         inpCont.mouseState.mouseDeltaIntForCamera_X = inpCont.mouseState.mouseDeltaIntForCamera_Y = 0;
         inpCont.mouseState.mouseDeltaInt_X = inpCont.mouseState.mouseDeltaInt_Y = 0;
         inpCont.mouseState.mouseWheelDeltaInt = inpCont.mouseState.mouseWheelDeltaInt_usedInMenus = 0;
         std::memset(inpCont.mouseState.mouseButtonStates, 0, sizeof(inpCont.mouseState.mouseButtonStates));
+    }
+    if (blockKeyboard)
+    {
+        std::memset(inpCont.isPressed_byScancode, 0, sizeof(inpCont.isPressed_byScancode));
     }
 }
 class PluginLoader_UpdateInputHooks

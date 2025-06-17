@@ -738,6 +738,7 @@ void ShowHumanStatesLogIfNeeded()
     if (!g_DoDrawHumanStatesLog) return;
     if (ImGuiCTX::Window _wnd{ "HumanStates", &g_DoDrawHumanStatesLog })
     {
+        ImGui::GetIO().MouseDrawCursor = true;
         bool doCopyToClipboard = ImGui::Button("Dump current states tree to clipboard");
         ImGui::SameLine();
         if (ImGui::Button("Clear recorded states"))

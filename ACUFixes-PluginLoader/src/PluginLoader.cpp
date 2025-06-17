@@ -345,7 +345,11 @@ void MyPluginLoader::DrawPluginListControls()
                     if (treeopen) {
                         if (isMightBeExpanded) {
                             ImGui::Separator();
-                            menuCallback(imguiShared);
+                            if (ImGui::BeginChild("embeddedMenu", ImVec2(-FLT_MIN, 0.0f), ImGuiChildFlags_Borders | ImGuiChildFlags_AutoResizeY))
+                            {
+                                menuCallback(imguiShared);
+                            }
+                            ImGui::EndChild();
                             ImGui::Separator();
                         }
                         ImGui::TreePop();
@@ -402,8 +406,20 @@ void MyPluginLoader::DrawImGuiForPlugins_EvenWhenMenuIsClosed()
     }
 }
 
+#include "ImGuiConsole.h"
+#include "base.h"
+static void DoDefaultInputCapture()
+{
+    const bool blockKeyboard = Base::Data::ShowMenu || g_ConsoleMode == ConsoleMode::ForegroundAndFocusable;
+    const bool blockMouse = (Base::Data::ShowMenu || g_ConsoleMode == ConsoleMode::ForegroundAndFocusable) && !ImGui::IsKeyDown(ImGuiKey_ModAlt);
+    ImGui::SetNextFrameWantCaptureMouse(blockMouse);
+    ImGui::SetNextFrameWantCaptureKeyboard(blockKeyboard);
+    ImGui::GetIO().MouseDrawCursor = Base::Data::ShowMenu || g_ConsoleMode == ConsoleMode::ForegroundAndFocusable;
+}
 void MyPluginLoader::EveryFrameBeforeGraphicsUpdate()
 {
+    DoDefaultInputCapture();
+
     if (m_IsRequestedToUnloadPlugin)
     {
         for (std::unique_ptr<MyPluginResult>& loadedPlugin : dllResults)

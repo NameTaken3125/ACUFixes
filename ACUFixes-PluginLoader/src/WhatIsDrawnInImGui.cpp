@@ -63,7 +63,7 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
 {
     static bool enableDemoWindow = false;
     if (enableDemoWindow) {
-        ImGui::ShowDemoWindow();
+        ImGui::ShowDemoWindow(&enableDemoWindow);
     }
     DrawPluginsWhenMenuOpen();
     ImGui::SetNextWindowPos(ImVec2(100, 100), ImGuiCond_FirstUseEver);

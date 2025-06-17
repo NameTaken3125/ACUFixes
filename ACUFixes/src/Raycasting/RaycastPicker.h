@@ -76,9 +76,15 @@ void RaycastPickerModal::Pick(const char* buttonLabel
     {
         result = Raycasting::CastRayToMouseOnScreen(40.0f);
         if (result)
+        {
+            ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
             callableOnEveryHit(*result);
+        }
         else
+        {
+            ImGui::SetMouseCursor(ImGuiMouseCursor_NotAllowed);
             onNoHit();
+        }
         if (ImGui::IsMouseClicked(0))
         {
             // Left Mouse Button just clicked, finish picking.
