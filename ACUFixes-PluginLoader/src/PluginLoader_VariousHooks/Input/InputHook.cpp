@@ -94,10 +94,23 @@ void BeforeActionKeysAreUpdatedFromScancodes_RunRawInputHooks(AllRegisters* para
     PluginLoader_UpdateInputHooks::Update(inpBig);
     GameRawInputHook_ImGuiLayer(inpBig);
 }
+#include "ACU_DefineNativeFunction.h"
+DEFINE_GAME_FUNCTION(GetCursorPos_P, 0x14273B3F0, void, __fastcall, (InputContainerBig* a1));
+void GetCursorPos_SkipIfCapturingMouse(AllRegisters* params)
+{
+    auto [blockMouse, blockKeyboard] = IsNeedToBlockGameInput();
+    if (blockMouse) return;
+    GetCursorPos_P((InputContainerBig*)params->rcx_);
+}
 GameRawInputHook::GameRawInputHook()
 {
     uintptr_t beforeActionKeysAreUpdatedFromScancodes = 0x14273BC64;
     PresetScript_CCodeInTheMiddle(
         beforeActionKeysAreUpdatedFromScancodes, 6,
         BeforeActionKeysAreUpdatedFromScancodes_RunRawInputHooks, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
+
+
+    uintptr_t GetCursorPos_Parent_Callsite = 0x14273BDF0;
+    PresetScript_CCodeInTheMiddle(GetCursorPos_Parent_Callsite, 5,
+        GetCursorPos_SkipIfCapturingMouse, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, false);
 }

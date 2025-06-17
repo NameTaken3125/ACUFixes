@@ -19,7 +19,7 @@ std::optional<MyLogFileLifetime> g_LogLifetime;
 void ImGuiLayer_EvenWhenMenuIsClosed();
 void ImGuiLayer_WhenMenuIsOpen();
 void ApplyAnimationGraphMods();
-class AssetOverridesPlugin : public ACUPluginInterfaceVirtuals
+class ACUFixes_TheFixesPlugin : public ACUPluginInterfaceVirtuals
 {
 public:
     virtual void EveryFrameWhenMenuIsOpen() override
