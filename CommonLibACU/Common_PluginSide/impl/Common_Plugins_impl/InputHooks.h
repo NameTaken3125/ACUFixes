@@ -14,6 +14,10 @@ class InputHooks
     std::array<uint8, 256> m_ThisFrameKeyStates;
     std::array<uint8, 5> m_PrevFrameMouseButtonStates;
     std::array<uint8, 5> m_ThisFrameMouseButtonStates;
+    Vector2i m_PrevFrameMouseDelta;
+    Vector2i m_ThisFrameMouseDelta;
+    int32 m_PrevFrameMouseWheelDelta;
+    int32 m_ThisFrameMouseWheelDelta;
 
 
 private:
@@ -30,6 +34,10 @@ private:
         std::memcpy(&m_ThisFrameKeyStates, &inpCont.isPressed_byScancode, keyStatesArraySize);
         std::memcpy(&m_PrevFrameMouseButtonStates, &m_ThisFrameMouseButtonStates, mouseButtonStatesArraySize);
         std::memcpy(&m_ThisFrameMouseButtonStates, &inpCont.mouseState.mouseButtonStates, mouseButtonStatesArraySize);
+        m_PrevFrameMouseDelta = m_ThisFrameMouseDelta;
+        m_ThisFrameMouseDelta = (Vector2i&)inpCont.mouseState.mouseDeltaInt;
+        m_PrevFrameMouseWheelDelta = m_ThisFrameMouseWheelDelta;
+        m_ThisFrameMouseWheelDelta = inpCont.mouseState.mouseWheelDeltaInt;
     }
 public:
     bool IsJustPressed(uint8 scancode)
@@ -48,6 +56,8 @@ public:
     {
         return !m_ThisFrameKeyStates[(int)keycode] && m_PrevFrameKeyStates[(int)keycode];
     }
+    Vector2i GetMouseDelta() { return m_ThisFrameMouseDelta; }
+    int32 GetMouseWheelDelta() { return m_ThisFrameMouseWheelDelta; }
 };
 extern InputHooks* g_InputHooksSingletonPtr; // Pointer is stored in the plugin; points to the instance owned by the PluginLoader.
 } // namespace ACU::Input

@@ -47,14 +47,12 @@ assert_sizeof(InputContainer, 0x0870);
 class MouseState
 {
 public:
-    int32 mouseDeltaIntForCamera_X; //0x0000
-    int32 mouseDeltaIntForCamera_Y; //0x0004
-    int32 mouseWheelDeltaInt_usedInMenus; //0x0008
+    Vector2i mouseDeltaInt; //0x0000
+    int32 mouseWheelDeltaInt; //0x0008
     uint8 mouseButtonStates[5]; //0x000C
     char pad_0011[3]; //0x0011
-    int32 mouseDeltaInt_X; //0x0014
-    int32 mouseDeltaInt_Y; //0x0018
-    int32 mouseWheelDeltaInt; //0x001C
+    Vector2i mouseDeltaInt_PrevFrame; //0x0014
+    int32 mouseWheelDeltaInt_PrevFrame; //0x001C
     char pad_0020[8]; //0x0020
 }; //Size: 0x0028
 assert_sizeof(MouseState, 0x28);
@@ -80,5 +78,5 @@ public:
     bool IsMouseWheelScrollingDown() { return mouseState.mouseWheelDeltaInt < 0; }
 }; //Size: 0x222E0
 assert_offsetof(InputContainerBig, isPressed_byScancode, 0x220C0);
-assert_offsetof(InputContainerBig, mouseState.mouseWheelDeltaInt, 0x220B4);
+assert_offsetof(InputContainerBig, mouseState.mouseWheelDeltaInt_PrevFrame, 0x220B4);
 assert_sizeof(InputContainerBig, 0x222E0);

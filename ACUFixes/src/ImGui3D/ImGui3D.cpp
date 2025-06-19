@@ -230,12 +230,20 @@ struct MarkerParams
     Vector3f m_Location;
     float m_ScaleMultiplier = 1.0f;
 };
+struct LineParams
+{
+    Vector3f m_From;
+    Vector3f m_To;
+    float m_ThicknessMultiplier = 1.0f;
+    ImU32 m_Color;
+};
 struct WireModelParams
 {
     Matrix4f m_Transform;
     const ImGuiWireModel& m_Model;
 };
 std::vector<MarkerParams> m_LocationsOnce;
+std::vector<LineParams> m_LinesOnce;
 std::vector<WireModelParams> m_ModelsOnce;
 struct PersistentMarker_Location
 {
@@ -249,6 +257,10 @@ std::map<MarkerID_t, PersistentMarker_Location> m_LocationsWithID;
 void DrawLocationOnce(const Vector3f& location, float scaleMultiplier)
 {
     m_LocationsOnce.push_back(MarkerParams{ location, scaleMultiplier });
+}
+void DrawLineOnce(const Vector3f& from_, const Vector3f& to_, float thicknessMultiplier, ImU32 color)
+{
+    m_LinesOnce.push_back(LineParams{ from_, to_, thicknessMultiplier, color });
 }
 void DrawWireModelOnce(const ImGui3D::ImGuiWireModel& model, const Matrix4f& transform)
 {
@@ -309,6 +321,15 @@ void DrawMarkers()
         ImGui3D::DrawWireModel(ImGui3D::GetCrossModel(), pt.m_Location, 1.0f, pt.m_ScaleMultiplier);
     }
     m_LocationsOnce.clear();
+    for (auto& ln : m_LinesOnce)
+    {
+        ImGuiWireModel singleLineModel{ {Vector3f(), Vector3f()}, {ModelEdge{0, 1}} };
+        singleLineModel.points[0] = ln.m_From;
+        singleLineModel.points[1] = ln.m_To;
+        singleLineModel.edges[0].color = ln.m_Color;
+        ImGui3D::DrawWireModel(singleLineModel, Vector3f(), ln.m_ThicknessMultiplier, 1.0f);
+    }
+    m_LinesOnce.clear();
     for (auto& [id, pt] : m_LocationsWithID)
     {
         float thicknessMultiplier = (g_HoveredEditableMarkerID && *g_HoveredEditableMarkerID == id) ? 3 : 1;

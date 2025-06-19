@@ -1,5 +1,6 @@
 #pragma once
 
+#include "vmath/vmath.h"
 #include "ACU/Enum_ActionKeyCode.h"
 #include "ACU/Enum_MouseButtons.h"
 #include "Common_Plugins/Enum_BindableKeyCode_Keyboard.h"
@@ -26,6 +27,9 @@ bool IsJustPressedLong(ActionKeyCode actionKey, float howLong);
 // For example, if you start sprinting and hold down DropBomb button for longer than 0.2 seconds,
 // nothing will happen after you release it.
 bool IsJustPressedShort(ActionKeyCode actionKey, float noLongerThanThis);
+
+Vector2i GetMouseDelta();
+int GetMouseWheelDelta();
 
 bool IsPressedRMB();
 

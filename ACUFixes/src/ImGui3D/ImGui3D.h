@@ -93,6 +93,8 @@ void DrawLocationOnce(const Vector3f& location, float scaleMultiplier = 1.0f);
 void DrawLocationAndPersist(const Vector3f& location);
 void DrawLocationNamed(const Vector3f& location, const std::string& name, float scaleMultiplier = 1.0f);
 
+void DrawLineOnce(const Vector3f& from_, const Vector3f& to_, float thicknessMultiplier = 1.0f, ImU32 color = axisColors[Axis::Z]);
+
 void DrawMarkers();
 void DrawPersistent3DMarkersControls();
 }

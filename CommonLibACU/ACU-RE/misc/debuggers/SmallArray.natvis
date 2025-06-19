@@ -58,6 +58,18 @@ More information at: https://docs.microsoft.com/en-us/visualstudio/debugger/crea
   <DisplayString>{{x={x,g} y={y,g} z={z,g} w={w,g}}}</DisplayString>
 </Type>
 
+<Type Name="Vector2&lt;*&gt;">
+  <DisplayString>{{x={x,g} y={y,g}}}</DisplayString>
+</Type>
+
+<Type Name="Vector3&lt;*&gt;">
+  <DisplayString>{{x={x,g} y={y,g} z={z,g}}}</DisplayString>
+</Type>
+
+<Type Name="Vector4&lt;*&gt;">
+  <DisplayString>{{x={x,g} y={y,g} z={z,g} w={w,g}}}</DisplayString>
+</Type>
+
 <Type Name="ImRect">
   <DisplayString>{{Min=({Min.x,g} {Min.y,g}) Max=({Max.x,g} {Max.y,g}) Size=({Max.x-Min.x,g} {Max.y-Min.y,g})}}</DisplayString>
   <Expand>

@@ -121,6 +121,8 @@ bool IsJustPressedShort(ActionKeyCode actionKey, float noLongerThanThis)
     return InputContainer__IsJustShortPressed(&InputContainer::GetMainSingleton(), actionKey, noLongerThanThis, 0);
 }
 
+Vector2i GetMouseDelta() { return g_InputHooksSingletonPtr->GetMouseDelta(); }
+int GetMouseWheelDelta() { return g_InputHooksSingletonPtr->GetMouseWheelDelta(); }
 
 bool IsPressedRMB() { return InputContainer::GetMainSingleton().keyStates_thisFrame.IsPressed(ActionKeyCode::RMB); }
 

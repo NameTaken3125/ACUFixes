@@ -50,7 +50,7 @@ void UpdateImGuiMouseInput(MouseState& mouseState)
     // because in Borderless Fullscreen (when WM_MOUSEWHEEL _is_ received)
     // it gets accumulated twice: once here, once in ImGui_ImplWin32_WndProcHandler.
     // Better than not working in Fullscreen at all, I guess.
-    io.MouseWheel += (float)(mouseState.mouseWheelDeltaInt_usedInMenus) / (float)WHEEL_DELTA;
+    io.MouseWheel += (float)(mouseState.mouseWheelDeltaInt) / (float)WHEEL_DELTA;
 }
 #include "ImGuiConsole.h"
 std::pair<bool, bool> IsNeedToBlockGameInput()
@@ -70,9 +70,8 @@ void GameRawInputHook_ImGuiLayer(InputContainerBig& inpCont)
     auto [blockMouse, blockKeyboard] = IsNeedToBlockGameInput();
     if (blockMouse)
     {
-        inpCont.mouseState.mouseDeltaIntForCamera_X = inpCont.mouseState.mouseDeltaIntForCamera_Y = 0;
-        inpCont.mouseState.mouseDeltaInt_X = inpCont.mouseState.mouseDeltaInt_Y = 0;
-        inpCont.mouseState.mouseWheelDeltaInt = inpCont.mouseState.mouseWheelDeltaInt_usedInMenus = 0;
+        inpCont.mouseState.mouseDeltaInt = inpCont.mouseState.mouseDeltaInt_PrevFrame = { 0, 0 };
+        inpCont.mouseState.mouseWheelDeltaInt = inpCont.mouseState.mouseWheelDeltaInt_PrevFrame = 0;
         std::memset(inpCont.mouseState.mouseButtonStates, 0, sizeof(inpCont.mouseState.mouseButtonStates));
     }
     if (blockKeyboard)
