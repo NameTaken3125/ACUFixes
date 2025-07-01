@@ -16,6 +16,12 @@ class ReflexSystem;
 class Skeleton : public ManagedObject
 {
 public:
+	enum class BipedBoneID : int32
+	{
+		BIPEDBONE_RIGHTHAND_WEAPON_REF = 1068652261,
+		BIPEDBONE_lEFTHAND_WEAPON_REF = -1453256445,
+	};
+
 	Vector4f RootBoneDefaultLocalPosition; //0x0010
 	Vector4f RootBoneDefaultLocalRotation; //0x0020
 	char pad_0030[4]; //0x0030

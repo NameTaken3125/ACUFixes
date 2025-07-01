@@ -622,6 +622,9 @@ const std::string* FindHumanStateName(const SavedHState& hstate)
         {0x144207940, "TakeCover_AimWithWeapon_Unholstering"},
         {0x144793EC0, "TakeCover_AimWithWeapon_WeaponOutAiming"},
         {0x1445DE960, "TakeCover_AimWithWeapon_Reholstering"},
+        {0x144DEA6D0, "RagdollHandler_P"},
+        {0x144D569D0, "RagdollHandler"},
+        {0x144D5D4F0, "RagdollHandler_C"},
     };
     auto foundIt = humanStateName_by_fnEnter.find((uint64)hstate.m_FnEnter);
     const std::string* result = (foundIt == humanStateName_by_fnEnter.end()) ? nullptr : &foundIt->second;

@@ -32,6 +32,7 @@ std::vector<MyPlayableAnim> g_myAnimations = {
     {75107198058, "DataAI_GroupBehavior_Couple_TakeAway/xx_ReflexShot_Pistol_UpperBody_Middle_LeftBack.Animation"},
 
     {95034111564, "DataAI_GroupBehavior_Couple_TakeAway/xx_Assassinate_GroundHigh_HBladeKill_Fd300cm_P1_Wall_Atk.Animation"},
+    {95034111566, "DataAI_GroupBehavior_Couple_TakeAway/xx_Assassinate_GroundHigh_HBladeKill_Fd300cm_P1_Wall_Dfn.Animation"},
     {81260373316, "DataAI_GroupBehavior_Couple_TakeAway/xx_Assassinate_Ground_Lo_Front_1m_01_Atk.Animation"},
     {81844209515, "DataAI_GroupBehavior_Couple_TakeAway/xx_Assassinate_Ground_Lo_Front_1m_02_Atk.Animation"},
     {99861340708, "DataAI_GroupBehavior_Couple_TakeAway/xx_Assassinate_Ground_Lo_Front_1m_03_Atk.Animation"},

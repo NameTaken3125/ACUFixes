@@ -1303,6 +1303,21 @@ void DrawGraphVariable<int>(const char* label, GraphEvaluation& graphEvaluation,
             SetGraphVariable<int>(graphEvaluation, varnameHash, *v);
     }
 }
+template<>
+void DrawGraphVariable<float>(const char* label, GraphEvaluation& graphEvaluation, uint32 varnameHash, bool doNotifyIfSet)
+{
+    float* v = GetGraphVariable<float>(graphEvaluation, varnameHash);
+    if (!v)
+    {
+        ImGui::Text("Variable `%s` not found in graph", label);
+        return;
+    }
+    if (ImGui::DragFloat(label, v))
+    {
+        if (doNotifyIfSet)
+            SetGraphVariable<float>(graphEvaluation, varnameHash, *v);
+    }
+}
 DEFINE_GAME_FUNCTION(FreeHashmap_mb, 0x14277A8A0, signed __int64, __fastcall, (uint64 hashmap, uint64 p_errorOut_mb));
 void ClearBoneLayeringCache(AtomGraph& atomGraph)
 {
@@ -1531,11 +1546,25 @@ void DrawAtomGraphDumper()
     DrawGraphVariable<bool>("WallEject", *graphEvaluation, 0x4c773550, notifyTheGraphWhenModifying);
     // bool walling_vert; // 0x3a67c2a8/979878568
     DrawGraphVariable<bool>("walling_vert", *graphEvaluation, 0x3a67c2a8, notifyTheGraphWhenModifying);
+    // bool UseAntiGravityRagdoll; // 0x5027a990/1344776592
+    DrawGraphVariable<bool>("UseAntiGravityRagdoll", *graphEvaluation, 0x5027a990, notifyTheGraphWhenModifying);
     // int GeneralState; //0xdf85463d/3750053437
     // In Syndicate the values are:
     // 39 == dodge bullet; 32 == pick up body; 33 == kidnap; 36 == ragdoll; 29 == cut alarm bell; 28 == pick door lock; 27 == pick chest lock;
     // 23 == weird bird flight; 22 == aim pistol; 19 == shoved; 16 == massive stumble; 11 == milling arms freefall; 9 == swimming
     DrawGraphVariable<int>("GeneralState", *graphEvaluation, 0xdf85463d, notifyTheGraphWhenModifying);
+    // int DeathReason; // 0x6c553023/1817522211
+    // int DeathState; // 0x269ed88f/647944335
+    // int DeathType; // 0xe4e4fb7b/3840211835
+    DrawGraphVariable<int>("DeathReason", *graphEvaluation, 0x6c553023, notifyTheGraphWhenModifying);
+    DrawGraphVariable<int>("DeathState", *graphEvaluation, 0x269ed88f, notifyTheGraphWhenModifying);
+    DrawGraphVariable<int>("DeathType", *graphEvaluation, 0xe4e4fb7b, notifyTheGraphWhenModifying);
+    // scalar HitDirection; // 0xc333cd80/3274952064
+    // scalar HitDealerDistance; // 0xd10ed1a7/3507409319
+    // int HitLocation; // 0x457bc0d1/1165738193
+    DrawGraphVariable<float>("HitDirection", *graphEvaluation, 0xc333cd80, notifyTheGraphWhenModifying);
+    DrawGraphVariable<float>("HitDealerDistance", *graphEvaluation, 0xd10ed1a7, notifyTheGraphWhenModifying);
+    DrawGraphVariable<int>("HitLocation", *graphEvaluation, 0x457bc0d1, notifyTheGraphWhenModifying);
     // int Parkour; // 0xbdec3825/3186374693
     // int ParkourElementIncoming; // 0x4d509a44/1297128004
     // int ParkourElementOutgoing; // 0x6a4cea9e/1783425694

@@ -73,6 +73,7 @@
 #include "ACU/AvatarGearModifierStats.h"
 #include "ACU/AvatarGear.h"
 #include "ACU/AvatarGearManager.h"
+#include "ACU/AvatarCustomizationManager.h"
 
 #include "ACU/WhenHighlightedNPCChanges.h"
 #include "ACU/ReactionHandler.h"
@@ -177,6 +178,7 @@
 #include "ACU/AtomAnimationRootNode.h"
 #include "ACU/AtomPlayCustomActionNode.h"
 #include "ACU/AtomWriteParamNode.h"
+#include "ACU/AnimTrackEvent.h"
 
 #include "ACU/AtomDataContainerWrapper.h"
 #include "ACU/AtomCondition.h"
@@ -210,3 +212,14 @@
 
 #include "ACU/ScrollingListComponent.h"
 #include "ACU/UIEventReaction.h"
+
+#include "ACU/PhysicComponent.h"
+#include "ACU/RagdollComponent.h"
+#include "ACU/RagdollBoneData.h"
+#include "ACU/RagdollConstraintData.h"
+#include "ACU/RagdollNew.h"
+
+#include "ACU/FX.h"
+#include "ACU/FXProperty.h"
+#include "ACU/FXElement.h"
+#include "ACU/FXSpawnedEntity.h"

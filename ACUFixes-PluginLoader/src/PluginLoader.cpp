@@ -411,7 +411,15 @@ void MyPluginLoader::DrawImGuiForPlugins_EvenWhenMenuIsClosed()
 static void DoDefaultInputCapture()
 {
     const bool blockKeyboard = Base::Data::ShowMenu || g_ConsoleMode == ConsoleMode::ForegroundAndFocusable;
-    const bool blockMouse = (Base::Data::ShowMenu || g_ConsoleMode == ConsoleMode::ForegroundAndFocusable) && !ImGui::IsKeyDown(ImGuiKey_ModAlt);
+    const bool isSomethingBeingEdited = ImGui::IsAnyItemActive() && ImGui::IsMouseDown(0); // e.g. DragFloat() uses Alt to reduce speed.
+    const bool isAltHeldDownAndNothingIsEdited = ImGui::IsKeyDown(ImGuiKey_ModAlt) && !isSomethingBeingEdited;
+    const bool standardMouseBlock = (Base::Data::ShowMenu || g_ConsoleMode == ConsoleMode::ForegroundAndFocusable);
+    bool blockMouse = standardMouseBlock;
+    if (ImGui::IsKeyDown(ImGuiKey_ModAlt))
+    {
+        if (!isSomethingBeingEdited)
+            blockMouse = false;
+    }
     ImGui::SetNextFrameWantCaptureMouse(blockMouse);
     ImGui::SetNextFrameWantCaptureKeyboard(blockKeyboard);
     ImGui::GetIO().MouseDrawCursor = Base::Data::ShowMenu || g_ConsoleMode == ConsoleMode::ForegroundAndFocusable;

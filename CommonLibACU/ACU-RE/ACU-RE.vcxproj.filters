@@ -188,6 +188,18 @@
     <ClInclude Include="inc\ACU\UIEventReaction.h" />
     <ClInclude Include="inc\ACU\ScrollingListComponent.h" />
     <ClInclude Include="inc\ACU\HomePage.h" />
+    <ClInclude Include="inc\ACU\RagdollComponent.h" />
+    <ClInclude Include="inc\ACU\PhysicComponent.h" />
+    <ClInclude Include="inc\ACU\RagdollBoneData.h" />
+    <ClInclude Include="inc\ACU\RagdollConstraintData.h" />
+    <ClInclude Include="inc\ACU\RagdollNew.h" />
+    <ClInclude Include="inc\ACU\AvatarCustomizationManager.h" />
+    <ClInclude Include="inc\ACU\FX.h" />
+    <ClInclude Include="inc\ACU\FXSpawnedEntity.h" />
+    <ClInclude Include="inc\ACU\FXElement.h" />
+    <ClInclude Include="inc\ACU\FXProperty.h" />
+    <ClInclude Include="inc\ACU\PropertyPathNode.h" />
+    <ClInclude Include="inc\ACU\AnimTrackEvent.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />

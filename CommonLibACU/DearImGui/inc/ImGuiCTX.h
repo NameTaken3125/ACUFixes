@@ -211,4 +211,16 @@ public:
         ImGui::PopStyleColor();
     }
 };
+class PushStyleVar
+{
+public:
+    PushStyleVar(ImGuiStyleVar idx, const ImVec2& val)
+    {
+        ImGui::PushStyleVar(idx, val);
+    }
+    ~PushStyleVar()
+    {
+        ImGui::PopStyleVar();
+    }
+};
 }
