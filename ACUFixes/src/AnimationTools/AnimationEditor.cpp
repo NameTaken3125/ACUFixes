@@ -627,6 +627,243 @@ ResultEditedKeyframe_t ImGuiDrawAnimationTrackRawData_2(Animation& anim, uint16 
     }
     return editedKeyframe;
 }
+struct RecognizedTrackID
+{
+    uint32 m_TrackID;
+    std::string_view m_PreferredName;
+    std::string_view m_ActualReversedHashName;
+};
+
+static RecognizedTrackID g_RecognizedTracks[] = {
+    // ACU_BaseSkeleton_Male.Skeleton
+    {743623600, "Reference", "Reference"},
+    {3738240529, "Hips", "Hips"},
+    {392266736, "LeftUpLeg", "LeftUpLeg"},
+    {101577729, "LeftLeg", "LeftLeg"},
+    {1486391408, "LeftFoot", "LeftFoot"},
+    {93034205, "LeftFootThumb1", "LeftFootThumb1"},
+    {1971262097, "RightUpLeg", "RightUpLeg"},
+    {2252147196, "RightLeg", "RightLeg"},
+    {2601793068, "RightFoot", "RightFoot"},
+    {3847670206, "RightFootThumb1", "RightFootThumb1"},
+    {1393476043, "Spine", "Spine"},
+    {2402941518, "Spine1", "Spine1"},
+    {372288500, "Spine2", "Spine2"},
+    {4214103169, "ChildOfSpineSmthInChest", ""},
+    {3097015817, "LeftShoulderAndArm", ""},
+    {3951233754, "LeftArm", "LeftArm"},
+    {2310617728, "LeftForearm1", ""},
+    {3061183340, "LeftForearm2", ""},
+    {2732186484, "LeftHandDeform1Pos", ""},
+    {2132509054, "LeftHandDeform2Pos", ""},
+    {2489893254, "LeftForearmDeformPos", ""},
+    {3495420892, "LeftHandIndex0", ""},
+    {1507990061, "LeftHandIndex1Pos", ""},
+    {3236645783, "LeftHandIndex2Pos", ""},
+    {3085728513, "LeftHandIndex3Pos", ""},
+    {1722978338, "LeftHandMiddle0", ""},
+    {1381282282, "LeftHandMiddle1Pos", ""},
+    {3411927120, "LeftHandMiddle2Pos", ""},
+    {3160068294, "LeftHandMiddle3Pos", ""},
+    {3294869080, "LeftHandPinky0", ""},
+    {3005442369, "LeftHandPinky1Pos", ""},
+    {707410171, "LeftHandPinky2Pos", ""},
+    {1563232365, "LeftHandPinky3Pos", ""},
+    {2921927686, "LeftHandRing0", ""},
+    {3825977889, "LeftHandRing1Pos", ""},
+    {2097322907, "LeftHandRing2Pos", ""},
+    {168143629, "LeftHandRing3Pos", ""},
+    {510107344, "LeftHandIndex1Rot", "LeftHandIndex1"},
+    {2272186218, "LeftHandIndex2Rot", "LeftHandIndex2"},
+    {4033478652, "LeftHandIndex3Rot", "LeftHandIndex3"},
+    {2434775759, "LeftHandMiddle1Rot", "LeftHandMiddle1"},
+    {135719797, "LeftHandMiddle2Rot", "LeftHandMiddle2"},
+    {2131876835, "LeftHandMiddle3Rot", "LeftHandMiddle3"},
+    {4104580540, "LeftHandPinky1Rot", "LeftHandPinky1"},
+    {1840233478, "LeftHandPinky2Rot", "LeftHandPinky2"},
+    {447253648, "LeftHandPinky3Rot", "LeftHandPinky3"},
+    {3544205519, "LeftHandRing1Rot", "LeftHandRing1"},
+    {1246304629, "LeftHandRing2Rot", "LeftHandRing2"},
+    {1028532707, "LeftHandRing3Rot", "LeftHandRing3"},
+    {2029314476, "LeftHandThumb1Rot", "LeftHandThumb1"},
+    {3791499286, "LeftHandThumb2Rot", "LeftHandThumb2"},
+    {2532999296, "LeftHandThumb3Rot", "LeftHandThumb3"},
+    {2841710851, "PistolInHandLeft", ""},
+    {1064396113, "LeftHandThumb1Pos", ""},
+    {2792895723, "LeftHandThumb2Pos", ""},
+    {3514762365, "LeftHandThumb3Pos", ""},
+    {1583624203, "LeftWristDeformPos", ""},
+    {546318936, "SmthBetweenIndexAndMiddleLeft", ""},
+    {1296147564, "SmthBetweenRingAndPinkyLeft", ""},
+    {1067497670, "SmthAboveHandLeft", ""},
+    {2149808493, "Neck1", ""},
+    {130111906, "Neck2", ""},
+    {4223024711, "ChildOfNeckSmthOnGroundLevel", ""},
+    {1675137348, "RightShoulderAndArm", ""},
+    {1806956327, "RightArm", "RightArm"},
+    {1918345642, "RightForearm1", ""},
+    {1979272496, "RightForearm2", ""},
+    {1192371270, "RightHandDeform1Pos", ""},
+    {3072924417, "RightHandDeform2Pos", ""},
+    {747454002, "RightForearmDeformPos", ""},
+    {1533195754, "RightHandThumb1Pos", ""},
+    {3261850704, "RightHandThumb2Pos", ""},
+    {3043808454, "RightHandThumb3Pos", ""},
+    {2798102536, "RightWristDeformPos", ""},
+    {1967653204, "SmthBetweenIndexAndMiddleRight", ""},
+    {2096068236, "SmthBetweenRingAndPinkyRight", ""},
+    {354721517, "SmthAboveHandRight", ""},
+    {1602714039, "RightHandIndex0", ""},
+    {1039256214, "RightHandIndex1Pos", ""},
+    {2767756076, "RightHandIndex2Pos", ""},
+    {3556748218, "RightHandIndex3Pos", ""},
+    {3160275048, "RightHandMiddle0", ""},
+    {243517502, "RightHandMiddle1Pos", ""},
+    {2542442884, "RightHandMiddle2Pos", ""},
+    {3767380242, "RightHandMiddle3Pos", ""},
+    {1270033459, "RightHandPinky0", ""},
+    {3610294778, "RightHandPinky1Pos", ""},
+    {1312417856, "RightHandPinky2Pos", ""},
+    {960420054, "RightHandPinky3Pos", ""},
+    {455966938, "RightHandRing0", ""},
+    {2624827704, "RightHandRing1Pos", ""},
+    {91938946, "RightHandRing2Pos", ""},
+    {1920847892, "RightHandRing3Pos", ""},
+    {4273652147, "RightHandIndex1Rot", "RightHandIndex1"},
+    {1739821065, "RightHandIndex2Rot", "RightHandIndex2"},
+    {280273055, "RightHandIndex3Rot", "RightHandIndex3"},
+    {1162106738, "RightHandMiddle1Rot", "RightHandMiddle1"},
+    {3696035528, "RightHandMiddle2Rot", "RightHandMiddle2"},
+    {2873767518, "RightHandMiddle3Rot", "RightHandMiddle3"},
+    {343651039, "RightHandPinky1Rot", "RightHandPinky1"},
+    {2373116773, "RightHandPinky2Rot", "RightHandPinky2"},
+    {4202025971, "RightHandPinky3Rot", "RightHandPinky3"},
+    {3690345925, "RightHandRing1Rot", "RightHandRing1"},
+    {1124033663, "RightHandRing2Rot", "RightHandRing2"},
+    {905467113, "RightHandRing3Rot", "RightHandRing3"},
+    {2552872655, "RightHandThumb1Rot", "RightHandThumb1"},
+    {18935669, "RightHandThumb2Rot", "RightHandThumb2"},
+    {1982324707, "RightHandThumb3Rot", "RightHandThumb3"},
+    {1068652261, "SwordInHandRight", ""},
+    // AI_CHR_Inventory\\ACU_Arnaud_Pistols.Skeleton
+    { 74478048, "PistolHolsterPos", "" },
+    { 4140400542, "PistolHolsterRot", "" },
+    { 689526397, "PistolHolsterUnknown", "" },
+    // AI_CHR_Inventory\\Addon_Human_PlayerWeapon.Skeleton
+    { 4238337076, "HeavyAndSpearSheathSomeKindOfControlBonePos", "" },
+    { 4125497242, "HeavyAndSpearSheath0Pos", "" },
+    { 813332866, "HeavyAndSpearSheath1", "" },
+    { 1432036701, "HeavyAndGuillotineGunSheath", "" },
+    { 1801137822, "SpearSheath2", "" },
+    // CN_U_Arno_Head_Rig.Skeleton
+    { 4253370951, "Face0", "" },
+    // ACU_U_Arno_IconicWeapon.Skeleton
+    {1266956304, "Wristbow0", ""},
+    {3724594747, "WristbowHiddenBlade1", ""},
+    {4248931038, "WristbowHiddenBlade2", ""},
+    {3978338407, "WristbowLeftWing", ""},
+    {1948905949, "WristbowRightWing", ""},
+    {714219653, "WristbowLatch", ""},
+    // ACU_Avatar_ForeArmTwist.Skeleton
+    { 3195923239, "LeftForearm3Pos", "" },
+    { 1382888217, "RightForearm3Pos", "" },
+    // Addon_Human_Sword_Tag.Skeleton
+    { 3734611192, "SmthAtSamePlaceAsSwordOnHipLeft", "" },
+    { 3055624953, "SwordOnHipLeft1", "" },
+    { 981686566, "SwordOnHipLeft2", "" },
+    // ACU_Unisex_Pecks.Skeleton
+    { 453451896, "LeftShoulderRot", "" },
+    { 1148800888, "RightShoulderRot", "" },
+    // ACU_Avatar_Hood_3.Skeleton - bones are confusing here
+    { 1626292512, "HoodBackMid1Pos", "" },
+    { 667031710, "HoodBackMid2Pos", "" },
+    { 3702268482, "HoodLeftAndRightPos", "" },
+    { 3362068404, "HoodFrontLeftAndRight", "" },
+    { 838628611, "HoodLeftFront1", "" },
+    { 1860261462, "HoodRightFront", "" },
+    { 2615161646, "HoodLeftFront2Pos", "" },
+    { 776916429, "HoodBackUpMid1Pos", "" },
+    { 1797656211, "HoodBackUpMid2Pos", "" },
+    { 603310818, "HoodRightMid1Pos", "" },
+    { 4160822844, "HoodRightMid2", "" },
+    { 1339771878, "HoodFrontTipPos", "" },
+    { 2022475892, "HoodFrontTipChild", "" },
+    { 1079242285, "HoodBackUpMid3Pos", "" },
+    { 4157392128, "HoodBack", "" },
+    { 1471676820, "HoodRightMid4Pos", "" },
+    { 3643013005, "HoodRight2", "" },
+    { 3467726894, "HoodLeftPos", "" },
+    { 1170572361, "HoodRight1", "" },
+    { 1635441672, "HoodBackMid3Pos", "" },
+    { 1609898009, "HoodLeftMidPos", "" },
+    { 2010381004, "HoodBackMid4Pos", "" },
+    { 1016000321, "HoodRightMid3Pos", "" },
+    { 1431217235, "", "" },
+    { 3427268073, "", "" },
+    { 3330940232, "", "" },
+    { 2670960703, "", "" },
+    { 3137117016, "", "" },
+    { 3682933006, "", "" },
+    { 3626827515, "", "" },
+    { 2796098915, "", "" },
+    { 2275181260, "", "" },
+    { 513135478, "", "" },
+    { 3338422691, "", "" },
+    { 2023387723, "", "" },
+    { 2777136891, "", "" },
+    // ACU_FR_Avatar_Dress.Skeleton:
+    { 599350769, "CoatFlap0", "" },
+    { 1746322849, "CoatFlapHipLeft0", "" },
+    { 1741509359, "CoatFlapHipLeft1", "" },
+    { 378898525, "CoatFlapHipLeft2", "" },
+    { 3907532851, "CoatFlapTipPointAtLeft", "" },
+    { 1343483873, "CoatFlapKneeLeftPos", "" },
+    { 1449164322, "CoatFlapHipRight0", ""},
+    { 1245798057, "CoatFlapHipRight1", "" },
+    { 3793044312, "CoatFlapHipRight2", "" },
+    { 1222734519, "CoatFlapTipPointAtRight", "" },
+    { 545536664, "CoatFlapKneeRightPos", "" },
+    { 3036307237, "CoatFlapHipFrontLeft", "" },
+    { 3166620502, "CoatFlapHipFrontRight", "" },
+    // ACU_Unisex_ArmsSimple.Skeleton
+    { 1656206146, "LeftMidShoulderControl", "" },
+    { 962087949, "LeftForearm4Control", "" },
+    { 1518371811, "LeftUpperShoulderControl", "" },
+    { 2074741019, "RightMidShoulderControl", "" },
+    { 3790520129, "RightElbow", "" },
+    { 4008774044, "RightUpperShoulder1", "" },
+    { 2012764198, "RightUpperShoulder2", "" },
+    // ACU_Unisex_LegsRollbones.Skeleton
+    { 3851367608, "LeftFrontCrotchPos", "" },
+    { 1185001965, "LeftUpLegDeformPos", "" },
+    { 1576199145, "RightFrontCrotchPos", "" },
+    { 1491111456, "RightUpLegDeformPos", "" },
+    { 721252245, "LeftLowLeg2Pos", "" },
+    { 1869153567, "LeftUpLeg2Pos", "" },
+    { 192599460, "RightUpLeg2Pos", "" },
+    { 1431295197, "RightLowLeg2Pos", "" },
+};
+static void AppendTrackName(ImGuiTextBuffer& buf, uint32 trackID)
+{
+    auto foundIt = std::find_if(std::begin(g_RecognizedTracks), std::end(g_RecognizedTracks), [trackID](const RecognizedTrackID& track) {
+        return track.m_TrackID == trackID;
+        });
+
+    if (foundIt != std::end(g_RecognizedTracks))
+    {
+        if (foundIt->m_PreferredName.size())
+        {
+            buf.appendf("%s (%x)", foundIt->m_PreferredName.data(), trackID);
+            return;
+        }
+        else if (foundIt->m_ActualReversedHashName.size())
+        {
+            buf.appendf("%s (%x)", foundIt->m_ActualReversedHashName.data(), trackID);
+            return;
+        }
+    }
+    buf.appendf("%x", trackID);
+}
 ResultEditedKeyframe_t DrawAnimationEditor(Animation& anim)
 {
     ResultEditedKeyframe_t resultKeyframe;
@@ -640,9 +877,12 @@ ResultEditedKeyframe_t DrawAnimationEditor(Animation& anim)
         auto* codec = GetAnimationTrackdataCodecs()[trackdataType];
         uint32 numKeyframes = codec->Unk_040_GetNumKeyframes(trackdata);
         buf.appendf(
-            "%3u. TrackID: %10u; Codec: %u; Infotype: %u; Num keyframes: %u"
+            "%3u. TrackID: "
             , i
-            , trackID
+        );
+        AppendTrackName(buf, trackID);
+        buf.appendf(
+            "; Codec: %u; Infotype: %u; Num keyframes: %u"
             , trackdataType
             , codec->Unk_018_GetInformationType()
             , numKeyframes

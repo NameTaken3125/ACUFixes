@@ -46,13 +46,30 @@ void MyPluginLoader::LoadPluginAndCheckCompatibility(MyPluginResult& pluginRecor
     const char* pluginName = pluginRecord.m_PluginName.c_str();
     LOG_DEBUG(DefaultLogger, "[*] Plugin %s: Trying to load.\n", utf8_and_wide_string_conversion::utf8_encode(pluginFilepath).c_str());
     HMODULE moduleHandle = nullptr;
-    {
+    auto LoadLibraryWithoutExecuting_ButBewareOf_IgnoreFreeLibrary = [&]() {
         // Below is a way to check the plugin DLLs for exported functions
         // without running the DllMain or any of global constructors.
         // Seems to work OK, I'm just not sure I need this.
         // I guess this can prevent some crashes when a completely arbitrary DLL
         // is thrown into the plugins/ folder by accident, then was loaded,
         // then was very quickly unloaded without warning.
+        // UPD:
+        // This is ok, except there exists a wild Windows bug
+        // that can cause a plugin to never be successfully loaded:
+        // For unknown reasons an "IgnoreFreeLibrary" registry key can be
+        // randomly and silently created in the Windows registry
+        // which will prevent the FreeLibrary() from succeeding, which in turn will
+        // cause the subsequent "real" LoadLibrary() to not run the DLLMain(DLL_PROCESS_ATTACH)
+        // and the global constructors of the plugin which in turn will cause
+        // ACUPluginStart() to return "false".
+        // So until there's a remedy for this _very_ wild and _very_ silent bug,
+        // I will skip the "LoadLibrary(DONT_RESOLVE_DLL_REFERENCES)"
+        // And will try to load the plugin for real: DllMain, global constructors and all.
+        //      https://community.intel.com/t5/Intel-Fortran-Compiler/freelibrary-fails-to-unload-dll/m-p/1069519
+        //      https://developer.x-plane.com/2017/09/two-gotchas-developing-plugins/
+        // And also from https://developercommunity.visualstudio.com/t/ignorefreelibrary-registry-entry-causes-applicatio/277637
+        //      "Thank you for your feedback. We have determined that this issue belongs to Windows".
+        // *shrug*
         moduleHandle = LoadLibraryExW(pluginFilepath.c_str(), NULL, DONT_RESOLVE_DLL_REFERENCES);
         if (!moduleHandle)
         {
@@ -69,7 +86,7 @@ void MyPluginLoader::LoadPluginAndCheckCompatibility(MyPluginResult& pluginRecor
         }
         FreeDLL(moduleHandle);
         moduleHandle = nullptr;
-    }
+        };
     moduleHandle = LoadLibraryW(pluginFilepath.c_str());
     if (!moduleHandle)
     {

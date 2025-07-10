@@ -83,10 +83,11 @@ void Base::ImGuiLayer_WhenMenuIsOpen()
 #define PLUGIN_API_VERSION_GET_MINORER(version) ((version >> 8) & 0xFF)
 #define PLUGIN_API_VERSION_GET_MINOREST(version) (version & 0xFF)
                 ImGui::Separator();
-                ImGui::Text(THIS_DLL_PROJECT_NAME " v%d.%d.%d"
+                ImGui::Text(THIS_DLL_PROJECT_NAME " v%d.%d.%d.%d"
                     , PLUGIN_API_VERSION_GET_MAJOR(g_CurrentPluginAPIversion)
                     , PLUGIN_API_VERSION_GET_MINOR(g_CurrentPluginAPIversion)
                     , PLUGIN_API_VERSION_GET_MINORER(g_CurrentPluginAPIversion)
+                    , PLUGIN_API_VERSION_GET_MINOREST(g_CurrentPluginAPIversion)
                 );
                 ImGui::Separator();
 #undef PLUGIN_API_VERSION_GET_MAJOR
