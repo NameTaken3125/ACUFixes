@@ -376,6 +376,7 @@ namespace AnimGraphMods::RemovableHood
 
 /*
 How the HoodControls animations work in the animation graph.
+(With some pictures: https://github.com/NameTaken3125/ACUFixes/blob/master/ACUFixes/src/AnimationTools/README.md)
 
 I. Layering my animation on top of normal gameplay.
 I take the "normal gameplay layering state" (that's `NewDemo_DEV.AtomGraph->RootStateMachine->States[0]`).

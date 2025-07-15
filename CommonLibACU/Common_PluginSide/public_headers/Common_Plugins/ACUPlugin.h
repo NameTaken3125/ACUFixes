@@ -4,7 +4,7 @@
 #define MAKE_PLUGIN_LOADER_VERSION(major, minor, minorer, minorest) ((major << 24) | (minor << 16) | (minorer << 8) | (minorest))
 
 
-constexpr uint64 g_CurrentPluginAPIversion = MAKE_PLUGIN_LOADER_VERSION(0, 9, 2, 2);
+constexpr uint64 g_CurrentPluginAPIversion = MAKE_PLUGIN_LOADER_VERSION(0, 9, 2, 3);
 
 
 class ACUPluginLoaderSharedGlobals;

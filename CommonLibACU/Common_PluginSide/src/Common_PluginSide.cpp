@@ -7,7 +7,7 @@ void** g_PluginInterfaceBaseclassVTable = nullptr;
 ACUPluginInterfaceVirtuals::ACUPluginInterfaceVirtuals()
 {
     g_PluginInterfaceBaseclassVTable = *(void***)this;
-	g_ThisPluginSingletonAsBaseclass = this;
+    g_ThisPluginSingletonAsBaseclass = this;
 }
 void ACUPluginInterfaceVirtuals::EveryFrameWhenMenuIsOpen() {}
 void ACUPluginInterfaceVirtuals::EveryFrameEvenWhenMenuIsClosed() {}
@@ -70,14 +70,14 @@ extern "C" __declspec(dllexport) bool ACUPluginStart(ACUPluginLoaderInterface& p
             ImGui::SetCurrentContext(&readyToUseImGuiContext.m_ctx);
             ImGui::SetAllocatorFunctions(readyToUseImGuiContext.alloc_func, readyToUseImGuiContext.free_func, readyToUseImGuiContext.user_data);
             g_ThisPluginSingletonAsBaseclass->EveryFrameWhenMenuIsOpen();
-        };
+            };
     }
     if (IsPluginInterfaceVirtualFunctionOverridden(vfnIdx_EveryFrameEvenWhenMenuIsClosed)) {
         yourPluginInfo_out.m_EveryFrameEvenWhenMenuIsClosed = [](ImGuiShared& readyToUseImGuiContext) {
             ImGui::SetCurrentContext(&readyToUseImGuiContext.m_ctx);
             ImGui::SetAllocatorFunctions(readyToUseImGuiContext.alloc_func, readyToUseImGuiContext.free_func, readyToUseImGuiContext.user_data);
             g_ThisPluginSingletonAsBaseclass->EveryFrameEvenWhenMenuIsClosed();
-        };
+            };
     }
     yourPluginInfo_out.m_InitStage_WhenVersionsAreDeemedCompatible = [](ACUPluginLoaderInterface& pluginLoader) {
         GrabPluginLoaderGlobalVariables(pluginLoader);
@@ -93,18 +93,41 @@ extern "C" __declspec(dllexport) bool ACUPluginStart(ACUPluginLoaderInterface& p
 
 HMODULE g_ThisDLLHandle = nullptr;
 namespace fs = std::filesystem;
-fs::path g_ThisDLLAbsoluteFilepath;
-fs::path GetDLLAbsolutePath(HMODULE dllHandle)
+static HMODULE FindThisDLLHandle()
 {
-    wchar_t path[MAX_PATH];
-    GetModuleFileNameW(dllHandle, path, (DWORD)std::size(path));
-    return fs::path(path);
+    static HMODULE dllHandle = []() -> HMODULE {
+        // A static variable within the module.
+        static char dummyChar;
+        HMODULE dllHandle = NULL;
+        GetModuleHandleExA(
+            GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
+            GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+            (LPCSTR)&dummyChar,
+            &dllHandle);
+        return dllHandle;
+        }();
+    return dllHandle;
+}
+const fs::path& GetThisDLLAbsoluteFilepath()
+{
+    static fs::path dllPath = []() -> fs::path {
+        fs::path result;
+        HMODULE dllHandle = FindThisDLLHandle();
+
+        if (dllHandle == NULL) return result;
+        wchar_t path[MAX_PATH];
+
+        GetModuleFileNameW(dllHandle, path, (DWORD)std::size(path));
+        return fs::path(path);
+        }();
+    return dllPath;
 }
 fs::path AbsolutePathInThisDLLDirectory(const fs::path& filenameRel)
 {
-    fs::path& dll = g_ThisDLLAbsoluteFilepath;
-    fs::path fullPath = dll.parent_path() / filenameRel;
-    return fullPath;
+    fs::path result;
+    const fs::path& thisDLLPath = GetThisDLLAbsoluteFilepath();
+    if (thisDLLPath.empty()) return filenameRel;
+    return thisDLLPath.parent_path() / filenameRel;
 }
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
 {
@@ -112,7 +135,6 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
     {
     case DLL_PROCESS_ATTACH:
         g_ThisDLLHandle = hModule;
-        g_ThisDLLAbsoluteFilepath = GetDLLAbsolutePath(hModule);
         DisableThreadLibraryCalls(hModule);
         break;
     case DLL_PROCESS_DETACH:

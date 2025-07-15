@@ -13,7 +13,7 @@ void RequestUnloadThisPlugin();
 
 
 extern HMODULE g_ThisDLLHandle;
-extern std::filesystem::path g_ThisDLLAbsoluteFilepath;
+const std::filesystem::path& GetThisDLLAbsoluteFilepath();
 std::filesystem::path AbsolutePathInThisDLLDirectory(const std::filesystem::path& filepathRelative);
 
 #define MAKE_VERSION_NUMBER_UINT64(major, minor, minorer, minorest) ((major << 24) | (minor << 16) | (minorer << 8) | (minorest))

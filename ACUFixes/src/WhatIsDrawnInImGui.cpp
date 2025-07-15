@@ -54,7 +54,7 @@ void DrawModMenuControls()
 {
     if (ImGui::Button("Open DLL's folder in File Explorer (has config)"))
     {
-        system(("explorer \"" + g_ThisDLLAbsoluteFilepath.parent_path().string() + "\"").c_str());
+        system(("explorer \"" + GetThisDLLAbsoluteFilepath().parent_path().string() + "\"").c_str());
     }
 }
 

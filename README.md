@@ -66,5 +66,9 @@ If you want to develop code-patching mods for AC Unity, consider building them a
 
 Example plugins: Asset Overrides ([source code](//github.com/NameTaken3125/AssetOverrides-ACUnity)), Halzoid98CPP ([source code](//github.com/NameTaken3125/Halzoid98CPP)) and the `ACUFixes.dll` plugin itself.
 
+## Some more modding resources
+### About Animation Modding
+See some notes [here](ACUFixes/src/AnimationTools/README.md) about the player's animation graph and how it was extended to implement the Removable Hood feature.
+
 ## Warning
 Consider backing up your savegame.
