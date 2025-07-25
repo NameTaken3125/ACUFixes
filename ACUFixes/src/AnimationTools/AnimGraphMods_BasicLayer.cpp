@@ -376,7 +376,7 @@ namespace AnimGraphMods::RemovableHood
 
 /*
 How the HoodControls animations work in the animation graph.
-(With some pictures: https://github.com/NameTaken3125/ACUFixes/blob/master/ACUFixes/src/AnimationTools/README.md)
+(With some pictures: https://github.com/NameTaken3125/ACUFixes/blob/c095a474155d4ff4cfb490245b35a2c1553e2c31/ACUFixes/src/AnimationTools/README.md)
 
 I. Layering my animation on top of normal gameplay.
 I take the "normal gameplay layering state" (that's `NewDemo_DEV.AtomGraph->RootStateMachine->States[0]`).
@@ -642,7 +642,7 @@ using _16chars = char[16];
 const _16chars g_RemovableHoodLayerStringID = "NT_HoodAnims";
 bool AtomNodeID__IsEqual(AtomNodeID& nodeID, const _16chars& stringId)
 {
-    return std::memcmp(nodeID.pad_0000, stringId, 16) == 0;
+    return std::memcmp(nodeID.ByteData, stringId, 16) == 0;
 }
 AtomNodeID AtomNodeID__FromStringID(const _16chars& stringId)
 {

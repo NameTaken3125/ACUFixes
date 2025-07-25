@@ -200,6 +200,9 @@
     <ClInclude Include="inc\ACU\FXProperty.h" />
     <ClInclude Include="inc\ACU\PropertyPathNode.h" />
     <ClInclude Include="inc\ACU\AnimTrackEvent.h" />
+    <ClInclude Include="inc\ACU\AtomStateExtension.h" />
+    <ClInclude Include="inc\ACU\AtomIkPathExtension.h" />
+    <ClInclude Include="inc\ACU\AtomPoseParamExtension.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />

@@ -10,7 +10,7 @@ class AtomStateTransitionTarget : public Object
 public:
 	// @members
 	AtomConditionExpression* conditionExpression; //0x0008
-	AtomNodeID nodeID; //0x0010
+	AtomNodeID AtomTaskID; //0x0010
 	float TransitionTime; //0x0020
 	uint16 TargetStateIndex; //0x0024
 	uint16 BlendType : 3; // Enum ACTBlendType

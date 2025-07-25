@@ -25,3 +25,4 @@ namespace fs = std::filesystem;
 #include <optional>
 #include <variant>
 #include <future>
+#include <ranges>

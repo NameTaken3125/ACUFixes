@@ -168,6 +168,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="inc\ACU\AnimTrackEvent.h" />
+    <ClInclude Include="inc\ACU\AtomIkPathExtension.h" />
+    <ClInclude Include="inc\ACU\AtomPoseParamExtension.h" />
+    <ClInclude Include="inc\ACU\AtomStateExtension.h" />
     <ClInclude Include="inc\ACU\AvatarCustomizationManager.h" />
     <ClInclude Include="inc\ACU\FX.h" />
     <ClInclude Include="inc\ACU\FXElement.h" />

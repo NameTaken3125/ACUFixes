@@ -26,8 +26,8 @@ public:
     AtomStateNode* parentNode_mb; //0x0050
     SmallArray<uint32> AnimMarkups; //0x0058
     uint32 InstanceDataSize; //0x0064
-    class AtomNodeID AtomTaskID; //0x0068
-    uint32 RuntimeStateId; //0x0078
+    AtomNodeID AtomTaskID; //0x0068
+    uint32 RuntimeStateID; //0x0078
     char pad_007C[4]; //0x007C
 }; //Size: 0x0080
 assert_sizeof(AtomStateNode, 0x80);

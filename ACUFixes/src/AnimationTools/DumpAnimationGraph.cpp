@@ -812,14 +812,19 @@ public:
     void DumpStateTransitionTarget(AtomStateTransitionTarget& trTarget)
     {
         ImGui::LogText(
-            "%s TargetStateIndex: #%d.\n"
+            "%s TargetStateIndex: #%d\n"
             , m_currentIndent.c_str()
             , trTarget.TargetStateIndex
         );
         ImGui::LogText(
-            "%s TransitionTime: %f.\n"
+            "%s TransitionTime: %f\n"
             , m_currentIndent.c_str()
             , trTarget.TransitionTime
+        );
+        ImGui::LogText(
+            "%s AtomTaskID: %s\n"
+            , m_currentIndent.c_str()
+            , TempFormatAtomNodeID(trTarget.AtomTaskID)
         );
         ImGui::LogText(
             "%s conditionExpression:\n"
@@ -954,10 +959,100 @@ public:
             , FormatTheCurrentOffsetStackForReclassAndCheatEngine().c_str()
         );
     }
+    ImGuiTextBuffer m_TempBufForAtomTaskID;
+    const char* TempFormatAtomNodeID(const AtomNodeID& nodeID)
+    {
+        m_TempBufForAtomTaskID.reserve(2 * 16);
+        m_TempBufForAtomTaskID.resize(0);
+        for (byte b : nodeID.ByteData)
+            m_TempBufForAtomTaskID.appendf("%02X", b);
+        return m_TempBufForAtomTaskID.c_str();
+    }
     void DumpStateNode(AtomStateNode& stateNode)
     {
         DumpStateNodeShort(stateNode);
         auto _ind = IndentScoped();
+        ImGui::LogText("%s RuntimeStateID: %d\n"
+            , m_currentIndent.c_str()
+            , stateNode.RuntimeStateID
+        );
+        ImGui::LogText("%s AtomTaskID: %s\n"
+            , m_currentIndent.c_str()
+            , TempFormatAtomNodeID(stateNode.AtomTaskID)
+        );
+        ImGui::LogText(
+            "%s AtomRefParentID: %hd\n"
+            , m_currentIndent.c_str()
+            , stateNode.base8.AtomRefParentID.size
+        );
+        {
+            auto _ind = IndentScoped();
+            for (uint16 i = 0; i < stateNode.base8.AtomRefParentID.size; i++)
+            {
+                AtomNodeID& parentID = stateNode.base8.AtomRefParentID[i];
+                ImGui::LogText(
+                    "%s parentID #%d: %s\n"
+                    , m_currentIndent.c_str()
+                    , i
+                    , TempFormatAtomNodeID(parentID)
+                );
+            }
+        }
+        ImGui::LogText("%s ArrivingTransitionIndices: %hd\n"
+            , m_currentIndent.c_str()
+            , stateNode.base8.ArrivingTransitionIndices.size
+        );
+        {
+            auto _ind = IndentScoped();
+            for (uint16 i = 0; i < stateNode.base8.ArrivingTransitionIndices.size; i++)
+            {
+                uint16 ati = stateNode.base8.ArrivingTransitionIndices[i];
+                ImGui::LogText(
+                    "%s ati #%d: %hd\n"
+                    , m_currentIndent.c_str()
+                    , i
+                    , ati
+                );
+            }
+        }
+        ImGui::LogText("%s DepartingTransitionIndices: %hd\n"
+            , m_currentIndent.c_str()
+            , stateNode.base8.DepartingTransitionIndices.size
+        );
+        {
+            auto _ind = IndentScoped();
+            for (uint16 i = 0; i < stateNode.base8.DepartingTransitionIndices.size; i++)
+            {
+                uint16 dti = stateNode.base8.DepartingTransitionIndices[i];
+                ImGui::LogText(
+                    "%s dti #%d: %hd\n"
+                    , m_currentIndent.c_str()
+                    , i
+                    , dti
+                );
+            }
+        }
+        ImGui::LogText("%s Extensions: %hd\n"
+            , m_currentIndent.c_str()
+            , stateNode.base8.Extensions.size
+        );
+        ImGui::LogText("%s AnimMarkups: %hd\n"
+            , m_currentIndent.c_str()
+            , stateNode.AnimMarkups.size
+        );
+        {
+            auto _ind = IndentScoped();
+            for (uint16 i = 0; i < stateNode.AnimMarkups.size; i++)
+            {
+                uint32 animMarkup = stateNode.AnimMarkups[i];
+                ImGui::LogText(
+                    "%s animMarkup #%d: %x\n"
+                    , m_currentIndent.c_str()
+                    , i
+                    , animMarkup
+                );
+            }
+        }
         ImGui::LogText(
             "%s Transitions: %d\n"
             , m_currentIndent.c_str()
@@ -1236,6 +1331,26 @@ public:
                             , i
                         );
                         auto _ind = IndentScoped();
+                        ImGui::LogText(
+                            "%s AtomTaskID: %s\n"
+                            , m_currentIndent.c_str()
+                            , TempFormatAtomNodeID(trCell.AtomTaskID)
+                        );
+                        ImGui::LogText(
+                            "%s OriginStateTaskID: %s\n"
+                            , m_currentIndent.c_str()
+                            , TempFormatAtomNodeID(trCell.OriginStateTaskID)
+                        );
+                        ImGui::LogText(
+                            "%s TargetStateTaskID: %s\n"
+                            , m_currentIndent.c_str()
+                            , TempFormatAtomNodeID(trCell.TargetStateTaskID)
+                        );
+                        ImGui::LogText(
+                            "%s TransitionFromOriginTaskID: %s\n"
+                            , m_currentIndent.c_str()
+                            , TempFormatAtomNodeID(trCell.TransitionFromOriginTaskID)
+                        );
                         DumpStateNode(*trCell.stateMachineNode);
                     }
                 }

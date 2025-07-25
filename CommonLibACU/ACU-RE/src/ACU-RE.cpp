@@ -184,6 +184,9 @@
 #include "ACU/AtomCondition.h"
 #include "ACU/AtomConditionExpression.h"
 #include "ACU/AtomStateTransitionTarget.h"
+#include "ACU/AtomStateExtension.h"
+#include "ACU/AtomPoseParamExtension.h"
+#include "ACU/AtomIkPathExtension.h"
 
 #include "ACU/AtomStateNode.h"
 #include "ACU/AtomNullStateNode.h"
