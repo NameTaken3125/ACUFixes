@@ -20,7 +20,7 @@
     XX(riseFromGroundToGround_smallDiff_alsoVault14, = 14) \
     XX(jumpDownToGround_airtimeButSafe, = 15) \
     XX(unk16, = 16) \
-    XX(unk17, = 17) \
+    XX(wallEjectToHang, = 17) /* The only place I found where a parkour action of this type is created is 14014BDEB, which doesn't seem to be a "reachable code path" in an unmodded game */ \
     XX(breakfall, = 18) \
     XX(unk19, = 19) \
     XX(freefallLedgeLandOn, = 20) \
@@ -112,7 +112,7 @@
     XX(walkThroughWindow_mb_106, = 106) \
     XX(flipOverWindowLedgeToWalling, = 107) \
     XX(enterWindow, = 108) \
-    XX(unk109, = 109) \
+    XX(unk109, = 109) /* something like... flip over a fence, wallhang-to-wallhang-on-the-other-side. triggered by force-replacing "safe back eject" at [398.31 730.88 13.64] */\
     XX(unk110, = 110) \
     XX(unk111, = 111) \
     XX(leapOfFaith, = 112) \

@@ -2,65 +2,27 @@
 
 #include "ParkourDebugging/ParkourDebuggingPatch.h"
 
-#include "vmath/vmath.h"
-
-#include "ACU/basic_types.h"
-#include "ACU/SmallArray.h"
-#include "ACU/SharedPtr.h"
 #include "ACU/World.h"
 #include "ACU/ACUGetSingletons.h"
+#include "ACU/Memory/ACUAllocs.h"
 #include "ACU_DefineNativeFunction.h"
 
 #include "MyLog.h"
 #include "ImGui3D/ImGui3D.h"
 #include "ImGui3D/ImGui3DCustomDraw.h"
 
-#include "ParkourDebugging/EnumParkourAction.h"
+#include "AvailableParkourAction.h"
 
-// Macro used as an annotation that this name is the actual original name of class member/function,
-// confirmed because its CRC32 hash is found *somewhere nearby*.
-// For example the "fancy vtables" contain the function name hashes next to the function pointers etc.
-// ACViewer has a ton of correctly reversed member names,
-// I better mark those names with this macro at some point.
-#define CONFIRMED_NAME(name) name
-
-#include "ACU/FancyVTable.h"
-struct ParkourAction_FancyVTable
-{
-    std::array<FancyVFunction, 0x78> fancyVirtuals;
-};
-// FancyVFunctions in `ParkourAction_EnterWindow.fancyVtable8`:
-#define DEFINE_FANCY_VF(idx, name, nameHashed, fnType)
-
-DEFINE_FANCY_VF(0x18, CONFIRMED_NAME(GetDistance), 0x8EB3C7D3, float (*)(AvailableParkourAction*));
-// See 1401AD4E0: Multiple RTCP variables (like the "scalar TargetDistance; // 0x97a0d819/2543900697")
-// are being set.
-DEFINE_FANCY_VF(0x54, GetTargetDistance, 0x349D0508, float (*)(AvailableParkourAction*, Entity*));
-DEFINE_FANCY_VF(0x55, GetTargetDistanceX, 0x3C4F0070, float (*)(AvailableParkourAction*, Entity*));
-DEFINE_FANCY_VF(0x56, GetEdgeDistanceX, 0x92F471C3, float (*)(AvailableParkourAction*, Entity*));
-DEFINE_FANCY_VF(0x57, GetTargetHeight, 0xD5641CA6, float (*)(AvailableParkourAction*, Entity*));
-// Index 0x57 again. I don't have the correct reversed-hash name of the function, but its return value
-// was used to set both "TargetHeight" and "LandingHeight".
-DEFINE_FANCY_VF(0x57, GetLandingHeight, 0xD5641CA6, float (*)(AvailableParkourAction*, Entity*));
-DEFINE_FANCY_VF(0x58, GetTargetAngle, 0x77BC6A50, float (*)(AvailableParkourAction*, Entity*));
-DEFINE_FANCY_VF(0x5A, GetTopLedgeDistance, 0xD009E05C, float (*)(AvailableParkourAction*, Entity*));
-class AvailableParkourAction
-{
-public:
-    // @members
-    uint64 vtbl;
-    ParkourAction_FancyVTable* fancyVTable;
-
-    // @helper_functions
-    EnumParkourAction GetEnumParkourAction()
-    {
-        using GetEnumParkourAction_t = EnumParkourAction(__fastcall*)(AvailableParkourAction* action);
-        auto GetEnumParkourAction_impl = (GetEnumParkourAction_t)fancyVTable->fancyVirtuals[69].fn;
-        return GetEnumParkourAction_impl(this);
-    }
-};
 class Entity;
 class EntityGroup;
+struct PlayerRefInParkourAction
+{
+    SharedPtrNew<Entity>* shared_player;
+    uint64 qword_8;
+    uint32 dword_10;
+    char pad_14[4];
+};
+assert_sizeof(PlayerRefInParkourAction, 0x18);
 class ParkourAction_Commonbase : public AvailableParkourAction
 {
 public:
@@ -87,8 +49,8 @@ public:
     char pad_00E0[8]; //0x00E0
     SharedPtrNew<EntityGroup>* shared_buildingEntityGroup_mb; //0x00E8
     char pad_00F0[16]; //0x00F0
-    SharedPtrNew<Entity>* shared_player; //0x0100
-    char pad_0108[112]; //0x0108
+    PlayerRefInParkourAction shared_player; //0x0100
+    char pad_0118[96]; //0x0118
     SharedPtrNew<EntityGroup>* shared_entityGroupWithVisualCpntsOnly_178_canBeEmpty; //0x0178
     Vector4f vec180; //0x0180
     Vector4f vec190; //0x0190
@@ -291,7 +253,6 @@ std::vector<EnumParkourAction> g_UnidentifiedParkourActions = {
     EnumParkourAction::passementFromBeam_C,
     EnumParkourAction::passementD,
     EnumParkourAction::unk16,
-    EnumParkourAction::unk17,
     EnumParkourAction::unk19,
     EnumParkourAction::unk22,
     EnumParkourAction::unk24,
@@ -349,7 +310,7 @@ std::optional<int> ParkourDebugging_SelectMove(SmallArray<AvailableParkourAction
     {
         return {};
     }
-    auto FindIndexForCriterium = [&availableParkourActions](const std::wstring_view& critName, auto criterium) -> std::optional<int>
+    auto FindIndexForCriterium = [&availableParkourActions](const std::string_view& critName, auto criterium) -> std::optional<int>
         {
             auto foundIt = std::find_if(
                 availableParkourActions.begin(),
@@ -371,6 +332,7 @@ std::optional<int> ParkourDebugging_SelectMove(SmallArray<AvailableParkourAction
             );
             return idx;
         };
+    auto DontForceAnything = [](AvailableParkourAction* parkourAction) { return false; };
     auto IsRare = [](AvailableParkourAction* parkourAction)
         {
             return std::find(
@@ -388,8 +350,9 @@ std::optional<int> ParkourDebugging_SelectMove(SmallArray<AvailableParkourAction
                 || actionType == EnumParkourAction::hangTurnCornerInside
                 ;
         };
-
-    auto foundIt = FindIndexForCriterium(L"IsRare", IsRare);
+#define FIND_INDEX_FOR_CRITERIUM(criterium) FindIndexForCriterium(#criterium, criterium)
+    auto foundIt = FIND_INDEX_FOR_CRITERIUM(IsRare);
+#undef FIND_INDEX_FOR_CRITERIUM
     if (!foundIt)
     {
         return {};
@@ -403,6 +366,25 @@ void WhenGatheredMoves_FilterFnPrologue_LogBeforeFiltered(AllRegisters* params)
     LOG_DEBUG(ParkourLogger, "Num potential actions before filtering: %d"
         , moves.size
     );
+    {
+        auto movesBeforeFilter_tr = moves | std::views::transform([](auto* action) { return action->GetEnumParkourAction(); });
+        std::set<EnumParkourAction> movesBeforeFilter(movesBeforeFilter_tr.begin(), movesBeforeFilter_tr.end());
+
+        if (movesBeforeFilter.size())
+        {
+            LOG_DEBUG(ParkourLogger,
+                "All move types before filtering:\n"
+            );
+            for (EnumParkourAction actionType : movesBeforeFilter)
+            {
+                LOG_DEBUG(ParkourLogger,
+                    "%3d == %s\n"
+                    , actionType
+                    , enum_reflection<EnumParkourAction>::GetString(actionType)
+                );
+            }
+        }
+    }
     for (ParkourAction_Commonbase* move : moves)
     {
         EnumParkourAction actionType = move->GetEnumParkourAction();
@@ -451,6 +433,46 @@ void WhenPerformingFinalFilter1OnSortedMoves_ForceTurnInPalaisDeLuxembourgCorner
     }
     params->GetRAX() = result;
 }
+DEFINE_GAME_FUNCTION(ConstructParkourAction, 0x1401CC990, ParkourAction_Commonbase*, __fastcall, (EnumParkourAction p_actionEnum, __int64 a2, __m128* a3, __m128* p_movementVecWorld_mb, int a5, char a6, __int64 a7, __int64 a8));
+DEFINE_GAME_FUNCTION(sub_14015A570, 0x14015A570, void, __fastcall, (PlayerRefInParkourAction* p_playerRefOut, Entity* a2));
+bool CreateParkourActionAndPerformInitialTestIfFits_FullReplacement(
+    EnumParkourAction actionType,
+    uint64 a2,
+    __m128* a3,
+    __m128* p_movementVecWorld_mb,
+    float a5, int a6, char a7, uint64 a8,
+    Entity* p_player,
+    uint64 p_currentLedge_mb,
+    ParkourAction_Commonbase** const p_newAction_out,
+    float a12,
+    float p_epsilon_mb)
+{
+    ParkourAction_Commonbase* newAction = ConstructParkourAction(actionType, a2, a3, p_movementVecWorld_mb, a6, a7, a8, p_currentLedge_mb);
+    *p_newAction_out = newAction;
+    if (!newAction) return false;
+    if (p_player)
+        sub_14015A570(&newAction->shared_player, p_player);
+    GET_AND_CAST_FANCY_FUNC(*newAction, ParkourActionKnownFancyVFuncs::Set2FloatsAfterCreation)(newAction, a12, p_epsilon_mb);
+    bool isActionFits = GET_AND_CAST_FANCY_FUNC(*newAction, ParkourActionKnownFancyVFuncs::InitialTestIfActionFits)(
+        newAction,
+        a2,
+        a3,
+        p_movementVecWorld_mb,
+        a5,
+        a6,
+        a8,
+        p_player,
+        p_currentLedge_mb);
+    bool isDiscarded = !isActionFits;
+    if (isDiscarded)
+    {
+        newAction->Unk008_Destroy(0);
+        ACU::Memory::ACUDeallocateBytes((byte*)newAction);
+        *p_newAction_out = nullptr;
+        return false;
+    }
+    return true;
+}
 ParkourDebuggingPatch::ParkourDebuggingPatch()
 {
     uintptr_t whenReturningBestMatchingMove = 0x140133D4B;
@@ -462,6 +484,8 @@ ParkourDebuggingPatch::ParkourDebuggingPatch()
     uintptr_t whenPerformingFinalFilter1OnSortedMoves = 0x140133D16;
     PresetScript_CCodeInTheMiddle(whenPerformingFinalFilter1OnSortedMoves, 5,
         WhenPerformingFinalFilter1OnSortedMoves_ForceTurnInPalaisDeLuxembourgCorners, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, false);
+
+    PresetScript_ReplaceFunctionAtItsStart(0x1401D1CF0, CreateParkourActionAndPerformInitialTestIfFits_FullReplacement);
 }
 void ParkourDebuggingPatch::OnBeforeActivate()
 {

@@ -2,38 +2,22 @@
 
 #include "Request_Spindescent.h"
 
-#include "vmath/vmath.h"
+#include "ACU/Memory/ACUAllocs.h"
+#include "ACU_DefineNativeFunction.h"
 
-#include "ACU/basic_types.h"
-#include "ACU/SmallArray.h"
+#include "ParkourDebugging/AvailableParkourAction.h"
 
-#include "ParkourDebugging/EnumParkourAction.h"
 
-#include "ACU/FancyVTable.h"
-struct ParkourAction_FancyVTable
-{
-    std::array<FancyVFunction, 0x78> fancyVirtuals;
-};
-// FancyVFunctions in `ParkourAction_EnterWindow.fancyVtable8`:
-#define DEFINE_FANCY_VF(idx, name, nameHashed, fnType)
+// Use the following #define to enable the experimental wall-eject-to-hang move.
+// (Credit to "TheManWithNothing" for the discovery
+//      https://www.youtube.com/@TheManWithNothing
+//      https://www.youtube.com/watch?v=SjgeA2mUs30
+// )
+// Not included in the build, because I doubt I'll get it finished but it's still kinda valuable enough
+// to be publicly visible in Github.
+// Fun fact: to get an almost functional sidehop-to-hang, just NOP 4 bytes at 0x14015423F.
+//#define PARKOUR_HELPERS_USE_EJECT_TO_HANG
 
-DEFINE_FANCY_VF(0x18, "GetDistance", 0x8EB3C7D3, float (*)(AvailableParkourAction*));
-class AvailableParkourAction
-{
-public:
-    // @members
-    uint64 vtbl;
-    ParkourAction_FancyVTable* fancyVTable;
-
-    // @helper_functions
-    EnumParkourAction GetEnumParkourAction()
-    {
-        using GetEnumParkourAction_t = EnumParkourAction(__fastcall*)(AvailableParkourAction* action);
-        auto GetEnumParkourAction_impl = (GetEnumParkourAction_t)fancyVTable->fancyVirtuals[69].fn;
-        return GetEnumParkourAction_impl(this);
-    }
-};
-#include "ACU/SharedPtr.h"
 class Entity;
 class EntityGroup;
 class ParkourAction_Spindescent : public AvailableParkourAction
@@ -100,6 +84,7 @@ CustomSelectedParkourMove SelectBestMatchingMoveIdx_ExtraProcessing_CustomSelect
         if (actionType == EnumParkourAction::dive
             || actionType == EnumParkourAction::swing_31_swingToSwing_mb
             || actionType == EnumParkourAction::jumpOutOfWindowToHang
+            || actionType == EnumParkourAction::wallEjectToHang
             )
         {
             return { action, i };
@@ -287,9 +272,65 @@ void WhenDecidingBestMatchingMove_ExtraProcessing(AllRegisters* params)
     params->GetRAX() = bestMatchIdx;
     *(int*)(params->GetRSP() + 0x100) = bestMatchIdx;
 }
+class ParkourAction_Commonbase;
+DEFINE_GAME_FUNCTION(CreateParkourActionForParkourPointIfFits, 0x1401D1CF0, char, __fastcall, (EnumParkourAction a1, uint64 a2, __m128* a3, __m128* p_movementVecWorld_mb, float a5, int a6, char a7, uint64 a8, uint64 a9, uint64 p_currentLedge_mb, ParkourAction_Commonbase** p_newAction_out, float a12, float p_epsilon_mb));
+void WhenPerformingScanFor_ClimbFacade_AlsoScanForWallToHang(AllRegisters* params)
+{
+    bool isCreated = CreateParkourActionForParkourPointIfFits(
+        EnumParkourAction::wallEjectToHang
+        , params->rdx_
+        , (__m128*)params->rdi_
+        , (__m128*)params->r9_
+        , params->XMM6.f0
+        , (int&)params->r13_
+        , *(char*)(params->GetRSP() + 0x100)
+        , *(uint64*)(*(uint64*)params->r12_ + (int&)params->r15_)
+        , *(uint64*)(params->rbp_ + 0x118)
+        , *(uint64*)(params->rbp_ + 0x120)
+        , (ParkourAction_Commonbase**)(params->GetRSP() + 0x108)
+        , *(float*)(params->rbp_ + 0x104)
+        , *(float*)(params->rbp_ + 0x108)
+    );
+    if (isCreated)
+    {
+        ACU::Memory::SmallArrayAppend(*(SmallArray<ParkourAction_Commonbase*>*)params->rbx_, *(ParkourAction_Commonbase**)(params->GetRSP() + 0x108));
+    }
+}
+void WhenPerformingScanFor_BackEject_AlsoScanForWallToHang(AllRegisters* params)
+{
+    bool isCreated = CreateParkourActionForParkourPointIfFits(
+        EnumParkourAction::wallEjectToHang
+        , *(uint64*)(params->GetRSP() + 0xE8)
+        , (__m128*)params->rsi_
+        , (__m128*)(params->rdi_ + 0x20)
+        , params->XMM6.f0
+        , (int&)params->r13_
+        , *(char*)(params->GetRSP() + 0x110)
+        , *(uint64*)(*(uint64*)params->r14_ + (int&)params->r12_)
+        , *(uint64*)(params->rdi_ + 0x118)
+        , *(uint64*)(params->rdi_ + 0x120)
+        , (ParkourAction_Commonbase**)(params->GetRSP() + 0x70)
+        , *(float*)(params->rdi_ + 0x104)
+        , *(float*)(params->rdi_ + 0x108)
+    );
+    if (isCreated)
+    {
+        ACU::Memory::SmallArrayAppend(*(SmallArray<ParkourAction_Commonbase*>*)params->rbx_, *(ParkourAction_Commonbase**)(params->GetRSP() + 0x70));
+    }
+}
 ParkourActionsExtraProcessing::ParkourActionsExtraProcessing()
 {
     uintptr_t whenDecidingBestMatchingMove = 0x140134984;
     PresetScript_CCodeInTheMiddle(whenDecidingBestMatchingMove, 10,
         WhenDecidingBestMatchingMove_ExtraProcessing, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, false);
+
+
+#ifdef PARKOUR_HELPERS_USE_EJECT_TO_HANG
+    {
+        PresetScript_CCodeInTheMiddle(0x140135230, 12,
+            WhenPerformingScanFor_ClimbFacade_AlsoScanForWallToHang, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
+        PresetScript_CCodeInTheMiddle(0x140137A84, 11,
+            WhenPerformingScanFor_BackEject_AlsoScanForWallToHang, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
+    }
+#endif
 }

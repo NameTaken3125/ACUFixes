@@ -213,6 +213,7 @@ if exist "$(ProjectDir)copy_output_to_directory.txt" (
     <ClCompile Include="src\AnimationTools\AnimGraphMods.cpp" />
     <ClCompile Include="src\AnimationTools\AnimGraphMods_BasicLayer.cpp" />
     <ClCompile Include="src\AnimationTools\Animtools_ImGui.cpp" />
+    <ClCompile Include="src\ParkourDebugging\AvailableParkourAction.cpp" />
     <ClCompile Include="src\ParkourDebugging\Hack_PickEntityToShoot.cpp" />
     <ClCompile Include="src\HacksContainer_DevExtras.cpp" />
     <ClCompile Include="src\ImGui3D\ImGui3DLayer.cpp" />
@@ -282,6 +283,7 @@ if exist "$(ProjectDir)copy_output_to_directory.txt" (
     <ClInclude Include="src\AnimationTools\AnimationsLog\AnimationGraphEvaluationLog.h" />
     <ClInclude Include="src\AnimationTools\AtomGraphControls.h" />
     <ClInclude Include="src\AnimationTools\AtomGraphModsCommon.h" />
+    <ClInclude Include="src\ParkourDebugging\AvailableParkourAction.h" />
     <ClInclude Include="src\ParkourDebugging\Hack_PickEntityToShoot.h" />
     <ClInclude Include="src\AnimationTools\Hack_RemovableHood_Animations.h" />
     <ClInclude Include="src\AnimationTools\NewHandlesFactory.h" />

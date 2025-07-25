@@ -2,6 +2,7 @@
 
 #include "AutoAssemblerKinda/AutoAssemblerKinda.h"
 
+#include "ImGuiCTX.h"
 #include "ImGuiConfigUtils.h"
 
 #include "ParkourDebugging/ParkourDebuggingPatch.h"
