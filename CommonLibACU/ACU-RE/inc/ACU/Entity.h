@@ -27,7 +27,12 @@ assert_sizeof(Entity_CpntIndices_15F, 5);
 class EntityDescriptor
 {
 public:
-    uint32 DescriptorType : 3;
+    enum class EntityDescriptorType : uint32
+    {
+        EntityDescriptor_Main = 1,
+    };
+
+    EntityDescriptorType DescriptorType : 3;
     uint32 SubDescriptorType : 6;
     uint32 ExplicitProperty : 6;
     uint32 IsPickableByPlayer : 1;
@@ -36,7 +41,7 @@ public:
     uint32 bits_0x11_0x13 : 3;
 
     uint32 ADBEntryID : 6;
-    uint32 prop_8CE8468D : 1;
+    uint32 HasWideHips : 1;
 };
 const int x = sizeof(EntityDescriptor);
 assert_sizeof(EntityDescriptor, 4);

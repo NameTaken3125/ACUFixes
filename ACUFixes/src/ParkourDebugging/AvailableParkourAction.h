@@ -7,6 +7,7 @@
 #include "ACU/SharedPtr.h"
 
 #include "ParkourDebugging/EnumParkourAction.h"
+#include "ParkourDebugging/FancyVFunctionDescription.h"
 
 class Entity;
 
@@ -17,7 +18,6 @@ class Entity;
 // I better mark those names with this macro at some point.
 #define CONFIRMED_NAME(name) name
 
-#include "ACU/FancyVTable.h"
 struct ParkourAction_FancyVTable
 {
     std::array<FancyVFunction, 0x78> fancyVirtuals;
@@ -32,21 +32,28 @@ public:
 
     ParkourAction_FancyVTable* fancyVTable;
 
+	// @members
+
+	// If climbing wall, this is where your hands were before the move started. If on beam, this is where your feet were.
+	// If vaulting, this is where your feet start.
+	Vector4f locationAnchorSrc; //0x0010
+	Vector4f orientation_mb_20; //0x0020
+	// If climbing wall, this is where your hands grab after finishing the move. If on beam, this is where your feet land.
+	// If vaulting, this is where you grab to begin the vault, not where you land.
+	Vector4f locationAnchorDest; //0x0030
+
     // @helper_functions
     EnumParkourAction GetEnumParkourAction();
 };
-template<typename FunctionPtrType_, uint32 staticIdx>
-struct FancyVFunctionDescription
-{
-    using FunctionPtrType = FunctionPtrType_;
-    enum { idx = staticIdx };
-};
+assert_offsetof(AvailableParkourAction, locationAnchorDest, 0x30);
 
 // FancyVFunctions in `ParkourAction_EnterWindow.fancyVtable8`:
 namespace ParkourActionKnownFancyVFuncs
 {
 #define DEFINE_FANCY_VF(idx, name, nameHashed, fnType) using name = FancyVFunctionDescription<fnType, idx>
+    DEFINE_FANCY_VF(0x4, GetPosition, 0xB2C2D737, __m128* (*)(__m128* positionOut, AvailableParkourAction*));
     DEFINE_FANCY_VF(0x18, CONFIRMED_NAME(GetDistance), 0x8EB3C7D3, float (*)(AvailableParkourAction*));
+    DEFINE_FANCY_VF(0x23, GetFitness, 0x7A9E7BE6, float (*)(AvailableParkourAction*));
     DEFINE_FANCY_VF(0x3D, Set2FloatsAfterCreation, 0xB6319102, float (*)(AvailableParkourAction*, float a2, float p_epsilon_mb));
     DEFINE_FANCY_VF(0x45, GetEnumParkourAction, 0x986EB60D, EnumParkourAction(*)(AvailableParkourAction*));
     DEFINE_FANCY_VF(0x4B, InitialTestIfActionFits, 0x3DD63101, bool (*)(AvailableParkourAction*, __int64 a2, __m128* a3, __m128* a4, __int64 a5, __int64 a6, __int64 a7, Entity* p_player, __int64 a9));
@@ -64,4 +71,3 @@ namespace ParkourActionKnownFancyVFuncs
 
 #undef DEFINE_FANCY_VF
 }
-#define GET_AND_CAST_FANCY_FUNC(obj, fancyFuncDescription) ((fancyFuncDescription::FunctionPtrType)((obj).fancyVTable->fancyVirtuals[fancyFuncDescription::idx].fn))

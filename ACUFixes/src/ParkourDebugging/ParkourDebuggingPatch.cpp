@@ -2,6 +2,8 @@
 
 #include "ParkourDebugging/ParkourDebuggingPatch.h"
 
+#include "vmath/vmath_extra.h"
+
 #include "ACU/World.h"
 #include "ACU/ACUGetSingletons.h"
 #include "ACU/Memory/ACUAllocs.h"
@@ -10,8 +12,10 @@
 #include "MyLog.h"
 #include "ImGui3D/ImGui3D.h"
 #include "ImGui3D/ImGui3DCustomDraw.h"
+#include "ImGuiCTX.h"
 
 #include "AvailableParkourAction.h"
+#include "ParkourTester.h"
 
 class Entity;
 class EntityGroup;
@@ -23,16 +27,11 @@ struct PlayerRefInParkourAction
     char pad_14[4];
 };
 assert_sizeof(PlayerRefInParkourAction, 0x18);
+// I don't yet know how much there is in common between the structs for different parkour actions,
+// So I'm keeping the "AvailableParkourAction" baseclass small.
 class ParkourAction_Commonbase : public AvailableParkourAction
 {
 public:
-    // If climbing wall, this is where your hands were before the move started. If on beam, this is where your feet were.
-    // If vaulting, this is where your feet start.
-    Vector4f locationAnchorSrc; //0x0010
-    char pad_0020[16]; //0x0020
-    // If climbing wall, this is where your hands grab after finishing the move. If on beam, this is where your feet land.
-    // If vaulting, this is where you grab to begin the vault, not where you land.
-    Vector4f locationAnchorDest; //0x0030
     char pad_0040[16]; //0x0040
     Vector4f handsLocationTo_right_mb; //0x0050
     Vector4f handsLocationTo_left_mb; //0x0060
@@ -209,41 +208,11 @@ public:
     {
         DoDraw_ManyLocations(m_History_MovesBeforeFiltering);
         DoDraw_Location(m_History_SelectedMoves);
+        void DrawParkourDebugWindow(); DrawParkourDebugWindow();
     }
-    ParkourVisualization() { ImGui3D::CustomDraw::CustomDraw_Subscribe(*this); }
+    ParkourVisualization() {}
     ~ParkourVisualization() { ImGui3D::CustomDraw::CustomDraw_Unsubscribe(*this); }
 } g_ParkourVisualization;
-void WhenReturningBestMatchingMove_LogIt(AllRegisters* params)
-{
-    int bestMatchMoveIdx = (int&)(params->GetRAX());
-    if (bestMatchMoveIdx == -1)
-    {
-        return;
-    }
-    SmallArray<ParkourAction_Commonbase*>& actionsArray = *(SmallArray<ParkourAction_Commonbase*>*)params->rsi_;
-    ParkourAction_Commonbase* bestMatchMove = actionsArray[bestMatchMoveIdx];
-    EnumParkourAction actionType = bestMatchMove->GetEnumParkourAction();
-    if (actionType == EnumParkourAction::wallrunUpFromGroundFailed_mb)
-    {
-        int x = 0;
-    }
-    LOG_DEBUG(ParkourLogger
-        , "Selected: %7.2f %7.2f %7.2f (%d == %s)"
-        , bestMatchMove->locationAnchorSrc.x
-        , bestMatchMove->locationAnchorSrc.y
-        , bestMatchMove->locationAnchorSrc.z
-        , actionType
-        , enum_reflection<EnumParkourAction>::GetString(actionType)
-    );
-    //ImGui3D::DrawLocationNamed((Vector3f&)bestMatchMove->locationAnchorSrc, "locationAnchorSrc");
-    //ImGui3D::DrawLocationNamed((Vector3f&)bestMatchMove->locationAnchorDest, "locationAnchorDest");
-    //ImGui3D::DrawLocationNamed((Vector3f&)bestMatchMove->handsLocationTo_right_mb, "handsLocationTo_right_mb");
-    //ImGui3D::DrawLocationNamed((Vector3f&)bestMatchMove->handsLocationTo_left_mb, "handsLocationTo_left_mb");
-    g_ParkourVisualization.m_History_SelectedMoves.Add(
-        (Vector3f&)bestMatchMove->locationAnchorDest
-        , World::GetSingleton()->clockInWorldWithSlowmotion.GetCurrentTimeFloat()
-    );
-}
 std::vector<EnumParkourAction> g_UnidentifiedParkourActions = {
     EnumParkourAction::unk0,
     EnumParkourAction::stumbleAtEdge_mb,
@@ -359,9 +328,105 @@ std::optional<int> ParkourDebugging_SelectMove(SmallArray<AvailableParkourAction
     }
     return *foundIt;
 }
-void WhenGatheredMoves_FilterFnPrologue_LogBeforeFiltered(AllRegisters* params)
+DEFINE_GAME_FUNCTION(AvailableParkourAction__FinalFilter1, 0x1401D4DE0, bool, __fastcall, (AvailableParkourAction* p_parkourAction, __m128* a2, uint64 a3, Entity* p_playerEntity));
+DEFINE_GAME_FUNCTION(AvailableParkourAction__FinalFilter2, 0x1401D3000, bool, __fastcall, (AvailableParkourAction* p_parkourAction, Entity* p_playerEntity, __int64 a3));
+DEFINE_GAME_FUNCTION(ConstructParkourAction_A, 0x1401CC990, ParkourAction_Commonbase*, __fastcall, (EnumParkourAction p_actionEnum, __int64 a2, __m128* a3, __m128* p_movementVecWorld_mb, int a5, char a6, __int64 a7, __int64 a8));
+DEFINE_GAME_FUNCTION(ConstructParkourAction_B, 0x1401D1FC0, ParkourAction_Commonbase*, __fastcall, (EnumParkourAction p_actionEnum, __int64 a2, __m128* a3, __m128* p_movementVecWorld_mb, int a5, char a6, __int64 a7, __int64 a8, Entity* p_player, uint64 p_currentLedge_mb));
+DEFINE_GAME_FUNCTION(AvailableParkourAction__InitializePlayerRef, 0x14015A570, void, __fastcall, (PlayerRefInParkourAction* p_playerRefOut, Entity* a2));
+// Used for a SmallArray of plain types, where constructors/destructors don't matter.
+DEFINE_GAME_FUNCTION(SmallArray_POD__RemoveGeneric, 0x142725F00, void, __fastcall, (void* smallArray, int p_idx, unsigned int p_elemSize));
+
+void WhenPerformingFinalFilter1OnSortedMoves_ForceTurnInPalaisDeLuxembourgCorners(AllRegisters* params)
 {
-    SmallArray<ParkourAction_Commonbase*>& moves = **(SmallArray<ParkourAction_Commonbase*>**)(params->GetRSP() + 0x48);
+    AvailableParkourAction* parkourAction = (AvailableParkourAction*)params->rcx_;
+    Entity* ent = (Entity*)params->r9_;
+    uint64 result = AvailableParkourAction__FinalFilter1(parkourAction, (__m128*)params->rdx_, params->r8_, ent);
+    if (ent != ACU::GetPlayer())
+    {
+        params->GetRAX() = result;
+        return;
+    }
+    SmallArray<ParkourAction_Commonbase*>& moves = *(SmallArray<ParkourAction_Commonbase*>*)params->rsi_;
+    if (std::all_of(moves.begin(), moves.end(), [](ParkourAction_Commonbase* action)
+        {
+            return action->GetEnumParkourAction() == EnumParkourAction::stepDownSmallHeight_mb;
+        }))
+    {
+        result = 1;
+    }
+    params->GetRAX() = result;
+}
+
+class ParkourActionLogged
+{
+public:
+    AvailableParkourAction* m_ActionPtr; // Used for identification within the log, will definitely become invalid after the "parkour cycle" finishes execution.
+    ParkourActionLogged(AvailableParkourAction& action)
+        : m_ActionPtr(&action)
+        , m_ActionType(action.GetEnumParkourAction())
+        , m_Location((Vector3f&)action.locationAnchorSrc)
+    {}
+
+    EnumParkourAction m_ActionType;
+    Vector3f m_Location;
+    bool m_IsDiscarded_immediatelyAfterCreation = false;
+    std::optional<float> m_FitnessWeight;
+    bool m_IsDiscarded_becauseFitnessWeightTooLow = false;
+    std::optional<float> m_DefaultWeight;
+    std::optional<bool> m_ResultOfFinalFilter1;
+    std::optional<bool> m_ResultOfFinalFilter2;
+    bool m_IsTheSelectedBestMatch = false;
+};
+class ParkourCycleLogged
+{
+public:
+    uint64 m_Timestamp;
+    ParkourCycleLogged(uint64 timestamp) : m_Timestamp(timestamp) {}
+    std::vector<std::unique_ptr<ParkourActionLogged>> m_Actions;
+    std::mutex m_Mutex;
+
+    Vector3f m_LocationOfOrigin;
+    Vector3f m_DirectionOfMovementInputWorldSpace;
+
+    void LogActionInitialCreation(AvailableParkourAction& newAction, bool isDiscarded_immediatelyAfterCreation);
+    void LogActionBeforeFiltering(AvailableParkourAction& action, bool isDiscarded_becauseFitnessWeightTooLow);
+    void LogActionsBeforeFiltering(SmallArray<ParkourAction_Commonbase*>& allActionsBeforeFiltering);
+    void LogActionFinalFilter1(AvailableParkourAction& action, bool resultOfFinalFilter1);
+    void LogActionFinalFilter2(AvailableParkourAction& action, bool resultOfFinalFilter2);
+    void LogActionWhenReturningBestMatch(AvailableParkourAction& bestMatchMove);
+
+private:
+    ParkourActionLogged& GetOrMakeRecordForAction(AvailableParkourAction& action)
+    {
+        std::lock_guard _lock{ m_Mutex };
+        for (auto& record : m_Actions)
+        {
+            if (record->m_ActionPtr != &action) continue;
+            if (record->m_IsDiscarded_immediatelyAfterCreation) continue;
+            return *record;
+        }
+        return *m_Actions.emplace_back(std::make_unique<ParkourActionLogged>(action));
+    }
+    ParkourActionLogged& MakeRecordForAction(AvailableParkourAction& action)
+    {
+        std::lock_guard _lock{ m_Mutex };
+        return *m_Actions.emplace_back(std::make_unique<ParkourActionLogged>(action));
+    }
+
+};
+void ParkourCycleLogged::LogActionInitialCreation(AvailableParkourAction& action, bool isDiscarded_immediatelyAfterCreation)
+{
+    ParkourActionLogged& recordForAction = MakeRecordForAction(action);
+    recordForAction.m_IsDiscarded_immediatelyAfterCreation = isDiscarded_immediatelyAfterCreation;
+}
+void ParkourCycleLogged::LogActionBeforeFiltering(AvailableParkourAction& action, bool isDiscarded_becauseFitnessWeightTooLow)
+{
+    ParkourActionLogged& recordForAction = this->GetOrMakeRecordForAction(action);
+    recordForAction.m_IsDiscarded_becauseFitnessWeightTooLow = isDiscarded_becauseFitnessWeightTooLow;
+}
+void ParkourCycleLogged::LogActionsBeforeFiltering(SmallArray<ParkourAction_Commonbase*>& allActionsBeforeFiltering)
+{
+    SmallArray<ParkourAction_Commonbase*>& moves = allActionsBeforeFiltering;
     if (moves.size == 0) return;
     LOG_DEBUG(ParkourLogger, "Num potential actions before filtering: %d"
         , moves.size
@@ -412,30 +477,132 @@ void WhenGatheredMoves_FilterFnPrologue_LogBeforeFiltered(AllRegisters* params)
         , World::GetSingleton()->clockInWorldWithSlowmotion.GetCurrentTimeFloat()
     );
 }
-DEFINE_GAME_FUNCTION(AvailableParkourAction__FinalFilter1, 0x1401D4DE0, uint64, __fastcall, (AvailableParkourAction* p_parkourAction, uint64 a2, uint64 a3, Entity* p_playerEntity));
-void WhenPerformingFinalFilter1OnSortedMoves_ForceTurnInPalaisDeLuxembourgCorners(AllRegisters* params)
+void ParkourCycleLogged::LogActionFinalFilter1(AvailableParkourAction& action, bool resultOfFinalFilter1)
 {
-    AvailableParkourAction* parkourAction = (AvailableParkourAction*)params->rcx_;
-    Entity* ent = (Entity*)params->r9_;
-    uint64 result = AvailableParkourAction__FinalFilter1(parkourAction, params->rdx_, params->r8_, ent);
-    if (ent != ACU::GetPlayer())
-    {
-        params->GetRAX() = result;
-        return;
-    }
-    SmallArray<ParkourAction_Commonbase*>& moves = *(SmallArray<ParkourAction_Commonbase*>*)params->rsi_;
-    if (std::all_of(moves.begin(), moves.end(), [](ParkourAction_Commonbase* action)
-        {
-            return action->GetEnumParkourAction() == EnumParkourAction::stepDownSmallHeight_mb;
-        }))
-    {
-        result = 1;
-    }
-    params->GetRAX() = result;
+    ParkourActionLogged& record = this->GetOrMakeRecordForAction(action);
+    record.m_ResultOfFinalFilter1 = resultOfFinalFilter1;
 }
-DEFINE_GAME_FUNCTION(ConstructParkourAction, 0x1401CC990, ParkourAction_Commonbase*, __fastcall, (EnumParkourAction p_actionEnum, __int64 a2, __m128* a3, __m128* p_movementVecWorld_mb, int a5, char a6, __int64 a7, __int64 a8));
-DEFINE_GAME_FUNCTION(sub_14015A570, 0x14015A570, void, __fastcall, (PlayerRefInParkourAction* p_playerRefOut, Entity* a2));
-bool CreateParkourActionAndPerformInitialTestIfFits_FullReplacement(
+void ParkourCycleLogged::LogActionFinalFilter2(AvailableParkourAction& action, bool resultOfFinalFilter2)
+{
+    ParkourActionLogged& record = this->GetOrMakeRecordForAction(action);
+    record.m_ResultOfFinalFilter2 = resultOfFinalFilter2;
+}
+void ParkourCycleLogged::LogActionWhenReturningBestMatch(AvailableParkourAction& bestMatchMove)
+{
+    ParkourActionLogged& record = this->GetOrMakeRecordForAction(bestMatchMove);
+    record.m_IsTheSelectedBestMatch = true;
+    EnumParkourAction actionType = bestMatchMove.GetEnumParkourAction();
+    if (actionType == EnumParkourAction::wallrunUpFromGroundFailed_mb)
+    {
+        int x = 0;
+    }
+    LOG_DEBUG(ParkourLogger
+        , "Selected: %7.2f %7.2f %7.2f (%d == %s)"
+        , bestMatchMove.locationAnchorSrc.x
+        , bestMatchMove.locationAnchorSrc.y
+        , bestMatchMove.locationAnchorSrc.z
+        , actionType
+        , enum_reflection<EnumParkourAction>::GetString(actionType)
+    );
+    //ImGui3D::DrawLocationNamed((Vector3f&)bestMatchMove->locationAnchorSrc, "locationAnchorSrc");
+    //ImGui3D::DrawLocationNamed((Vector3f&)bestMatchMove->locationAnchorDest, "locationAnchorDest");
+    //ImGui3D::DrawLocationNamed((Vector3f&)bestMatchMove->handsLocationTo_right_mb, "handsLocationTo_right_mb");
+    //ImGui3D::DrawLocationNamed((Vector3f&)bestMatchMove->handsLocationTo_left_mb, "handsLocationTo_left_mb");
+    g_ParkourVisualization.m_History_SelectedMoves.Add(
+        (Vector3f&)bestMatchMove.locationAnchorDest
+        , World::GetSingleton()->clockInWorldWithSlowmotion.GetCurrentTimeFloat()
+    );
+}
+class ParkourLog
+{
+public:
+    std::shared_ptr<ParkourCycleLogged> m_LatestParkourCycle;
+    std::shared_ptr<ParkourCycleLogged> GetCurrentLoggedParkourCycle()
+    {
+        uint64 currentTimestamp = World::GetSingleton()->clockInWorldWithSlowmotion.currentTimestamp;
+        if (!m_LatestParkourCycle || m_LatestParkourCycle->m_Timestamp != currentTimestamp)
+            m_LatestParkourCycle = std::make_shared<ParkourCycleLogged>(currentTimestamp);
+        return m_LatestParkourCycle;
+    }
+    // Doesn't construct a new cycle.
+    std::shared_ptr<ParkourCycleLogged> GetLatestParkourCycle() { return m_LatestParkourCycle; }
+
+    static ParkourLog& GetSingleton() { static ParkourLog singleton; return singleton; }
+};
+std::shared_ptr<ParkourCycleLogged> GetCurrentLoggedParkourCycle()
+{
+    return ParkourLog::GetSingleton().GetCurrentLoggedParkourCycle();
+}
+void DrawParkourDebugWindow()
+{
+    ParkourLog& parkourLog = ParkourLog::GetSingleton();
+    std::shared_ptr<ParkourCycleLogged> latestCycle = parkourLog.GetLatestParkourCycle();
+    if (latestCycle)
+    {
+        Matrix4f tr;
+        tr.setRotation(MakeRotationAlignZWithVector(latestCycle->m_DirectionOfMovementInputWorldSpace));
+        tr = Matrix4f::createTranslation(latestCycle->m_LocationOfOrigin) * tr;
+        ImGui3D::DrawWireModelTransform(ImGui3D::GetArrowModel(), tr);
+    }
+    ImGui::GetIO().MouseDrawCursor = true;
+    ImGui::SetNextWindowPos(ImVec2{ 170, 290 }, ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2{ 362, 520 }, ImGuiCond_FirstUseEver);
+    if (ImGuiCTX::Window _wnd{ "Parkour Debug" })
+    {
+        ImGui::Text("Latest parkour cycle:");
+        if (!latestCycle)
+        {
+            ImGui::Text("Nothing yet.");
+            return;
+        }
+        std::lock_guard _lock{ latestCycle->m_Mutex };
+        ImGui::Text(
+            "Timestamp: %llu\n"
+            "Num actions: %d\n"
+            , latestCycle->m_Timestamp
+            , latestCycle->m_Actions.size()
+        );
+        {
+            std::optional<EnumParkourAction> selectedType;
+            std::set<EnumParkourAction> actionTypesWithAtLeastOneNondiscarded;
+            auto allMoves_tr = latestCycle->m_Actions
+                | std::views::transform([&](std::unique_ptr<ParkourActionLogged>& action)
+                    {
+                        if (action->m_IsTheSelectedBestMatch)
+                            selectedType = action->m_ActionType;
+                        const bool wasDiscarded = action->m_IsDiscarded_immediatelyAfterCreation || action->m_IsDiscarded_becauseFitnessWeightTooLow;
+                        if (!wasDiscarded)
+                            actionTypesWithAtLeastOneNondiscarded.insert(action->m_ActionType);
+                        return action->m_ActionType;
+                    });
+            std::set<EnumParkourAction> allMoves(allMoves_tr.begin(), allMoves_tr.end());
+
+            if (allMoves.size())
+            {
+                ImGui::Text(
+                    "All move types: %d"
+                    , allMoves.size()
+                );
+                const ImVec4 colorSelectedType = ImVec4(1.0f, 0.8f, 0.3f, 1.0f);
+                const ImVec4 colorAllDiscarded = ImVec4(1.0f, 0.4f, 0.4f, 1.0f);
+                for (const EnumParkourAction actionType : allMoves)
+                {
+                    std::optional<ImGuiCTX::PushStyleColor> selectedActionTextColor;
+                    const bool isTheSelectedType = actionType == selectedType;
+                    if (isTheSelectedType) selectedActionTextColor.emplace(ImGuiCol_Text, colorSelectedType);
+                    else if (const bool allMovesOfThisTypeWereDiscarded = !actionTypesWithAtLeastOneNondiscarded.contains(actionType))
+                        selectedActionTextColor.emplace(ImGuiCol_Text, colorAllDiscarded);
+                    ImGui::Text(
+                        "%3d == %s"
+                        , actionType
+                        , enum_reflection<EnumParkourAction>::GetString(actionType)
+                    );
+                }
+            }
+        }
+    }
+}
+bool CreateParkourActionAndPerformInitialTestIfFits_A_FullReplacement(
     EnumParkourAction actionType,
     uint64 a2,
     __m128* a3,
@@ -447,11 +614,11 @@ bool CreateParkourActionAndPerformInitialTestIfFits_FullReplacement(
     float a12,
     float p_epsilon_mb)
 {
-    ParkourAction_Commonbase* newAction = ConstructParkourAction(actionType, a2, a3, p_movementVecWorld_mb, a6, a7, a8, p_currentLedge_mb);
+    ParkourAction_Commonbase* newAction = ConstructParkourAction_A(actionType, a2, a3, p_movementVecWorld_mb, a6, a7, a8, p_currentLedge_mb);
     *p_newAction_out = newAction;
     if (!newAction) return false;
     if (p_player)
-        sub_14015A570(&newAction->shared_player, p_player);
+        AvailableParkourAction__InitializePlayerRef(&newAction->shared_player, p_player);
     GET_AND_CAST_FANCY_FUNC(*newAction, ParkourActionKnownFancyVFuncs::Set2FloatsAfterCreation)(newAction, a12, p_epsilon_mb);
     bool isActionFits = GET_AND_CAST_FANCY_FUNC(*newAction, ParkourActionKnownFancyVFuncs::InitialTestIfActionFits)(
         newAction,
@@ -464,6 +631,7 @@ bool CreateParkourActionAndPerformInitialTestIfFits_FullReplacement(
         p_player,
         p_currentLedge_mb);
     bool isDiscarded = !isActionFits;
+    GetCurrentLoggedParkourCycle()->LogActionInitialCreation(*newAction, isDiscarded);
     if (isDiscarded)
     {
         newAction->Unk008_Destroy(0);
@@ -473,19 +641,138 @@ bool CreateParkourActionAndPerformInitialTestIfFits_FullReplacement(
     }
     return true;
 }
+bool CreateParkourActionAndPerformInitialTestIfFits_B_FullReplacement(
+    EnumParkourAction actionType,
+    uint64 a2,
+    __m128* a3,
+    __m128* p_movementVecWorld_mb,
+    float a5, int a6, char a7, uint64 a8, uint64 a9,
+    Entity* p_player,
+    uint64 p_currentLedge_mb,
+    ParkourAction_Commonbase** const p_newAction_out,
+    float a13,
+    float p_epsilon_mb)
+{
+    ParkourAction_Commonbase* newAction = ConstructParkourAction_B(actionType, a2, a3, p_movementVecWorld_mb, a6, a7, a8, a9, p_player, p_currentLedge_mb);
+    *p_newAction_out = newAction;
+    if (!newAction) return false;
+    if (p_player)
+        AvailableParkourAction__InitializePlayerRef(&newAction->shared_player, p_player);
+    GET_AND_CAST_FANCY_FUNC(*newAction, ParkourActionKnownFancyVFuncs::Set2FloatsAfterCreation)(newAction, a13, p_epsilon_mb);
+    bool isActionFits = GET_AND_CAST_FANCY_FUNC(*newAction, ParkourActionKnownFancyVFuncs::InitialTestIfActionFits)(
+        newAction,
+        a2,
+        a3,
+        p_movementVecWorld_mb,
+        a5,
+        a6,
+        a9,
+        p_player,
+        p_currentLedge_mb);
+    bool isDiscarded = !isActionFits;
+    GetCurrentLoggedParkourCycle()->LogActionInitialCreation(*newAction, isDiscarded);
+    if (isDiscarded)
+    {
+        newAction->Unk008_Destroy(0);
+        ACU::Memory::ACUDeallocateBytes((byte*)newAction);
+        *p_newAction_out = nullptr;
+        return false;
+    }
+    return true;
+}
+int SortAndSelectBestMatchingAction_FullReplacement(
+    ParkourTester* parkourTester,
+    __m128* p_locationOfOrigin,
+    uint64 a3,
+    __m128* p_directionOfMovementInputWorldSpace,
+    float a5,
+    int a6,
+    char a7,
+    __int64 a8,
+    SmallArray<ParkourAction_Commonbase*>& p_parkourSensorsResults)
+{
+    std::shared_ptr<ParkourCycleLogged> currentCycle = GetCurrentLoggedParkourCycle();
+    currentCycle->LogActionsBeforeFiltering(p_parkourSensorsResults);
+    currentCycle->m_LocationOfOrigin = *(Vector3f*)p_locationOfOrigin;
+    currentCycle->m_DirectionOfMovementInputWorldSpace = *(Vector3f*)p_directionOfMovementInputWorldSpace;
+
+    if (p_parkourSensorsResults.size > 0)
+    {
+        for (int i = 0; i < p_parkourSensorsResults.size; i++)
+        {
+            AvailableParkourAction* action = p_parkourSensorsResults[i];
+            float fitness = GET_AND_CAST_FANCY_FUNC(*action, ParkourActionKnownFancyVFuncs::GetFitness)(action);
+            bool isDiscarded_becauseFitnessWeightTooLow = fabsf(fitness) <= 0.0000099999997;
+            currentCycle->LogActionBeforeFiltering(*action, isDiscarded_becauseFitnessWeightTooLow);
+            if (isDiscarded_becauseFitnessWeightTooLow)
+            {
+                SmallArray_POD__RemoveGeneric(&p_parkourSensorsResults, i--, 8u);
+            }
+        }
+        // Some of the elements of the array are removed, sooo...
+        // where are the deallocations of the elements?
+        // Maybe it's just a copied array of nonowning pointers.
+    }
+    {
+        // Idk what this call is, doesn't seem to do anything.
+        __m128 smthOut;
+        GET_AND_CAST_FANCY_FUNC(*parkourTester, ParkourTesterKnownFancyVFuncs::ParkourTester_FancyVFunc_0x16)(&smthOut, *parkourTester, p_locationOfOrigin, p_directionOfMovementInputWorldSpace);
+    }
+    {
+        struct ActionWeights
+        {
+            float fitness, defaultWeight, totalWeight;
+        };
+        auto GetActionWeights = [](ParkourTester& parkourTester, AvailableParkourAction& action) -> ActionWeights {
+            float fitness = GET_AND_CAST_FANCY_FUNC(action, ParkourActionKnownFancyVFuncs::GetFitness)(&action);
+            float defaultWeight = GET_AND_CAST_FANCY_FUNC(parkourTester, ParkourTesterKnownFancyVFuncs::GetDefaultWeightForAction)(parkourTester, action);
+            float totalWeight = fitness * defaultWeight;
+
+            return { fitness, defaultWeight, totalWeight };
+            };
+        auto SortByDescendingTotalFitness = [&](AvailableParkourAction* actionFirst, AvailableParkourAction* action2nd) {
+            ActionWeights weights1st = GetActionWeights(*parkourTester, *actionFirst);
+            ActionWeights weights2nd = GetActionWeights(*parkourTester, *action2nd);
+            return weights1st.totalWeight > weights2nd.totalWeight;
+            };
+        std::sort(p_parkourSensorsResults.begin(), p_parkourSensorsResults.end(), SortByDescendingTotalFitness);
+    }
+    int selectedBestMatch = -1; // "-1" means "no move is selected".
+    for (uint16 i = 0; i < p_parkourSensorsResults.size; i++)
+    {
+        AvailableParkourAction* action = p_parkourSensorsResults[i];
+        const bool isPassedFinalFilter1 = AvailableParkourAction__FinalFilter1(action, p_locationOfOrigin, a8, parkourTester->entity);
+        currentCycle->LogActionFinalFilter1(*p_parkourSensorsResults[i], isPassedFinalFilter1);
+        if (!isPassedFinalFilter1) continue;
+        const bool isPassedFinalFilter2 = AvailableParkourAction__FinalFilter2(action, parkourTester->entity, a8);
+        currentCycle->LogActionFinalFilter2(*p_parkourSensorsResults[i], isPassedFinalFilter2);
+        if (!isPassedFinalFilter2) continue;
+
+        // The action with the greatest "totalWeight" that passes these preceding two tests
+        // is selected.
+        selectedBestMatch = i;
+        {
+            // Original implementation makes another call to "GetFitness()" and does nothing with the result.
+            // Are there any side effects to this? Idk.
+            //float __fitness = GET_AND_CAST_FANCY_FUNC(*action, ParkourActionKnownFancyVFuncs::GetFitness)(action);
+        }
+        currentCycle->LogActionWhenReturningBestMatch(*p_parkourSensorsResults[i]);
+        break;
+    }
+    int result = selectedBestMatch;
+    return result;
+}
 ParkourDebuggingPatch::ParkourDebuggingPatch()
 {
-    uintptr_t whenReturningBestMatchingMove = 0x140133D4B;
-    PresetScript_CCodeInTheMiddle(whenReturningBestMatchingMove, 5,
-        WhenReturningBestMatchingMove_LogIt, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
-    uintptr_t whenGatheredMoves_FilterFnPrologue = 0x140133B00;
-    PresetScript_CCodeInTheMiddle(whenGatheredMoves_FilterFnPrologue, 7,
-        WhenGatheredMoves_FilterFnPrologue_LogBeforeFiltered, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
-    uintptr_t whenPerformingFinalFilter1OnSortedMoves = 0x140133D16;
-    PresetScript_CCodeInTheMiddle(whenPerformingFinalFilter1OnSortedMoves, 5,
-        WhenPerformingFinalFilter1OnSortedMoves_ForceTurnInPalaisDeLuxembourgCorners, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, false);
+    //uintptr_t whenPerformingFinalFilter1OnSortedMoves = 0x140133D16;
+    //PresetScript_CCodeInTheMiddle(whenPerformingFinalFilter1OnSortedMoves, 5,
+    //    WhenPerformingFinalFilter1OnSortedMoves_ForceTurnInPalaisDeLuxembourgCorners, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, false);
 
-    PresetScript_ReplaceFunctionAtItsStart(0x1401D1CF0, CreateParkourActionAndPerformInitialTestIfFits_FullReplacement);
+    // Most "action types" are created from this call.
+    PresetScript_ReplaceFunctionAtItsStart(0x1401D1CF0, CreateParkourActionAndPerformInitialTestIfFits_A_FullReplacement);
+    // Several "Wallrun up" actions get created from this call.
+    PresetScript_ReplaceFunctionAtItsStart(0x1401D1E50, CreateParkourActionAndPerformInitialTestIfFits_B_FullReplacement);
+    PresetScript_ReplaceFunctionAtItsStart(0x140133B00, SortAndSelectBestMatchingAction_FullReplacement);
 }
 void ParkourDebuggingPatch::OnBeforeActivate()
 {

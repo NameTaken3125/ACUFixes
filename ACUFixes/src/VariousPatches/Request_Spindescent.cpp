@@ -23,9 +23,6 @@ class EntityGroup;
 class ParkourAction_Spindescent : public AvailableParkourAction
 {
 public:
-    Vector4f handsLocationFrom; //0x0010
-    char pad_0020[16]; //0x0020
-    Vector4f handsLocationTo_center_mb; //0x0030
     char pad_0040[16]; //0x0040
     Vector4f handsLocationTo_right_mb; //0x0050
     Vector4f handsLocationTo_left_mb; //0x0060
@@ -123,7 +120,7 @@ CustomSelectedParkourMove SelectBestMatchingMoveIdx_ExtraProcessing_CustomSelect
                 // This can increase the _actual_ target location, so the spinning descent animation
                 // can be played while going upwards, if you want to do that for some reason.
                 Vector4f delta = { 0, 0, 4, 0 };
-                spindescent->handsLocationTo_center_mb += delta;
+                spindescent->locationAnchorDest += delta;
                 spindescent->handsLocationTo_right_mb += delta;
                 spindescent->handsLocationTo_left_mb += delta;
                 spindescent->vec180 += delta;
@@ -318,6 +315,39 @@ void WhenPerformingScanFor_BackEject_AlsoScanForWallToHang(AllRegisters* params)
         ACU::Memory::SmallArrayAppend(*(SmallArray<ParkourAction_Commonbase*>*)params->rbx_, *(ParkourAction_Commonbase**)(params->GetRSP() + 0x70));
     }
 }
+#include "ACU/Parkour_WhileOnWallSystem.h"
+constexpr uint64 climbFacadeTester_FancyVTable_default = 0x1439E08D0;
+constexpr uint64 climbFacadeTester_FancyVTable_baseclassThatHasSidehopToSwing = 0x1439FA1A0;
+void WhenStartingWallingCycle_ChangeFVTables(AllRegisters* params)
+{
+    WhileOnWallSystem* hsWalling = (WhileOnWallSystem*)params->rbx_;
+    void* climbFacadeTester = hsWalling->climbFacade;
+    uint64& climbFacadeFancyVTable = *(uint64*)((uint64)climbFacadeTester + 8);
+    const bool useSidehopToSwing = true;
+    if (useSidehopToSwing)
+    {
+        climbFacadeFancyVTable = climbFacadeTester_FancyVTable_baseclassThatHasSidehopToSwing;
+    }
+    else
+    {
+        climbFacadeFancyVTable = climbFacadeTester_FancyVTable_default;
+    }
+}
+void WhenStartingFailedWallrunCycle_ChangeFVTables(AllRegisters* params)
+{
+    uint64 hsFailedWallrun = params->rsi_;
+    uint64 climbFacadeTester = *(uint64*)(hsFailedWallrun + 0x1D0);
+    uint64& climbFacadeFancyVTable = *(uint64*)(climbFacadeTester + 8);
+    const bool useSidehopToSwing = true;
+    if (useSidehopToSwing)
+    {
+        climbFacadeFancyVTable = climbFacadeTester_FancyVTable_baseclassThatHasSidehopToSwing;
+    }
+    else
+    {
+        climbFacadeFancyVTable = climbFacadeTester_FancyVTable_default;
+    }
+}
 ParkourActionsExtraProcessing::ParkourActionsExtraProcessing()
 {
     uintptr_t whenDecidingBestMatchingMove = 0x140134984;
@@ -331,6 +361,11 @@ ParkourActionsExtraProcessing::ParkourActionsExtraProcessing()
             WhenPerformingScanFor_ClimbFacade_AlsoScanForWallToHang, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
         PresetScript_CCodeInTheMiddle(0x140137A84, 11,
             WhenPerformingScanFor_BackEject_AlsoScanForWallToHang, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
+
+        PresetScript_CCodeInTheMiddle(0x141A4D7CB, 7,
+            WhenStartingWallingCycle_ChangeFVTables, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
+        PresetScript_CCodeInTheMiddle(0x141A1BA0C, 7,
+            WhenStartingFailedWallrunCycle_ChangeFVTables, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
     }
 #endif
 }
