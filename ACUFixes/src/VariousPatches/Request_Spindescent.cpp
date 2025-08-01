@@ -23,7 +23,6 @@ class EntityGroup;
 class ParkourAction_Spindescent : public AvailableParkourAction
 {
 public:
-    char pad_0040[16]; //0x0040
     Vector4f handsLocationTo_right_mb; //0x0050
     Vector4f handsLocationTo_left_mb; //0x0060
     Vector4f dir70; //0x0070

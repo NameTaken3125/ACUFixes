@@ -37,10 +37,11 @@ public:
 	// If climbing wall, this is where your hands were before the move started. If on beam, this is where your feet were.
 	// If vaulting, this is where your feet start.
 	Vector4f locationAnchorSrc; //0x0010
-	Vector4f orientation_mb_20; //0x0020
+	Vector4f direction_20; //0x0020
 	// If climbing wall, this is where your hands grab after finishing the move. If on beam, this is where your feet land.
 	// If vaulting, this is where you grab to begin the vault, not where you land.
 	Vector4f locationAnchorDest; //0x0030
+	Vector4f direction_40; //0x0040
 
     // @helper_functions
     EnumParkourAction GetEnumParkourAction();

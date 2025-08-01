@@ -32,7 +32,6 @@ assert_sizeof(PlayerRefInParkourAction, 0x18);
 class ParkourAction_Commonbase : public AvailableParkourAction
 {
 public:
-    char pad_0040[16]; //0x0040
     Vector4f handsLocationTo_right_mb; //0x0050
     Vector4f handsLocationTo_left_mb; //0x0060
     Vector4f dir70; //0x0070
@@ -360,19 +359,33 @@ void WhenPerformingFinalFilter1OnSortedMoves_ForceTurnInPalaisDeLuxembourgCorner
 class ParkourActionLogged
 {
 public:
-    AvailableParkourAction* m_ActionPtr; // Used for identification within the log, will definitely become invalid after the "parkour cycle" finishes execution.
-    ParkourActionLogged(AvailableParkourAction& action)
+    // Used for identification within the log, will definitely become invalid after the "parkour cycle" finishes execution.
+    // Note that this address probably isn't a good enough identifier on its own.
+    // The actions can be discarded immediately after creation, so it's possible
+    // that several different actions will be created at the same address within the same cycle.
+    // Though I guess no more than one can be not-discarded-immediately-after-creation.
+    AvailableParkourAction* m_ActionPtr;
+    ParkourActionLogged(AvailableParkourAction& action, size_t indexInOrderOfCreationInCycle)
         : m_ActionPtr(&action)
         , m_ActionType(action.GetEnumParkourAction())
-        , m_Location((Vector3f&)action.locationAnchorSrc)
+        , m_LocationSrc((Vector3f&)action.locationAnchorSrc)
+        , m_LocationDst((Vector3f&)action.locationAnchorDest)
+        , m_DirSrc((Vector3f&)action.direction_20)
+        , m_DirDst((Vector3f&)action.direction_40)
+        , m_Index(indexInOrderOfCreationInCycle)
     {}
+    size_t m_Index; // To keep track of the order of creation.
 
     EnumParkourAction m_ActionType;
-    Vector3f m_Location;
+    Vector3f m_LocationSrc; // I think these are the same in every action of the parkour cycle.
+    Vector3f m_DirSrc;      // I think these are the same in every action of the parkour cycle.
+    Vector3f m_LocationDst;
+    Vector3f m_DirDst;
     bool m_IsDiscarded_immediatelyAfterCreation = false;
     std::optional<float> m_FitnessWeight;
     bool m_IsDiscarded_becauseFitnessWeightTooLow = false;
     std::optional<float> m_DefaultWeight;
+    std::optional<float> m_TotalWeight;
     std::optional<bool> m_ResultOfFinalFilter1;
     std::optional<bool> m_ResultOfFinalFilter2;
     bool m_IsTheSelectedBestMatch = false;
@@ -384,33 +397,37 @@ public:
     ParkourCycleLogged(uint64 timestamp) : m_Timestamp(timestamp) {}
     std::vector<std::unique_ptr<ParkourActionLogged>> m_Actions;
     std::mutex m_Mutex;
+    bool m_IsSortingDirty = true;
 
     Vector3f m_LocationOfOrigin;
     Vector3f m_DirectionOfMovementInputWorldSpace;
 
     void LogActionInitialCreation(AvailableParkourAction& newAction, bool isDiscarded_immediatelyAfterCreation);
-    void LogActionBeforeFiltering(AvailableParkourAction& action, bool isDiscarded_becauseFitnessWeightTooLow);
     void LogActionsBeforeFiltering(SmallArray<ParkourAction_Commonbase*>& allActionsBeforeFiltering);
+    void LogActionBeforeFiltering(AvailableParkourAction& action, float fitness, bool isDiscarded_becauseFitnessWeightTooLow);
+    void LogActionWeights(AvailableParkourAction& action, float defaultWeight, float totalWeight);
     void LogActionFinalFilter1(AvailableParkourAction& action, bool resultOfFinalFilter1);
     void LogActionFinalFilter2(AvailableParkourAction& action, bool resultOfFinalFilter2);
     void LogActionWhenReturningBestMatch(AvailableParkourAction& bestMatchMove);
 
 private:
+    size_t m_IndexOfNextLoggedAction = 0; // To keep track of the order of creation.
     ParkourActionLogged& GetOrMakeRecordForAction(AvailableParkourAction& action)
     {
         std::lock_guard _lock{ m_Mutex };
+        m_IsSortingDirty = true; // Assume something gets modified after this call.
         for (auto& record : m_Actions)
         {
             if (record->m_ActionPtr != &action) continue;
             if (record->m_IsDiscarded_immediatelyAfterCreation) continue;
             return *record;
         }
-        return *m_Actions.emplace_back(std::make_unique<ParkourActionLogged>(action));
+        return *m_Actions.emplace_back(std::make_unique<ParkourActionLogged>(action, m_IndexOfNextLoggedAction++));
     }
     ParkourActionLogged& MakeRecordForAction(AvailableParkourAction& action)
     {
         std::lock_guard _lock{ m_Mutex };
-        return *m_Actions.emplace_back(std::make_unique<ParkourActionLogged>(action));
+        return *m_Actions.emplace_back(std::make_unique<ParkourActionLogged>(action, m_IndexOfNextLoggedAction++));
     }
 
 };
@@ -419,10 +436,17 @@ void ParkourCycleLogged::LogActionInitialCreation(AvailableParkourAction& action
     ParkourActionLogged& recordForAction = MakeRecordForAction(action);
     recordForAction.m_IsDiscarded_immediatelyAfterCreation = isDiscarded_immediatelyAfterCreation;
 }
-void ParkourCycleLogged::LogActionBeforeFiltering(AvailableParkourAction& action, bool isDiscarded_becauseFitnessWeightTooLow)
+void ParkourCycleLogged::LogActionBeforeFiltering(AvailableParkourAction& action, float fitness, bool isDiscarded_becauseFitnessWeightTooLow)
 {
     ParkourActionLogged& recordForAction = this->GetOrMakeRecordForAction(action);
+    recordForAction.m_FitnessWeight = fitness;
     recordForAction.m_IsDiscarded_becauseFitnessWeightTooLow = isDiscarded_becauseFitnessWeightTooLow;
+}
+void ParkourCycleLogged::LogActionWeights(AvailableParkourAction& action, float defaultWeight, float totalWeight)
+{
+    ParkourActionLogged& recordForAction = this->GetOrMakeRecordForAction(action);
+    recordForAction.m_DefaultWeight = defaultWeight;
+    recordForAction.m_TotalWeight = totalWeight;
 }
 void ParkourCycleLogged::LogActionsBeforeFiltering(SmallArray<ParkourAction_Commonbase*>& allActionsBeforeFiltering)
 {
@@ -533,6 +557,10 @@ std::shared_ptr<ParkourCycleLogged> GetCurrentLoggedParkourCycle()
 {
     return ParkourLog::GetSingleton().GetCurrentLoggedParkourCycle();
 }
+static bool CompareOptionalFloats(std::optional<float> a, std::optional<float> b)
+{
+    return a < b;
+}
 void DrawParkourDebugWindow()
 {
     ParkourLog& parkourLog = ParkourLog::GetSingleton();
@@ -549,33 +577,49 @@ void DrawParkourDebugWindow()
     ImGui::SetNextWindowSize(ImVec2{ 362, 520 }, ImGuiCond_FirstUseEver);
     if (ImGuiCTX::Window _wnd{ "Parkour Debug" })
     {
-        ImGui::Text("Latest parkour cycle:");
-        if (!latestCycle)
-        {
-            ImGui::Text("Nothing yet.");
-            return;
-        }
-        std::lock_guard _lock{ latestCycle->m_Mutex };
-        ImGui::Text(
-            "Timestamp: %llu\n"
-            "Num actions: %d\n"
-            , latestCycle->m_Timestamp
-            , latestCycle->m_Actions.size()
-        );
-        {
+        auto DrawSummaryTab = [&]() {
+            ImGui::Text("Latest parkour cycle:");
+            if (!latestCycle)
+            {
+                ImGui::Text("Nothing yet.");
+                return;
+            }
+            std::lock_guard _lock{ latestCycle->m_Mutex };
             std::optional<EnumParkourAction> selectedType;
             std::set<EnumParkourAction> actionTypesWithAtLeastOneNondiscarded;
+            size_t numNotDiscardedImmediately = 0;
+            size_t numNotDiscarded = 0;
             auto allMoves_tr = latestCycle->m_Actions
                 | std::views::transform([&](std::unique_ptr<ParkourActionLogged>& action)
                     {
                         if (action->m_IsTheSelectedBestMatch)
                             selectedType = action->m_ActionType;
+                        const bool wasDiscardedImmediately = action->m_IsDiscarded_immediatelyAfterCreation;
+                        if (!wasDiscardedImmediately)
+                            numNotDiscardedImmediately++;
                         const bool wasDiscarded = action->m_IsDiscarded_immediatelyAfterCreation || action->m_IsDiscarded_becauseFitnessWeightTooLow;
                         if (!wasDiscarded)
+                        {
+                            numNotDiscarded++;
                             actionTypesWithAtLeastOneNondiscarded.insert(action->m_ActionType);
+                        }
                         return action->m_ActionType;
                     });
             std::set<EnumParkourAction> allMoves(allMoves_tr.begin(), allMoves_tr.end());
+            ImGui::Text(
+                "Timestamp: %llu\n"
+                "Num actions                : %d\n"
+                "Num after initial discard  : %d\n"
+                "Num with nonzero fitness   : %d\n"
+                "Location   : %8.3f,%8.3f,%8.3f\n"
+                , latestCycle->m_Timestamp
+                , latestCycle->m_Actions.size()
+                , numNotDiscardedImmediately
+                , numNotDiscarded
+                , latestCycle->m_LocationOfOrigin.x
+                , latestCycle->m_LocationOfOrigin.y
+                , latestCycle->m_LocationOfOrigin.z
+            );
 
             if (allMoves.size())
             {
@@ -598,6 +642,175 @@ void DrawParkourDebugWindow()
                         , enum_reflection<EnumParkourAction>::GetString(actionType)
                     );
                 }
+            }
+            };
+        auto DrawDetailsTab = [&]() {
+            if (!latestCycle) return;
+            std::lock_guard _lock{ latestCycle->m_Mutex };
+            const ImVec4 colIsSelected = ImVec4(1.0f, 0.8f, 0.3f, 1.0f);
+            const ImVec4 colIsDiscarded = ImVec4(1.0f, 0.4f, 0.4f, 1.0f);
+            enum MoveDetailsColumns
+            {
+                Index = 0,
+                Type,
+                TypeReadable,
+                IsDiscardedImmediately,
+                Fitness,
+                IsDiscardedBecauseFitnessTooLow,
+                DefaultWeight,
+                TotalWeight,
+                IsChosen,
+
+                MoveDetailsColumns_COUNT,
+            };
+            if (ImGui::BeginTable("Moves details", MoveDetailsColumns_COUNT,
+                ImGuiTableFlags_Borders
+                | ImGuiTableFlags_Resizable
+                | ImGuiTableFlags_RowBg
+                | ImGuiTableFlags_Sortable
+                | ImGuiTableFlags_SizingFixedFit
+            )) {
+                ImGui::TableSetupColumn("Index");
+                ImGui::TableSetupColumn("Type");
+                ImGui::TableSetupColumn("TypeReadable");
+                ImGui::TableSetupColumn("IsDiscardedImmediately");
+                ImGui::TableSetupColumn("Fitness");
+                ImGui::TableSetupColumn("IsDiscardedBecauseFitnessTooLow");
+                ImGui::TableSetupColumn("DefaultWeight");
+                ImGui::TableSetupColumn("TotalWeight");
+                ImGui::TableSetupColumn("IsChosen");
+                ImGui::TableHeadersRow();
+                if (ImGuiTableSortSpecs* sortSpecs = ImGui::TableGetSortSpecs())
+                {
+                    if ((latestCycle->m_IsSortingDirty || sortSpecs->SpecsDirty) && sortSpecs->SpecsCount > 0)
+                    {
+                        sortSpecs->SpecsDirty = false;
+                        latestCycle->m_IsSortingDirty = false;
+                        const ImGuiTableColumnSortSpecs& primSort = sortSpecs->Specs[0];
+                        using Act_t = std::unique_ptr<ParkourActionLogged>;
+                        auto ApplySort = [&]<std::invocable<Act_t&, Act_t&> Pred>(Pred&& predicate) {
+                            if (primSort.SortDirection == ImGuiSortDirection_None) return;
+                            const bool isAscending = primSort.SortDirection == ImGuiSortDirection_Ascending;
+                            auto& acts = latestCycle->m_Actions;
+                            using Act_t = std::unique_ptr<ParkourActionLogged>;
+                            auto adjustedPredicate = [&](Act_t& a, Act_t& b) { return isAscending ? predicate(a, b) : predicate(b, a); };
+                            std::sort(acts.begin(), acts.end(), adjustedPredicate);
+                            };
+                        switch (static_cast<MoveDetailsColumns>(primSort.ColumnIndex))
+                        {
+                        case MoveDetailsColumns::Index:
+                            ApplySort([](Act_t& a, Act_t& b) { return a->m_Index < b->m_Index; });
+                            break;
+                        case MoveDetailsColumns::Type:
+                            ApplySort([](Act_t& a, Act_t& b) { return a->m_ActionType < b->m_ActionType; });
+                            break;
+                        case MoveDetailsColumns::TypeReadable:
+                            ApplySort([](Act_t& a, Act_t& b) {
+                                return std::string_view(enum_reflection<EnumParkourAction>::GetString(a->m_ActionType))
+                                    < std::string_view(enum_reflection<EnumParkourAction>::GetString(b->m_ActionType));
+                                    });
+                            break;
+                        case MoveDetailsColumns::IsDiscardedImmediately:
+                            ApplySort([](Act_t& a, Act_t& b) { return a->m_IsDiscarded_immediatelyAfterCreation < b->m_IsDiscarded_immediatelyAfterCreation; });
+                            break;
+                        case MoveDetailsColumns::Fitness:
+                            ApplySort([](Act_t& a, Act_t& b) { return CompareOptionalFloats(a->m_FitnessWeight, b->m_FitnessWeight); });
+                            break;
+                        case MoveDetailsColumns::IsDiscardedBecauseFitnessTooLow:
+                            ApplySort([](Act_t& a, Act_t& b) { return a->m_IsDiscarded_becauseFitnessWeightTooLow < b->m_IsDiscarded_becauseFitnessWeightTooLow; });
+                            break;
+                        case MoveDetailsColumns::DefaultWeight:
+                            ApplySort([](Act_t& a, Act_t& b) { return CompareOptionalFloats(a->m_DefaultWeight, b->m_DefaultWeight); });
+                            break;
+                        case MoveDetailsColumns::TotalWeight:
+                            ApplySort([](Act_t& a, Act_t& b) { return CompareOptionalFloats(a->m_TotalWeight, b->m_TotalWeight); });
+                            break;
+                        case MoveDetailsColumns::IsChosen:
+                            ApplySort([](Act_t& a, Act_t& b) { return a->m_IsTheSelectedBestMatch < b->m_IsTheSelectedBestMatch; });
+                            break;
+                        }
+                    }
+                }
+                for (auto& action : latestCycle->m_Actions)
+                {
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(MoveDetailsColumns::Index);
+                    ImGui::Text("%3d", action->m_Index);
+                    ImGui::TableSetColumnIndex(MoveDetailsColumns::Type);
+                    ImGui::Text("%3d", action->m_ActionType);
+                    ImGui::TableSetColumnIndex(MoveDetailsColumns::TypeReadable);
+                    ImGui::Text("%s", enum_reflection<EnumParkourAction>::GetString(action->m_ActionType));
+                    {
+                        static ImGuiTextBuffer buf; buf.resize(0);
+                        buf.appendf(
+                            "%8.3f,%8.3f,%8.3f\n"
+                            "%8.3f,%8.3f,%8.3f\n"
+                            "%8.3f,%8.3f,%8.3f\n"
+                            "%8.3f,%8.3f,%8.3f\n"
+                            , action->m_LocationSrc.x, action->m_LocationSrc.y, action->m_LocationSrc.z
+                            , action->m_DirSrc.x, action->m_DirSrc.y, action->m_DirSrc.z
+                            , action->m_LocationDst.x
+                            , action->m_LocationDst.y
+                            , action->m_LocationDst.z
+                            , action->m_DirDst.x
+                            , action->m_DirDst.y
+                            , action->m_DirDst.z
+                        );
+                        ImGui::SetItemTooltip(buf.c_str());
+                        if (ImGui::IsItemClicked()) ImGui::SetClipboardText(buf.c_str());
+                    }
+                    ImGui::TableSetColumnIndex(MoveDetailsColumns::IsDiscardedImmediately);
+                    {
+                        std::optional<ImGuiCTX::PushStyleColor> coloredText;
+                        if (action->m_IsDiscarded_immediatelyAfterCreation)
+                        {
+                            coloredText.emplace(ImGuiCol_Text, colIsDiscarded);
+                            ImGui::Text("+");
+                        }
+                    }
+                    ImGui::TableSetColumnIndex(MoveDetailsColumns::Fitness);
+                    if (action->m_FitnessWeight)
+                    {
+                        ImGui::Text("%f", *action->m_FitnessWeight);
+                    }
+                    ImGui::TableSetColumnIndex(MoveDetailsColumns::IsDiscardedBecauseFitnessTooLow);
+                    {
+                        std::optional<ImGuiCTX::PushStyleColor> coloredText;
+                        if (action->m_IsDiscarded_becauseFitnessWeightTooLow)
+                        {
+                            coloredText.emplace(ImGuiCol_Text, colIsDiscarded);
+                            ImGui::Text("+");
+                        }
+                    }
+                    ImGui::TableSetColumnIndex(MoveDetailsColumns::DefaultWeight);
+                    if (action->m_DefaultWeight)
+                    {
+                        ImGui::Text("%f", *action->m_DefaultWeight);
+                    }
+                    ImGui::TableSetColumnIndex(MoveDetailsColumns::TotalWeight);
+                    if (action->m_TotalWeight)
+                    {
+                        ImGui::Text("%f", *action->m_TotalWeight);
+                    }
+                    ImGui::TableSetColumnIndex(MoveDetailsColumns::IsChosen);
+                    {
+                        std::optional<ImGuiCTX::PushStyleColor> coloredText;
+                        if (action->m_IsTheSelectedBestMatch)
+                        {
+                            coloredText.emplace(ImGuiCol_Text, colIsSelected);
+                            ImGui::Text("+");
+                        }
+                    }
+                }
+                ImGui::EndTable();
+            }
+            };
+        if (ImGuiCTX::TabBar _tb{ "_pdtb" }) {
+            if (ImGuiCTX::Tab _tabSummary{ "Summary" }) {
+                DrawSummaryTab();
+            }
+            if (ImGuiCTX::Tab _tabMoveDetails{ "Details" }) {
+                DrawDetailsTab();
             }
         }
     }
@@ -703,7 +916,7 @@ int SortAndSelectBestMatchingAction_FullReplacement(
             AvailableParkourAction* action = p_parkourSensorsResults[i];
             float fitness = GET_AND_CAST_FANCY_FUNC(*action, ParkourActionKnownFancyVFuncs::GetFitness)(action);
             bool isDiscarded_becauseFitnessWeightTooLow = fabsf(fitness) <= 0.0000099999997;
-            currentCycle->LogActionBeforeFiltering(*action, isDiscarded_becauseFitnessWeightTooLow);
+            currentCycle->LogActionBeforeFiltering(*action, fitness, isDiscarded_becauseFitnessWeightTooLow);
             if (isDiscarded_becauseFitnessWeightTooLow)
             {
                 SmallArray_POD__RemoveGeneric(&p_parkourSensorsResults, i--, 8u);
@@ -733,6 +946,8 @@ int SortAndSelectBestMatchingAction_FullReplacement(
         auto SortByDescendingTotalFitness = [&](AvailableParkourAction* actionFirst, AvailableParkourAction* action2nd) {
             ActionWeights weights1st = GetActionWeights(*parkourTester, *actionFirst);
             ActionWeights weights2nd = GetActionWeights(*parkourTester, *action2nd);
+            currentCycle->LogActionWeights(*actionFirst, weights1st.defaultWeight, weights1st.totalWeight);
+            currentCycle->LogActionWeights(*action2nd, weights2nd.defaultWeight, weights2nd.totalWeight);
             return weights1st.totalWeight > weights2nd.totalWeight;
             };
         std::sort(p_parkourSensorsResults.begin(), p_parkourSensorsResults.end(), SortByDescendingTotalFitness);
