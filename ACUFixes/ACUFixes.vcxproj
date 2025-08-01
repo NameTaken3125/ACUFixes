@@ -214,11 +214,13 @@ if exist "$(ProjectDir)copy_output_to_directory.txt" (
     <ClCompile Include="src\AnimationTools\AnimGraphMods_BasicLayer.cpp" />
     <ClCompile Include="src\AnimationTools\Animtools_ImGui.cpp" />
     <ClCompile Include="src\ParkourDebugging\AvailableParkourAction.cpp" />
+    <ClCompile Include="src\ParkourDebugging\GenericHooksInParkourFiltering.cpp" />
     <ClCompile Include="src\ParkourDebugging\Hack_PickEntityToShoot.cpp" />
     <ClCompile Include="src\HacksContainer_DevExtras.cpp" />
     <ClCompile Include="src\ImGui3D\ImGui3DLayer.cpp" />
     <ClCompile Include="src\ParkourDebugging\LoggingTheHumanStates.cpp" />
     <ClCompile Include="src\ParkourDebugging\ParkourDebuggingPatch.cpp" />
+    <ClCompile Include="src\ParkourDebugging\ParkourLog.cpp" />
     <ClCompile Include="src\VariousPatches\Cheat_WeatherControls.cpp" />
     <ClCompile Include="src\AnimationTools\DumpAnimationGraph.cpp" />
     <ClCompile Include="src\VariousPatches\Hack_AllowCustomizeEquipment.cpp" />
@@ -285,11 +287,13 @@ if exist "$(ProjectDir)copy_output_to_directory.txt" (
     <ClInclude Include="src\AnimationTools\AtomGraphModsCommon.h" />
     <ClInclude Include="src\ParkourDebugging\AvailableParkourAction.h" />
     <ClInclude Include="src\ParkourDebugging\FancyVFunctionDescription.h" />
+    <ClInclude Include="src\ParkourDebugging\GenericHooksInParkourFiltering.h" />
     <ClInclude Include="src\ParkourDebugging\Hack_PickEntityToShoot.h" />
     <ClInclude Include="src\AnimationTools\Hack_RemovableHood_Animations.h" />
     <ClInclude Include="src\AnimationTools\NewHandlesFactory.h" />
     <ClInclude Include="src\ParkourDebugging\LoggingTheHumanStates.h" />
     <ClInclude Include="src\ParkourDebugging\ParkourDebuggingPatch.h" />
+    <ClInclude Include="src\ParkourDebugging\ParkourLog.h" />
     <ClInclude Include="src\ParkourDebugging\ParkourTester.h" />
     <ClInclude Include="src\Raycasting\Raycasting.h" />
     <ClInclude Include="src\Raycasting\RaycastPicker.h" />

@@ -10,6 +10,7 @@
 #include "ParkourDebugging/FancyVFunctionDescription.h"
 
 class Entity;
+class EntityGroup;
 
 // Macro used as an annotation that this name is the actual original name of class member/function,
 // confirmed because its CRC32 hash is found *somewhere nearby*.
@@ -23,6 +24,14 @@ struct ParkourAction_FancyVTable
     std::array<FancyVFunction, 0x78> fancyVirtuals;
 };
 
+struct PlayerRefInParkourAction
+{
+    SharedPtrNew<Entity>* shared_player;
+    uint64 qword_8;
+    uint32 dword_10;
+    char pad_14[4];
+};
+assert_sizeof(PlayerRefInParkourAction, 0x18);
 class AvailableParkourAction
 {
 public:
@@ -32,21 +41,38 @@ public:
 
     ParkourAction_FancyVTable* fancyVTable;
 
-	// @members
+    // @members
 
-	// If climbing wall, this is where your hands were before the move started. If on beam, this is where your feet were.
-	// If vaulting, this is where your feet start.
-	Vector4f locationAnchorSrc; //0x0010
-	Vector4f direction_20; //0x0020
-	// If climbing wall, this is where your hands grab after finishing the move. If on beam, this is where your feet land.
-	// If vaulting, this is where you grab to begin the vault, not where you land.
-	Vector4f locationAnchorDest; //0x0030
-	Vector4f direction_40; //0x0040
+    // If climbing wall, this is where your hands were before the move started. If on beam, this is where your feet were.
+    // If vaulting, this is where your feet start.
+    Vector4f locationAnchorSrc; //0x0010
+    Vector4f direction_20; //0x0020
+    // If climbing wall, this is where your hands grab after finishing the move. If on beam, this is where your feet land.
+    // If vaulting, this is where you grab to begin the vault, not where you land.
+    Vector4f locationAnchorDest; //0x0030
+    Vector4f direction_40; //0x0040
+    Vector4f handsLocationTo_right_mb; //0x0050
+    Vector4f handsLocationTo_left_mb; //0x0060
+    Vector4f dir70; //0x0070
+    Vector4f dir80; //0x0080
+    Vector4f directionFromTo; //0x0090
+    Vector4f dirA0; //0x00A0
+    char pad_00B0[16]; //0x00B0
+    float heightDifference; //0x00C0
+    float horizontalDifference; //0x00C4
+    float distance; //0x00C8
+    char pad_00CC[16]; //0x00CC
+    uint32 dword_DC; //0x00DC
+    char pad_00E0[8]; //0x00E0
+    SharedPtrNew<EntityGroup>* shared_buildingEntityGroup_mb; //0x00E8
+    char pad_00F0[16]; //0x00F0
+    PlayerRefInParkourAction shared_player; //0x0100
 
     // @helper_functions
     EnumParkourAction GetEnumParkourAction();
 };
 assert_offsetof(AvailableParkourAction, locationAnchorDest, 0x30);
+assert_offsetof(AvailableParkourAction, shared_player, 0x100);
 
 // FancyVFunctions in `ParkourAction_EnterWindow.fancyVtable8`:
 namespace ParkourActionKnownFancyVFuncs

@@ -23,23 +23,7 @@ class EntityGroup;
 class ParkourAction_Spindescent : public AvailableParkourAction
 {
 public:
-    Vector4f handsLocationTo_right_mb; //0x0050
-    Vector4f handsLocationTo_left_mb; //0x0060
-    Vector4f dir70; //0x0070
-    Vector4f dir80; //0x0080
-    Vector4f directionFromTo; //0x0090
-    Vector4f dirA0; //0x00A0
-    char pad_00B0[16]; //0x00B0
-    float heightDifference; //0x00C0
-    float horizontalDifference; //0x00C4
-    float distance; //0x00C8
-    char pad_00CC[16]; //0x00CC
-    uint32 dword_DC; //0x00DC
-    char pad_00E0[8]; //0x00E0
-    SharedPtrNew<EntityGroup>* shared_buildingEntityGroup_mb; //0x00E8
-    char pad_00F0[16]; //0x00F0
-    SharedPtrNew<Entity>* shared_player; //0x0100
-    char pad_0108[112]; //0x0108
+    char pad_0118[96]; //0x0118
     SharedPtrNew<EntityGroup>* shared_entityGroupWithVisualCpntsOnly_178_canBeEmpty; //0x0178
     Vector4f vec180; //0x0180
     Vector4f vec190; //0x0190
