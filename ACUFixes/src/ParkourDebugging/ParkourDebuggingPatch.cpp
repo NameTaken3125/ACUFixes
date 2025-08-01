@@ -390,11 +390,12 @@ public:
     std::optional<bool> m_ResultOfFinalFilter2;
     bool m_IsTheSelectedBestMatch = false;
 };
+class ParkourLog;
 class ParkourCycleLogged
 {
 public:
     uint64 m_Timestamp;
-    ParkourCycleLogged(uint64 timestamp) : m_Timestamp(timestamp) {}
+    ParkourCycleLogged(uint64 timestamp) : m_Timestamp(timestamp), m_IsDisabled(false) {}
     std::vector<std::unique_ptr<ParkourActionLogged>> m_Actions;
     std::mutex m_Mutex;
     bool m_IsSortingDirty = true;
@@ -429,27 +430,34 @@ private:
         std::lock_guard _lock{ m_Mutex };
         return *m_Actions.emplace_back(std::make_unique<ParkourActionLogged>(action, m_IndexOfNextLoggedAction++));
     }
-
+private:
+    bool m_IsDisabled;
+    ParkourCycleLogged() : m_Timestamp(-1), m_IsDisabled(true) {}
+    friend ParkourLog;
 };
 void ParkourCycleLogged::LogActionInitialCreation(AvailableParkourAction& action, bool isDiscarded_immediatelyAfterCreation)
 {
+    if (m_IsDisabled) return;
     ParkourActionLogged& recordForAction = MakeRecordForAction(action);
     recordForAction.m_IsDiscarded_immediatelyAfterCreation = isDiscarded_immediatelyAfterCreation;
 }
 void ParkourCycleLogged::LogActionBeforeFiltering(AvailableParkourAction& action, float fitness, bool isDiscarded_becauseFitnessWeightTooLow)
 {
+    if (m_IsDisabled) return;
     ParkourActionLogged& recordForAction = this->GetOrMakeRecordForAction(action);
     recordForAction.m_FitnessWeight = fitness;
     recordForAction.m_IsDiscarded_becauseFitnessWeightTooLow = isDiscarded_becauseFitnessWeightTooLow;
 }
 void ParkourCycleLogged::LogActionWeights(AvailableParkourAction& action, float defaultWeight, float totalWeight)
 {
+    if (m_IsDisabled) return;
     ParkourActionLogged& recordForAction = this->GetOrMakeRecordForAction(action);
     recordForAction.m_DefaultWeight = defaultWeight;
     recordForAction.m_TotalWeight = totalWeight;
 }
 void ParkourCycleLogged::LogActionsBeforeFiltering(SmallArray<ParkourAction_Commonbase*>& allActionsBeforeFiltering)
 {
+    if (m_IsDisabled) return;
     SmallArray<ParkourAction_Commonbase*>& moves = allActionsBeforeFiltering;
     if (moves.size == 0) return;
     LOG_DEBUG(ParkourLogger, "Num potential actions before filtering: %d"
@@ -503,16 +511,19 @@ void ParkourCycleLogged::LogActionsBeforeFiltering(SmallArray<ParkourAction_Comm
 }
 void ParkourCycleLogged::LogActionFinalFilter1(AvailableParkourAction& action, bool resultOfFinalFilter1)
 {
+    if (m_IsDisabled) return;
     ParkourActionLogged& record = this->GetOrMakeRecordForAction(action);
     record.m_ResultOfFinalFilter1 = resultOfFinalFilter1;
 }
 void ParkourCycleLogged::LogActionFinalFilter2(AvailableParkourAction& action, bool resultOfFinalFilter2)
 {
+    if (m_IsDisabled) return;
     ParkourActionLogged& record = this->GetOrMakeRecordForAction(action);
     record.m_ResultOfFinalFilter2 = resultOfFinalFilter2;
 }
 void ParkourCycleLogged::LogActionWhenReturningBestMatch(AvailableParkourAction& bestMatchMove)
 {
+    if (m_IsDisabled) return;
     ParkourActionLogged& record = this->GetOrMakeRecordForAction(bestMatchMove);
     record.m_IsTheSelectedBestMatch = true;
     EnumParkourAction actionType = bestMatchMove.GetEnumParkourAction();
@@ -541,18 +552,27 @@ class ParkourLog
 {
 public:
     std::shared_ptr<ParkourCycleLogged> m_LatestParkourCycle;
-    std::shared_ptr<ParkourCycleLogged> GetCurrentLoggedParkourCycle()
-    {
-        uint64 currentTimestamp = World::GetSingleton()->clockInWorldWithSlowmotion.currentTimestamp;
-        if (!m_LatestParkourCycle || m_LatestParkourCycle->m_Timestamp != currentTimestamp)
-            m_LatestParkourCycle = std::make_shared<ParkourCycleLogged>(currentTimestamp);
-        return m_LatestParkourCycle;
-    }
+    std::shared_ptr<ParkourCycleLogged> GetCurrentLoggedParkourCycle();
     // Doesn't construct a new cycle.
-    std::shared_ptr<ParkourCycleLogged> GetLatestParkourCycle() { return m_LatestParkourCycle; }
+    std::shared_ptr<ParkourCycleLogged> GetLatestLoggedParkourCycle() { return m_LatestParkourCycle; }
 
+public:
     static ParkourLog& GetSingleton() { static ParkourLog singleton; return singleton; }
+private:
+    std::shared_ptr<ParkourCycleLogged> m_DisabledDummyCycle;
+    ParkourLog() : m_DisabledDummyCycle(new ParkourCycleLogged()) {}
 };
+std::shared_ptr<ParkourCycleLogged> ParkourLog::GetCurrentLoggedParkourCycle()
+{
+    const bool isParkourLogDisabled = false;
+    if (isParkourLogDisabled) return m_DisabledDummyCycle;
+
+    uint64 currentTimestamp = World::GetSingleton()->clockInWorldWithSlowmotion.currentTimestamp;
+    if (!m_LatestParkourCycle || m_LatestParkourCycle->m_Timestamp != currentTimestamp)
+        m_LatestParkourCycle = std::make_shared<ParkourCycleLogged>(currentTimestamp);
+    return m_LatestParkourCycle;
+}
+// The returned shared_ptr is non-null.
 std::shared_ptr<ParkourCycleLogged> GetCurrentLoggedParkourCycle()
 {
     return ParkourLog::GetSingleton().GetCurrentLoggedParkourCycle();
@@ -564,7 +584,7 @@ static bool CompareOptionalFloats(std::optional<float> a, std::optional<float> b
 void DrawParkourDebugWindow()
 {
     ParkourLog& parkourLog = ParkourLog::GetSingleton();
-    std::shared_ptr<ParkourCycleLogged> latestCycle = parkourLog.GetLatestParkourCycle();
+    std::shared_ptr<ParkourCycleLogged> latestCycle = parkourLog.GetLatestLoggedParkourCycle();
     if (latestCycle)
     {
         Matrix4f tr;
