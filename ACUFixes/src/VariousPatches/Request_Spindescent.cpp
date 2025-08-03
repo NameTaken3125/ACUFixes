@@ -8,16 +8,6 @@
 #include "ParkourDebugging/AvailableParkourAction.h"
 
 
-// Use the following #define to enable the experimental wall-eject-to-hang move.
-// (Credit to "TheManWithNothing" for the discovery
-//      https://www.youtube.com/@TheManWithNothing
-//      https://www.youtube.com/watch?v=SjgeA2mUs30
-// )
-// Not included in the build, because I doubt I'll get it finished but it's still kinda valuable enough
-// to be publicly visible in Github.
-// Fun fact: to get an almost functional sidehop-to-hang, just NOP 4 bytes at 0x14015423F.
-//#define PARKOUR_HELPERS_USE_EJECT_TO_HANG
-
 class Entity;
 class EntityGroup;
 class ParkourAction_Spindescent : public AvailableParkourAction
@@ -36,6 +26,14 @@ bool IsShouldTryForceTheSpindescentAnimation()
 static bool IsShouldTryForceDive()
 {
     return g_Config.personalRequests->parkourHelper->diveHelper->isActive
+        && ACU::Input::IsPressed(g_Config.personalRequests->parkourHelper->diveHelper->hotkey.get());
+}
+static bool IsShouldTryForceWallEjectToHang()
+{
+    // Fun fact: to get an almost functional sidehop-to-hang, just NOP 4 bytes at 0x14015423F.
+    return
+        g_Config.personalRequests->parkourHelper->diveHelper->isActive
+        && g_Config.personalRequests->parkourHelper->diveHelper->allowWallEjectToHang
         && ACU::Input::IsPressed(g_Config.personalRequests->parkourHelper->diveHelper->hotkey.get());
 }
 constexpr int RESULT_OF_PARKOUR_SORT_AND_SELECT__NO_ACTIONS_ACCEPTED = -1;
@@ -249,6 +247,7 @@ class ParkourAction_Commonbase;
 DEFINE_GAME_FUNCTION(CreateParkourActionForParkourPointIfFits, 0x1401D1CF0, char, __fastcall, (EnumParkourAction a1, uint64 a2, __m128* a3, __m128* p_movementVecWorld_mb, float a5, int a6, char a7, uint64 a8, uint64 a9, uint64 p_currentLedge_mb, ParkourAction_Commonbase** p_newAction_out, float a12, float p_epsilon_mb));
 void WhenPerformingScanFor_ClimbFacade_AlsoScanForWallToHang(AllRegisters* params)
 {
+    if (!IsShouldTryForceWallEjectToHang()) return;
     bool isCreated = CreateParkourActionForParkourPointIfFits(
         EnumParkourAction::wallEjectToHang
         , params->rdx_
@@ -271,6 +270,7 @@ void WhenPerformingScanFor_ClimbFacade_AlsoScanForWallToHang(AllRegisters* param
 }
 void WhenPerformingScanFor_BackEject_AlsoScanForWallToHang(AllRegisters* params)
 {
+    if (!IsShouldTryForceWallEjectToHang()) return;
     bool isCreated = CreateParkourActionForParkourPointIfFits(
         EnumParkourAction::wallEjectToHang
         , *(uint64*)(params->GetRSP() + 0xE8)
@@ -299,7 +299,7 @@ void WhenStartingWallingCycle_ChangeFVTables(AllRegisters* params)
     WhileOnWallSystem* hsWalling = (WhileOnWallSystem*)params->rbx_;
     void* climbFacadeTester = hsWalling->climbFacade;
     uint64& climbFacadeFancyVTable = *(uint64*)((uint64)climbFacadeTester + 8);
-    const bool useSidehopToSwing = true;
+    const bool useSidehopToSwing = IsShouldTryForceWallEjectToHang();
     if (useSidehopToSwing)
     {
         climbFacadeFancyVTable = climbFacadeTester_FancyVTable_baseclassThatHasSidehopToSwing;
@@ -314,7 +314,7 @@ void WhenStartingFailedWallrunCycle_ChangeFVTables(AllRegisters* params)
     uint64 hsFailedWallrun = params->rsi_;
     uint64 climbFacadeTester = *(uint64*)(hsFailedWallrun + 0x1D0);
     uint64& climbFacadeFancyVTable = *(uint64*)(climbFacadeTester + 8);
-    const bool useSidehopToSwing = true;
+    const bool useSidehopToSwing = IsShouldTryForceWallEjectToHang();
     if (useSidehopToSwing)
     {
         climbFacadeFancyVTable = climbFacadeTester_FancyVTable_baseclassThatHasSidehopToSwing;
@@ -407,6 +407,7 @@ void WhenSettingRTCPTargetAngleForTheSelectedParkourAction_AdjustAngleWhenBackEj
     animation instead. In this case I flip the angle to a positive which seems
     to result in correct backeject animation being chosen.
     */
+    if (!IsShouldTryForceWallEjectToHang()) return;
     auto& action = *(AvailableParkourAction*)params->rbx_;
     if (action.GetEnumParkourAction() != EnumParkourAction::wallEjectToHang) return;
     float& calculatedRTCPTargetAngle = (float&)params->XMM0.f0;
@@ -417,7 +418,6 @@ ParkourActionsExtraProcessing::ParkourActionsExtraProcessing()
 {
     m_ParkourCallbacksForParkourHelpers = std::make_unique<ParkourCallbacksForParkourHelpers>();
 
-#ifdef PARKOUR_HELPERS_USE_EJECT_TO_HANG
     {
         PresetScript_CCodeInTheMiddle(0x140135230, 12,
             WhenPerformingScanFor_ClimbFacade_AlsoScanForWallToHang, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
@@ -431,7 +431,7 @@ ParkourActionsExtraProcessing::ParkourActionsExtraProcessing()
         {
             /*
             The 0x64'th "fancy virtual function" of the ParkourAction
-            (SetExpectedDistanceRangesAccordingToParkourMode) is used to shortly after
+            (SetExpectedDistanceRangesAccordingToParkourMode) is used shortly after
             the ParkourAction is constructed to set the "allowed distance ranges"
             for the tested action.
             Here, I place hooks in the 0x64'th "fancy virtual" of the WallEjectToHang
@@ -449,7 +449,6 @@ ParkourActionsExtraProcessing::ParkourActionsExtraProcessing()
         PresetScript_CCodeInTheMiddle(0x1401AD835, 7,
             WhenSettingRTCPTargetAngleForTheSelectedParkourAction_AdjustAngleWhenBackEjectToHang, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
     }
-#endif
 }
 void ParkourActionsExtraProcessing::OnBeforeActivate()
 {

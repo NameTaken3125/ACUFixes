@@ -452,6 +452,31 @@ public:
             {
                 ImGuiCTX::Indent _ind2;
                 ImGui::DrawEnumPicker("Dive helper hotkey", g_Config.personalRequests->parkourHelper->diveHelper->hotkey.get(), ImGuiComboFlags_HeightLarge);
+                ImGui::Checkbox("Allow wall-eject-to-hang", &g_Config.personalRequests->parkourHelper->diveHelper->allowWallEjectToHang.get());
+                {
+                    ImGui::SameLine();
+                    static ImGuiTextBuffer infoAboutWallEjectToHang = []() {
+                        ImGuiTextBuffer buf;
+                        buf.appendf(
+                            "When holding the Dive Hotkey, the wall-sideeject-to-hang\n"
+                            "and wall-backeject-to-hang parkour moves may be used if available.\n"
+                            "Experimental.\n"
+                            "\n"
+                            "Credit for discovery to TheManWithNothing\n"
+                            "   https://www.youtube.com/@TheManWithNothing\n"
+                            "   https://www.youtube.com/watch?v=SjgeA2mUs30\n"
+                            "(Click to copy to clipboard)\n"
+                            "Fun fact for any modders reading this:\n"
+                            "Simply NOOPing 4 bytes at 0x14015423F\n"
+                            "would already give an almost-functional sidehop-to-hang.\n"
+                            "Unity can be like that sometimes."
+                        );
+                        return buf;
+                        }();
+                    ImGui::HelpMarker(infoAboutWallEjectToHang.c_str());
+                    if (ImGui::IsItemClicked())
+                        ImGui::SetClipboardText(infoAboutWallEjectToHang.c_str());
+                }
             }
             ImGui::Checkbox("Can rise on ledge immediately after Ledge Assassination", &g_Config.personalRequests->parkourHelper->canRiseOnLedgeAfterLedgeAssassination.get());
         }

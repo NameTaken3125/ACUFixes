@@ -1688,6 +1688,38 @@ void DrawAtomGraphDumper()
     DrawGraphVariable<int>("ParkourElementIncoming", *graphEvaluation, 0x4d509a44, notifyTheGraphWhenModifying);
     DrawGraphVariable<int>("ParkourElementOutgoing", *graphEvaluation, 0x6a4cea9e, notifyTheGraphWhenModifying);
     DrawGraphVariable<int>("ParkourMode", *graphEvaluation, 0xcd777060, notifyTheGraphWhenModifying);
+    /*
+    scalar TargetAngle; // 0xd7e18370/3621880688
+    scalar TargetAngleAssassination; // 0x1bc28306/465732358
+
+    scalar TargetDistance; // 0x97a0d819/2543900697
+    scalar TargetDistanceAction; // 0x680b591f/1745574175
+    scalar TargetDistanceAssassination; // 0x56316c3d/1446079549
+    scalar TargetDistanceReal; // 0x5859a0f8/1482268920
+    scalar TargetDistanceX; // 0xd34e3e53/3545120339
+    scalar TargetDistanceXAssassination; // 0x945912c3/2488865475
+    scalar TargetDistanceXSecond; // 0xd1bccc86/3518811270
+    scalar TargetDistanceY; // 0xa4490ec5/2756251333
+    scalar TargetDistanceYAssassination; // 0x956f3b5/156693429
+
+    scalar TargetHeight; // 0xdc434c51/3695397969
+    scalar TargetHeightAssassination; // 0x6ebae69/116108905
+
+    scalar EdgeDistanceX; // 0x834afea8/2202730152
+    scalar EdgeDistanceY; // 0xf44dce3e/4098739774
+
+    scalar LandingHeight; // 0x7989e106/2039079174
+
+    scalar TopLedgeDistance; // 0xdec8d023/3737702435
+    */
+    DrawGraphVariable<float>("TargetAngle", *graphEvaluation, 0xd7e18370, notifyTheGraphWhenModifying);
+    DrawGraphVariable<float>("TargetDistance", *graphEvaluation, 0x97a0d819, notifyTheGraphWhenModifying);
+    DrawGraphVariable<float>("TargetDistanceX", *graphEvaluation, 0xd34e3e53, notifyTheGraphWhenModifying);
+    DrawGraphVariable<float>("TargetHeight", *graphEvaluation, 0xdc434c51, notifyTheGraphWhenModifying);
+    DrawGraphVariable<float>("EdgeDistanceX", *graphEvaluation, 0x834afea8, notifyTheGraphWhenModifying);
+    DrawGraphVariable<float>("EdgeDistanceY", *graphEvaluation, 0xf44dce3e, notifyTheGraphWhenModifying);
+    DrawGraphVariable<float>("LandingHeight", *graphEvaluation, 0x7989e106, notifyTheGraphWhenModifying);
+    DrawGraphVariable<float>("TopLedgeDistance", *graphEvaluation, 0xdec8d023, notifyTheGraphWhenModifying);
     DrawGraphVariable<int>(g_rtcpDesc_HoodControlValue.varname, *graphEvaluation, g_rtcpDesc_HoodControlValue.varnameHash, notifyTheGraphWhenModifying);
 
     //if (ImGui::Button("Clear bone layering cache"))

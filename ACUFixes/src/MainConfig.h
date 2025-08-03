@@ -103,6 +103,7 @@ struct ConfigTop : YAConfigSection {
                 YACSTOR(YACS_DiveHelper);
                 ACM(isActive, bool, BooleanAdapter, false);
                 ACM(hotkey, BindableKeyCode, EnumAdapter_template<BindableKeyCode>, BindableKeyCode::MOUSE_X5);
+                ACM(allowWallEjectToHang, bool, BooleanAdapter, false);
             };
             ACM(diveHelper, YACS_DiveHelper, YAConfigSectionAdapter, );
             ACM(canRiseOnLedgeAfterLedgeAssassination, bool, BooleanAdapter, true);
