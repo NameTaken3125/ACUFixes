@@ -361,6 +361,58 @@ AvailableParkourAction* ParkourCallbacksForParkourHelpers::ChooseAfterSorting(Sm
     // If nothing was forced, use the move that the game selected.
     return nullptr;
 }
+void WhenSettingAllowedAndExpectedRangesForEjectToHang_MakeThemMorePermissive(AllRegisters* params)
+{
+    auto& action = *(AvailableParkourAction*)params->rdx_;
+    action.heightDifferenceMin = -3; // from -0.25f
+    action.heightDifferenceMax = 1; // ==
+    action.expectedHeightDiff_mb = -2; // from -1
+    action.expectedVerticalSpeed_mb = 9; // ==
+    action.expectedHorizontalSpeed = 4; // from 4.5f
+    action.expectedVerticalDefaultDisplace = -1; // ==
+    action.expectedDurationMaxExtension_mb = 1.1f; // from 0.9f
+    action.curveAllowedRangeMax = 2; // from 0.5f
+    action.curveAllowedRangeMin = -4; // from -2.5f
+    action.flt_228 = 1; // from 0?
+    action.expectedCurveRangeMin = -2; // from -0.5f
+    action.vec240.y = 1.7600001f; // from 1.62f
+    action.vec240.z = action.expectedVerticalSpeed_mb * 0.44000003f - 1.8972802f; // from action.expectedVerticalSpeed * 0.35999998f - 1.27008f
+}
+void WhenSettingAllowedAndExpectedRangesForEjectToHang_ParkourUp_MakeThemMorePermissive(AllRegisters* params)
+{
+    auto& action = *(AvailableParkourAction*)params->rdx_;
+    action.heightDifferenceMin = -12; // from -0.25f
+    action.heightDifferenceMax = 1.5f; // from 1
+    action.expectedHeightDiff_mb = 1.5f; // from -1
+    action.expectedVerticalSpeed_mb = 11; // from 9
+    action.expectedHorizontalSpeed = 4; // from 4.5f
+    action.expectedVerticalDefaultDisplace = -1; // ==
+    action.expectedDurationMin_mb = 0.7f;
+    action.expectedDurationMaxExtension_mb = 1.8f; // from 0.9f
+    action.curveAllowedRangeMax = 2; // from 0.5f
+    action.curveAllowedRangeMin = -4; // from -2.5f
+    action.flt_228 = 1; // from 0?
+    action.expectedCurveRangeMin = -2; // from -0.5f
+    action.vec240.y = 2.8799999f; // from 1.62f
+    action.vec240.z = action.expectedVerticalSpeed_mb * 0.71999997f - 5.0803199f; // from action.expectedVerticalSpeed * 0.35999998f - 1.27008f
+}
+void WhenSettingRTCPTargetAngleForTheSelectedParkourAction_AdjustAngleWhenBackEjectToHang(AllRegisters* params)
+{
+    /*
+    After the WallEjectToHang action has been selected, the value of
+        scalar TargetAngle; // 0xd7e18370/3621880688
+    RTCP animation variable is updated.
+    When performing backeject-to-hang, the TargetAngle is close to 180 or -180 degrees.
+    It seems that in the latter case the animation system prefers to use the sideeject
+    animation instead. In this case I flip the angle to a positive which seems
+    to result in correct backeject animation being chosen.
+    */
+    auto& action = *(AvailableParkourAction*)params->rbx_;
+    if (action.GetEnumParkourAction() != EnumParkourAction::wallEjectToHang) return;
+    float& calculatedRTCPTargetAngle = (float&)params->XMM0.f0;
+    if (calculatedRTCPTargetAngle >= -180.0f && calculatedRTCPTargetAngle < -155.0f)
+        calculatedRTCPTargetAngle = -calculatedRTCPTargetAngle;
+}
 ParkourActionsExtraProcessing::ParkourActionsExtraProcessing()
 {
     m_ParkourCallbacksForParkourHelpers = std::make_unique<ParkourCallbacksForParkourHelpers>();
@@ -376,6 +428,26 @@ ParkourActionsExtraProcessing::ParkourActionsExtraProcessing()
             WhenStartingWallingCycle_ChangeFVTables, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
         PresetScript_CCodeInTheMiddle(0x141A1BA0C, 7,
             WhenStartingFailedWallrunCycle_ChangeFVTables, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
+        {
+            /*
+            The 0x64'th "fancy virtual function" of the ParkourAction
+            (SetExpectedDistanceRangesAccordingToParkourMode) is used to shortly after
+            the ParkourAction is constructed to set the "allowed distance ranges"
+            for the tested action.
+            Here, I place hooks in the 0x64'th "fancy virtual" of the WallEjectToHang
+            (fancyVTable == 1439FD4C0, 0x64'th func == 140140D40)
+            in order to expand these "allowed distance ranges" using the values
+            used for "sidehop" (see implementation at 140148500)
+            and "backeject to ground" (see implementation at 14013E850)
+            to make the constructed WallEjectToHang actions less likely to be discarded as unfit.
+            */
+            PresetScript_CCodeInTheMiddle(0x140140E44, 10,
+                WhenSettingAllowedAndExpectedRangesForEjectToHang_MakeThemMorePermissive, 0x140140EDB, false);
+            PresetScript_CCodeInTheMiddle(0x140140DCA, 10,
+                WhenSettingAllowedAndExpectedRangesForEjectToHang_ParkourUp_MakeThemMorePermissive, 0x140140FED, false);
+        }
+        PresetScript_CCodeInTheMiddle(0x1401AD835, 7,
+            WhenSettingRTCPTargetAngleForTheSelectedParkourAction_AdjustAngleWhenBackEjectToHang, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
     }
 #endif
 }

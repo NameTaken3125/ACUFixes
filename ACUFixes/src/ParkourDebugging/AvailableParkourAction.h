@@ -9,6 +9,17 @@
 #include "ParkourDebugging/EnumParkourAction.h"
 #include "ParkourDebugging/FancyVFunctionDescription.h"
 
+enum class EnumParkourMode : int
+{
+    EPM_DoubleTapParkourUp = 0,
+    EPM_ParkourUp = 1,
+    EPM_ParkourStraight = 2,
+    EPM_ParkourDown = 3,
+    EPM_DoubleTapParkourDown = 4,
+    EPM_Unk5 = 5,
+    EPM_HoldingCrouch = 6,
+};
+
 class Entity;
 class EntityGroup;
 
@@ -140,13 +151,13 @@ namespace ParkourActionKnownFancyVFuncs
     DEFINE_FANCY_VF(0x57, GetLandingHeight, 0xD5641CA6, float (*)(AvailableParkourAction*, Entity*));
     DEFINE_FANCY_VF(0x58, GetTargetAngle, 0x77BC6A50, float (*)(AvailableParkourAction*, Entity*));
     DEFINE_FANCY_VF(0x5A, GetTopLedgeDistance, 0xD009E05C, float (*)(AvailableParkourAction*, Entity*));
-    DEFINE_FANCY_VF(0x64, SetExpectedDistanceRangesAccordingToParkourMode, 0xF914A46F, void (*)(AvailableParkourAction*, __int64 a2, int p_parkourMode));
-    DEFINE_FANCY_VF(0x69, CalculateFitness, 0x872EACC8, void (*)(AvailableParkourAction*, __m128* rdx0, __int64 a3, __m128* a4, __int64 a5, __int64 a6, unsigned int p_parkourMode, Entity* p_player));
+    DEFINE_FANCY_VF(0x64, SetExpectedDistanceRangesAccordingToParkourMode, 0xF914A46F, void (*)(AvailableParkourAction*, __int64 a2, EnumParkourMode p_parkourMode));
+    DEFINE_FANCY_VF(0x69, CalculateFitness, 0x872EACC8, void (*)(AvailableParkourAction*, __m128* rdx0, __int64 a3, __m128* a4, __int64 a5, __int64 a6, EnumParkourMode p_parkourMode, Entity* p_player));
     DEFINE_FANCY_VF(0x6C, FancyVFunc_0x6C, 0x9381A468, __m128* (*)(__m128* p_totalExpectedDisplacementWithVelocityAndAcceleration_out, AvailableParkourAction*, float p_expectedDuration));
     DEFINE_FANCY_VF(0x6E, FancyVFunc_0x6E, 0x1828E7B7, __m128* (*)(__m128* p_totalExpectedDisplacementWithVelocityAndAcceleration_out, AvailableParkourAction*, float p_expectedDuration));
-    DEFINE_FANCY_VF(0x70, QuickCheckAcceptableDistanceRanges, 0x228CB41C, bool (*)(AvailableParkourAction*, int p_parkourMode));
+    DEFINE_FANCY_VF(0x70, QuickCheckAcceptableDistanceRanges, 0x228CB41C, bool (*)(AvailableParkourAction*, EnumParkourMode p_parkourMode));
     DEFINE_FANCY_VF(0x72, QuickCheckAcceptableTargetObjectType_mb, 0xB7D5270B, bool (*)(AvailableParkourAction*, __int64 p_parkourProbe));
-    DEFINE_FANCY_VF(0x73, QuickCheckAcceptableParkourMode, 0x081284CA, bool (*)(AvailableParkourAction*, int p_parkourMode));
+    DEFINE_FANCY_VF(0x73, QuickCheckAcceptableParkourMode, 0x081284CA, bool (*)(AvailableParkourAction*, EnumParkourMode p_parkourMode));
 
 #undef DEFINE_FANCY_VF
 }
