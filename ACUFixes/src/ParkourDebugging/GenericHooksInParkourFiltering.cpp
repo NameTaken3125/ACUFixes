@@ -22,6 +22,9 @@ DEFINE_GAME_FUNCTION(AvailableParkourAction__InitializePlayerRef, 0x14015A570, v
 DEFINE_GAME_FUNCTION(SmallArray_POD__RemoveGeneric, 0x142725F00, void, __fastcall, (void* smallArray, int p_idx, unsigned int p_elemSize));
 
 
+#include "MyLog.h"
+
+static DEFINE_LOGGER_CONSOLE_AND_FILE(ParkourLogger, "[Parkour]");
 bool CreateParkourActionAndPerformInitialTestIfFits_A_FullReplacement(
     EnumParkourAction actionType,
     uint64 a2,
@@ -38,7 +41,7 @@ bool CreateParkourActionAndPerformInitialTestIfFits_A_FullReplacement(
     *p_newAction_out = newAction;
     if (!newAction) return false;
     if (p_player)
-        AvailableParkourAction__InitializePlayerRef(&newAction->shared_player, p_player);
+        AvailableParkourAction__InitializePlayerRef(&newAction->playerRef, p_player);
     GET_AND_CAST_FANCY_FUNC(*newAction, ParkourActionKnownFancyVFuncs::Set2FloatsAfterCreation)(newAction, a12, p_epsilon_mb);
     bool isActionFits = GET_AND_CAST_FANCY_FUNC(*newAction, ParkourActionKnownFancyVFuncs::InitialTestIfActionFits)(
         newAction,
@@ -50,8 +53,9 @@ bool CreateParkourActionAndPerformInitialTestIfFits_A_FullReplacement(
         a8,
         p_player,
         p_currentLedge_mb);
+    std::shared_ptr<ParkourCycleLogged> currentCycle = GetCurrentLoggedParkourCycle();
     bool isDiscarded = !isActionFits;
-    GetCurrentLoggedParkourCycle()->LogActionInitialCreation(*newAction, isDiscarded);
+    currentCycle->LogActionInitialCreation(*newAction, isDiscarded);
     if (isDiscarded)
     {
         newAction->Unk008_Destroy(0);
@@ -77,7 +81,7 @@ bool CreateParkourActionAndPerformInitialTestIfFits_B_FullReplacement(
     *p_newAction_out = newAction;
     if (!newAction) return false;
     if (p_player)
-        AvailableParkourAction__InitializePlayerRef(&newAction->shared_player, p_player);
+        AvailableParkourAction__InitializePlayerRef(&newAction->playerRef, p_player);
     GET_AND_CAST_FANCY_FUNC(*newAction, ParkourActionKnownFancyVFuncs::Set2FloatsAfterCreation)(newAction, a13, p_epsilon_mb);
     bool isActionFits = GET_AND_CAST_FANCY_FUNC(*newAction, ParkourActionKnownFancyVFuncs::InitialTestIfActionFits)(
         newAction,
@@ -100,6 +104,7 @@ bool CreateParkourActionAndPerformInitialTestIfFits_B_FullReplacement(
     }
     return true;
 }
+constexpr int RESULT_OF_PARKOUR_SORT_AND_SELECT__NO_ACTIONS_ACCEPTED = -1;
 int SortAndSelectBestMatchingAction_FullReplacement(
     ParkourTester* parkourTester,
     __m128* p_locationOfOrigin,
@@ -116,6 +121,21 @@ int SortAndSelectBestMatchingAction_FullReplacement(
     currentCycle->m_LocationOfOrigin = *(Vector3f*)p_locationOfOrigin;
     currentCycle->m_DirectionOfMovementInputWorldSpace = *(Vector3f*)p_directionOfMovementInputWorldSpace;
 
+    ParkourCallbacks* parkourCallbacks = GenericHooksInParkourFiltering::GetSingleton().m_Callbacks;
+    if (parkourCallbacks)
+    {
+        AvailableParkourAction* selectedBeforeFiltering = parkourCallbacks->ChooseBeforeFiltering(p_parkourSensorsResults);
+        if (selectedBeforeFiltering)
+        {
+            auto foundIt = std::find(p_parkourSensorsResults.begin(), p_parkourSensorsResults.end(), selectedBeforeFiltering);
+            if (foundIt != p_parkourSensorsResults.end())
+            {
+                currentCycle->LogActionWhenReturningBestMatch(*selectedBeforeFiltering);
+                int selectedIdx = foundIt - p_parkourSensorsResults.begin();
+                return selectedIdx;
+            }
+        }
+    }
     if (p_parkourSensorsResults.size > 0)
     {
         for (int i = 0; i < p_parkourSensorsResults.size; i++)
@@ -159,7 +179,7 @@ int SortAndSelectBestMatchingAction_FullReplacement(
             };
         std::sort(p_parkourSensorsResults.begin(), p_parkourSensorsResults.end(), SortByDescendingTotalFitness);
     }
-    int selectedBestMatch = -1; // "-1" means "no move is selected".
+    std::optional<int> selectedBestMatch;
     for (uint16 i = 0; i < p_parkourSensorsResults.size; i++)
     {
         AvailableParkourAction* action = p_parkourSensorsResults[i];
@@ -178,10 +198,26 @@ int SortAndSelectBestMatchingAction_FullReplacement(
             // Are there any side effects to this? Idk.
             //float __fitness = GET_AND_CAST_FANCY_FUNC(*action, ParkourActionKnownFancyVFuncs::GetFitness)(action);
         }
-        currentCycle->LogActionWhenReturningBestMatch(*p_parkourSensorsResults[i]);
         break;
     }
-    int result = selectedBestMatch;
+
+    if (parkourCallbacks)
+    {
+        AvailableParkourAction* selectedAfterSorting =
+            parkourCallbacks->ChooseAfterSorting(p_parkourSensorsResults, selectedBestMatch ? p_parkourSensorsResults[*selectedBestMatch] : nullptr);
+        if (selectedAfterSorting)
+        {
+            auto foundIt = std::find(p_parkourSensorsResults.begin(), p_parkourSensorsResults.end(), selectedAfterSorting);
+            if (foundIt != p_parkourSensorsResults.end())
+            {
+                selectedBestMatch = foundIt - p_parkourSensorsResults.begin();
+            }
+        }
+    }
+    if (selectedBestMatch)
+        currentCycle->LogActionWhenReturningBestMatch(*p_parkourSensorsResults[*selectedBestMatch]);
+    int result = selectedBestMatch ? *selectedBestMatch : RESULT_OF_PARKOUR_SORT_AND_SELECT__NO_ACTIONS_ACCEPTED;
+
     return result;
 }
 

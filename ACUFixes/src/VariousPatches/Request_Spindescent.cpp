@@ -23,14 +23,7 @@ class EntityGroup;
 class ParkourAction_Spindescent : public AvailableParkourAction
 {
 public:
-    char pad_0118[96]; //0x0118
-    SharedPtrNew<EntityGroup>* shared_entityGroupWithVisualCpntsOnly_178_canBeEmpty; //0x0178
-    Vector4f vec180; //0x0180
-    Vector4f vec190; //0x0190
-    Vector4f vec1A0; //0x01A0
-    char pad_01B0[84]; //0x01B0
-    float simpleFitness; //0x0204
-    char pad_0208[168]; //0x0208
+    char pad_0290[0x2B0-0x290]; //0x0208
 }; //Size: 0x02B0
 assert_sizeof(ParkourAction_Spindescent, 0x2B0);
 #include "Common_Plugins/ACU_InputUtils.h"
@@ -45,7 +38,7 @@ static bool IsShouldTryForceDive()
     return g_Config.personalRequests->parkourHelper->diveHelper->isActive
         && ACU::Input::IsPressed(g_Config.personalRequests->parkourHelper->diveHelper->hotkey.get());
 }
-constexpr int PARKOUR_ACTIONS_NO_RESULTS_ACCEPTED = -1;
+constexpr int RESULT_OF_PARKOUR_SORT_AND_SELECT__NO_ACTIONS_ACCEPTED = -1;
 struct CustomSelectedParkourMove
 {
     AvailableParkourAction* m_action;
@@ -55,7 +48,7 @@ CustomSelectedParkourMove SelectBestMatchingMoveIdx_ExtraProcessing_CustomSelect
 {
     if (!IsShouldTryForceDive())
     {
-        return { nullptr, PARKOUR_ACTIONS_NO_RESULTS_ACCEPTED };
+        return { nullptr, RESULT_OF_PARKOUR_SORT_AND_SELECT__NO_ACTIONS_ACCEPTED };
     }
     for (int i = 0; i < availableParkourActions.size; i++)
     {
@@ -70,13 +63,13 @@ CustomSelectedParkourMove SelectBestMatchingMoveIdx_ExtraProcessing_CustomSelect
             return { action, i };
         }
     }
-    return { nullptr, PARKOUR_ACTIONS_NO_RESULTS_ACCEPTED };
+    return { nullptr, RESULT_OF_PARKOUR_SORT_AND_SELECT__NO_ACTIONS_ACCEPTED };
 }
 CustomSelectedParkourMove SelectBestMatchingMoveIdx_ExtraProcessing_CustomSelection_Spindescent(SmallArray<AvailableParkourAction*>& availableParkourActions)
 {
     if (!IsShouldTryForceTheSpindescentAnimation())
     {
-        return { nullptr, PARKOUR_ACTIONS_NO_RESULTS_ACCEPTED };
+        return { nullptr, RESULT_OF_PARKOUR_SORT_AND_SELECT__NO_ACTIONS_ACCEPTED };
     }
     for (int i = 0; i < availableParkourActions.size; i++)
     {
@@ -133,8 +126,8 @@ CustomSelectedParkourMove SelectBestMatchingMoveIdx_ExtraProcessing_CustomSelect
                 // See at 140133B74:
                 // If the value of `flt_204` is too close to 0, this action
                 // will get removed at the start of the sorting stage.
-                if (fabs(spindescent->simpleFitness) < 0.01f)
-                    spindescent->simpleFitness = 0.01f;
+                if (fabs(spindescent->fitness) < 0.01f)
+                    spindescent->fitness = 0.01f;
             };
             auto IsTargetSuitedForSpindescent = [&]() -> bool
             {
@@ -147,7 +140,7 @@ CustomSelectedParkourMove SelectBestMatchingMoveIdx_ExtraProcessing_CustomSelect
             }
         }
     }
-    return { nullptr, PARKOUR_ACTIONS_NO_RESULTS_ACCEPTED };
+    return { nullptr, RESULT_OF_PARKOUR_SORT_AND_SELECT__NO_ACTIONS_ACCEPTED };
 }
 using BestMatchSelector_fnt = int(__fastcall*)(__int64 a1, __int64 a2, __int64 a3, __int64 a4, float a5, int a6, __int64 a7, __int64 a8, SmallArray<AvailableParkourAction*>* p_parkourActions);
 int SelectBestMatchingMoveIdx_ExtraProcessing(AllRegisters* params)
@@ -331,12 +324,46 @@ void WhenStartingFailedWallrunCycle_ChangeFVTables(AllRegisters* params)
         climbFacadeFancyVTable = climbFacadeTester_FancyVTable_default;
     }
 }
+AvailableParkourAction* ParkourCallbacksForParkourHelpers::ChooseBeforeFiltering(SmallArray<AvailableParkourAction*>& actions)
+{
+    auto [selectedSpindescent, _spindescentIdxBeforeSorting] = SelectBestMatchingMoveIdx_ExtraProcessing_CustomSelection_Spindescent(actions);
+    m_SelectedSpindescent = selectedSpindescent;
+    return selectedSpindescent;
+}
+AvailableParkourAction* ParkourCallbacksForParkourHelpers::ChooseAfterSorting(SmallArray<AvailableParkourAction*>& actions, AvailableParkourAction* selectedByGame)
+{
+    if (g_Config.personalRequests->parkourHelper->canRiseOnLedgeAfterLedgeAssassination)
+    {
+        if (!selectedByGame && actions.size > 0)
+        {
+            const bool allTheActionsAreTryingToRiseOnLedge = std::all_of(actions.begin(), actions.end(), [](AvailableParkourAction* action)
+                {
+                    return (uint64)action->fancyVTable == 0x1439F41C0;
+                });
+            if (allTheActionsAreTryingToRiseOnLedge)
+            {
+                return actions[0];
+            }
+        }
+    }
+    auto [selectedDiveMove, selectedDiveMoveIdx] = SelectBestMatchingMoveIdx_ExtraProcessing_CustomSelection_DiveMove(actions);
+
+    if (selectedDiveMove)
+    {
+        // The dive takes the highest priority.
+        return selectedDiveMove;
+    }
+    if (m_SelectedSpindescent)
+    {
+        // The spindescent takes the second highest priority.
+        return m_SelectedSpindescent;
+    }
+    // If nothing was forced, use the move that the game selected.
+    return nullptr;
+}
 ParkourActionsExtraProcessing::ParkourActionsExtraProcessing()
 {
-    uintptr_t whenDecidingBestMatchingMove = 0x140134984;
-    PresetScript_CCodeInTheMiddle(whenDecidingBestMatchingMove, 10,
-        WhenDecidingBestMatchingMove_ExtraProcessing, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, false);
-
+    m_ParkourCallbacksForParkourHelpers = std::make_unique<ParkourCallbacksForParkourHelpers>();
 
 #ifdef PARKOUR_HELPERS_USE_EJECT_TO_HANG
     {
@@ -351,4 +378,15 @@ ParkourActionsExtraProcessing::ParkourActionsExtraProcessing()
             WhenStartingFailedWallrunCycle_ChangeFVTables, RETURN_TO_RIGHT_AFTER_STOLEN_BYTES, true);
     }
 #endif
+}
+void ParkourActionsExtraProcessing::OnBeforeActivate()
+{
+    auto& gph = GenericHooksInParkourFiltering::GetSingleton();
+    gph.m_Callbacks = m_ParkourCallbacksForParkourHelpers.get();
+    m_Activator_GPHSortAndSelect = gph.RequestGPHSortAndSelect();
+}
+void ParkourActionsExtraProcessing::OnBeforeDeactivate()
+{
+    GenericHooksInParkourFiltering::GetSingleton().m_Callbacks = nullptr;
+    m_Activator_GPHSortAndSelect.reset();
 }

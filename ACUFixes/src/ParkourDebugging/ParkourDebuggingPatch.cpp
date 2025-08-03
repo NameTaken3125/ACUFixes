@@ -22,14 +22,7 @@
 class ParkourAction_Commonbase : public AvailableParkourAction
 {
 public:
-    char pad_0118[96]; //0x0118
-    SharedPtrNew<EntityGroup>* shared_entityGroupWithVisualCpntsOnly_178_canBeEmpty; //0x0178
-    Vector4f vec180; //0x0180
-    Vector4f vec190; //0x0190
-    Vector4f vec1A0; //0x01A0
-    char pad_01B0[84]; //0x01B0
-    float simpleFitness; //0x0204
-    char pad_0208[168]; //0x0208
+    char pad_0290[0x2B0-0x290]; //0x0208
 }; //Size: 0x02B0
 assert_sizeof(ParkourAction_Commonbase, 0x2B0);
 

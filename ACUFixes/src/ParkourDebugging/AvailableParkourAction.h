@@ -53,26 +53,71 @@ public:
     Vector4f direction_40; //0x0040
     Vector4f handsLocationTo_right_mb; //0x0050
     Vector4f handsLocationTo_left_mb; //0x0060
-    Vector4f dir70; //0x0070
+    Vector4f directionSrcToDestXYPlane; //0x0070
     Vector4f dir80; //0x0080
-    Vector4f directionFromTo; //0x0090
-    Vector4f dirA0; //0x00A0
-    char pad_00B0[16]; //0x00B0
+    Vector4f directionSrcToDest; //0x0090
+    Vector4f directionSrcToDestXYPlane_A0; //0x00A0
+    Vector4f locationTopLedge; //0x00B0 Z==infinity if there's no ledge above Arno
     float heightDifference; //0x00C0
     float horizontalDifference; //0x00C4
     float distance; //0x00C8
-    char pad_00CC[16]; //0x00CC
+    float flt_CC; //0x00CC
+    float flt_D0; //0x00D0
+    float flt_D4; //0x00D4
+    float flt_D8; //0x00D8
     uint32 dword_DC; //0x00DC
     char pad_00E0[8]; //0x00E0
-    SharedPtrNew<EntityGroup>* shared_buildingEntityGroup_mb; //0x00E8
+    SharedPtrNew<Entity>* shared_buildingEntity; //0x00E8
     char pad_00F0[16]; //0x00F0
-    PlayerRefInParkourAction shared_player; //0x0100
+    PlayerRefInParkourAction playerRef; //0x0100
+    char pad_0118[104]; //0x0118
+    Vector4f vec180; //0x0180
+    Vector4f vec190; //0x0190
+    Vector4f vec1A0; //0x01A0
+    char pad_01B0[8]; //0x01B0
+    float flt_1B8; //0x01B8
+    float flt_1BC; //0x01BC
+    char pad_01C0[8]; //0x01C0
+    float flt_1C8; //0x01C8
+    char pad_01CC[4]; //0x01CC
+    float heightDifferenceMin; //0x01D0
+    float heightDifferenceMax; //0x01D4
+    float horizontalDifferenceMin; //0x01D8
+    float horizontalDifferenceMax; //0x01DC
+    float distanceMin; //0x01E0
+    float distanceMax; //0x01E4
+    float minCosAngle; //0x01E8
+    float rangeForFltD0_max; //0x01EC
+    float rangeForFltD0_min; //0x01F0
+    float minForFloatD4; //0x01F4
+    float flt_1F8; //0x01F8
+    float epsilonForDistanceRange; //0x01FC
+    float epsilonForDotProd_mb; //0x0200
+    float fitness; //0x0204
+    char pad_0208[8]; //0x0208
+    float expectedDurationMin_mb; //0x0210
+    float expectedHeightDiff_mb; //0x0214
+    float expectedHorizontalSpeed; //0x0218
+    float expectedVerticalDefaultDisplace; //0x021C
+    float expectedVerticalSpeed_mb; //0x0220
+    float expectedDurationMaxExtension_mb; //0x0224
+    float flt_228; //0x0228
+    float expectedCurveRangeMin; //0x022C
+    float curveAllowedRangeMax; //0x0230
+    float curveAllowedRangeMin; //0x0234
+    float Side_min; //0x0238 expectedHorizontalDiffMin
+    float Side_max; //0x023C expectedHorizontalDiffMax
+    Vector4f vec240; //0x0240
+    Vector4f directionSrcToDestXYPlane_250; //0x0250
+    Vector4f dir_260; //0x0260
+    char pad_0270[32]; //0x0270
 
     // @helper_functions
     EnumParkourAction GetEnumParkourAction();
 };
 assert_offsetof(AvailableParkourAction, locationAnchorDest, 0x30);
-assert_offsetof(AvailableParkourAction, shared_player, 0x100);
+assert_offsetof(AvailableParkourAction, playerRef, 0x100);
+assert_offsetof(AvailableParkourAction, fitness, 0x204);
 
 // FancyVFunctions in `ParkourAction_EnterWindow.fancyVtable8`:
 namespace ParkourActionKnownFancyVFuncs
@@ -95,6 +140,13 @@ namespace ParkourActionKnownFancyVFuncs
     DEFINE_FANCY_VF(0x57, GetLandingHeight, 0xD5641CA6, float (*)(AvailableParkourAction*, Entity*));
     DEFINE_FANCY_VF(0x58, GetTargetAngle, 0x77BC6A50, float (*)(AvailableParkourAction*, Entity*));
     DEFINE_FANCY_VF(0x5A, GetTopLedgeDistance, 0xD009E05C, float (*)(AvailableParkourAction*, Entity*));
+    DEFINE_FANCY_VF(0x64, SetExpectedDistanceRangesAccordingToParkourMode, 0xF914A46F, void (*)(AvailableParkourAction*, __int64 a2, int p_parkourMode));
+    DEFINE_FANCY_VF(0x69, CalculateFitness, 0x872EACC8, void (*)(AvailableParkourAction*, __m128* rdx0, __int64 a3, __m128* a4, __int64 a5, __int64 a6, unsigned int p_parkourMode, Entity* p_player));
+    DEFINE_FANCY_VF(0x6C, FancyVFunc_0x6C, 0x9381A468, __m128* (*)(__m128* p_totalExpectedDisplacementWithVelocityAndAcceleration_out, AvailableParkourAction*, float p_expectedDuration));
+    DEFINE_FANCY_VF(0x6E, FancyVFunc_0x6E, 0x1828E7B7, __m128* (*)(__m128* p_totalExpectedDisplacementWithVelocityAndAcceleration_out, AvailableParkourAction*, float p_expectedDuration));
+    DEFINE_FANCY_VF(0x70, QuickCheckAcceptableDistanceRanges, 0x228CB41C, bool (*)(AvailableParkourAction*, int p_parkourMode));
+    DEFINE_FANCY_VF(0x72, QuickCheckAcceptableTargetObjectType_mb, 0xB7D5270B, bool (*)(AvailableParkourAction*, __int64 p_parkourProbe));
+    DEFINE_FANCY_VF(0x73, QuickCheckAcceptableParkourMode, 0x081284CA, bool (*)(AvailableParkourAction*, int p_parkourMode));
 
 #undef DEFINE_FANCY_VF
 }

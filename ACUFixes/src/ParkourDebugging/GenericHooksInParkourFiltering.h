@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ACU/SmallArray.h"
+
 #include "AutoAssemblerKinda/AutoAssemblerKinda.h"
 
 struct GPH_Creation : AutoAssemblerCodeHolder_Base
@@ -25,6 +27,15 @@ struct SharedHookActivator
     SharedHookActivator(const SharedHookActivator& rhs) = delete;
     SharedHookActivator& operator=(const SharedHookActivator& rhs) = delete;
 };
+
+class AvailableParkourAction;
+class ParkourCallbacks
+{
+public:
+    virtual ~ParkourCallbacks() {}
+    virtual AvailableParkourAction* ChooseBeforeFiltering(SmallArray<AvailableParkourAction*>& actions) { return nullptr; }
+    virtual AvailableParkourAction* ChooseAfterSorting(SmallArray<AvailableParkourAction*>& actions, AvailableParkourAction* selectedByGame) { return nullptr; }
+};
 class GenericHooksInParkourFiltering
 {
 public:
@@ -34,6 +45,8 @@ public:
     static GenericHooksInParkourFiltering& GetSingleton() { static GenericHooksInParkourFiltering singleton; return singleton; }
     std::shared_ptr<SharedHookActivator> RequestGPHCreation();
     std::shared_ptr<SharedHookActivator> RequestGPHSortAndSelect();
+
+    ParkourCallbacks* m_Callbacks = nullptr;
 
 private:
     std::weak_ptr<SharedHookActivator> m_Activator_GPHCreation;
