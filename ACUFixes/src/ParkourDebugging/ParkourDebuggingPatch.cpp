@@ -542,8 +542,15 @@ void DrawParkourDebugWindow()
     ImGui::GetIO().MouseDrawCursor = true;
     ImGui::SetNextWindowPos(ImVec2{ 170, 290 }, ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSize(ImVec2{ 362, 520 }, ImGuiCond_FirstUseEver);
-    if (ImGuiCTX::Window _wnd{ "Parkour Debug" })
+    static float opacity = 0.74f;
+    ImGuiCTX::PushStyleColor _wndBg{ ImGuiCol_WindowBg, ImVec4(0, 0, 0, opacity)};
+    if (ImGuiCTX::Window _wnd{ "Parkour Debug", 0, ImGuiWindowFlags_MenuBar })
     {
+        if (ImGuiCTX::MenuBar _menuBar{})
+        {
+            ImGui::SetNextItemWidth(100.0f);
+            ImGui::SliderFloat("Opacity", &opacity, 0.05f, 1.0f);
+        }
         auto DrawSummaryTab = [&]() {
             ImGui::Text("Latest parkour cycle:");
             if (!latestCycle)

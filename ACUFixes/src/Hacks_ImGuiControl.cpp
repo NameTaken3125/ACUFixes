@@ -26,6 +26,7 @@
 #include "VariousPatches/Hack_AllowCustomizeEquipment.h"
 #include "VariousPatches/Hack_GunRange.h"
 #include "VariousPatches/Hack_UnequipPistol.h"
+#include "VariousPatches/Hack_CorrectLandingHeightOutOfVault.h"
 
 #include "VariousPatches/Hack_LookbehindButton.h"
 #include "VariousPatches/Hack_WhistleAbility.h"
@@ -68,6 +69,7 @@ public:
     AutoAssembleWrapper<AllowCustomizeEquipment> allowCustomizeEquipmentOnLedges;
     AutoAssembleWrapper<GuillotineGunRange> guillotineGunRange;
     AutoAssembleWrapper<UnequipPistol> allowUnequipPistol;
+    AutoAssembleWrapper<CorrectLandingHeightOutOfVault> correctLandingHeightOutOfVault;
 
     // Unused and unfinished
     AutoAssembleWrapper<PlayWithFOV> fovGames;
@@ -287,6 +289,14 @@ public:
                 "\nto unequip it."
             );
         }
+        ImGui::DrawCheckboxForHack(correctLandingHeightOutOfVault, "Correct Landing Height out of vault");
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::SetTooltip(
+                "Under certain circumstances Arno can make a heavy stumble after performing a small vault.\n"
+                "This should fix that bug."
+            );
+        }
         ImGui::DrawCheckboxForHack(lookbehindButton, "Lookbehind button");
         if (ImGui::IsItemHovered())
         {
@@ -504,6 +514,7 @@ public:
         allowCustomizeEquipmentOnLedges.Toggle(hacksSection->allowCustomizeEquipmentOnLedges);
         guillotineGunRange.Toggle(hacksSection->slightlyGreaterGuillotineGunQuickshotRange);
         allowUnequipPistol.Toggle(hacksSection->allowUnequipPistol);
+        correctLandingHeightOutOfVault.Toggle(hacksSection->correctLandingHeightOutOfVault);
 
         auto& cheatsSection = cfg.cheats;
         dontDecreaseRemainingAmmo.Toggle(cheatsSection->infiniteAmmo);
@@ -535,6 +546,7 @@ public:
         hacksSection->allowCustomizeEquipmentOnLedges = allowCustomizeEquipmentOnLedges.IsActive();
         hacksSection->slightlyGreaterGuillotineGunQuickshotRange = guillotineGunRange.IsActive();
         hacksSection->allowUnequipPistol = allowUnequipPistol.IsActive();
+        hacksSection->correctLandingHeightOutOfVault = correctLandingHeightOutOfVault.IsActive();
 
         auto& cheatsSection = cfg.cheats;
         cheatsSection->infiniteAmmo = dontDecreaseRemainingAmmo.IsActive();

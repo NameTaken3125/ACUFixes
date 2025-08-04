@@ -66,6 +66,7 @@ struct ConfigTop : YAConfigSection {
         ACM(slightlyGreaterGuillotineGunQuickshotRange, bool, BooleanAdapter, true);
         ACM(noWaitForUnsafeEject, bool, BooleanAdapter, true);
         ACM(allowUnequipPistol, bool, BooleanAdapter, true);
+        ACM(correctLandingHeightOutOfVault, bool, BooleanAdapter, false);
         struct YACS_LookbehindButton : YAConfigSection {
             YACSTOR(YACS_LookbehindButton);
             ACM(isActive, bool, BooleanAdapter, false);

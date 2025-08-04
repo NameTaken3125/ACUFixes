@@ -214,6 +214,10 @@ public:
 class PushStyleVar
 {
 public:
+    PushStyleVar(ImGuiStyleVar idx, float val)
+    {
+        ImGui::PushStyleVar(idx, val);
+    }
     PushStyleVar(ImGuiStyleVar idx, const ImVec2& val)
     {
         ImGui::PushStyleVar(idx, val);

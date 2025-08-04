@@ -224,6 +224,7 @@ if exist "$(ProjectDir)copy_output_to_directory.txt" (
     <ClCompile Include="src\VariousPatches\Cheat_WeatherControls.cpp" />
     <ClCompile Include="src\AnimationTools\DumpAnimationGraph.cpp" />
     <ClCompile Include="src\VariousPatches\Hack_AllowCustomizeEquipment.cpp" />
+    <ClCompile Include="src\VariousPatches\Hack_CorrectLandingHeightOutOfVault.cpp" />
     <ClCompile Include="src\VariousPatches\Hack_DontRandomlyTurn180Degrees.cpp" />
     <ClCompile Include="src\VariousPatches\Hack_GunRange.cpp" />
     <ClCompile Include="src\VariousPatches\Hack_MoreReliableQuickshot.cpp" />
@@ -300,6 +301,7 @@ if exist "$(ProjectDir)copy_output_to_directory.txt" (
     <ClInclude Include="src\AnimationTools\SkeletonDumper.h" />
     <ClInclude Include="src\AnimationTools\UsefulHandles.h" />
     <ClInclude Include="src\VariousPatches\Hack_AllowCustomizeEquipment.h" />
+    <ClInclude Include="src\VariousPatches\Hack_CorrectLandingHeightOutOfVault.h" />
     <ClInclude Include="src\VariousPatches\Hack_DontRandomlyTurn180Degrees.h" />
     <ClInclude Include="src\VariousPatches\Hack_GunRange.h" />
     <ClInclude Include="src\VariousPatches\Hack_MoreReliableQuickshot.h" />
