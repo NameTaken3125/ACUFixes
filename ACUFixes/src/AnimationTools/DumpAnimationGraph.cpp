@@ -1711,6 +1711,21 @@ void DrawAtomGraphDumper()
     scalar LandingHeight; // 0x7989e106/2039079174
 
     scalar TopLedgeDistance; // 0xdec8d023/3737702435
+
+    scalar SyncA_TargetHeight; // 0x3eb5eb2/65756850
+    scalar SyncB_TargetHeight; // 0x7f8a7b69/2139781993
+    scalar SyncC_TargetHeight; // 0xe2859a1f/3800406559
+    scalar SyncD_TargetHeight; // 0x874830df/2269655263
+    scalar SyncE_TargetHeight; // 0x1a47d1a9/440914345
+
+    scalar Height; // 0xf2e1e039/4074889273
+    scalar HeightDifferential; // 0x5842c4cc/1480770764
+
+    scalar SyncA_TargetDistance; // 0x114ad6d6/290117334
+    scalar SyncB_TargetDistance; // 0x38826224/948068900
+    scalar SyncC_TargetDistance; // 0x96eaf3b5/2531980213
+    scalar SyncD_TargetDistance; // 0x6b130bc0/1796410304
+    scalar SyncE_TargetDistance; // 0xc57b9a51/3313211985
     */
     DrawGraphVariable<float>("TargetAngle", *graphEvaluation, 0xd7e18370, notifyTheGraphWhenModifying);
     DrawGraphVariable<float>("TargetDistance", *graphEvaluation, 0x97a0d819, notifyTheGraphWhenModifying);
@@ -1720,6 +1735,21 @@ void DrawAtomGraphDumper()
     DrawGraphVariable<float>("EdgeDistanceY", *graphEvaluation, 0xf44dce3e, notifyTheGraphWhenModifying);
     DrawGraphVariable<float>("LandingHeight", *graphEvaluation, 0x7989e106, notifyTheGraphWhenModifying);
     DrawGraphVariable<float>("TopLedgeDistance", *graphEvaluation, 0xdec8d023, notifyTheGraphWhenModifying);
+
+    DrawGraphVariable<float>("SyncA_TargetHeight", *graphEvaluation, 0x3eb5eb2, notifyTheGraphWhenModifying);
+    DrawGraphVariable<float>("SyncB_TargetHeight", *graphEvaluation, 0x7f8a7b69, notifyTheGraphWhenModifying);
+    DrawGraphVariable<float>("SyncC_TargetHeight", *graphEvaluation, 0xe2859a1f, notifyTheGraphWhenModifying);
+    DrawGraphVariable<float>("SyncD_TargetHeight", *graphEvaluation, 0x874830df, notifyTheGraphWhenModifying);
+    DrawGraphVariable<float>("SyncE_TargetHeight", *graphEvaluation, 0x1a47d1a9, notifyTheGraphWhenModifying);
+
+    DrawGraphVariable<float>("SyncA_TargetDistance", *graphEvaluation, 0x114ad6d6, notifyTheGraphWhenModifying);
+    DrawGraphVariable<float>("SyncB_TargetDistance", *graphEvaluation, 0x38826224, notifyTheGraphWhenModifying);
+    DrawGraphVariable<float>("SyncC_TargetDistance", *graphEvaluation, 0x96eaf3b5, notifyTheGraphWhenModifying);
+    DrawGraphVariable<float>("SyncD_TargetDistance", *graphEvaluation, 0x6b130bc0, notifyTheGraphWhenModifying);
+    DrawGraphVariable<float>("SyncE_TargetDistance", *graphEvaluation, 0xc57b9a51, notifyTheGraphWhenModifying);
+
+    DrawGraphVariable<float>("Height", *graphEvaluation, 0xf2e1e039, notifyTheGraphWhenModifying);
+    DrawGraphVariable<float>("HeightDifferential", *graphEvaluation, 0x5842c4cc, notifyTheGraphWhenModifying);
     DrawGraphVariable<int>(g_rtcpDesc_HoodControlValue.varname, *graphEvaluation, g_rtcpDesc_HoodControlValue.varnameHash, notifyTheGraphWhenModifying);
 
     //if (ImGui::Button("Clear bone layering cache"))

@@ -371,6 +371,21 @@ std::optional<int> ParkourDebugging_SelectMove(SmallArray<AvailableParkourAction
     return *foundIt;
 }
 
+namespace ImGui
+{
+// Make the UI compact because there are so many fields
+static void PushStyleCompact()
+{
+    ImGuiStyle& style = ImGui::GetStyle();
+    ImGui::PushStyleVarY(ImGuiStyleVar_FramePadding, (float)(int)(style.FramePadding.y * 0.60f));
+    ImGui::PushStyleVarY(ImGuiStyleVar_ItemSpacing, (float)(int)(style.ItemSpacing.y * 0.60f));
+}
+
+static void PopStyleCompact()
+{
+    ImGui::PopStyleVar(2);
+}
+}
 void WhenPerformingFinalFilter1OnSortedMoves_ForceTurnInPalaisDeLuxembourgCorners(AllRegisters* params)
 {
     DEFINE_GAME_FUNCTION(AvailableParkourAction__FinalFilter1, 0x1401D4DE0, bool, __fastcall, (AvailableParkourAction* p_parkourAction, __m128* a2, uint64 a3, Entity* p_playerEntity));
@@ -398,6 +413,14 @@ static bool CompareOptionalFloats(std::optional<float> a, std::optional<float> b
     return a < b;
 }
 #include "ParkourLog.h"
+const ImVec4 colorTextGreen(0.425f, 0.780f, 0.392f, 1.000f);
+const ImVec4 colorTextYellow = ImVec4(1.0f, 0.8f, 0.3f, 1.0f);
+const ImVec4 colorTextRed = ImVec4(1.0f, 0.4f, 0.4f, 1.0f);
+const ImVec4 colorTextAllDiscarded = colorTextRed;
+const ImVec4 colorTextSelectedType = colorTextYellow;
+const ImVec4 colorTextIsDiscarded = colorTextRed;
+const ImVec4 colorTextIsSelected = colorTextYellow;
+const ImVec4 colorTextModulate = colorTextGreen;
 void DrawParkourDebugWindow()
 {
     ParkourLog& parkourLog = ParkourLog::GetSingleton();
@@ -464,15 +487,13 @@ void DrawParkourDebugWindow()
                     "All move types: %d"
                     , allMoves.size()
                 );
-                const ImVec4 colorSelectedType = ImVec4(1.0f, 0.8f, 0.3f, 1.0f);
-                const ImVec4 colorAllDiscarded = ImVec4(1.0f, 0.4f, 0.4f, 1.0f);
                 for (const EnumParkourAction actionType : allMoves)
                 {
                     std::optional<ImGuiCTX::PushStyleColor> selectedActionTextColor;
                     const bool isTheSelectedType = actionType == selectedType;
-                    if (isTheSelectedType) selectedActionTextColor.emplace(ImGuiCol_Text, colorSelectedType);
+                    if (isTheSelectedType) selectedActionTextColor.emplace(ImGuiCol_Text, colorTextSelectedType);
                     else if (const bool allMovesOfThisTypeWereDiscarded = !actionTypesWithAtLeastOneNondiscarded.contains(actionType))
-                        selectedActionTextColor.emplace(ImGuiCol_Text, colorAllDiscarded);
+                        selectedActionTextColor.emplace(ImGuiCol_Text, colorTextAllDiscarded);
                     ImGui::Text(
                         "%3d == %s"
                         , actionType
@@ -484,8 +505,6 @@ void DrawParkourDebugWindow()
         auto DrawDetailsTab = [&]() {
             if (!latestCycle) return;
             std::lock_guard _lock{ latestCycle->m_Mutex };
-            const ImVec4 colIsSelected = ImVec4(1.0f, 0.8f, 0.3f, 1.0f);
-            const ImVec4 colIsDiscarded = ImVec4(1.0f, 0.4f, 0.4f, 1.0f);
             enum MoveDetailsColumns
             {
                 Index = 0,
@@ -500,13 +519,17 @@ void DrawParkourDebugWindow()
 
                 MoveDetailsColumns_COUNT,
             };
-            if (ImGui::BeginTable("Moves details", MoveDetailsColumns_COUNT,
+            ImGuiTableFlags table_flags =
                 ImGuiTableFlags_Borders
+                | ImGuiTableFlags_ScrollY
                 | ImGuiTableFlags_Resizable
                 | ImGuiTableFlags_RowBg
                 | ImGuiTableFlags_Sortable
                 | ImGuiTableFlags_SizingFixedFit
-            )) {
+                ;
+            if (ImGui::BeginTable("Moves details", MoveDetailsColumns_COUNT, table_flags))
+            {
+                ImGui::TableSetupScrollFreeze(0, 1); // Make top row always visible
                 ImGui::TableSetupColumn("Index");
                 ImGui::TableSetupColumn("Type");
                 ImGui::TableSetupColumn("TypeReadable");
@@ -568,9 +591,7 @@ void DrawParkourDebugWindow()
                         }
                     }
                 }
-                for (auto& action : latestCycle->m_Actions)
-                {
-                    ImGui::TableNextRow();
+                auto DrawRow = [&](std::unique_ptr<ParkourActionLogged>& action) {
                     ImGui::TableSetColumnIndex(MoveDetailsColumns::Index);
                     ImGui::Text("%3d", action->m_Index);
                     ImGui::TableSetColumnIndex(MoveDetailsColumns::Type);
@@ -601,7 +622,7 @@ void DrawParkourDebugWindow()
                         std::optional<ImGuiCTX::PushStyleColor> coloredText;
                         if (action->m_IsDiscarded_immediatelyAfterCreation)
                         {
-                            coloredText.emplace(ImGuiCol_Text, colIsDiscarded);
+                            coloredText.emplace(ImGuiCol_Text, colorTextIsDiscarded);
                             ImGui::Text("+");
                         }
                     }
@@ -615,7 +636,7 @@ void DrawParkourDebugWindow()
                         std::optional<ImGuiCTX::PushStyleColor> coloredText;
                         if (action->m_IsDiscarded_becauseFitnessWeightTooLow)
                         {
-                            coloredText.emplace(ImGuiCol_Text, colIsDiscarded);
+                            coloredText.emplace(ImGuiCol_Text, colorTextIsDiscarded);
                             ImGui::Text("+");
                         }
                     }
@@ -634,9 +655,21 @@ void DrawParkourDebugWindow()
                         std::optional<ImGuiCTX::PushStyleColor> coloredText;
                         if (action->m_IsTheSelectedBestMatch)
                         {
-                            coloredText.emplace(ImGuiCol_Text, colIsSelected);
+                            coloredText.emplace(ImGuiCol_Text, colorTextIsSelected);
                             ImGui::Text("+");
                         }
+                    }
+                    };
+                // Demonstrate using clipper for large vertical lists
+                ImGuiListClipper clipper;
+                clipper.Begin((int)latestCycle->m_Actions.size());
+                while (clipper.Step())
+                {
+                    for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; row++)
+                    {
+                        ImGui::TableNextRow();
+                        std::unique_ptr<ParkourActionLogged>& action = latestCycle->m_Actions[(size_t)row];
+                        DrawRow(action);
                     }
                 }
                 ImGui::EndTable();
