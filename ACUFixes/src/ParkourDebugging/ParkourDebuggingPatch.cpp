@@ -413,6 +413,33 @@ static bool CompareOptionalFloats(std::optional<float> a, std::optional<float> b
     return a < b;
 }
 #include "ParkourLog.h"
+namespace
+{
+using Action_t = std::unique_ptr<ParkourActionLogged>;
+template<
+    std::invocable<Action_t&>               Draw_fnt
+    , std::invocable<Action_t&, Action_t&>  SortPred_fnt
+>
+struct MoveDetailsColumn
+{
+    size_t m_ColIdx;
+    const char* m_Header;
+    Draw_fnt m_Draw;
+    SortPred_fnt m_SortPredicate;
+};
+template<std::invocable<Action_t&> GetAttribute_fnt>
+struct SortByAttribute
+{
+    GetAttribute_fnt&& m_GetAttributeFn;
+    bool operator()(Action_t& a, Action_t& b)
+    {
+        return m_GetAttributeFn(a) < m_GetAttributeFn(b);
+    }
+};
+static void for_each_in_tuple(auto&& tuple, auto&& callable)
+{
+    std::apply([&](auto&&... tupleElem) { ((callable(tupleElem)), ...); }, tuple);
+}
 const ImVec4 colorTextGreen(0.425f, 0.780f, 0.392f, 1.000f);
 const ImVec4 colorTextYellow = ImVec4(1.0f, 0.8f, 0.3f, 1.0f);
 const ImVec4 colorTextRed = ImVec4(1.0f, 0.4f, 0.4f, 1.0f);
@@ -421,6 +448,86 @@ const ImVec4 colorTextSelectedType = colorTextYellow;
 const ImVec4 colorTextIsDiscarded = colorTextRed;
 const ImVec4 colorTextIsSelected = colorTextYellow;
 const ImVec4 colorTextModulate = colorTextGreen;
+static auto MakeColumnsForParkourDetails()
+{
+    auto DrawCol_Index = [](Action_t& action) { ImGui::Text("%3d", action->m_Index); };
+    auto DrawCol_Type = [](Action_t& action) { ImGui::Text("%3d", action->m_ActionType); };
+    auto DrawCol_TypeReadable = [](Action_t& action) {
+        ImGui::Text("%s", enum_reflection<EnumParkourAction>::GetString(action->m_ActionType));
+        {
+            static ImGuiTextBuffer buf; buf.resize(0);
+            buf.appendf(
+                "%8.3f,%8.3f,%8.3f\n"
+                "%8.3f,%8.3f,%8.3f\n"
+                "%8.3f,%8.3f,%8.3f\n"
+                "%8.3f,%8.3f,%8.3f\n"
+                , action->m_LocationSrc.x, action->m_LocationSrc.y, action->m_LocationSrc.z
+                , action->m_DirSrc.x, action->m_DirSrc.y, action->m_DirSrc.z
+                , action->m_LocationDst.x
+                , action->m_LocationDst.y
+                , action->m_LocationDst.z
+                , action->m_DirDst.x
+                , action->m_DirDst.y
+                , action->m_DirDst.z
+            );
+            ImGui::SetItemTooltip(buf.c_str());
+            if (ImGui::IsItemClicked()) ImGui::SetClipboardText(buf.c_str());
+        }
+        };
+    auto DrawCol_IsDiscardedImmediately = [](Action_t& action) {
+        std::optional<ImGuiCTX::PushStyleColor> coloredText;
+        if (action->m_IsDiscarded_immediatelyAfterCreation)
+        {
+            coloredText.emplace(ImGuiCol_Text, colorTextIsDiscarded);
+            ImGui::Text("+");
+        }
+        };
+    auto DrawCol_IsDiscardedBecauseFitnessTooLow = [](Action_t& action) {
+        std::optional<ImGuiCTX::PushStyleColor> coloredText;
+        if (action->m_IsDiscarded_becauseFitnessWeightTooLow)
+        {
+            coloredText.emplace(ImGuiCol_Text, colorTextIsDiscarded);
+            ImGui::Text("+");
+        }
+        };
+    auto DrawCol_IsChosen = [](Action_t& action) {
+        std::optional<ImGuiCTX::PushStyleColor> coloredText;
+        if (action->m_IsTheSelectedBestMatch)
+        {
+            coloredText.emplace(ImGuiCol_Text, colorTextIsSelected);
+            ImGui::Text("+");
+        }
+        };
+    auto DrawCol_Fitness = [](Action_t& action) { if (action->m_FitnessWeight) ImGui::Text("%f", *action->m_FitnessWeight); };
+    auto DrawCol_DefaultWeight = [](Action_t& action) { if (action->m_DefaultWeight) ImGui::Text("%f", *action->m_DefaultWeight); };
+    auto DrawCol_TotalWeight = [](Action_t& action) { if (action->m_TotalWeight) ImGui::Text("%f", *action->m_TotalWeight); };
+    enum MoveDetailsColumnsIndices
+    {
+        Index = 0,
+        Type,
+        TypeReadable,
+        IsDiscardedImmediately,
+        Fitness,
+        IsDiscardedBecauseFitnessTooLow,
+        DefaultWeight,
+        TotalWeight,
+        IsChosen,
+    };
+#define MDCOL(colId) MoveDetailsColumnsIndices::colId, #colId, DrawCol_##colId
+    return std::make_tuple(
+            MoveDetailsColumn{ MDCOL(Index), SortByAttribute{[](Action_t& a) { return a->m_Index; }} }
+            , MoveDetailsColumn{ MDCOL(Type), SortByAttribute{ [](Action_t& a) { return a->m_ActionType; } } }
+            , MoveDetailsColumn{ MDCOL(TypeReadable), SortByAttribute{ [](Action_t& a) { return std::string_view(enum_reflection<EnumParkourAction>::GetString(a->m_ActionType)); } } }
+            , MoveDetailsColumn{ MDCOL(IsDiscardedImmediately), SortByAttribute{ [](Action_t& a) { return a->m_IsDiscarded_immediatelyAfterCreation; } } }
+            , MoveDetailsColumn{ MDCOL(Fitness), SortByAttribute{ [](Action_t& a) { return a->m_FitnessWeight; } } }
+            , MoveDetailsColumn{ MDCOL(IsDiscardedBecauseFitnessTooLow), SortByAttribute{ [](Action_t& a) { return a->m_IsDiscarded_becauseFitnessWeightTooLow; } } }
+            , MoveDetailsColumn{ MDCOL(DefaultWeight), SortByAttribute{ [](Action_t& a) { return a->m_DefaultWeight; } } }
+            , MoveDetailsColumn{ MDCOL(TotalWeight), SortByAttribute{ [](Action_t& a) { return a->m_TotalWeight; } } }
+            , MoveDetailsColumn{ MDCOL(IsChosen), SortByAttribute{ [](Action_t& a) { return a->m_IsTheSelectedBestMatch; } } }
+        );
+#undef MDCOL
+};
+}
 void DrawParkourDebugWindow()
 {
     ParkourLog& parkourLog = ParkourLog::GetSingleton();
@@ -505,20 +612,8 @@ void DrawParkourDebugWindow()
         auto DrawDetailsTab = [&]() {
             if (!latestCycle) return;
             std::lock_guard _lock{ latestCycle->m_Mutex };
-            enum MoveDetailsColumns
-            {
-                Index = 0,
-                Type,
-                TypeReadable,
-                IsDiscardedImmediately,
-                Fitness,
-                IsDiscardedBecauseFitnessTooLow,
-                DefaultWeight,
-                TotalWeight,
-                IsChosen,
-
-                MoveDetailsColumns_COUNT,
-            };
+            auto columns = MakeColumnsForParkourDetails();
+            const size_t numColumns = std::tuple_size_v<decltype(columns)>;
             ImGuiTableFlags table_flags =
                 ImGuiTableFlags_Borders
                 | ImGuiTableFlags_ScrollY
@@ -527,18 +622,12 @@ void DrawParkourDebugWindow()
                 | ImGuiTableFlags_Sortable
                 | ImGuiTableFlags_SizingFixedFit
                 ;
-            if (ImGui::BeginTable("Moves details", MoveDetailsColumns_COUNT, table_flags))
+            if (ImGui::BeginTable("Moves details", numColumns, table_flags))
             {
                 ImGui::TableSetupScrollFreeze(0, 1); // Make top row always visible
-                ImGui::TableSetupColumn("Index");
-                ImGui::TableSetupColumn("Type");
-                ImGui::TableSetupColumn("TypeReadable");
-                ImGui::TableSetupColumn("IsDiscardedImmediately");
-                ImGui::TableSetupColumn("Fitness");
-                ImGui::TableSetupColumn("IsDiscardedBecauseFitnessTooLow");
-                ImGui::TableSetupColumn("DefaultWeight");
-                ImGui::TableSetupColumn("TotalWeight");
-                ImGui::TableSetupColumn("IsChosen");
+                for_each_in_tuple(columns, [](auto&& detailsColumn) {
+                    ImGui::TableSetupColumn(detailsColumn.m_Header);
+                    });
                 ImGui::TableHeadersRow();
                 if (ImGuiTableSortSpecs* sortSpecs = ImGui::TableGetSortSpecs())
                 {
@@ -556,109 +645,17 @@ void DrawParkourDebugWindow()
                             auto adjustedPredicate = [&](Act_t& a, Act_t& b) { return isAscending ? predicate(a, b) : predicate(b, a); };
                             std::sort(acts.begin(), acts.end(), adjustedPredicate);
                             };
-                        switch (static_cast<MoveDetailsColumns>(primSort.ColumnIndex))
-                        {
-                        case MoveDetailsColumns::Index:
-                            ApplySort([](Act_t& a, Act_t& b) { return a->m_Index < b->m_Index; });
-                            break;
-                        case MoveDetailsColumns::Type:
-                            ApplySort([](Act_t& a, Act_t& b) { return a->m_ActionType < b->m_ActionType; });
-                            break;
-                        case MoveDetailsColumns::TypeReadable:
-                            ApplySort([](Act_t& a, Act_t& b) {
-                                return std::string_view(enum_reflection<EnumParkourAction>::GetString(a->m_ActionType))
-                                    < std::string_view(enum_reflection<EnumParkourAction>::GetString(b->m_ActionType));
-                                    });
-                            break;
-                        case MoveDetailsColumns::IsDiscardedImmediately:
-                            ApplySort([](Act_t& a, Act_t& b) { return a->m_IsDiscarded_immediatelyAfterCreation < b->m_IsDiscarded_immediatelyAfterCreation; });
-                            break;
-                        case MoveDetailsColumns::Fitness:
-                            ApplySort([](Act_t& a, Act_t& b) { return CompareOptionalFloats(a->m_FitnessWeight, b->m_FitnessWeight); });
-                            break;
-                        case MoveDetailsColumns::IsDiscardedBecauseFitnessTooLow:
-                            ApplySort([](Act_t& a, Act_t& b) { return a->m_IsDiscarded_becauseFitnessWeightTooLow < b->m_IsDiscarded_becauseFitnessWeightTooLow; });
-                            break;
-                        case MoveDetailsColumns::DefaultWeight:
-                            ApplySort([](Act_t& a, Act_t& b) { return CompareOptionalFloats(a->m_DefaultWeight, b->m_DefaultWeight); });
-                            break;
-                        case MoveDetailsColumns::TotalWeight:
-                            ApplySort([](Act_t& a, Act_t& b) { return CompareOptionalFloats(a->m_TotalWeight, b->m_TotalWeight); });
-                            break;
-                        case MoveDetailsColumns::IsChosen:
-                            ApplySort([](Act_t& a, Act_t& b) { return a->m_IsTheSelectedBestMatch < b->m_IsTheSelectedBestMatch; });
-                            break;
-                        }
+                        for_each_in_tuple(columns, [&](auto&& detailsColumn) {
+                            if (detailsColumn.m_ColIdx != primSort.ColumnIndex) return;
+                            ApplySort(detailsColumn.m_SortPredicate);
+                            });
                     }
                 }
                 auto DrawRow = [&](std::unique_ptr<ParkourActionLogged>& action) {
-                    ImGui::TableSetColumnIndex(MoveDetailsColumns::Index);
-                    ImGui::Text("%3d", action->m_Index);
-                    ImGui::TableSetColumnIndex(MoveDetailsColumns::Type);
-                    ImGui::Text("%3d", action->m_ActionType);
-                    ImGui::TableSetColumnIndex(MoveDetailsColumns::TypeReadable);
-                    ImGui::Text("%s", enum_reflection<EnumParkourAction>::GetString(action->m_ActionType));
-                    {
-                        static ImGuiTextBuffer buf; buf.resize(0);
-                        buf.appendf(
-                            "%8.3f,%8.3f,%8.3f\n"
-                            "%8.3f,%8.3f,%8.3f\n"
-                            "%8.3f,%8.3f,%8.3f\n"
-                            "%8.3f,%8.3f,%8.3f\n"
-                            , action->m_LocationSrc.x, action->m_LocationSrc.y, action->m_LocationSrc.z
-                            , action->m_DirSrc.x, action->m_DirSrc.y, action->m_DirSrc.z
-                            , action->m_LocationDst.x
-                            , action->m_LocationDst.y
-                            , action->m_LocationDst.z
-                            , action->m_DirDst.x
-                            , action->m_DirDst.y
-                            , action->m_DirDst.z
-                        );
-                        ImGui::SetItemTooltip(buf.c_str());
-                        if (ImGui::IsItemClicked()) ImGui::SetClipboardText(buf.c_str());
-                    }
-                    ImGui::TableSetColumnIndex(MoveDetailsColumns::IsDiscardedImmediately);
-                    {
-                        std::optional<ImGuiCTX::PushStyleColor> coloredText;
-                        if (action->m_IsDiscarded_immediatelyAfterCreation)
-                        {
-                            coloredText.emplace(ImGuiCol_Text, colorTextIsDiscarded);
-                            ImGui::Text("+");
-                        }
-                    }
-                    ImGui::TableSetColumnIndex(MoveDetailsColumns::Fitness);
-                    if (action->m_FitnessWeight)
-                    {
-                        ImGui::Text("%f", *action->m_FitnessWeight);
-                    }
-                    ImGui::TableSetColumnIndex(MoveDetailsColumns::IsDiscardedBecauseFitnessTooLow);
-                    {
-                        std::optional<ImGuiCTX::PushStyleColor> coloredText;
-                        if (action->m_IsDiscarded_becauseFitnessWeightTooLow)
-                        {
-                            coloredText.emplace(ImGuiCol_Text, colorTextIsDiscarded);
-                            ImGui::Text("+");
-                        }
-                    }
-                    ImGui::TableSetColumnIndex(MoveDetailsColumns::DefaultWeight);
-                    if (action->m_DefaultWeight)
-                    {
-                        ImGui::Text("%f", *action->m_DefaultWeight);
-                    }
-                    ImGui::TableSetColumnIndex(MoveDetailsColumns::TotalWeight);
-                    if (action->m_TotalWeight)
-                    {
-                        ImGui::Text("%f", *action->m_TotalWeight);
-                    }
-                    ImGui::TableSetColumnIndex(MoveDetailsColumns::IsChosen);
-                    {
-                        std::optional<ImGuiCTX::PushStyleColor> coloredText;
-                        if (action->m_IsTheSelectedBestMatch)
-                        {
-                            coloredText.emplace(ImGuiCol_Text, colorTextIsSelected);
-                            ImGui::Text("+");
-                        }
-                    }
+                    for_each_in_tuple(columns, [&](auto&& detailsColumn) {
+                        ImGui::TableSetColumnIndex((int)detailsColumn.m_ColIdx);
+                        detailsColumn.m_Draw(action);
+                        });
                     };
                 // Demonstrate using clipper for large vertical lists
                 ImGuiListClipper clipper;
