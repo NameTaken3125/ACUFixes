@@ -103,7 +103,8 @@ public:
         bool m_ShowDiscardedEarly = false;
         bool m_ShowDiscardedLate = true;
         bool m_ShowNondiscarded = true;
-        bool m_ShowMoreThanOneOfTheRecentCycles = true;
+        bool m_ShowMoreThanOneOfTheRecentCycles = false;
+        bool m_ShowMoreThanOneOfTheRecentCycles_SkipAllDiscarded = false;
     } m_DisplaySettings;
     void DrawDisplayControls();
     bool IsActionShouldBeDisplayed(ParkourActionLogged& action);

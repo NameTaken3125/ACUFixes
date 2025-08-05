@@ -4,6 +4,8 @@
 
 #include "ACU/World.h"
 #include "AvailableParkourAction.h"
+#include "ImGuiCTX.h"
+
 #include "MyLog.h"
 
 static DEFINE_LOGGER_CONSOLE_AND_FILE(ParkourLogger, "[Parkour]");
@@ -94,11 +96,15 @@ static void PopStyleCompact()
 void ParkourLog::DrawDisplayControls()
 {
     ImGui::PushStyleCompact();
-    ImGui::Checkbox("Discarded early", &m_DisplaySettings.m_ShowDiscardedEarly);
+    ImGui::Checkbox("Discarded early (can sometimes impact performance)", &m_DisplaySettings.m_ShowDiscardedEarly);
     ImGui::Checkbox("Discarded late", &m_DisplaySettings.m_ShowDiscardedLate);
     ImGui::Checkbox("Nondiscarded", &m_DisplaySettings.m_ShowNondiscarded);
     ImGui::NewLine();
-    ImGui::Checkbox("More than one recent cycle", &m_DisplaySettings.m_ShowMoreThanOneOfTheRecentCycles);
+    ImGui::Checkbox("More than one recent cycle (can sometimes impact performance)", &m_DisplaySettings.m_ShowMoreThanOneOfTheRecentCycles);
+    {
+        ImGuiCTX::Indent _ind;
+        ImGui::Checkbox("Skip fully discarded cycles", &m_DisplaySettings.m_ShowMoreThanOneOfTheRecentCycles_SkipAllDiscarded);
+    }
     ImGui::PopStyleCompact();
 }
 bool ParkourLog::IsActionShouldBeDisplayed(ParkourActionLogged& action)
@@ -145,18 +151,7 @@ std::shared_ptr<ParkourCycleLogged> ParkourLog::GetLatestLoggedParkourCycle()
 std::vector<std::shared_ptr<ParkourCycleLogged>> ParkourLog::GetRecentCycles()
 {
     std::lock_guard _lock{ m_Mutex };
-    auto& history = m_RecentParkourCycles;
-    size_t curSize = history.size();
-    size_t numDisplayed = std::min(curSize, m_MaxDisplayNum);
-    size_t firstIdx = curSize - numDisplayed;
-    size_t pastLastIdx = curSize;
-    std::vector<std::shared_ptr<ParkourCycleLogged>> result; result.reserve(numDisplayed);
-    for (size_t i = firstIdx; i < pastLastIdx; i++)
-    {
-        auto& elem = history[i];
-        result.push_back(elem);
-    }
-    return result;
+    return m_RecentParkourCycles;
 }
 std::shared_ptr<ParkourCycleLogged> GetCurrentLoggedParkourCycle()
 {

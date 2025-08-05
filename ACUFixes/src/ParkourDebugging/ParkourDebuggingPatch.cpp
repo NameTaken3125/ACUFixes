@@ -208,29 +208,24 @@ public:
             }
         }
     }
-    static Matrix4f CreateLookAt(const Vector3f& eyePos, const Vector3f& centerPos, const Vector3f& upDir)
+    static void SetMatrix4fLookAt(Matrix4f& m, const Vector3f& eyePos, const Vector3f& forwardNormalized, const Vector3f& upDir)
     {
-        Vector3f forward, side, up;
-        Matrix4f m;
+        Vector3f side, up;
 
-        forward = centerPos - eyePos;
         up = upDir;
 
-        forward.normalize();
-
         // Side = forward x up
-        side = forward.crossProduct(up);
+        side = forwardNormalized.crossProduct(up);
         side.normalize();
 
         // Recompute up as: up = side x forward
-        up = side.crossProduct(forward);
+        up = side.crossProduct(forwardNormalized);
 
         (Vector3f&)m.data[4 * 0] = side;
-        (Vector3f&)m.data[4 * 1] = forward;
+        (Vector3f&)m.data[4 * 1] = forwardNormalized;
         (Vector3f&)m.data[4 * 2] = up;
 
-        m = Matrix4f::createTranslation(eyePos.x, eyePos.y, eyePos.z) * m;
-        return m;
+        m.setTranslation(eyePos);
     }
     virtual void DoDraw() override
     {
@@ -241,12 +236,23 @@ public:
     }
     void DrawRecentLoggedCycles3D()
     {
+        /*
+        Sitting on a beam at [446.54 737.81 8.22]
+        and trying to walk straight perpendicularly in low profile
+        creates ~1000 actions per frame. Fully visualizing 10 of these cycles
+        for a total of 10000+ markers tanks the fps.
+        A good place to test drawing performance, I guess.
+        The bottleneck seems to be in the calculations within ImGui3D::DrawWireModelTransform().
+        */
         World* world = World::GetSingleton();
         if (!world) return;
         const int64 currentTime = world->clockInWorldWithSlowmotion.GetCurrent_RawIntTimestamp();
         auto& parkourLog = ParkourLog::GetSingleton();
-        std::vector<std::shared_ptr<ParkourCycleLogged>> recentCycles = parkourLog.GetRecentCycles();
+        std::vector<std::shared_ptr<ParkourCycleLogged>> history = parkourLog.GetRecentCycles();
+
         auto& markerModel = GetModel_MarkerWithClearOrientation();
+        Matrix4f transform;
+        Matrix4f scaleForOlderCycles = Matrix4f::createScale(0.6f, 0.6f, 0.6f);
 
         auto DrawCycle = [&](ParkourCycleLogged& cycle, const bool isMostRecent) {
             const float timeElapsed = ConvertRawIntTimestampToFloat(currentTime - cycle.m_Timestamp);
@@ -284,9 +290,9 @@ public:
                         blueness,
                         opacity);
 
-                Matrix4f transform = CreateLookAt(action.m_LocationDst, action.m_LocationDst + action.m_DirDstFacingOut, Vector3f(0, 0, 1));
+                SetMatrix4fLookAt(transform, action.m_LocationDst, action.m_DirDstFacingOut, Vector3f(0, 0, 1));
                 if (!isMostRecent)
-                    transform = transform * Matrix4f::createScale(0.6f, 0.6f, 0.6f);
+                    transform = transform * scaleForOlderCycles;
                 ImGui3D::DrawWireModelTransform(markerModel, transform, thickness, color);
                 };
             for (auto& action : cycle.m_Actions)
@@ -302,14 +308,34 @@ public:
             if (selectedAction)
                 DrawMarkerForAction(*selectedAction);
             };
-        for (size_t i = 0; i < recentCycles.size(); i++)
+        if (parkourLog.m_DisplaySettings.m_ShowMoreThanOneOfTheRecentCycles)
         {
-            const bool isMostRecent = i == recentCycles.size() - 1;
-
-            const bool isShouldDrawCycle = isMostRecent || parkourLog.m_DisplaySettings.m_ShowMoreThanOneOfTheRecentCycles;
-            if (!isShouldDrawCycle) continue;
-
-            DrawCycle(*recentCycles[i], isMostRecent);
+            const bool skipFullyDiscarded = parkourLog.m_DisplaySettings.m_ShowMoreThanOneOfTheRecentCycles_SkipAllDiscarded;
+            auto IsCycleShouldBeSkipped = [skipFullyDiscarded](std::shared_ptr<ParkourCycleLogged>& cycle) {
+                if (!skipFullyDiscarded) return true;
+                const bool isAllDiscarded = cycle->m_Actions.size() && std::all_of(cycle->m_Actions.begin(), cycle->m_Actions.end(), [](decltype(cycle->m_Actions[0])& action) {
+                    const bool isDiscarded = action->m_IsDiscarded_immediatelyAfterCreation || action->m_IsDiscarded_becauseFitnessWeightTooLow;
+                    return isDiscarded;
+                    });
+                return !isAllDiscarded;
+                };
+            size_t numOlderCycles = 10;
+            auto olderCycles =
+                history
+                | std::views::reverse   // From the end
+                | std::views::drop(1)   // Skip the most recent one (gets special treatment)
+                | std::views::filter(IsCycleShouldBeSkipped)
+                | std::views::take(numOlderCycles)
+                | std::views::reverse   // Draw 3D from least recent to most recent.
+                ;
+            for (auto& cycle : olderCycles)
+            {
+                DrawCycle(*cycle, false);
+            }
+        }
+        if (history.size())
+        {
+            DrawCycle(*history.back(), true);
         }
     }
     ParkourVisualization() {}
