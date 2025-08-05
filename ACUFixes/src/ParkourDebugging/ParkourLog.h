@@ -24,7 +24,7 @@ public:
     Vector3f m_LocationSrc; // I think these are the same in every action of the parkour cycle.
     Vector3f m_DirSrc;      // I think these are the same in every action of the parkour cycle.
     Vector3f m_LocationDst;
-    Vector3f m_DirDst;
+    Vector3f m_DirDstFacingOut;
     bool m_IsDiscarded_immediatelyAfterCreation = false;
     std::optional<float> m_FitnessWeight;
     bool m_IsDiscarded_becauseFitnessWeightTooLow = false;

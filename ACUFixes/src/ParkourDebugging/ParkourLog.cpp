@@ -21,7 +21,7 @@ ParkourActionLogged::ParkourActionLogged(AvailableParkourAction& action, size_t 
     , m_LocationSrc((Vector3f&)action.locationAnchorSrc)
     , m_LocationDst((Vector3f&)action.locationAnchorDest)
     , m_DirSrc((Vector3f&)action.direction_20)
-    , m_DirDst((Vector3f&)action.direction_40)
+    , m_DirDstFacingOut((Vector3f&)action.directionDestFacingOut)
     , m_Index(indexInOrderOfCreationInCycle)
 {}
 

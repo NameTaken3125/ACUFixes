@@ -86,7 +86,7 @@ ImGuiWireModel& GetModel_Cube01();          // The points are: [0, 0, 0], [1, 1,
 
 
 void DrawWireModel(const ImGui3D::ImGuiWireModel& model, const Vector3f& position, float thicknessMultiplier = 1, float scaleMultiplier = 1.0f, std::optional<ImU32> overrideColor = {});
-void DrawWireModelTransform(const ImGui3D::ImGuiWireModel& model, const Matrix4f& transform, float thicknessMultiplier = 1);
+void DrawWireModelTransform(const ImGui3D::ImGuiWireModel& model, const Matrix4f& transform, float thicknessMultiplier = 1, std::optional<ImU32> overrideColor = {});
 void DrawWireModelOnce(const ImGui3D::ImGuiWireModel& model, const Matrix4f& transform);
 
 void DrawLocationOnce(const Vector3f& location, float scaleMultiplier = 1.0f);

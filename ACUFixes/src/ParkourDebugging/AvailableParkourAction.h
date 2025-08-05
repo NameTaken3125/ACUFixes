@@ -61,7 +61,13 @@ public:
     // If climbing wall, this is where your hands grab after finishing the move. If on beam, this is where your feet land.
     // If vaulting, this is where you grab to begin the vault, not where you land.
     Vector4f locationAnchorDest; //0x0030
-    Vector4f direction_40; //0x0040
+    // Pretty much the normal vector.
+    // If landing on the ground, this is the direction up.
+    // If climbing wall, points outwards.
+    // If hanging on a horizontal bar (feet dangling) or holding onto a ledge (feet on wall),
+    // points horizontally outwards (away from object, toward player's face).
+    // A free end of a horizontal bar will have 1 "action" directed out of each side, and 1 extending out of the end.
+    Vector4f directionDestFacingOut; //0x0040
     Vector4f handsLocationTo_right_mb; //0x0050
     Vector4f handsLocationTo_left_mb; //0x0060
     Vector4f directionSrcToDestXYPlane; //0x0070

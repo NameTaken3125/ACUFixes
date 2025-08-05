@@ -13,7 +13,9 @@ enum class AtomInputPort_BindingType
 	BT_RTCP = 0x0,
 	BT_ConstantBool = 0x2,
 	BT_ConstantFloat = 0x3,
+	BT_ConstantInteger = 0x4,
 	BT_OutputPortPointer = 0x9,
+	BT_SyncPortPointer = 0x11,
 	BT_Unused = 12,
 };
 class AtomInputPort

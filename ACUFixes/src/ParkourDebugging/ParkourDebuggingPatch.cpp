@@ -13,9 +13,12 @@
 #include "ImGui3D/ImGui3D.h"
 #include "ImGui3D/ImGui3DCustomDraw.h"
 #include "ImGuiCTX.h"
+#include "ImGuiConfigUtils.h"
 
 #include "AvailableParkourAction.h"
 #include "ParkourTester.h"
+
+#include "ParkourLog.h"
 
 // I don't yet know how much there is in common between the structs for different parkour actions,
 // So I'm keeping the "AvailableParkourAction" baseclass small.
@@ -412,7 +415,6 @@ static bool CompareOptionalFloats(std::optional<float> a, std::optional<float> b
 {
     return a < b;
 }
-#include "ParkourLog.h"
 namespace
 {
 using Action_t = std::unique_ptr<ParkourActionLogged>;
@@ -466,9 +468,9 @@ static auto MakeColumnsForParkourDetails()
                 , action->m_LocationDst.x
                 , action->m_LocationDst.y
                 , action->m_LocationDst.z
-                , action->m_DirDst.x
-                , action->m_DirDst.y
-                , action->m_DirDst.z
+                , action->m_DirDstFacingOut.x
+                , action->m_DirDstFacingOut.y
+                , action->m_DirDstFacingOut.z
             );
             ImGui::SetItemTooltip(buf.c_str());
             if (ImGui::IsItemClicked()) ImGui::SetClipboardText(buf.c_str());
@@ -585,7 +587,8 @@ void DrawParkourDebugWindow()
                 "Num actions                : %d\n"
                 "Num after initial discard  : %d\n"
                 "Num with nonzero fitness   : %d\n"
-                "Location   : %8.3f,%8.3f,%8.3f\n"
+                "Location       : %8.3f,%8.3f,%8.3f\n"
+                "Input Direction: %8.3f,%8.3f,%8.3f\n"
                 , latestCycle->m_Timestamp
                 , latestCycle->m_Actions.size()
                 , numNotDiscardedImmediately
@@ -593,6 +596,9 @@ void DrawParkourDebugWindow()
                 , latestCycle->m_LocationOfOrigin.x
                 , latestCycle->m_LocationOfOrigin.y
                 , latestCycle->m_LocationOfOrigin.z
+                , latestCycle->m_DirectionOfMovementInputWorldSpace.x
+                , latestCycle->m_DirectionOfMovementInputWorldSpace.y
+                , latestCycle->m_DirectionOfMovementInputWorldSpace.z
             );
 
             if (allMoves.size())

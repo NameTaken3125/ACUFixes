@@ -41,7 +41,7 @@ void DrawWireModel(const ImGuiWireModel& model, const Vector3f& position, float 
         g_DrawList->AddLine((ImVec2&)lineStart_window.value(), (ImVec2&)lineEnd_window.value(), overrideColor ? *overrideColor : e.color, g_WireModelDefaultThickness * thicknessMultiplier);
     }
 }
-void DrawWireModelTransform(const ImGuiWireModel& model, const Matrix4f& transform, float thicknessMultiplier)
+void DrawWireModelTransform(const ImGuiWireModel& model, const Matrix4f& transform, float thicknessMultiplier, std::optional<ImU32> overrideColor)
 {
     for (size_t i = 0; i < model.points.size(); i++)
     {
@@ -53,7 +53,7 @@ void DrawWireModelTransform(const ImGuiWireModel& model, const Matrix4f& transfo
         Vector3f lineEnd_world = model.worldPoints[e.idx2];
         std::optional<Vector2f> lineStart_window = World2Screen(lineStart_world); if (!lineStart_window) { continue; }
         std::optional<Vector2f> lineEnd_window = World2Screen(lineEnd_world); if (!lineEnd_window) { continue; }
-        g_DrawList->AddLine((ImVec2&)lineStart_window.value(), (ImVec2&)lineEnd_window.value(), e.color, g_WireModelDefaultThickness * thicknessMultiplier);
+        g_DrawList->AddLine((ImVec2&)lineStart_window.value(), (ImVec2&)lineEnd_window.value(), overrideColor ? *overrideColor : e.color, g_WireModelDefaultThickness * thicknessMultiplier);
     }
 }
 ImGuiWireModel GenerateGrid(int howManyPointsOnSide, float sideLength)
