@@ -71,6 +71,10 @@ public:
     Vector4f handsLocationTo_right_mb; //0x0050
     Vector4f handsLocationTo_left_mb; //0x0060
     Vector4f directionSrcToDestXYPlane; //0x0070
+    // Kind of the direction the player will be looking in after completing the move?
+    // Like, when landing on the ground or on a ledge, will be in the direction from the Src to Dest,
+    // almost horizontally, and not necessarily perpendicular to the ledge.
+    // But if starting a wallrun, will be directed horizontally into the wall.
     Vector4f dir80; //0x0080
     Vector4f directionSrcToDest; //0x0090
     Vector4f directionSrcToDestXYPlane_A0; //0x00A0

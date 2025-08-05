@@ -21,6 +21,7 @@ public:
     size_t m_Index; // To keep track of the order of creation.
 
     EnumParkourAction m_ActionType;
+    uint64 m_FancyVTable;
     Vector3f m_LocationSrc; // I think these are the same in every action of the parkour cycle.
     Vector3f m_DirSrc;      // I think these are the same in every action of the parkour cycle.
     Vector3f m_LocationDst;
@@ -85,11 +86,16 @@ private:
 
 class ParkourLog
 {
+private:
+    std::vector<std::shared_ptr<ParkourCycleLogged>> m_RecentParkourCycles;
+    size_t m_MaxRetainNum = 1024;
+    size_t m_MaxDisplayNum = 10;
+    std::mutex m_Mutex;
 public:
-    std::shared_ptr<ParkourCycleLogged> m_LatestParkourCycle;
     std::shared_ptr<ParkourCycleLogged> GetCurrentLoggedParkourCycle();
     // Doesn't construct a new cycle.
-    std::shared_ptr<ParkourCycleLogged> GetLatestLoggedParkourCycle() { return m_LatestParkourCycle; }
+    std::shared_ptr<ParkourCycleLogged> GetLatestLoggedParkourCycle();
+    std::vector<std::shared_ptr<ParkourCycleLogged>> GetRecentCycles();
 
 public:
     struct DisplaySettings
@@ -97,6 +103,7 @@ public:
         bool m_ShowDiscardedEarly = false;
         bool m_ShowDiscardedLate = true;
         bool m_ShowNondiscarded = true;
+        bool m_ShowMoreThanOneOfTheRecentCycles = true;
     } m_DisplaySettings;
     void DrawDisplayControls();
     bool IsActionShouldBeDisplayed(ParkourActionLogged& action);
@@ -105,7 +112,7 @@ public:
     static ParkourLog& GetSingleton() { static ParkourLog singleton; return singleton; }
 private:
     std::shared_ptr<ParkourCycleLogged> m_DisabledDummyCycle;
-    ParkourLog() : m_DisabledDummyCycle(new ParkourCycleLogged()) {}
+    ParkourLog();
 };
 
 // The returned shared_ptr is non-null.

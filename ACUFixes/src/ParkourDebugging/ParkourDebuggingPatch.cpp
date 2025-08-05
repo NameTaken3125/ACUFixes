@@ -237,23 +237,34 @@ public:
         //DoDraw_ManyLocations(m_History_MovesBeforeFiltering);
         //DoDraw_Location(m_History_SelectedMoves);
         void DrawParkourDebugWindow(); DrawParkourDebugWindow();
-        {
-            auto& parkourLog = ParkourLog::GetSingleton();
-            std::shared_ptr<ParkourCycleLogged> latestCycle = parkourLog.GetLatestLoggedParkourCycle();
-            if (!latestCycle) return;
-            World* world = World::GetSingleton();
-            if (!world) return;
-            auto& markerModel = GetModel_MarkerWithClearOrientation();
-            std::lock_guard _lock{ latestCycle->m_Mutex };
-            const int64 currentTime = world->clockInWorldWithSlowmotion.GetCurrent_RawIntTimestamp();
-            const float timeElapsed = ConvertRawIntTimestampToFloat(currentTime - latestCycle->m_Timestamp);
-            auto CalculateFadeFactor_ByTimestamp = [&]() {
+        DrawRecentLoggedCycles3D();
+    }
+    void DrawRecentLoggedCycles3D()
+    {
+        World* world = World::GetSingleton();
+        if (!world) return;
+        const int64 currentTime = world->clockInWorldWithSlowmotion.GetCurrent_RawIntTimestamp();
+        auto& parkourLog = ParkourLog::GetSingleton();
+        std::vector<std::shared_ptr<ParkourCycleLogged>> recentCycles = parkourLog.GetRecentCycles();
+        auto& markerModel = GetModel_MarkerWithClearOrientation();
+
+        auto DrawCycle = [&](ParkourCycleLogged& cycle, const bool isMostRecent) {
+            const float timeElapsed = ConvertRawIntTimestampToFloat(currentTime - cycle.m_Timestamp);
+
+            const unsigned char opacity = isMostRecent ? 255 : 110;
+
+            std::lock_guard _lock{ cycle.m_Mutex };
+            auto CalculateFadeFactor_ByTimestamp = [](float timeElapsed) {
                 float m_MaxRetainHowLongSecs = 10.0f;
                 float fadeFactor = 1 - timeElapsed / m_MaxRetainHowLongSecs;
                 if (fadeFactor < 0)         fadeFactor = 0;
                 else if (fadeFactor > 1)    fadeFactor = 1;
                 return fadeFactor;
                 };
+
+            float fadeFactor = CalculateFadeFactor_ByTimestamp(timeElapsed);
+            unsigned char redness = int(fadeFactor * 255);
+            unsigned char blueness = int((1 - fadeFactor) * 255);
             // The selected one is drawn last to be visible on top of the rest.
             ParkourActionLogged* selectedAction = nullptr;
             auto DrawMarkerForAction = [&](ParkourActionLogged& action) {
@@ -264,20 +275,21 @@ public:
                     action.m_IsHighlightedInEditor || action.m_IsSelectedInEditor
                     ? 5.0f
                     : 1.0f;
-                float fadeFactor = CalculateFadeFactor_ByTimestamp();
                 const bool isTheChosenOne = action.m_IsTheSelectedBestMatch;
                 ImU32 color = isHovered
                     ? IM_COL32(255, 255, 255, 255)
                     : IM_COL32(
-                        int(fadeFactor * 255),
+                        redness,
                         isTheChosenOne ? 255 : 0,
-                        int((1 - fadeFactor) * 255),
-                        255);
+                        blueness,
+                        opacity);
 
                 Matrix4f transform = CreateLookAt(action.m_LocationDst, action.m_LocationDst + action.m_DirDstFacingOut, Vector3f(0, 0, 1));
+                if (!isMostRecent)
+                    transform = transform * Matrix4f::createScale(0.6f, 0.6f, 0.6f);
                 ImGui3D::DrawWireModelTransform(markerModel, transform, thickness, color);
                 };
-            for (auto& action : latestCycle->m_Actions)
+            for (auto& action : cycle.m_Actions)
             {
                 const bool isTheChosenOne = action->m_IsTheSelectedBestMatch;
                 if (isTheChosenOne)
@@ -289,6 +301,15 @@ public:
             }
             if (selectedAction)
                 DrawMarkerForAction(*selectedAction);
+            };
+        for (size_t i = 0; i < recentCycles.size(); i++)
+        {
+            const bool isMostRecent = i == recentCycles.size() - 1;
+
+            const bool isShouldDrawCycle = isMostRecent || parkourLog.m_DisplaySettings.m_ShowMoreThanOneOfTheRecentCycles;
+            if (!isShouldDrawCycle) continue;
+
+            DrawCycle(*recentCycles[i], isMostRecent);
         }
     }
     ParkourVisualization() {}
@@ -609,10 +630,12 @@ static auto MakeColumnsForParkourDetails()
         {
             buf.resize(0);
             buf.appendf(
+                "FancyVTable: %llX\n"
                 "%8.3f,%8.3f,%8.3f\n"
                 "%8.3f,%8.3f,%8.3f\n"
                 "%8.3f,%8.3f,%8.3f\n"
                 "%8.3f,%8.3f,%8.3f\n"
+                , action->m_FancyVTable
                 , action->m_LocationSrc.x, action->m_LocationSrc.y, action->m_LocationSrc.z
                 , action->m_DirSrc.x, action->m_DirSrc.y, action->m_DirSrc.z
                 , action->m_LocationDst.x
@@ -622,8 +645,12 @@ static auto MakeColumnsForParkourDetails()
                 , action->m_DirDstFacingOut.y
                 , action->m_DirDstFacingOut.z
             );
-            ImGui::SetItemTooltip(buf.c_str());
-            if (ImGui::IsItemClicked()) ImGui::SetClipboardText(buf.c_str());
+            ImGui::SetItemTooltip(
+                "%s\n"
+                "(Right click to copy to clipboard)"
+                , buf.c_str()
+            );
+            if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) ImGui::SetClipboardText(buf.c_str());
         }
         };
     auto DrawCol_IsDiscardedImmediately = [](Action_t& action) {
@@ -783,7 +810,8 @@ void DrawParkourDebugWindow()
             };
         auto DrawDetailsTab = [&]() {
             ImGui::HelpMarker(
-                "Hold Alt to block game mouse."
+                "Hold Alt to block game mouse.\n"
+                "Actions selected with left click are displayed in thicker lines."
             );
             if (ImGui::IsKeyDown(ImGuiKey_ModAlt))
                 ImGui::SetNextFrameWantCaptureMouse(true);

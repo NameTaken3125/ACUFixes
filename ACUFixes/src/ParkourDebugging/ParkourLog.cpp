@@ -17,6 +17,7 @@ static DEFINE_LOGGER_CONSOLE_AND_FILE(ParkourLogger, "[Parkour]");
 
 ParkourActionLogged::ParkourActionLogged(AvailableParkourAction& action, size_t indexInOrderOfCreationInCycle)
     : m_ActionPtr(&action)
+    , m_FancyVTable((uint64)action.fancyVTable)
     , m_ActionType(action.GetEnumParkourAction())
     , m_LocationSrc((Vector3f&)action.locationAnchorSrc)
     , m_LocationDst((Vector3f&)action.locationAnchorDest)
@@ -71,11 +72,34 @@ void ParkourCycleLogged::LogActionWhenReturningBestMatch(AvailableParkourAction&
     record.m_IsTheSelectedBestMatch = true;
     LogActionBestMatch_ConsoleAnd3D(bestMatchMove);
 }
+ParkourLog::ParkourLog()
+    : m_DisabledDummyCycle(new ParkourCycleLogged())
+{
+    m_RecentParkourCycles.reserve(1024);
+}
+namespace ImGui
+{
+// Make the UI compact because there are so many fields
+static void PushStyleCompact()
+{
+    ImGuiStyle& style = ImGui::GetStyle();
+    ImGui::PushStyleVarY(ImGuiStyleVar_FramePadding, (float)(int)(style.FramePadding.y * 0.60f));
+    ImGui::PushStyleVarY(ImGuiStyleVar_ItemSpacing, (float)(int)(style.ItemSpacing.y * 0.60f));
+}
+static void PopStyleCompact()
+{
+    ImGui::PopStyleVar(2);
+}
+}
 void ParkourLog::DrawDisplayControls()
 {
+    ImGui::PushStyleCompact();
     ImGui::Checkbox("Discarded early", &m_DisplaySettings.m_ShowDiscardedEarly);
     ImGui::Checkbox("Discarded late", &m_DisplaySettings.m_ShowDiscardedLate);
     ImGui::Checkbox("Nondiscarded", &m_DisplaySettings.m_ShowNondiscarded);
+    ImGui::NewLine();
+    ImGui::Checkbox("More than one recent cycle", &m_DisplaySettings.m_ShowMoreThanOneOfTheRecentCycles);
+    ImGui::PopStyleCompact();
 }
 bool ParkourLog::IsActionShouldBeDisplayed(ParkourActionLogged& action)
 {
@@ -93,11 +117,46 @@ std::shared_ptr<ParkourCycleLogged> ParkourLog::GetCurrentLoggedParkourCycle()
 {
     const bool isParkourLogDisabled = !g_IsParkourDebuggingActive;
     if (isParkourLogDisabled) return m_DisabledDummyCycle;
+    auto PushNewToHistory = [this](uint64 timestamp) -> std::shared_ptr<ParkourCycleLogged>& {
+        size_t curSize = m_RecentParkourCycles.size();
+        if (curSize >= m_MaxRetainNum)
+        {
+            m_RecentParkourCycles.erase(m_RecentParkourCycles.begin(), m_RecentParkourCycles.begin() + (curSize - m_MaxRetainNum + 1));
+        }
+        return m_RecentParkourCycles.emplace_back(std::make_shared<ParkourCycleLogged>(timestamp));
+        };
 
     uint64 currentTimestamp = World::GetSingleton()->clockInWorldWithSlowmotion.currentTimestamp;
-    if (!m_LatestParkourCycle || m_LatestParkourCycle->m_Timestamp != currentTimestamp)
-        m_LatestParkourCycle = std::make_shared<ParkourCycleLogged>(currentTimestamp);
-    return m_LatestParkourCycle;
+    std::lock_guard _lock{ m_Mutex };
+
+    if (!m_RecentParkourCycles.size())
+        return PushNewToHistory(currentTimestamp);
+    auto& latest = m_RecentParkourCycles.back();
+    if (latest->m_Timestamp != currentTimestamp)
+        return PushNewToHistory(currentTimestamp);
+    return latest;
+}
+std::shared_ptr<ParkourCycleLogged> ParkourLog::GetLatestLoggedParkourCycle()
+{
+    std::lock_guard _lock{ m_Mutex };
+    if (m_RecentParkourCycles.size()) return m_RecentParkourCycles.back();
+    return {};
+}
+std::vector<std::shared_ptr<ParkourCycleLogged>> ParkourLog::GetRecentCycles()
+{
+    std::lock_guard _lock{ m_Mutex };
+    auto& history = m_RecentParkourCycles;
+    size_t curSize = history.size();
+    size_t numDisplayed = std::min(curSize, m_MaxDisplayNum);
+    size_t firstIdx = curSize - numDisplayed;
+    size_t pastLastIdx = curSize;
+    std::vector<std::shared_ptr<ParkourCycleLogged>> result; result.reserve(numDisplayed);
+    for (size_t i = firstIdx; i < pastLastIdx; i++)
+    {
+        auto& elem = history[i];
+        result.push_back(elem);
+    }
+    return result;
 }
 std::shared_ptr<ParkourCycleLogged> GetCurrentLoggedParkourCycle()
 {
