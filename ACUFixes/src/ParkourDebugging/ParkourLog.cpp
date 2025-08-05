@@ -71,6 +71,22 @@ void ParkourCycleLogged::LogActionWhenReturningBestMatch(AvailableParkourAction&
     record.m_IsTheSelectedBestMatch = true;
     LogActionBestMatch_ConsoleAnd3D(bestMatchMove);
 }
+void ParkourLog::DrawDisplayControls()
+{
+    ImGui::Checkbox("Discarded early", &m_DisplaySettings.m_ShowDiscardedEarly);
+    ImGui::Checkbox("Discarded late", &m_DisplaySettings.m_ShowDiscardedLate);
+    ImGui::Checkbox("Nondiscarded", &m_DisplaySettings.m_ShowNondiscarded);
+}
+bool ParkourLog::IsActionShouldBeDisplayed(ParkourActionLogged& action)
+{
+    if (action.m_IsDiscarded_immediatelyAfterCreation)
+        return m_DisplaySettings.m_ShowDiscardedEarly;
+    if (action.m_IsDiscarded_becauseFitnessWeightTooLow)
+        return m_DisplaySettings.m_ShowDiscardedLate;
+    if (!m_DisplaySettings.m_ShowNondiscarded)
+        return false;
+    return true;
+}
 
 extern bool g_IsParkourDebuggingActive;
 std::shared_ptr<ParkourCycleLogged> ParkourLog::GetCurrentLoggedParkourCycle()

@@ -93,6 +93,41 @@ public:
         m_History.reserve(1024);
     }
 };
+ImGui3D::ImGuiWireModel& GetModel_Camera()
+{
+    using namespace ImGui3D;
+    static ImGuiWireModel camModel = {
+        // Points.
+        {
+            {-0.154847f, 0.342506f, -0.088164f},
+            {0.154847f, 0.342506f, -0.088164f},
+            {-0.154847f, 0.342506f, 0.088164f},
+            {0.154847f, 0.342506f, 0.088164f},
+            {0.000000f, 0.000000f, 0.000000f},
+            {-0.109504f, 0.341621f, 0.104011f},
+            {0.109225f, 0.341621f, 0.104011f},
+            {-0.000139f, 0.341621f, 0.218292f},
+        },
+        // Edges
+        {
+            {2, 0, IM_COL32(255, 0, 0, 255)},
+            {0, 1, IM_COL32(255, 0, 0, 255)},
+            {1, 3, IM_COL32(255, 0, 0, 255)},
+            {3, 2, IM_COL32(255, 0, 0, 255)},
+            {0, 4, IM_COL32(255, 0, 0, 255)},
+            {3, 4, IM_COL32(255, 0, 0, 255)},
+            {4, 1, IM_COL32(255, 0, 0, 255)},
+            {4, 2, IM_COL32(255, 0, 0, 255)},
+            {7, 5, IM_COL32(255, 0, 0, 255)},
+            {5, 6, IM_COL32(255, 0, 0, 255)},
+            {6, 7, IM_COL32(255, 0, 0, 255)},
+        } };
+    return camModel;
+}
+ImGui3D::ImGuiWireModel& GetModel_MarkerWithClearOrientation() {
+    // The Blender's Camera model has a clearly readable origin, direction and orientation, works well for visualization.
+    return GetModel_Camera();
+}
 class ParkourVisualization : public ImGui3D::CustomDraw::CustomDrawer
 {
 public:
@@ -173,11 +208,88 @@ public:
             }
         }
     }
+    static Matrix4f CreateLookAt(const Vector3f& eyePos, const Vector3f& centerPos, const Vector3f& upDir)
+    {
+        Vector3f forward, side, up;
+        Matrix4f m;
+
+        forward = centerPos - eyePos;
+        up = upDir;
+
+        forward.normalize();
+
+        // Side = forward x up
+        side = forward.crossProduct(up);
+        side.normalize();
+
+        // Recompute up as: up = side x forward
+        up = side.crossProduct(forward);
+
+        (Vector3f&)m.data[4 * 0] = side;
+        (Vector3f&)m.data[4 * 1] = forward;
+        (Vector3f&)m.data[4 * 2] = up;
+
+        m = Matrix4f::createTranslation(eyePos.x, eyePos.y, eyePos.z) * m;
+        return m;
+    }
     virtual void DoDraw() override
     {
-        DoDraw_ManyLocations(m_History_MovesBeforeFiltering);
-        DoDraw_Location(m_History_SelectedMoves);
+        //DoDraw_ManyLocations(m_History_MovesBeforeFiltering);
+        //DoDraw_Location(m_History_SelectedMoves);
         void DrawParkourDebugWindow(); DrawParkourDebugWindow();
+        {
+            auto& parkourLog = ParkourLog::GetSingleton();
+            std::shared_ptr<ParkourCycleLogged> latestCycle = parkourLog.GetLatestLoggedParkourCycle();
+            if (!latestCycle) return;
+            World* world = World::GetSingleton();
+            if (!world) return;
+            auto& markerModel = GetModel_MarkerWithClearOrientation();
+            std::lock_guard _lock{ latestCycle->m_Mutex };
+            const int64 currentTime = world->clockInWorldWithSlowmotion.GetCurrent_RawIntTimestamp();
+            const float timeElapsed = ConvertRawIntTimestampToFloat(currentTime - latestCycle->m_Timestamp);
+            auto CalculateFadeFactor_ByTimestamp = [&]() {
+                float m_MaxRetainHowLongSecs = 10.0f;
+                float fadeFactor = 1 - timeElapsed / m_MaxRetainHowLongSecs;
+                if (fadeFactor < 0)         fadeFactor = 0;
+                else if (fadeFactor > 1)    fadeFactor = 1;
+                return fadeFactor;
+                };
+            // The selected one is drawn last to be visible on top of the rest.
+            ParkourActionLogged* selectedAction = nullptr;
+            auto DrawMarkerForAction = [&](ParkourActionLogged& action) {
+                const bool isHovered = action.m_IsHighlightedInEditor;
+                const bool isVisible = parkourLog.IsActionShouldBeDisplayed(action) || isHovered;
+                if (!isVisible) return;
+                const float thickness =
+                    action.m_IsHighlightedInEditor || action.m_IsSelectedInEditor
+                    ? 5.0f
+                    : 1.0f;
+                float fadeFactor = CalculateFadeFactor_ByTimestamp();
+                const bool isTheChosenOne = action.m_IsTheSelectedBestMatch;
+                ImU32 color = isHovered
+                    ? IM_COL32(255, 255, 255, 255)
+                    : IM_COL32(
+                        int(fadeFactor * 255),
+                        isTheChosenOne ? 255 : 0,
+                        int((1 - fadeFactor) * 255),
+                        255);
+
+                Matrix4f transform = CreateLookAt(action.m_LocationDst, action.m_LocationDst + action.m_DirDstFacingOut, Vector3f(0, 0, 1));
+                ImGui3D::DrawWireModelTransform(markerModel, transform, thickness, color);
+                };
+            for (auto& action : latestCycle->m_Actions)
+            {
+                const bool isTheChosenOne = action->m_IsTheSelectedBestMatch;
+                if (isTheChosenOne)
+                {
+                    selectedAction = action.get();
+                    continue;
+                }
+                DrawMarkerForAction(*action);
+            }
+            if (selectedAction)
+                DrawMarkerForAction(*selectedAction);
+        }
     }
     ParkourVisualization() {}
     ~ParkourVisualization() { ImGui3D::CustomDraw::CustomDraw_Unsubscribe(*this); }
@@ -450,14 +562,52 @@ const ImVec4 colorTextSelectedType = colorTextYellow;
 const ImVec4 colorTextIsDiscarded = colorTextRed;
 const ImVec4 colorTextIsSelected = colorTextYellow;
 const ImVec4 colorTextModulate = colorTextGreen;
+std::optional<float>& GetModWeightForActionType(EnumParkourAction actionType)
+{
+    static std::unordered_map<EnumParkourAction, std::optional<float>> modWeightByActionType;
+    modWeightByActionType.try_emplace(actionType, std::optional<float>());
+    return modWeightByActionType.find(actionType)->second;
+}
+auto DrawCol_ModWeight = [](Action_t& action) {
+    ImGuiCTX::PushID _id(action.get());
+    static ImVec2 cell_padding(0.0f, 0.0f);
+    ImGuiCTX::PushStyleVar noPaddingAroundInput(ImGuiStyleVar_CellPadding, cell_padding);
+    ImGui::PushStyleCompact();
+    std::optional<float>& modWeight = GetModWeightForActionType(action->m_ActionType);
+    if (!modWeight)
+    {
+        if (ImGui::Button("Use", ImVec2(-FLT_MIN, 0.0f)))
+        {
+            modWeight.emplace(1.0f);
+        }
+    }
+    else
+    {
+        std::optional<ImGuiCTX::PushStyleColor> coloredText;
+        const bool isModWeightApplied = modWeight != 1.0f;
+        if (modWeight > 1.0f)
+            coloredText.emplace(ImGuiCol_Text, colorTextGreen);
+        else if (modWeight < 1.0f)
+            coloredText.emplace(ImGuiCol_Text, colorTextRed);
+        ImGui::SetNextItemWidth(-FLT_MIN);
+        ImGui::DragFloat("##inpModWeight", &*modWeight, 0.01f, 0.0f, 5.0f);
+    }
+    ImGui::PopStyleCompact();
+    };
+//MoveDetailsColumn{ MDCOL(ModWeight), SortByAttribute{ [](Action_t& a) { return GetModWeightForActionType(a->m_ActionType); } } };
 static auto MakeColumnsForParkourDetails()
 {
     auto DrawCol_Index = [](Action_t& action) { ImGui::Text("%3d", action->m_Index); };
     auto DrawCol_Type = [](Action_t& action) { ImGui::Text("%3d", action->m_ActionType); };
     auto DrawCol_TypeReadable = [](Action_t& action) {
-        ImGui::Text("%s", enum_reflection<EnumParkourAction>::GetString(action->m_ActionType));
+        ImGuiCTX::PushID _id(action.get());
+        static ImGuiTextBuffer buf; buf.resize(0);
+        buf.appendf("%s", enum_reflection<EnumParkourAction>::GetString(action->m_ActionType));
+        ImGui::Selectable(buf.c_str(), &action->m_IsSelectedInEditor);
+        const bool isHovered = ImGui::IsItemHovered();
+        action->m_IsHighlightedInEditor = isHovered;
         {
-            static ImGuiTextBuffer buf; buf.resize(0);
+            buf.resize(0);
             buf.appendf(
                 "%8.3f,%8.3f,%8.3f\n"
                 "%8.3f,%8.3f,%8.3f\n"
@@ -622,7 +772,21 @@ void DrawParkourDebugWindow()
                 }
             }
             };
+        auto DrawDisplayTab = [&]() {
+            if (!ImGui::IsKeyDown(ImGuiKey_ModAlt))
+                ImGui::SetNextFrameWantCaptureMouse(true);
+            ImGui::HelpMarker(
+                "Hold Alt to _un_block game mouse."
+            );
+            auto& parkourLog = ParkourLog::GetSingleton();
+            parkourLog.DrawDisplayControls();
+            };
         auto DrawDetailsTab = [&]() {
+            ImGui::HelpMarker(
+                "Hold Alt to block game mouse."
+            );
+            if (ImGui::IsKeyDown(ImGuiKey_ModAlt))
+                ImGui::SetNextFrameWantCaptureMouse(true);
             if (!latestCycle) return;
             std::lock_guard _lock{ latestCycle->m_Mutex };
             auto columns = MakeColumnsForParkourDetails();
@@ -691,6 +855,9 @@ void DrawParkourDebugWindow()
             }
             if (ImGuiCTX::Tab _tabMoveDetails{ "Details" }) {
                 DrawDetailsTab();
+            }
+            if (ImGuiCTX::Tab _tabDisplay{ "Display" }) {
+                DrawDisplayTab();
             }
         }
     }

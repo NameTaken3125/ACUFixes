@@ -33,6 +33,9 @@ public:
     std::optional<bool> m_ResultOfFinalFilter1;
     std::optional<bool> m_ResultOfFinalFilter2;
     bool m_IsTheSelectedBestMatch = false;
+
+    bool m_IsHighlightedInEditor = false;
+    bool m_IsSelectedInEditor = false;
 };
 class ParkourLog;
 class ParkourCycleLogged
@@ -87,6 +90,16 @@ public:
     std::shared_ptr<ParkourCycleLogged> GetCurrentLoggedParkourCycle();
     // Doesn't construct a new cycle.
     std::shared_ptr<ParkourCycleLogged> GetLatestLoggedParkourCycle() { return m_LatestParkourCycle; }
+
+public:
+    struct DisplaySettings
+    {
+        bool m_ShowDiscardedEarly = false;
+        bool m_ShowDiscardedLate = true;
+        bool m_ShowNondiscarded = true;
+    } m_DisplaySettings;
+    void DrawDisplayControls();
+    bool IsActionShouldBeDisplayed(ParkourActionLogged& action);
 
 public:
     static ParkourLog& GetSingleton() { static ParkourLog singleton; return singleton; }
