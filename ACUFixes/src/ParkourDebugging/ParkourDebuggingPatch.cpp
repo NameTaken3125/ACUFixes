@@ -588,11 +588,12 @@ struct MoveDetailsColumn
     Draw_fnt m_Draw;
     SortPred_fnt m_SortPredicate;
 };
-template<std::invocable<Action_t&> GetAttribute_fnt>
+template<typename GetAttribute_fnt>
 struct SortByAttribute
 {
-    GetAttribute_fnt&& m_GetAttributeFn;
-    bool operator()(Action_t& a, Action_t& b)
+    GetAttribute_fnt m_GetAttributeFn;
+    template<typename T>
+    bool operator()(T&& a, T&& b)
     {
         return m_GetAttributeFn(a) < m_GetAttributeFn(b);
     }
@@ -732,6 +733,39 @@ static auto MakeColumnsForParkourDetails()
         );
 #undef MDCOL
 };
+struct ControlsForParkourType
+{
+    EnumParkourAction m_ActionType;
+    std::optional<float> m_ModWeight;
+    bool m_IsSelectedInEditor = false;
+    bool m_IsHighlightedInEditor = false;
+
+    ControlsForParkourType(EnumParkourAction actionType) : m_ActionType(actionType) {}
+};
+using ATDesc_t = std::unique_ptr<ControlsForParkourType>;
+template<
+    std::invocable<ATDesc_t&>               Draw_fnt
+    , std::invocable<ATDesc_t&, ATDesc_t&>  SortPred_fnt
+>
+struct ActionTypesColumn
+{
+    size_t m_ColIdx;
+    const char* m_Header;
+    Draw_fnt m_Draw;
+    SortPred_fnt m_SortPredicate;
+};
+std::vector<std::unique_ptr<ControlsForParkourType>>& GetRowsForActionTypesTable()
+{
+    static std::vector<ATDesc_t> result = []() {
+        std::vector<ATDesc_t> result;
+        for (auto [actionType, strActionType] : enum_reflection<EnumParkourAction>::GetAllPairs())
+        {
+            result.emplace_back(std::make_unique<ControlsForParkourType>(actionType));
+        }
+        return result;
+        }();
+    return result;
+}
 }
 void DrawParkourDebugWindow()
 {
@@ -853,7 +887,7 @@ void DrawParkourDebugWindow()
                 | ImGuiTableFlags_Sortable
                 | ImGuiTableFlags_SizingFixedFit
                 ;
-            if (ImGui::BeginTable("Moves details", numColumns, table_flags))
+            if (ImGui::BeginTable("Moves details", (int)numColumns, table_flags))
             {
                 ImGui::TableSetupScrollFreeze(0, 1); // Make top row always visible
                 for_each_in_tuple(columns, [](auto&& detailsColumn) {
@@ -903,12 +937,153 @@ void DrawParkourDebugWindow()
                 ImGui::EndTable();
             }
             };
+        auto DrawActionTypesTab = [&]() {
+            std::optional<std::lock_guard<decltype(latestCycle->m_Mutex)>> _lock;
+            std::unordered_map<EnumParkourAction, size_t> typesPresentInTheCycle;
+            if (latestCycle)
+            {
+                _lock.emplace(latestCycle->m_Mutex);
+                for (Action_t& action : latestCycle->m_Actions)
+                {
+                    typesPresentInTheCycle[action->m_ActionType]++;
+                }
+            }
+
+            auto GetNumUsesInCycle = [&](EnumParkourAction actionType) -> size_t {
+                if (!typesPresentInTheCycle.contains(actionType)) return 0;
+                return typesPresentInTheCycle[actionType];
+                };
+            auto IsActionTypeShownAsDisabled = [&](EnumParkourAction actionType) {
+                if (typesPresentInTheCycle.empty()) return false;
+                return GetNumUsesInCycle(actionType) <= 0;
+                };
+            auto MakeColumnsForActionTypes = [&]() {
+                enum ActionTypeColumnsIndices
+                {
+                    TypeInt = 0,
+                    TypeReadable,
+                    UsesInCycle,
+                    ModWeight,
+                };
+                auto DrawCol_TypeInt = [](ATDesc_t& atDesc) {
+                    ImGui::Text("%3d", atDesc->m_ActionType);
+                    };
+                auto DrawCol_UsesInCycle = [&](ATDesc_t& atDesc) {
+                    size_t numUses = GetNumUsesInCycle(atDesc->m_ActionType);
+                    if (numUses > 0)
+                        ImGui::Text("%d", numUses);
+                    };
+                auto DrawCol_TypeReadable = [&](ATDesc_t& atDesc) {
+                    const char* readable = enum_reflection<EnumParkourAction>::GetString(atDesc->m_ActionType);
+                    const bool showAsDisabled = IsActionTypeShownAsDisabled(atDesc->m_ActionType);
+                    ImVec4 colTextDisabled = ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled);
+                    std::optional<ImGuiCTX::PushStyleColor> disabledText;
+                    if (showAsDisabled)
+                        disabledText.emplace(ImGuiCol_Text, colTextDisabled);
+                    ImGui::Selectable(readable);
+                    };
+                auto DrawCol_ModWeight = [](ATDesc_t& atDesc) {
+                    ImGuiCTX::PushID _id(&atDesc);
+                    static ImVec2 cell_padding(0.0f, 0.0f);
+                    ImGuiCTX::PushStyleVar noPaddingAroundInput(ImGuiStyleVar_CellPadding, cell_padding);
+                    ImGui::PushStyleCompact();
+                    std::optional<float>& modWeight = atDesc->m_ModWeight;
+                    if (!modWeight)
+                    {
+                        if (ImGui::Button("Use", ImVec2(-FLT_MIN, 0.0f)))
+                        {
+                            modWeight.emplace(1.0f);
+                        }
+                    }
+                    else
+                    {
+                        std::optional<ImGuiCTX::PushStyleColor> coloredText;
+                        const bool isModWeightApplied = modWeight != 1.0f;
+                        if (modWeight > 1.0f)
+                            coloredText.emplace(ImGuiCol_Text, colorTextGreen);
+                        else if (modWeight < 1.0f)
+                            coloredText.emplace(ImGuiCol_Text, colorTextRed);
+                        ImGui::SetNextItemWidth(-FLT_MIN);
+                        ImGui::DragFloat("##inpModWeight", &*modWeight, 0.01f, 0.0f, 5.0f);
+                    }
+                    ImGui::PopStyleCompact();
+                    };
+#define ATCOL(colId) ActionTypeColumnsIndices::colId, #colId, DrawCol_##colId
+                return std::make_tuple(
+                    ActionTypesColumn{ ATCOL(TypeInt), SortByAttribute{ [](ATDesc_t& a) { return a->m_ActionType; }} }
+                    , ActionTypesColumn{ ATCOL(TypeReadable), SortByAttribute{ [](ATDesc_t& a) { return std::string_view(enum_reflection<EnumParkourAction>::GetString(a->m_ActionType)); } } }
+                    , ActionTypesColumn{ ATCOL(UsesInCycle), SortByAttribute{ [&](ATDesc_t& a) { return GetNumUsesInCycle(a->m_ActionType); }}}
+                    , ActionTypesColumn{ ATCOL(ModWeight), SortByAttribute{ [](ATDesc_t& a) { return a->m_ModWeight; } } }
+                    );
+#undef ATCOL
+                };
+            auto&& columns = MakeColumnsForActionTypes();
+            std::vector<std::unique_ptr<ControlsForParkourType>>& rows = GetRowsForActionTypesTable();
+            size_t numColumns = std::tuple_size_v<std::remove_reference_t<decltype(columns)>>;
+            ImGuiTableFlags table_flags =
+                ImGuiTableFlags_Borders
+                | ImGuiTableFlags_ScrollY
+                | ImGuiTableFlags_Resizable
+                | ImGuiTableFlags_RowBg
+                | ImGuiTableFlags_Sortable
+                | ImGuiTableFlags_SizingFixedFit
+                ;
+            if (ImGui::BeginTable("Action types", (int)numColumns, table_flags))
+            {
+                ImGui::TableSetupScrollFreeze(0, 1); // Make top row always visible
+                for_each_in_tuple(columns, [](auto&& actionTypeCol) {
+                    ImGui::TableSetupColumn(actionTypeCol.m_Header);
+                    });
+                ImGui::TableHeadersRow();
+                if (ImGuiTableSortSpecs* sortSpecs = ImGui::TableGetSortSpecs())
+                {
+                    if (sortSpecs->SpecsDirty && sortSpecs->SpecsCount > 0)
+                    {
+                        sortSpecs->SpecsDirty = false;
+                        const ImGuiTableColumnSortSpecs& primSort = sortSpecs->Specs[0];
+                        using Elem_t = ATDesc_t;
+                        auto ApplySort = [&]<std::invocable<Elem_t&, Elem_t&> Pred>(Pred && predicate) {
+                            if (primSort.SortDirection == ImGuiSortDirection_None) return;
+                            const bool isAscending = primSort.SortDirection == ImGuiSortDirection_Ascending;
+                            auto adjustedPredicate = [&](auto&& a, auto&& b) { return isAscending ? predicate(a, b) : predicate(b, a); };
+                            std::ranges::sort(rows, adjustedPredicate);
+                        };
+                        for_each_in_tuple(columns, [&](auto&& detailsColumn) {
+                            if (detailsColumn.m_ColIdx != primSort.ColumnIndex) return;
+                            ApplySort(detailsColumn.m_SortPredicate);
+                            });
+                    }
+                }
+                auto DrawRow = [&](ATDesc_t& atDesc) {
+                    for_each_in_tuple(columns, [&](auto&& atColumn) {
+                        ImGui::TableSetColumnIndex((int)atColumn.m_ColIdx);
+                        atColumn.m_Draw(atDesc);
+                        });
+                    };
+                // Demonstrate using clipper for large vertical lists
+                ImGuiListClipper clipper;
+                clipper.Begin((int)rows.size());
+                while (clipper.Step())
+                {
+                    for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; row++)
+                    {
+                        ImGui::TableNextRow();
+                        auto& atDesc = rows[(size_t)row];
+                        DrawRow(atDesc);
+                    }
+                }
+                ImGui::EndTable();
+            }
+            };
         if (ImGuiCTX::TabBar _tb{ "_pdtb" }) {
             if (ImGuiCTX::Tab _tabSummary{ "Summary" }) {
                 DrawSummaryTab();
             }
             if (ImGuiCTX::Tab _tabMoveDetails{ "Details" }) {
                 DrawDetailsTab();
+            }
+            if (ImGuiCTX::Tab _tabDisplay{ "Action types" }) {
+                DrawActionTypesTab();
             }
             if (ImGuiCTX::Tab _tabDisplay{ "Display" }) {
                 DrawDisplayTab();
