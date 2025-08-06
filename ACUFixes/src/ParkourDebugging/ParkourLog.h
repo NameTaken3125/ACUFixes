@@ -35,7 +35,6 @@ public:
     std::optional<bool> m_ResultOfFinalFilter2;
     bool m_IsTheSelectedBestMatch = false;
 
-    bool m_IsHighlightedInEditor = false;
     bool m_IsSelectedInEditor = false;
 };
 class ParkourLog;
