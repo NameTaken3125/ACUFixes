@@ -202,6 +202,10 @@ public:
 class PushStyleColor
 {
 public:
+    PushStyleColor(ImGuiCol idx, ImU32 col)
+    {
+        ImGui::PushStyleColor(idx, col);
+    }
     PushStyleColor(ImGuiCol idx, const ImVec4& col)
     {
         ImGui::PushStyleColor(idx, col);

@@ -128,6 +128,31 @@ ImGui3D::ImGuiWireModel& GetModel_MarkerWithClearOrientation() {
     // The Blender's Camera model has a clearly readable origin, direction and orientation, works well for visualization.
     return GetModel_Camera();
 }
+namespace
+{
+class ParkourDebugWindow
+{
+public:
+    void Draw();
+private:
+    void DrawSummaryTab();
+    void DrawDisplayTab();
+    void DrawDetailsTab();
+    void DrawActionTypesTab();
+
+public:
+    ParkourDebugWindow();
+
+private:
+    auto MakeColumnsForActionTypes();
+
+private:
+    ParkourLog& parkourLog;
+    std::shared_ptr<ParkourCycleLogged> latestCycle;
+    std::unordered_map<EnumParkourAction, size_t> typesPresentInTheCycle;
+};
+
+}
 class ParkourVisualization : public ImGui3D::CustomDraw::CustomDrawer
 {
 public:
@@ -227,11 +252,12 @@ public:
 
         m.setTranslation(eyePos);
     }
+    ParkourDebugWindow m_ParkourDebugWnd;
     virtual void DoDraw() override
     {
         //DoDraw_ManyLocations(m_History_MovesBeforeFiltering);
         //DoDraw_Location(m_History_SelectedMoves);
-        void DrawParkourDebugWindow(); DrawParkourDebugWindow();
+        m_ParkourDebugWnd.Draw();
         DrawRecentLoggedCycles3D();
     }
     void DrawRecentLoggedCycles3D()
@@ -767,10 +793,303 @@ std::vector<std::unique_ptr<ControlsForParkourType>>& GetRowsForActionTypesTable
     return result;
 }
 }
-void DrawParkourDebugWindow()
+ParkourDebugWindow::ParkourDebugWindow()
+    : parkourLog(ParkourLog::GetSingleton())
+{}
+void ParkourDebugWindow::DrawSummaryTab()
 {
-    ParkourLog& parkourLog = ParkourLog::GetSingleton();
-    std::shared_ptr<ParkourCycleLogged> latestCycle = parkourLog.GetLatestLoggedParkourCycle();
+    ImGui::Text("Latest parkour cycle:");
+    if (!latestCycle)
+    {
+        ImGui::Text("Nothing yet.");
+        return;
+    }
+    std::lock_guard _lock{ latestCycle->m_Mutex };
+    std::optional<EnumParkourAction> selectedType;
+    std::set<EnumParkourAction> actionTypesWithAtLeastOneNondiscarded;
+    size_t numNotDiscardedImmediately = 0;
+    size_t numNotDiscarded = 0;
+    auto allMoves_tr = latestCycle->m_Actions
+        | std::views::transform([&](std::unique_ptr<ParkourActionLogged>& action)
+            {
+                if (action->m_IsTheSelectedBestMatch)
+                    selectedType = action->m_ActionType;
+                const bool wasDiscardedImmediately = action->m_IsDiscarded_immediatelyAfterCreation;
+                if (!wasDiscardedImmediately)
+                    numNotDiscardedImmediately++;
+                const bool wasDiscarded = action->m_IsDiscarded_immediatelyAfterCreation || action->m_IsDiscarded_becauseFitnessWeightTooLow;
+                if (!wasDiscarded)
+                {
+                    numNotDiscarded++;
+                    actionTypesWithAtLeastOneNondiscarded.insert(action->m_ActionType);
+                }
+                return action->m_ActionType;
+            });
+    std::set<EnumParkourAction> allMoves(allMoves_tr.begin(), allMoves_tr.end());
+    ImGui::Text(
+        "Timestamp: %llu\n"
+        "Num actions                : %d\n"
+        "Num after initial discard  : %d\n"
+        "Num with nonzero fitness   : %d\n"
+        "Location       : %8.3f,%8.3f,%8.3f\n"
+        "Input Direction: %8.3f,%8.3f,%8.3f\n"
+        , latestCycle->m_Timestamp
+        , latestCycle->m_Actions.size()
+        , numNotDiscardedImmediately
+        , numNotDiscarded
+        , latestCycle->m_LocationOfOrigin.x
+        , latestCycle->m_LocationOfOrigin.y
+        , latestCycle->m_LocationOfOrigin.z
+        , latestCycle->m_DirectionOfMovementInputWorldSpace.x
+        , latestCycle->m_DirectionOfMovementInputWorldSpace.y
+        , latestCycle->m_DirectionOfMovementInputWorldSpace.z
+    );
+
+    if (allMoves.size())
+    {
+        ImGui::Text(
+            "All move types: %d"
+            , allMoves.size()
+        );
+        for (const EnumParkourAction actionType : allMoves)
+        {
+            std::optional<ImGuiCTX::PushStyleColor> selectedActionTextColor;
+            const bool isTheSelectedType = actionType == selectedType;
+            if (isTheSelectedType) selectedActionTextColor.emplace(ImGuiCol_Text, colorTextSelectedType);
+            else if (const bool allMovesOfThisTypeWereDiscarded = !actionTypesWithAtLeastOneNondiscarded.contains(actionType))
+                selectedActionTextColor.emplace(ImGuiCol_Text, colorTextAllDiscarded);
+            ImGui::Text(
+                "%3d == %s"
+                , actionType
+                , enum_reflection<EnumParkourAction>::GetString(actionType)
+            );
+        }
+    }
+}
+void ParkourDebugWindow::DrawDisplayTab()
+{
+    if (!ImGui::IsKeyDown(ImGuiKey_ModAlt))
+        ImGui::SetNextFrameWantCaptureMouse(true);
+    ImGui::HelpMarker(
+        "Hold Alt to _un_block game mouse."
+    );
+    auto& parkourLog = ParkourLog::GetSingleton();
+    parkourLog.DrawDisplayControls();
+}
+namespace ImGui
+{
+static void DrawRowsWithClipper(int items_count, std::invocable<int> auto&& callableForRowWithIdx)
+{
+    // Demonstrate using clipper for large vertical lists
+    ImGuiListClipper clipper;
+    clipper.Begin(items_count);
+    while (clipper.Step())
+    {
+        for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; row++)
+        {
+            ImGui::TableNextRow();
+            callableForRowWithIdx(row);
+        }
+    }
+}
+}
+void ParkourDebugWindow::DrawDetailsTab()
+{
+    ImGui::HelpMarker(
+        "Hold Alt to block game mouse.\n"
+        "Actions selected with left click are displayed in thicker lines."
+    );
+    if (ImGui::IsKeyDown(ImGuiKey_ModAlt))
+        ImGui::SetNextFrameWantCaptureMouse(true);
+    if (!latestCycle) return;
+    std::lock_guard _lock{ latestCycle->m_Mutex };
+    auto columns = MakeColumnsForParkourDetails();
+    const size_t numColumns = std::tuple_size_v<decltype(columns)>;
+    ImGuiTableFlags table_flags =
+        ImGuiTableFlags_Borders
+        | ImGuiTableFlags_ScrollY
+        | ImGuiTableFlags_Resizable
+        | ImGuiTableFlags_RowBg
+        | ImGuiTableFlags_Sortable
+        | ImGuiTableFlags_SizingFixedFit
+        ;
+    if (ImGui::BeginTable("Moves details", (int)numColumns, table_flags))
+    {
+        ImGui::TableSetupScrollFreeze(0, 1); // Make top row always visible
+        for_each_in_tuple(columns, [](auto&& detailsColumn) {
+            ImGui::TableSetupColumn(detailsColumn.m_Header);
+            });
+        ImGui::TableHeadersRow();
+        if (ImGuiTableSortSpecs* sortSpecs = ImGui::TableGetSortSpecs())
+        {
+            if ((latestCycle->m_IsSortingDirty || sortSpecs->SpecsDirty) && sortSpecs->SpecsCount > 0)
+            {
+                sortSpecs->SpecsDirty = false;
+                latestCycle->m_IsSortingDirty = false;
+                const ImGuiTableColumnSortSpecs& primSort = sortSpecs->Specs[0];
+                using Act_t = std::unique_ptr<ParkourActionLogged>;
+                auto ApplySort = [&]<std::invocable<Act_t&, Act_t&> Pred>(Pred && predicate) {
+                    if (primSort.SortDirection == ImGuiSortDirection_None) return;
+                    const bool isAscending = primSort.SortDirection == ImGuiSortDirection_Ascending;
+                    auto& acts = latestCycle->m_Actions;
+                    using Act_t = std::unique_ptr<ParkourActionLogged>;
+                    auto adjustedPredicate = [&](Act_t& a, Act_t& b) { return isAscending ? predicate(a, b) : predicate(b, a); };
+                    std::sort(acts.begin(), acts.end(), adjustedPredicate);
+                };
+                for_each_in_tuple(columns, [&](auto&& detailsColumn) {
+                    if (detailsColumn.m_ColIdx != primSort.ColumnIndex) return;
+                    ApplySort(detailsColumn.m_SortPredicate);
+                    });
+            }
+        }
+        auto DrawRow = [&](std::unique_ptr<ParkourActionLogged>& action) {
+            for_each_in_tuple(columns, [&](auto&& detailsColumn) {
+                ImGui::TableSetColumnIndex((int)detailsColumn.m_ColIdx);
+                detailsColumn.m_Draw(action);
+                });
+            };
+        ImGui::DrawRowsWithClipper((int)latestCycle->m_Actions.size(), [&](int row) {
+            std::unique_ptr<ParkourActionLogged>& action = latestCycle->m_Actions[(size_t)row];
+            DrawRow(action);
+            });
+        ImGui::EndTable();
+    }
+}
+auto ParkourDebugWindow::MakeColumnsForActionTypes()
+{
+    auto GetNumUsesInCycle = [this](EnumParkourAction actionType) -> size_t {
+        if (!typesPresentInTheCycle.contains(actionType)) return 0;
+        return typesPresentInTheCycle[actionType];
+        };
+    auto IsActionTypeShownAsDisabled = [this, GetNumUsesInCycle](EnumParkourAction actionType) {
+        if (typesPresentInTheCycle.empty()) return false;
+        return GetNumUsesInCycle(actionType) <= 0;
+        };
+    enum ActionTypeColumnsIndices
+    {
+        TypeInt = 0,
+        TypeReadable,
+        UsesInCycle,
+        ModWeight,
+    };
+    auto DrawCol_TypeInt = [](ATDesc_t& atDesc) {
+        ImGui::Text("%3d", atDesc->m_ActionType);
+        };
+    auto DrawCol_UsesInCycle = [GetNumUsesInCycle](ATDesc_t& atDesc) {
+        size_t numUses = GetNumUsesInCycle(atDesc->m_ActionType);
+        if (numUses > 0)
+            ImGui::Text("%d", numUses);
+        };
+    auto DrawCol_TypeReadable = [IsActionTypeShownAsDisabled](ATDesc_t& atDesc) {
+        const char* readable = enum_reflection<EnumParkourAction>::GetString(atDesc->m_ActionType);
+        const bool showAsDisabled = IsActionTypeShownAsDisabled(atDesc->m_ActionType);
+        ImVec4 colTextDisabled = ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled);
+        std::optional<ImGuiCTX::PushStyleColor> disabledText;
+        if (showAsDisabled)
+            disabledText.emplace(ImGuiCol_Text, colTextDisabled);
+        ImGui::Selectable(readable);
+        };
+    auto DrawCol_ModWeight = [](ATDesc_t& atDesc) {
+        ImGuiCTX::PushID _id(&atDesc);
+        static ImVec2 cell_padding(0.0f, 0.0f);
+        ImGuiCTX::PushStyleVar noPaddingAroundInput(ImGuiStyleVar_CellPadding, cell_padding);
+        ImGui::PushStyleCompact();
+        std::optional<float>& modWeight = atDesc->m_ModWeight;
+        if (!modWeight)
+        {
+            if (ImGui::Button("Use", ImVec2(-FLT_MIN, 0.0f)))
+            {
+                modWeight.emplace(1.0f);
+            }
+        }
+        else
+        {
+            std::optional<ImGuiCTX::PushStyleColor> coloredText;
+            const bool isModWeightApplied = modWeight != 1.0f;
+            if (modWeight > 1.0f)
+                coloredText.emplace(ImGuiCol_Text, colorTextGreen);
+            else if (modWeight < 1.0f)
+                coloredText.emplace(ImGuiCol_Text, colorTextRed);
+            ImGui::SetNextItemWidth(-FLT_MIN);
+            ImGui::DragFloat("##inpModWeight", &*modWeight, 0.01f, 0.0f, 5.0f);
+        }
+        ImGui::PopStyleCompact();
+        };
+
+#define ATCOL(colId) ActionTypeColumnsIndices::colId, #colId, DrawCol_##colId
+    return std::make_tuple(
+        ActionTypesColumn{ ATCOL(TypeInt), SortByAttribute{ [](ATDesc_t& a) { return a->m_ActionType; }} }
+        , ActionTypesColumn{ ATCOL(TypeReadable), SortByAttribute{ [](ATDesc_t& a) { return std::string_view(enum_reflection<EnumParkourAction>::GetString(a->m_ActionType)); } } }
+        , ActionTypesColumn{ ATCOL(UsesInCycle), SortByAttribute{ [GetNumUsesInCycle](ATDesc_t& a) { return GetNumUsesInCycle(a->m_ActionType); }} }
+        , ActionTypesColumn{ ATCOL(ModWeight), SortByAttribute{ [](ATDesc_t& a) { return a->m_ModWeight; } } }
+        );
+#undef ATCOL
+}
+void ParkourDebugWindow::DrawActionTypesTab()
+{
+    std::optional<std::lock_guard<decltype(latestCycle->m_Mutex)>> _lock;
+    typesPresentInTheCycle.clear();
+    if (latestCycle)
+    {
+        _lock.emplace(latestCycle->m_Mutex);
+        for (Action_t& action : latestCycle->m_Actions)
+        {
+            typesPresentInTheCycle[action->m_ActionType]++;
+        }
+    }
+    auto&& columns = MakeColumnsForActionTypes();
+    std::vector<std::unique_ptr<ControlsForParkourType>>& rows = GetRowsForActionTypesTable();
+    size_t numColumns = std::tuple_size_v<std::remove_reference_t<decltype(columns)>>;
+    ImGuiTableFlags table_flags =
+        ImGuiTableFlags_Borders
+        | ImGuiTableFlags_ScrollY
+        | ImGuiTableFlags_Resizable
+        | ImGuiTableFlags_RowBg
+        | ImGuiTableFlags_Sortable
+        | ImGuiTableFlags_SizingFixedFit
+        ;
+    if (ImGui::BeginTable("Action types", (int)numColumns, table_flags))
+    {
+        ImGui::TableSetupScrollFreeze(0, 1); // Make top row always visible
+        for_each_in_tuple(columns, [](auto&& actionTypeCol) {
+            ImGui::TableSetupColumn(actionTypeCol.m_Header);
+            });
+        ImGui::TableHeadersRow();
+        if (ImGuiTableSortSpecs* sortSpecs = ImGui::TableGetSortSpecs())
+        {
+            if (sortSpecs->SpecsDirty && sortSpecs->SpecsCount > 0)
+            {
+                sortSpecs->SpecsDirty = false;
+                const ImGuiTableColumnSortSpecs& primSort = sortSpecs->Specs[0];
+                using Elem_t = ATDesc_t;
+                auto ApplySort = [&]<std::invocable<Elem_t&, Elem_t&> Pred>(Pred && predicate) {
+                    if (primSort.SortDirection == ImGuiSortDirection_None) return;
+                    const bool isAscending = primSort.SortDirection == ImGuiSortDirection_Ascending;
+                    auto adjustedPredicate = [&](auto&& a, auto&& b) { return isAscending ? predicate(a, b) : predicate(b, a); };
+                    std::ranges::sort(rows, adjustedPredicate);
+                };
+                for_each_in_tuple(columns, [&](auto&& detailsColumn) {
+                    if (detailsColumn.m_ColIdx != primSort.ColumnIndex) return;
+                    ApplySort(detailsColumn.m_SortPredicate);
+                    });
+            }
+        }
+        auto DrawRow = [&](ATDesc_t& atDesc) {
+            for_each_in_tuple(columns, [&](auto&& atColumn) {
+                ImGui::TableSetColumnIndex((int)atColumn.m_ColIdx);
+                atColumn.m_Draw(atDesc);
+                });
+            };
+        ImGui::DrawRowsWithClipper((int)rows.size(), [&](int row) {
+            auto& atDesc = rows[(size_t)row];
+            DrawRow(atDesc);
+            });
+        ImGui::EndTable();
+    }
+}
+void ParkourDebugWindow::Draw()
+{
+    latestCycle = parkourLog.GetLatestLoggedParkourCycle();
     if (latestCycle)
     {
         Matrix4f tr;
@@ -790,291 +1109,6 @@ void DrawParkourDebugWindow()
             ImGui::SetNextItemWidth(100.0f);
             ImGui::SliderFloat("Opacity", &opacity, 0.05f, 1.0f);
         }
-        auto DrawSummaryTab = [&]() {
-            ImGui::Text("Latest parkour cycle:");
-            if (!latestCycle)
-            {
-                ImGui::Text("Nothing yet.");
-                return;
-            }
-            std::lock_guard _lock{ latestCycle->m_Mutex };
-            std::optional<EnumParkourAction> selectedType;
-            std::set<EnumParkourAction> actionTypesWithAtLeastOneNondiscarded;
-            size_t numNotDiscardedImmediately = 0;
-            size_t numNotDiscarded = 0;
-            auto allMoves_tr = latestCycle->m_Actions
-                | std::views::transform([&](std::unique_ptr<ParkourActionLogged>& action)
-                    {
-                        if (action->m_IsTheSelectedBestMatch)
-                            selectedType = action->m_ActionType;
-                        const bool wasDiscardedImmediately = action->m_IsDiscarded_immediatelyAfterCreation;
-                        if (!wasDiscardedImmediately)
-                            numNotDiscardedImmediately++;
-                        const bool wasDiscarded = action->m_IsDiscarded_immediatelyAfterCreation || action->m_IsDiscarded_becauseFitnessWeightTooLow;
-                        if (!wasDiscarded)
-                        {
-                            numNotDiscarded++;
-                            actionTypesWithAtLeastOneNondiscarded.insert(action->m_ActionType);
-                        }
-                        return action->m_ActionType;
-                    });
-            std::set<EnumParkourAction> allMoves(allMoves_tr.begin(), allMoves_tr.end());
-            ImGui::Text(
-                "Timestamp: %llu\n"
-                "Num actions                : %d\n"
-                "Num after initial discard  : %d\n"
-                "Num with nonzero fitness   : %d\n"
-                "Location       : %8.3f,%8.3f,%8.3f\n"
-                "Input Direction: %8.3f,%8.3f,%8.3f\n"
-                , latestCycle->m_Timestamp
-                , latestCycle->m_Actions.size()
-                , numNotDiscardedImmediately
-                , numNotDiscarded
-                , latestCycle->m_LocationOfOrigin.x
-                , latestCycle->m_LocationOfOrigin.y
-                , latestCycle->m_LocationOfOrigin.z
-                , latestCycle->m_DirectionOfMovementInputWorldSpace.x
-                , latestCycle->m_DirectionOfMovementInputWorldSpace.y
-                , latestCycle->m_DirectionOfMovementInputWorldSpace.z
-            );
-
-            if (allMoves.size())
-            {
-                ImGui::Text(
-                    "All move types: %d"
-                    , allMoves.size()
-                );
-                for (const EnumParkourAction actionType : allMoves)
-                {
-                    std::optional<ImGuiCTX::PushStyleColor> selectedActionTextColor;
-                    const bool isTheSelectedType = actionType == selectedType;
-                    if (isTheSelectedType) selectedActionTextColor.emplace(ImGuiCol_Text, colorTextSelectedType);
-                    else if (const bool allMovesOfThisTypeWereDiscarded = !actionTypesWithAtLeastOneNondiscarded.contains(actionType))
-                        selectedActionTextColor.emplace(ImGuiCol_Text, colorTextAllDiscarded);
-                    ImGui::Text(
-                        "%3d == %s"
-                        , actionType
-                        , enum_reflection<EnumParkourAction>::GetString(actionType)
-                    );
-                }
-            }
-            };
-        auto DrawDisplayTab = [&]() {
-            if (!ImGui::IsKeyDown(ImGuiKey_ModAlt))
-                ImGui::SetNextFrameWantCaptureMouse(true);
-            ImGui::HelpMarker(
-                "Hold Alt to _un_block game mouse."
-            );
-            auto& parkourLog = ParkourLog::GetSingleton();
-            parkourLog.DrawDisplayControls();
-            };
-        auto DrawDetailsTab = [&]() {
-            ImGui::HelpMarker(
-                "Hold Alt to block game mouse.\n"
-                "Actions selected with left click are displayed in thicker lines."
-            );
-            if (ImGui::IsKeyDown(ImGuiKey_ModAlt))
-                ImGui::SetNextFrameWantCaptureMouse(true);
-            if (!latestCycle) return;
-            std::lock_guard _lock{ latestCycle->m_Mutex };
-            auto columns = MakeColumnsForParkourDetails();
-            const size_t numColumns = std::tuple_size_v<decltype(columns)>;
-            ImGuiTableFlags table_flags =
-                ImGuiTableFlags_Borders
-                | ImGuiTableFlags_ScrollY
-                | ImGuiTableFlags_Resizable
-                | ImGuiTableFlags_RowBg
-                | ImGuiTableFlags_Sortable
-                | ImGuiTableFlags_SizingFixedFit
-                ;
-            if (ImGui::BeginTable("Moves details", (int)numColumns, table_flags))
-            {
-                ImGui::TableSetupScrollFreeze(0, 1); // Make top row always visible
-                for_each_in_tuple(columns, [](auto&& detailsColumn) {
-                    ImGui::TableSetupColumn(detailsColumn.m_Header);
-                    });
-                ImGui::TableHeadersRow();
-                if (ImGuiTableSortSpecs* sortSpecs = ImGui::TableGetSortSpecs())
-                {
-                    if ((latestCycle->m_IsSortingDirty || sortSpecs->SpecsDirty) && sortSpecs->SpecsCount > 0)
-                    {
-                        sortSpecs->SpecsDirty = false;
-                        latestCycle->m_IsSortingDirty = false;
-                        const ImGuiTableColumnSortSpecs& primSort = sortSpecs->Specs[0];
-                        using Act_t = std::unique_ptr<ParkourActionLogged>;
-                        auto ApplySort = [&]<std::invocable<Act_t&, Act_t&> Pred>(Pred&& predicate) {
-                            if (primSort.SortDirection == ImGuiSortDirection_None) return;
-                            const bool isAscending = primSort.SortDirection == ImGuiSortDirection_Ascending;
-                            auto& acts = latestCycle->m_Actions;
-                            using Act_t = std::unique_ptr<ParkourActionLogged>;
-                            auto adjustedPredicate = [&](Act_t& a, Act_t& b) { return isAscending ? predicate(a, b) : predicate(b, a); };
-                            std::sort(acts.begin(), acts.end(), adjustedPredicate);
-                            };
-                        for_each_in_tuple(columns, [&](auto&& detailsColumn) {
-                            if (detailsColumn.m_ColIdx != primSort.ColumnIndex) return;
-                            ApplySort(detailsColumn.m_SortPredicate);
-                            });
-                    }
-                }
-                auto DrawRow = [&](std::unique_ptr<ParkourActionLogged>& action) {
-                    for_each_in_tuple(columns, [&](auto&& detailsColumn) {
-                        ImGui::TableSetColumnIndex((int)detailsColumn.m_ColIdx);
-                        detailsColumn.m_Draw(action);
-                        });
-                    };
-                // Demonstrate using clipper for large vertical lists
-                ImGuiListClipper clipper;
-                clipper.Begin((int)latestCycle->m_Actions.size());
-                while (clipper.Step())
-                {
-                    for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; row++)
-                    {
-                        ImGui::TableNextRow();
-                        std::unique_ptr<ParkourActionLogged>& action = latestCycle->m_Actions[(size_t)row];
-                        DrawRow(action);
-                    }
-                }
-                ImGui::EndTable();
-            }
-            };
-        auto DrawActionTypesTab = [&]() {
-            std::optional<std::lock_guard<decltype(latestCycle->m_Mutex)>> _lock;
-            std::unordered_map<EnumParkourAction, size_t> typesPresentInTheCycle;
-            if (latestCycle)
-            {
-                _lock.emplace(latestCycle->m_Mutex);
-                for (Action_t& action : latestCycle->m_Actions)
-                {
-                    typesPresentInTheCycle[action->m_ActionType]++;
-                }
-            }
-
-            auto GetNumUsesInCycle = [&](EnumParkourAction actionType) -> size_t {
-                if (!typesPresentInTheCycle.contains(actionType)) return 0;
-                return typesPresentInTheCycle[actionType];
-                };
-            auto IsActionTypeShownAsDisabled = [&](EnumParkourAction actionType) {
-                if (typesPresentInTheCycle.empty()) return false;
-                return GetNumUsesInCycle(actionType) <= 0;
-                };
-            auto MakeColumnsForActionTypes = [&]() {
-                enum ActionTypeColumnsIndices
-                {
-                    TypeInt = 0,
-                    TypeReadable,
-                    UsesInCycle,
-                    ModWeight,
-                };
-                auto DrawCol_TypeInt = [](ATDesc_t& atDesc) {
-                    ImGui::Text("%3d", atDesc->m_ActionType);
-                    };
-                auto DrawCol_UsesInCycle = [&](ATDesc_t& atDesc) {
-                    size_t numUses = GetNumUsesInCycle(atDesc->m_ActionType);
-                    if (numUses > 0)
-                        ImGui::Text("%d", numUses);
-                    };
-                auto DrawCol_TypeReadable = [&](ATDesc_t& atDesc) {
-                    const char* readable = enum_reflection<EnumParkourAction>::GetString(atDesc->m_ActionType);
-                    const bool showAsDisabled = IsActionTypeShownAsDisabled(atDesc->m_ActionType);
-                    ImVec4 colTextDisabled = ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled);
-                    std::optional<ImGuiCTX::PushStyleColor> disabledText;
-                    if (showAsDisabled)
-                        disabledText.emplace(ImGuiCol_Text, colTextDisabled);
-                    ImGui::Selectable(readable);
-                    };
-                auto DrawCol_ModWeight = [](ATDesc_t& atDesc) {
-                    ImGuiCTX::PushID _id(&atDesc);
-                    static ImVec2 cell_padding(0.0f, 0.0f);
-                    ImGuiCTX::PushStyleVar noPaddingAroundInput(ImGuiStyleVar_CellPadding, cell_padding);
-                    ImGui::PushStyleCompact();
-                    std::optional<float>& modWeight = atDesc->m_ModWeight;
-                    if (!modWeight)
-                    {
-                        if (ImGui::Button("Use", ImVec2(-FLT_MIN, 0.0f)))
-                        {
-                            modWeight.emplace(1.0f);
-                        }
-                    }
-                    else
-                    {
-                        std::optional<ImGuiCTX::PushStyleColor> coloredText;
-                        const bool isModWeightApplied = modWeight != 1.0f;
-                        if (modWeight > 1.0f)
-                            coloredText.emplace(ImGuiCol_Text, colorTextGreen);
-                        else if (modWeight < 1.0f)
-                            coloredText.emplace(ImGuiCol_Text, colorTextRed);
-                        ImGui::SetNextItemWidth(-FLT_MIN);
-                        ImGui::DragFloat("##inpModWeight", &*modWeight, 0.01f, 0.0f, 5.0f);
-                    }
-                    ImGui::PopStyleCompact();
-                    };
-#define ATCOL(colId) ActionTypeColumnsIndices::colId, #colId, DrawCol_##colId
-                return std::make_tuple(
-                    ActionTypesColumn{ ATCOL(TypeInt), SortByAttribute{ [](ATDesc_t& a) { return a->m_ActionType; }} }
-                    , ActionTypesColumn{ ATCOL(TypeReadable), SortByAttribute{ [](ATDesc_t& a) { return std::string_view(enum_reflection<EnumParkourAction>::GetString(a->m_ActionType)); } } }
-                    , ActionTypesColumn{ ATCOL(UsesInCycle), SortByAttribute{ [&](ATDesc_t& a) { return GetNumUsesInCycle(a->m_ActionType); }}}
-                    , ActionTypesColumn{ ATCOL(ModWeight), SortByAttribute{ [](ATDesc_t& a) { return a->m_ModWeight; } } }
-                    );
-#undef ATCOL
-                };
-            auto&& columns = MakeColumnsForActionTypes();
-            std::vector<std::unique_ptr<ControlsForParkourType>>& rows = GetRowsForActionTypesTable();
-            size_t numColumns = std::tuple_size_v<std::remove_reference_t<decltype(columns)>>;
-            ImGuiTableFlags table_flags =
-                ImGuiTableFlags_Borders
-                | ImGuiTableFlags_ScrollY
-                | ImGuiTableFlags_Resizable
-                | ImGuiTableFlags_RowBg
-                | ImGuiTableFlags_Sortable
-                | ImGuiTableFlags_SizingFixedFit
-                ;
-            if (ImGui::BeginTable("Action types", (int)numColumns, table_flags))
-            {
-                ImGui::TableSetupScrollFreeze(0, 1); // Make top row always visible
-                for_each_in_tuple(columns, [](auto&& actionTypeCol) {
-                    ImGui::TableSetupColumn(actionTypeCol.m_Header);
-                    });
-                ImGui::TableHeadersRow();
-                if (ImGuiTableSortSpecs* sortSpecs = ImGui::TableGetSortSpecs())
-                {
-                    if (sortSpecs->SpecsDirty && sortSpecs->SpecsCount > 0)
-                    {
-                        sortSpecs->SpecsDirty = false;
-                        const ImGuiTableColumnSortSpecs& primSort = sortSpecs->Specs[0];
-                        using Elem_t = ATDesc_t;
-                        auto ApplySort = [&]<std::invocable<Elem_t&, Elem_t&> Pred>(Pred && predicate) {
-                            if (primSort.SortDirection == ImGuiSortDirection_None) return;
-                            const bool isAscending = primSort.SortDirection == ImGuiSortDirection_Ascending;
-                            auto adjustedPredicate = [&](auto&& a, auto&& b) { return isAscending ? predicate(a, b) : predicate(b, a); };
-                            std::ranges::sort(rows, adjustedPredicate);
-                        };
-                        for_each_in_tuple(columns, [&](auto&& detailsColumn) {
-                            if (detailsColumn.m_ColIdx != primSort.ColumnIndex) return;
-                            ApplySort(detailsColumn.m_SortPredicate);
-                            });
-                    }
-                }
-                auto DrawRow = [&](ATDesc_t& atDesc) {
-                    for_each_in_tuple(columns, [&](auto&& atColumn) {
-                        ImGui::TableSetColumnIndex((int)atColumn.m_ColIdx);
-                        atColumn.m_Draw(atDesc);
-                        });
-                    };
-                // Demonstrate using clipper for large vertical lists
-                ImGuiListClipper clipper;
-                clipper.Begin((int)rows.size());
-                while (clipper.Step())
-                {
-                    for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; row++)
-                    {
-                        ImGui::TableNextRow();
-                        auto& atDesc = rows[(size_t)row];
-                        DrawRow(atDesc);
-                    }
-                }
-                ImGui::EndTable();
-            }
-            };
         if (ImGuiCTX::TabBar _tb{ "_pdtb" }) {
             if (ImGuiCTX::Tab _tabSummary{ "Summary" }) {
                 DrawSummaryTab();
