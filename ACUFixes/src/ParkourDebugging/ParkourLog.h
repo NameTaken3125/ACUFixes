@@ -31,6 +31,7 @@ public:
     bool m_IsDiscarded_becauseFitnessWeightTooLow = false;
     std::optional<float> m_DefaultWeight;
     std::optional<float> m_TotalWeight;
+    std::optional<float> m_UsedModWeight;
     std::optional<bool> m_ResultOfFinalFilter1;
     std::optional<bool> m_ResultOfFinalFilter2;
     bool m_IsTheSelectedBestMatch = false;
@@ -53,7 +54,7 @@ public:
     void LogActionInitialCreation(AvailableParkourAction& newAction, bool isDiscarded_immediatelyAfterCreation);
     void LogActionsBeforeFiltering(SmallArray<AvailableParkourAction*>& allActionsBeforeFiltering);
     void LogActionBeforeFiltering(AvailableParkourAction& action, float fitness, bool isDiscarded_becauseFitnessWeightTooLow);
-    void LogActionWeights(AvailableParkourAction& action, float defaultWeight, float totalWeight);
+    float LogActionWeights(AvailableParkourAction& action, float defaultWeight, float totalWeight);
     void LogActionFinalFilter1(AvailableParkourAction& action, bool resultOfFinalFilter1);
     void LogActionFinalFilter2(AvailableParkourAction& action, bool resultOfFinalFilter2);
     void LogActionWhenReturningBestMatch(AvailableParkourAction& bestMatchMove);

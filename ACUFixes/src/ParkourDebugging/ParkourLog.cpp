@@ -41,12 +41,18 @@ void ParkourCycleLogged::LogActionBeforeFiltering(AvailableParkourAction& action
     recordForAction.m_FitnessWeight = fitness;
     recordForAction.m_IsDiscarded_becauseFitnessWeightTooLow = isDiscarded_becauseFitnessWeightTooLow;
 }
-void ParkourCycleLogged::LogActionWeights(AvailableParkourAction& action, float defaultWeight, float totalWeight)
+std::optional<float> GetModWeightForAction(AvailableParkourAction& action);
+float ParkourCycleLogged::LogActionWeights(AvailableParkourAction& action, float defaultWeight, float totalWeight)
 {
-    if (m_IsDisabled) return;
+    if (m_IsDisabled) return totalWeight;
     ParkourActionLogged& recordForAction = this->GetOrMakeRecordForAction(action);
+    std::optional<float> modWeight = GetModWeightForAction(action);
+    recordForAction.m_UsedModWeight = modWeight;
+    if (modWeight)
+        totalWeight *= *modWeight;
     recordForAction.m_DefaultWeight = defaultWeight;
     recordForAction.m_TotalWeight = totalWeight;
+    return totalWeight;
 }
 void LogActionsBeforeFiltering_ConsoleAnd3D(SmallArray<AvailableParkourAction*>& moves);
 void LogActionBestMatch_ConsoleAnd3D(AvailableParkourAction& bestMatchMove);

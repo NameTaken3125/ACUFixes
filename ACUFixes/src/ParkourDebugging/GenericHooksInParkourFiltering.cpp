@@ -173,8 +173,8 @@ int SortAndSelectBestMatchingAction_FullReplacement(
         auto SortByDescendingTotalFitness = [&](AvailableParkourAction* actionFirst, AvailableParkourAction* action2nd) {
             ActionWeights weights1st = GetActionWeights(*parkourTester, *actionFirst);
             ActionWeights weights2nd = GetActionWeights(*parkourTester, *action2nd);
-            currentCycle->LogActionWeights(*actionFirst, weights1st.defaultWeight, weights1st.totalWeight);
-            currentCycle->LogActionWeights(*action2nd, weights2nd.defaultWeight, weights2nd.totalWeight);
+            weights1st.totalWeight = currentCycle->LogActionWeights(*actionFirst, weights1st.defaultWeight, weights1st.totalWeight);
+            weights2nd.totalWeight = currentCycle->LogActionWeights(*action2nd, weights2nd.defaultWeight, weights2nd.totalWeight);
             return weights1st.totalWeight > weights2nd.totalWeight;
             };
         std::sort(p_parkourSensorsResults.begin(), p_parkourSensorsResults.end(), SortByDescendingTotalFitness);

@@ -150,8 +150,9 @@ private:
     auto MakeColumnsForParkourDetails();
     auto MakeColumnsForActionTypes();
 
-private:
+public:
     std::optional<float>& GetModWeightForActionType(EnumParkourAction actionType);
+private:
     void DrawModWeightSlider(std::optional<float>& modWeight);
 private:
     ParkourLog& parkourLog;
@@ -782,11 +783,22 @@ auto ParkourDebugWindow::MakeColumnsForParkourDetails()
         };
     auto DrawCol_Fitness = [](Action_t& action) { if (action->m_FitnessWeight) ImGui::Text("%f", *action->m_FitnessWeight); };
     auto DrawCol_DefaultWeight = [](Action_t& action) { if (action->m_DefaultWeight) ImGui::Text("%f", *action->m_DefaultWeight); };
-    auto DrawCol_TotalWeight = [](Action_t& action) { if (action->m_TotalWeight) ImGui::Text("%f", *action->m_TotalWeight); };
     auto DrawCol_ModWeight = [this](Action_t& action) {
         ImGuiCTX::PushID _id(action.get());
         std::optional<float>& modWeight = GetModWeightForActionType(action->m_ActionType);
         DrawModWeightSlider(modWeight);
+        };
+    auto DrawCol_TotalWeight = [](Action_t& action) {
+        if (!action->m_TotalWeight) return;
+        std::optional<ImGuiCTX::PushStyleColor> coloredText;
+        if (action->m_UsedModWeight)
+        {
+            if (*action->m_UsedModWeight > 1)
+                coloredText.emplace(ImGuiCol_Text, colorTextGreen);
+            else if (*action->m_UsedModWeight < 1)
+                coloredText.emplace(ImGuiCol_Text, colorTextRed);
+        }
+        ImGui::Text("%f", *action->m_TotalWeight);
         };
     enum MoveDetailsColumnsIndices
     {
@@ -816,6 +828,10 @@ auto ParkourDebugWindow::MakeColumnsForParkourDetails()
         );
 #undef MDCOL
 };
+}
+std::optional<float> GetModWeightForAction(AvailableParkourAction& action)
+{
+    return g_ParkourVisualization.m_ParkourDebugWnd.GetModWeightForActionType(action.GetEnumParkourAction());
 }
 ParkourDebugWindow::ParkourDebugWindow()
     : parkourLog(ParkourLog::GetSingleton())
@@ -1068,6 +1084,7 @@ void ParkourDebugWindow::DrawActionTypesTab()
             if ((m_IsCycleDirty || sortSpecs->SpecsDirty) && sortSpecs->SpecsCount > 0)
             {
                 sortSpecs->SpecsDirty = false;
+                m_IsCycleDirty = false;
                 const ImGuiTableColumnSortSpecs& primSort = sortSpecs->Specs[0];
                 using Elem_t = ATDesc_t;
                 auto ApplySort = [&]<std::invocable<Elem_t&, Elem_t&> Pred>(Pred && predicate) {
