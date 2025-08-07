@@ -15,8 +15,8 @@ class Entity;
 
 DEFINE_GAME_FUNCTION(AvailableParkourAction__FinalFilter1, 0x1401D4DE0, bool, __fastcall, (AvailableParkourAction* p_parkourAction, __m128* a2, uint64 a3, Entity* p_playerEntity));
 DEFINE_GAME_FUNCTION(AvailableParkourAction__FinalFilter2, 0x1401D3000, bool, __fastcall, (AvailableParkourAction* p_parkourAction, Entity* p_playerEntity, __int64 a3));
-DEFINE_GAME_FUNCTION(ConstructParkourAction_A, 0x1401CC990, AvailableParkourAction*, __fastcall, (EnumParkourAction p_actionEnum, __int64 a2, __m128* a3, __m128* p_movementVecWorld_mb, int a5, char a6, __int64 a7, __int64 a8));
-DEFINE_GAME_FUNCTION(ConstructParkourAction_B, 0x1401D1FC0, AvailableParkourAction*, __fastcall, (EnumParkourAction p_actionEnum, __int64 a2, __m128* a3, __m128* p_movementVecWorld_mb, int a5, char a6, __int64 a7, __int64 a8, Entity* p_player, uint64 p_currentLedge_mb));
+DEFINE_GAME_FUNCTION(ConstructParkourAction_A, 0x1401CC990, AvailableParkourAction*, __fastcall, (EnumParkourAction p_actionEnum, __m128* a2, __m128* a3, __m128* p_movementVecWorld_mb, int a5, char a6, __int64 a7, __int64 a8));
+DEFINE_GAME_FUNCTION(ConstructParkourAction_B, 0x1401D1FC0, AvailableParkourAction*, __fastcall, (EnumParkourAction p_actionEnum, __m128* a2, __m128* a3, __m128* p_movementVecWorld_mb, int a5, char a6, __int64 a7, __int64 a8, Entity* p_player, uint64 p_currentLedge_mb));
 DEFINE_GAME_FUNCTION(AvailableParkourAction__InitializePlayerRef, 0x14015A570, void, __fastcall, (PlayerRefInParkourAction* p_playerRefOut, Entity* a2));
 // Used for a SmallArray of plain types, where constructors/destructors don't matter.
 DEFINE_GAME_FUNCTION(SmallArray_POD__RemoveGeneric, 0x142725F00, void, __fastcall, (void* smallArray, int p_idx, unsigned int p_elemSize));
@@ -27,9 +27,9 @@ DEFINE_GAME_FUNCTION(SmallArray_POD__RemoveGeneric, 0x142725F00, void, __fastcal
 static DEFINE_LOGGER_CONSOLE_AND_FILE(ParkourLogger, "[Parkour]");
 bool CreateParkourActionAndPerformInitialTestIfFits_A_FullReplacement(
     EnumParkourAction actionType,
-    uint64 a2,
+    __m128* p_locationOfOrigin,
     __m128* a3,
-    __m128* p_movementVecWorld_mb,
+    __m128* p_directionOfMovementInputWorldSpace,
     float a5, int a6, char a7, uint64 a8,
     Entity* p_player,
     uint64 p_currentLedge_mb,
@@ -37,7 +37,7 @@ bool CreateParkourActionAndPerformInitialTestIfFits_A_FullReplacement(
     float a12,
     float p_epsilon_mb)
 {
-    AvailableParkourAction* newAction = ConstructParkourAction_A(actionType, a2, a3, p_movementVecWorld_mb, a6, a7, a8, p_currentLedge_mb);
+    AvailableParkourAction* newAction = ConstructParkourAction_A(actionType, p_locationOfOrigin, a3, p_directionOfMovementInputWorldSpace, a6, a7, a8, p_currentLedge_mb);
     *p_newAction_out = newAction;
     if (!newAction) return false;
     if (p_player)
@@ -45,9 +45,9 @@ bool CreateParkourActionAndPerformInitialTestIfFits_A_FullReplacement(
     GET_AND_CAST_FANCY_FUNC(*newAction, ParkourActionKnownFancyVFuncs::Set2FloatsAfterCreation)(newAction, a12, p_epsilon_mb);
     bool isActionFits = GET_AND_CAST_FANCY_FUNC(*newAction, ParkourActionKnownFancyVFuncs::InitialTestIfActionFits)(
         newAction,
-        a2,
+        p_locationOfOrigin,
         a3,
-        p_movementVecWorld_mb,
+        p_directionOfMovementInputWorldSpace,
         a5,
         a6,
         a8,
@@ -56,6 +56,8 @@ bool CreateParkourActionAndPerformInitialTestIfFits_A_FullReplacement(
     std::shared_ptr<ParkourCycleLogged> currentCycle = GetCurrentLoggedParkourCycle();
     bool isDiscarded = !isActionFits;
     currentCycle->LogActionInitialCreation(*newAction, isDiscarded);
+    currentCycle->m_LocationOfOrigin = *(Vector3f*)p_locationOfOrigin;
+    currentCycle->m_DirectionOfMovementInputWorldSpace = *(Vector3f*)p_directionOfMovementInputWorldSpace;
     if (isDiscarded)
     {
         newAction->Unk008_Destroy(0);
@@ -67,9 +69,9 @@ bool CreateParkourActionAndPerformInitialTestIfFits_A_FullReplacement(
 }
 bool CreateParkourActionAndPerformInitialTestIfFits_B_FullReplacement(
     EnumParkourAction actionType,
-    uint64 a2,
+    __m128* p_locationOfOrigin,
     __m128* a3,
-    __m128* p_movementVecWorld_mb,
+    __m128* p_directionOfMovementInputWorldSpace,
     float a5, int a6, char a7, uint64 a8, uint64 a9,
     Entity* p_player,
     uint64 p_currentLedge_mb,
@@ -77,7 +79,7 @@ bool CreateParkourActionAndPerformInitialTestIfFits_B_FullReplacement(
     float a13,
     float p_epsilon_mb)
 {
-    AvailableParkourAction* newAction = ConstructParkourAction_B(actionType, a2, a3, p_movementVecWorld_mb, a6, a7, a8, a9, p_player, p_currentLedge_mb);
+    AvailableParkourAction* newAction = ConstructParkourAction_B(actionType, p_locationOfOrigin, a3, p_directionOfMovementInputWorldSpace, a6, a7, a8, a9, p_player, p_currentLedge_mb);
     *p_newAction_out = newAction;
     if (!newAction) return false;
     if (p_player)
@@ -85,16 +87,19 @@ bool CreateParkourActionAndPerformInitialTestIfFits_B_FullReplacement(
     GET_AND_CAST_FANCY_FUNC(*newAction, ParkourActionKnownFancyVFuncs::Set2FloatsAfterCreation)(newAction, a13, p_epsilon_mb);
     bool isActionFits = GET_AND_CAST_FANCY_FUNC(*newAction, ParkourActionKnownFancyVFuncs::InitialTestIfActionFits)(
         newAction,
-        a2,
+        p_locationOfOrigin,
         a3,
-        p_movementVecWorld_mb,
+        p_directionOfMovementInputWorldSpace,
         a5,
         a6,
         a9,
         p_player,
         p_currentLedge_mb);
+    std::shared_ptr<ParkourCycleLogged> currentCycle = GetCurrentLoggedParkourCycle();
     bool isDiscarded = !isActionFits;
-    GetCurrentLoggedParkourCycle()->LogActionInitialCreation(*newAction, isDiscarded);
+    currentCycle->LogActionInitialCreation(*newAction, isDiscarded);
+    currentCycle->m_LocationOfOrigin = *(Vector3f*)p_locationOfOrigin;
+    currentCycle->m_DirectionOfMovementInputWorldSpace = *(Vector3f*)p_directionOfMovementInputWorldSpace;
     if (isDiscarded)
     {
         newAction->Unk008_Destroy(0);
@@ -118,8 +123,6 @@ int SortAndSelectBestMatchingAction_FullReplacement(
 {
     std::shared_ptr<ParkourCycleLogged> currentCycle = GetCurrentLoggedParkourCycle();
     currentCycle->LogActionsBeforeFiltering(p_parkourSensorsResults);
-    currentCycle->m_LocationOfOrigin = *(Vector3f*)p_locationOfOrigin;
-    currentCycle->m_DirectionOfMovementInputWorldSpace = *(Vector3f*)p_directionOfMovementInputWorldSpace;
 
     ParkourCallbacks* parkourCallbacks = GenericHooksInParkourFiltering::GetSingleton().m_Callbacks;
     if (parkourCallbacks)

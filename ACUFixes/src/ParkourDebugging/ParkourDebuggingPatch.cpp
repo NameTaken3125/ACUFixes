@@ -246,14 +246,23 @@ public:
             }
         }
     }
-    static void SetMatrix4fLookAt(Matrix4f& m, const Vector3f& eyePos, const Vector3f& forwardNormalized, const Vector3f& upDir)
+    static void SetMatrix4fLookAt(Matrix4f& m, const Vector3f& eyePos, const Vector3f& forwardNormalized)
     {
-        Vector3f side, up;
-
-        up = upDir;
+        Vector3f side;
+        Vector3f up{ 0, 0, 1 };
 
         // Side = forward x up
         side = forwardNormalized.crossProduct(up);
+        if (side.lengthSq() < EPSILON)
+        {
+            /*
+            By default I try to align the 3D marker's "up" with the positive Z.
+            Sometimes the normal direction vector is exactly the same,
+            so in that case I have to pick a different default.
+            */
+            up = { 1, 0, 0 };
+            side = forwardNormalized.crossProduct(up);
+        }
         side.normalize();
 
         // Recompute up as: up = side x forward
@@ -329,7 +338,7 @@ public:
                         blueness,
                         opacity);
 
-                SetMatrix4fLookAt(transform, action.m_LocationDst, action.m_DirDstFacingOut, Vector3f(0, 0, 1));
+                SetMatrix4fLookAt(transform, action.m_LocationDst, action.m_DirDstFacingOut);
                 if (!isMostRecent)
                     transform = transform * scaleForOlderCycles;
                 ImGui3D::DrawWireModelTransform(markerModel, transform, thickness, color);
@@ -867,13 +876,11 @@ void ParkourDebugWindow::DrawSummaryTab()
             });
     std::set<EnumParkourAction> allMoves(allMoves_tr.begin(), allMoves_tr.end());
     ImGui::Text(
-        "Timestamp: %llu\n"
         "Num actions                : %d\n"
         "Num after initial discard  : %d\n"
         "Num with nonzero fitness   : %d\n"
         "Location       : %8.3f,%8.3f,%8.3f\n"
         "Input Direction: %8.3f,%8.3f,%8.3f\n"
-        , latestCycle->m_Timestamp
         , latestCycle->m_Actions.size()
         , numNotDiscardedImmediately
         , numNotDiscarded
@@ -1143,6 +1150,13 @@ void ParkourDebugWindow::Draw()
             ImGui::SetNextItemWidth(100.0f);
             ImGui::SliderFloat("Opacity", &opacity, 0.05f, 1.0f);
         }
+        if (latestCycle)
+            ImGui::Text(
+                "Timestamp: %llu\n"
+                , latestCycle->m_Timestamp
+            );
+        else
+            ImGui::NewLine();
         if (ImGuiCTX::TabBar _tb{ "_pdtb" }) {
             if (ImGuiCTX::Tab _tabSummary{ "Summary" }) {
                 DrawSummaryTab();
