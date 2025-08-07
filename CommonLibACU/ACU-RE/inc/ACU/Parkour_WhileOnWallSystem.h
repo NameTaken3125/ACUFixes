@@ -1,7 +1,7 @@
 #pragma once
 
 class WhileOnWallSystem_28;
-class WindowEntry;
+class ParkourTester_WindowEntry;
 
 class WhileOnWallSystem
 {
@@ -17,7 +17,7 @@ public:
     void* climbFacade; //0x01F0
     void* offTheWall; //0x01F8
     void* overhang; //0x0200
-    WindowEntry* windowEntryTester; //0x0208
+    ParkourTester_WindowEntry* windowEntryTester; //0x0208
     void* climbLadder; //0x0210
     void* parkour; //0x0218
     char pad_0220[456]; //0x0220
