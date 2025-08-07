@@ -440,6 +440,9 @@ ParkourActionsExtraProcessing::ParkourActionsExtraProcessing()
             used for "sidehop" (see implementation at 140148500)
             and "backeject to ground" (see implementation at 14013E850)
             to make the constructed WallEjectToHang actions less likely to be discarded as unfit.
+
+            UPD: Can't trigger a we2h to the swing bar at [333.85 641.67 7.03],
+                 though the actions are created. Maybe they are discarded because too close to the wall?
             */
             PresetScript_CCodeInTheMiddle(0x140140E44, 10,
                 WhenSettingAllowedAndExpectedRangesForEjectToHang_MakeThemMorePermissive, 0x140140EDB, false);
