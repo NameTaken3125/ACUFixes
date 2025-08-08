@@ -14,6 +14,7 @@
 #include "ImGui3D/ImGui3DCustomDraw.h"
 #include "ImGuiCTX.h"
 #include "ImGuiConfigUtils.h"
+#include "Raycasting/RaycastPicker.h"
 
 #include "AvailableParkourAction.h"
 #include "ParkourTester.h"
@@ -31,68 +32,6 @@ assert_sizeof(ParkourAction_Commonbase, 0x2B0);
 
 
 DEFINE_LOGGER_CONSOLE_AND_FILE(ParkourLogger, "[Parkour]");
-struct History_Location_Entry
-{
-    Vector3f m_Location;
-    float m_Timestamp;
-};
-class History_Location
-{
-public:
-    float m_MaxRetainHowLongSecs = 10.0f;
-    size_t m_MaxRetainNum = 1024;
-    size_t m_MaxDisplayNum = 10;
-    std::vector<History_Location_Entry> m_History;
-    void Draw()
-    {
-        ImGuiTextBuffer buf;
-        for (size_t i = 0; i < m_History.size(); i++)
-        {
-            buf.clear();
-            buf.appendf("ParkourPos %d", m_History.size() - i - 1);
-            ImGui3D::DrawLocationNamed(m_History[i].m_Location, buf.c_str());
-        }
-    }
-    void Add(const Vector3f& location, float timestamp)
-    {
-        size_t curSize = m_History.size();
-        if (curSize >= m_MaxRetainNum)
-        {
-            m_History.erase(m_History.begin(), m_History.begin() + (curSize - m_MaxRetainNum + 1));
-        }
-        m_History.push_back(History_Location_Entry{ location, timestamp });
-    }
-    History_Location()
-    {
-        m_History.reserve(1024);
-    }
-};
-struct History_ManyLocations_Entry
-{
-    std::vector<Vector3f> m_ManyLocations;
-    float m_Timestamp;
-};
-class History_ManyLocations
-{
-public:
-    float m_MaxRetainHowLongSecs = 10.0f;
-    size_t m_MaxRetainNum = 1024;
-    size_t m_MaxDisplayNum = 10;
-    std::vector<History_ManyLocations_Entry> m_History;
-    void Add(std::vector<Vector3f>&& locations, float timestamp)
-    {
-        size_t curSize = m_History.size();
-        if (curSize >= m_MaxRetainNum)
-        {
-            m_History.erase(m_History.begin(), m_History.begin() + (curSize - m_MaxRetainNum + 1));
-        }
-        m_History.push_back(History_ManyLocations_Entry{ std::move(locations), timestamp });
-    }
-    History_ManyLocations()
-    {
-        m_History.reserve(1024);
-    }
-};
 ImGui3D::ImGuiWireModel& GetModel_Camera()
 {
     using namespace ImGui3D;
@@ -124,6 +63,417 @@ ImGui3D::ImGuiWireModel& GetModel_Camera()
         } };
     return camModel;
 }
+ImGui3D::ImGuiWireModel& GetModel_IcosphereSub2()
+{
+    using namespace ImGui3D;
+    static ImGuiWireModel model = {
+        // Points.
+        {
+            {0.000000f, 0.000000f, -1.000000f},
+            {0.723607f, -0.525725f, -0.447220f},
+            {-0.276388f, -0.850649f, -0.447220f},
+            {-0.894426f, 0.000000f, -0.447216f},
+            {-0.276388f, 0.850649f, -0.447220f},
+            {0.723607f, 0.525725f, -0.447220f},
+            {0.276388f, -0.850649f, 0.447220f},
+            {-0.723607f, -0.525725f, 0.447220f},
+            {-0.723607f, 0.525725f, 0.447220f},
+            {0.276388f, 0.850649f, 0.447220f},
+            {0.894426f, 0.000000f, 0.447216f},
+            {0.000000f, 0.000000f, 1.000000f},
+            {-0.162456f, -0.499995f, -0.850654f},
+            {0.425323f, -0.309011f, -0.850654f},
+            {0.262869f, -0.809012f, -0.525738f},
+            {0.850648f, 0.000000f, -0.525736f},
+            {0.425323f, 0.309011f, -0.850654f},
+            {-0.525730f, 0.000000f, -0.850652f},
+            {-0.688189f, -0.499997f, -0.525736f},
+            {-0.162456f, 0.499995f, -0.850654f},
+            {-0.688189f, 0.499997f, -0.525736f},
+            {0.262869f, 0.809012f, -0.525738f},
+            {0.951058f, -0.309013f, 0.000000f},
+            {0.951058f, 0.309013f, 0.000000f},
+            {0.000000f, -1.000000f, 0.000000f},
+            {0.587786f, -0.809017f, 0.000000f},
+            {-0.951058f, -0.309013f, 0.000000f},
+            {-0.587786f, -0.809017f, 0.000000f},
+            {-0.587786f, 0.809017f, 0.000000f},
+            {-0.951058f, 0.309013f, 0.000000f},
+            {0.587786f, 0.809017f, 0.000000f},
+            {0.000000f, 1.000000f, 0.000000f},
+            {0.688189f, -0.499997f, 0.525736f},
+            {-0.262869f, -0.809012f, 0.525738f},
+            {-0.850648f, 0.000000f, 0.525736f},
+            {-0.262869f, 0.809012f, 0.525738f},
+            {0.688189f, 0.499997f, 0.525736f},
+            {0.162456f, -0.499995f, 0.850654f},
+            {0.525730f, 0.000000f, 0.850652f},
+            {-0.425323f, -0.309011f, 0.850654f},
+            {-0.425323f, 0.309011f, 0.850654f},
+            {0.162456f, 0.499995f, 0.850654f},
+        },
+        // Edges
+        {
+            {12, 0, IM_COL32(255, 0, 0, 255)},
+            {13, 1, IM_COL32(255, 0, 0, 255)},
+            {14, 2, IM_COL32(255, 0, 0, 255)},
+            {15, 1, IM_COL32(255, 0, 0, 255)},
+            {16, 5, IM_COL32(255, 0, 0, 255)},
+            {17, 0, IM_COL32(255, 0, 0, 255)},
+            {18, 3, IM_COL32(255, 0, 0, 255)},
+            {19, 0, IM_COL32(255, 0, 0, 255)},
+            {20, 4, IM_COL32(255, 0, 0, 255)},
+            {21, 5, IM_COL32(255, 0, 0, 255)},
+            {22, 1, IM_COL32(255, 0, 0, 255)},
+            {23, 10, IM_COL32(255, 0, 0, 255)},
+            {24, 2, IM_COL32(255, 0, 0, 255)},
+            {25, 6, IM_COL32(255, 0, 0, 255)},
+            {26, 3, IM_COL32(255, 0, 0, 255)},
+            {27, 7, IM_COL32(255, 0, 0, 255)},
+            {28, 4, IM_COL32(255, 0, 0, 255)},
+            {29, 8, IM_COL32(255, 0, 0, 255)},
+            {30, 5, IM_COL32(255, 0, 0, 255)},
+            {31, 9, IM_COL32(255, 0, 0, 255)},
+            {32, 6, IM_COL32(255, 0, 0, 255)},
+            {33, 7, IM_COL32(255, 0, 0, 255)},
+            {34, 8, IM_COL32(255, 0, 0, 255)},
+            {35, 9, IM_COL32(255, 0, 0, 255)},
+            {36, 10, IM_COL32(255, 0, 0, 255)},
+            {37, 6, IM_COL32(255, 0, 0, 255)},
+            {38, 11, IM_COL32(255, 0, 0, 255)},
+            {39, 7, IM_COL32(255, 0, 0, 255)},
+            {40, 8, IM_COL32(255, 0, 0, 255)},
+            {41, 9, IM_COL32(255, 0, 0, 255)},
+            {2, 12, IM_COL32(255, 0, 0, 255)},
+            {0, 13, IM_COL32(255, 0, 0, 255)},
+            {1, 14, IM_COL32(255, 0, 0, 255)},
+            {5, 15, IM_COL32(255, 0, 0, 255)},
+            {0, 16, IM_COL32(255, 0, 0, 255)},
+            {3, 17, IM_COL32(255, 0, 0, 255)},
+            {2, 18, IM_COL32(255, 0, 0, 255)},
+            {4, 19, IM_COL32(255, 0, 0, 255)},
+            {3, 20, IM_COL32(255, 0, 0, 255)},
+            {4, 21, IM_COL32(255, 0, 0, 255)},
+            {10, 22, IM_COL32(255, 0, 0, 255)},
+            {5, 23, IM_COL32(255, 0, 0, 255)},
+            {6, 24, IM_COL32(255, 0, 0, 255)},
+            {1, 25, IM_COL32(255, 0, 0, 255)},
+            {7, 26, IM_COL32(255, 0, 0, 255)},
+            {2, 27, IM_COL32(255, 0, 0, 255)},
+            {8, 28, IM_COL32(255, 0, 0, 255)},
+            {3, 29, IM_COL32(255, 0, 0, 255)},
+            {9, 30, IM_COL32(255, 0, 0, 255)},
+            {4, 31, IM_COL32(255, 0, 0, 255)},
+            {10, 32, IM_COL32(255, 0, 0, 255)},
+            {6, 33, IM_COL32(255, 0, 0, 255)},
+            {7, 34, IM_COL32(255, 0, 0, 255)},
+            {8, 35, IM_COL32(255, 0, 0, 255)},
+            {9, 36, IM_COL32(255, 0, 0, 255)},
+            {11, 37, IM_COL32(255, 0, 0, 255)},
+            {10, 38, IM_COL32(255, 0, 0, 255)},
+            {11, 39, IM_COL32(255, 0, 0, 255)},
+            {11, 40, IM_COL32(255, 0, 0, 255)},
+            {11, 41, IM_COL32(255, 0, 0, 255)},
+            {38, 41, IM_COL32(255, 0, 0, 255)},
+            {38, 36, IM_COL32(255, 0, 0, 255)},
+            {41, 36, IM_COL32(255, 0, 0, 255)},
+            {41, 40, IM_COL32(255, 0, 0, 255)},
+            {41, 35, IM_COL32(255, 0, 0, 255)},
+            {40, 35, IM_COL32(255, 0, 0, 255)},
+            {40, 39, IM_COL32(255, 0, 0, 255)},
+            {40, 34, IM_COL32(255, 0, 0, 255)},
+            {39, 34, IM_COL32(255, 0, 0, 255)},
+            {39, 37, IM_COL32(255, 0, 0, 255)},
+            {39, 33, IM_COL32(255, 0, 0, 255)},
+            {37, 33, IM_COL32(255, 0, 0, 255)},
+            {37, 38, IM_COL32(255, 0, 0, 255)},
+            {37, 32, IM_COL32(255, 0, 0, 255)},
+            {38, 32, IM_COL32(255, 0, 0, 255)},
+            {23, 36, IM_COL32(255, 0, 0, 255)},
+            {23, 30, IM_COL32(255, 0, 0, 255)},
+            {36, 30, IM_COL32(255, 0, 0, 255)},
+            {31, 35, IM_COL32(255, 0, 0, 255)},
+            {31, 28, IM_COL32(255, 0, 0, 255)},
+            {35, 28, IM_COL32(255, 0, 0, 255)},
+            {29, 34, IM_COL32(255, 0, 0, 255)},
+            {29, 26, IM_COL32(255, 0, 0, 255)},
+            {34, 26, IM_COL32(255, 0, 0, 255)},
+            {27, 33, IM_COL32(255, 0, 0, 255)},
+            {27, 24, IM_COL32(255, 0, 0, 255)},
+            {33, 24, IM_COL32(255, 0, 0, 255)},
+            {25, 32, IM_COL32(255, 0, 0, 255)},
+            {25, 22, IM_COL32(255, 0, 0, 255)},
+            {32, 22, IM_COL32(255, 0, 0, 255)},
+            {30, 31, IM_COL32(255, 0, 0, 255)},
+            {30, 21, IM_COL32(255, 0, 0, 255)},
+            {31, 21, IM_COL32(255, 0, 0, 255)},
+            {28, 29, IM_COL32(255, 0, 0, 255)},
+            {28, 20, IM_COL32(255, 0, 0, 255)},
+            {29, 20, IM_COL32(255, 0, 0, 255)},
+            {26, 27, IM_COL32(255, 0, 0, 255)},
+            {26, 18, IM_COL32(255, 0, 0, 255)},
+            {27, 18, IM_COL32(255, 0, 0, 255)},
+            {24, 25, IM_COL32(255, 0, 0, 255)},
+            {24, 14, IM_COL32(255, 0, 0, 255)},
+            {25, 14, IM_COL32(255, 0, 0, 255)},
+            {22, 23, IM_COL32(255, 0, 0, 255)},
+            {22, 15, IM_COL32(255, 0, 0, 255)},
+            {23, 15, IM_COL32(255, 0, 0, 255)},
+            {16, 21, IM_COL32(255, 0, 0, 255)},
+            {16, 19, IM_COL32(255, 0, 0, 255)},
+            {21, 19, IM_COL32(255, 0, 0, 255)},
+            {19, 20, IM_COL32(255, 0, 0, 255)},
+            {19, 17, IM_COL32(255, 0, 0, 255)},
+            {20, 17, IM_COL32(255, 0, 0, 255)},
+            {17, 18, IM_COL32(255, 0, 0, 255)},
+            {17, 12, IM_COL32(255, 0, 0, 255)},
+            {18, 12, IM_COL32(255, 0, 0, 255)},
+            {15, 16, IM_COL32(255, 0, 0, 255)},
+            {15, 13, IM_COL32(255, 0, 0, 255)},
+            {16, 13, IM_COL32(255, 0, 0, 255)},
+            {12, 14, IM_COL32(255, 0, 0, 255)},
+            {12, 13, IM_COL32(255, 0, 0, 255)},
+            {14, 13, IM_COL32(255, 0, 0, 255)},
+        } };
+    return model;
+}
+ImGui3D::ImGuiWireModel& GetModel_UVSphere_10_8()
+{
+    using namespace ImGui3D;
+    static ImGuiWireModel model = {
+        // Points.
+        {
+            {0.000000f, 0.707107f, 0.707107f},
+            {0.224936f, 0.309597f, 0.923880f},
+            {0.415627f, 0.572061f, 0.707107f},
+            {0.543043f, 0.747434f, 0.382683f},
+            {0.587785f, 0.809017f, 0.000000f},
+            {0.543043f, 0.747434f, -0.382683f},
+            {0.415627f, 0.572061f, -0.707107f},
+            {0.224936f, 0.309597f, -0.923880f},
+            {0.363954f, 0.118256f, 0.923880f},
+            {0.672498f, 0.218508f, 0.707107f},
+            {0.878662f, 0.285494f, 0.382683f},
+            {0.951057f, 0.309017f, 0.000000f},
+            {0.878662f, 0.285494f, -0.382683f},
+            {0.672498f, 0.218508f, -0.707107f},
+            {0.363954f, 0.118256f, -0.923880f},
+            {0.363954f, -0.118256f, 0.923880f},
+            {0.672498f, -0.218508f, 0.707107f},
+            {0.878662f, -0.285494f, 0.382683f},
+            {0.951057f, -0.309017f, 0.000000f},
+            {0.878662f, -0.285494f, -0.382683f},
+            {0.672498f, -0.218508f, -0.707107f},
+            {0.363954f, -0.118256f, -0.923880f},
+            {0.224936f, -0.309597f, 0.923880f},
+            {0.415627f, -0.572061f, 0.707107f},
+            {0.543043f, -0.747434f, 0.382683f},
+            {0.587785f, -0.809017f, 0.000000f},
+            {0.543043f, -0.747434f, -0.382683f},
+            {0.415627f, -0.572061f, -0.707107f},
+            {0.224936f, -0.309597f, -0.923880f},
+            {0.000000f, -0.382684f, 0.923880f},
+            {0.000000f, -0.707107f, 0.707107f},
+            {0.000000f, -0.923879f, 0.382683f},
+            {0.000000f, -1.000000f, 0.000000f},
+            {0.000000f, -0.923879f, -0.382683f},
+            {0.000000f, -0.707107f, -0.707107f},
+            {0.000000f, -0.382684f, -0.923880f},
+            {-0.224936f, -0.309597f, 0.923880f},
+            {-0.415627f, -0.572061f, 0.707107f},
+            {-0.543043f, -0.747434f, 0.382683f},
+            {-0.587785f, -0.809017f, 0.000000f},
+            {-0.543043f, -0.747434f, -0.382683f},
+            {-0.415627f, -0.572061f, -0.707107f},
+            {-0.224936f, -0.309597f, -0.923880f},
+            {-0.363954f, -0.118256f, 0.923880f},
+            {-0.672498f, -0.218508f, 0.707107f},
+            {-0.878662f, -0.285495f, 0.382683f},
+            {-0.951057f, -0.309017f, 0.000000f},
+            {-0.878662f, -0.285495f, -0.382683f},
+            {-0.672498f, -0.218508f, -0.707107f},
+            {-0.363954f, -0.118256f, -0.923880f},
+            {0.000000f, 0.000000f, -1.000000f},
+            {-0.363954f, 0.118256f, 0.923880f},
+            {-0.672498f, 0.218508f, 0.707107f},
+            {-0.878662f, 0.285494f, 0.382683f},
+            {-0.951057f, 0.309017f, 0.000000f},
+            {-0.878662f, 0.285494f, -0.382683f},
+            {-0.672498f, 0.218508f, -0.707107f},
+            {-0.363954f, 0.118256f, -0.923880f},
+            {0.000000f, 0.000000f, 1.000000f},
+            {-0.224936f, 0.309597f, 0.923880f},
+            {-0.415627f, 0.572061f, 0.707107f},
+            {-0.543043f, 0.747434f, 0.382683f},
+            {-0.587785f, 0.809017f, 0.000000f},
+            {-0.543043f, 0.747434f, -0.382683f},
+            {-0.415627f, 0.572061f, -0.707107f},
+            {-0.224936f, 0.309597f, -0.923880f},
+            {-0.000000f, 0.382684f, 0.923880f},
+            {-0.000000f, 0.923880f, 0.382683f},
+            {-0.000000f, 1.000000f, 0.000000f},
+            {-0.000000f, 0.923880f, -0.382683f},
+            {0.000000f, 0.707107f, -0.707107f},
+            {-0.000000f, 0.382684f, -0.923880f},
+        },
+        // Edges
+        {
+            {1, 2, IM_COL32(255, 0, 0, 255)},
+            {2, 3, IM_COL32(255, 0, 0, 255)},
+            {3, 4, IM_COL32(255, 0, 0, 255)},
+            {4, 5, IM_COL32(255, 0, 0, 255)},
+            {5, 6, IM_COL32(255, 0, 0, 255)},
+            {6, 7, IM_COL32(255, 0, 0, 255)},
+            {2, 0, IM_COL32(255, 0, 0, 255)},
+            {8, 9, IM_COL32(255, 0, 0, 255)},
+            {9, 10, IM_COL32(255, 0, 0, 255)},
+            {10, 11, IM_COL32(255, 0, 0, 255)},
+            {11, 12, IM_COL32(255, 0, 0, 255)},
+            {12, 13, IM_COL32(255, 0, 0, 255)},
+            {13, 14, IM_COL32(255, 0, 0, 255)},
+            {14, 7, IM_COL32(255, 0, 0, 255)},
+            {6, 13, IM_COL32(255, 0, 0, 255)},
+            {12, 5, IM_COL32(255, 0, 0, 255)},
+            {4, 11, IM_COL32(255, 0, 0, 255)},
+            {10, 3, IM_COL32(255, 0, 0, 255)},
+            {2, 9, IM_COL32(255, 0, 0, 255)},
+            {8, 1, IM_COL32(255, 0, 0, 255)},
+            {15, 16, IM_COL32(255, 0, 0, 255)},
+            {16, 17, IM_COL32(255, 0, 0, 255)},
+            {17, 18, IM_COL32(255, 0, 0, 255)},
+            {18, 19, IM_COL32(255, 0, 0, 255)},
+            {19, 20, IM_COL32(255, 0, 0, 255)},
+            {20, 21, IM_COL32(255, 0, 0, 255)},
+            {15, 8, IM_COL32(255, 0, 0, 255)},
+            {14, 21, IM_COL32(255, 0, 0, 255)},
+            {20, 13, IM_COL32(255, 0, 0, 255)},
+            {12, 19, IM_COL32(255, 0, 0, 255)},
+            {18, 11, IM_COL32(255, 0, 0, 255)},
+            {10, 17, IM_COL32(255, 0, 0, 255)},
+            {16, 9, IM_COL32(255, 0, 0, 255)},
+            {22, 23, IM_COL32(255, 0, 0, 255)},
+            {23, 24, IM_COL32(255, 0, 0, 255)},
+            {24, 25, IM_COL32(255, 0, 0, 255)},
+            {25, 26, IM_COL32(255, 0, 0, 255)},
+            {26, 27, IM_COL32(255, 0, 0, 255)},
+            {27, 28, IM_COL32(255, 0, 0, 255)},
+            {27, 20, IM_COL32(255, 0, 0, 255)},
+            {19, 26, IM_COL32(255, 0, 0, 255)},
+            {25, 18, IM_COL32(255, 0, 0, 255)},
+            {17, 24, IM_COL32(255, 0, 0, 255)},
+            {23, 16, IM_COL32(255, 0, 0, 255)},
+            {15, 22, IM_COL32(255, 0, 0, 255)},
+            {28, 21, IM_COL32(255, 0, 0, 255)},
+            {29, 30, IM_COL32(255, 0, 0, 255)},
+            {30, 31, IM_COL32(255, 0, 0, 255)},
+            {31, 32, IM_COL32(255, 0, 0, 255)},
+            {32, 33, IM_COL32(255, 0, 0, 255)},
+            {33, 34, IM_COL32(255, 0, 0, 255)},
+            {34, 35, IM_COL32(255, 0, 0, 255)},
+            {35, 28, IM_COL32(255, 0, 0, 255)},
+            {27, 34, IM_COL32(255, 0, 0, 255)},
+            {33, 26, IM_COL32(255, 0, 0, 255)},
+            {25, 32, IM_COL32(255, 0, 0, 255)},
+            {31, 24, IM_COL32(255, 0, 0, 255)},
+            {23, 30, IM_COL32(255, 0, 0, 255)},
+            {29, 22, IM_COL32(255, 0, 0, 255)},
+            {36, 37, IM_COL32(255, 0, 0, 255)},
+            {37, 38, IM_COL32(255, 0, 0, 255)},
+            {38, 39, IM_COL32(255, 0, 0, 255)},
+            {39, 40, IM_COL32(255, 0, 0, 255)},
+            {40, 41, IM_COL32(255, 0, 0, 255)},
+            {41, 42, IM_COL32(255, 0, 0, 255)},
+            {40, 33, IM_COL32(255, 0, 0, 255)},
+            {32, 39, IM_COL32(255, 0, 0, 255)},
+            {38, 31, IM_COL32(255, 0, 0, 255)},
+            {30, 37, IM_COL32(255, 0, 0, 255)},
+            {36, 29, IM_COL32(255, 0, 0, 255)},
+            {35, 42, IM_COL32(255, 0, 0, 255)},
+            {41, 34, IM_COL32(255, 0, 0, 255)},
+            {43, 44, IM_COL32(255, 0, 0, 255)},
+            {44, 45, IM_COL32(255, 0, 0, 255)},
+            {45, 46, IM_COL32(255, 0, 0, 255)},
+            {46, 47, IM_COL32(255, 0, 0, 255)},
+            {47, 48, IM_COL32(255, 0, 0, 255)},
+            {48, 49, IM_COL32(255, 0, 0, 255)},
+            {49, 50, IM_COL32(255, 0, 0, 255)},
+            {42, 49, IM_COL32(255, 0, 0, 255)},
+            {48, 41, IM_COL32(255, 0, 0, 255)},
+            {40, 47, IM_COL32(255, 0, 0, 255)},
+            {46, 39, IM_COL32(255, 0, 0, 255)},
+            {38, 45, IM_COL32(255, 0, 0, 255)},
+            {44, 37, IM_COL32(255, 0, 0, 255)},
+            {36, 43, IM_COL32(255, 0, 0, 255)},
+            {51, 52, IM_COL32(255, 0, 0, 255)},
+            {52, 53, IM_COL32(255, 0, 0, 255)},
+            {53, 54, IM_COL32(255, 0, 0, 255)},
+            {54, 55, IM_COL32(255, 0, 0, 255)},
+            {55, 56, IM_COL32(255, 0, 0, 255)},
+            {56, 57, IM_COL32(255, 0, 0, 255)},
+            {54, 46, IM_COL32(255, 0, 0, 255)},
+            {45, 53, IM_COL32(255, 0, 0, 255)},
+            {52, 44, IM_COL32(255, 0, 0, 255)},
+            {43, 51, IM_COL32(255, 0, 0, 255)},
+            {57, 49, IM_COL32(255, 0, 0, 255)},
+            {48, 56, IM_COL32(255, 0, 0, 255)},
+            {55, 47, IM_COL32(255, 0, 0, 255)},
+            {58, 59, IM_COL32(255, 0, 0, 255)},
+            {59, 60, IM_COL32(255, 0, 0, 255)},
+            {60, 61, IM_COL32(255, 0, 0, 255)},
+            {61, 62, IM_COL32(255, 0, 0, 255)},
+            {62, 63, IM_COL32(255, 0, 0, 255)},
+            {63, 64, IM_COL32(255, 0, 0, 255)},
+            {64, 65, IM_COL32(255, 0, 0, 255)},
+            {65, 57, IM_COL32(255, 0, 0, 255)},
+            {56, 64, IM_COL32(255, 0, 0, 255)},
+            {63, 55, IM_COL32(255, 0, 0, 255)},
+            {54, 62, IM_COL32(255, 0, 0, 255)},
+            {61, 53, IM_COL32(255, 0, 0, 255)},
+            {52, 60, IM_COL32(255, 0, 0, 255)},
+            {59, 51, IM_COL32(255, 0, 0, 255)},
+            {67, 68, IM_COL32(255, 0, 0, 255)},
+            {68, 69, IM_COL32(255, 0, 0, 255)},
+            {69, 70, IM_COL32(255, 0, 0, 255)},
+            {70, 71, IM_COL32(255, 0, 0, 255)},
+            {67, 61, IM_COL32(255, 0, 0, 255)},
+            {66, 59, IM_COL32(255, 0, 0, 255)},
+            {65, 71, IM_COL32(255, 0, 0, 255)},
+            {70, 64, IM_COL32(255, 0, 0, 255)},
+            {63, 69, IM_COL32(255, 0, 0, 255)},
+            {68, 62, IM_COL32(255, 0, 0, 255)},
+            {58, 66, IM_COL32(255, 0, 0, 255)},
+            {66, 0, IM_COL32(255, 0, 0, 255)},
+            {0, 67, IM_COL32(255, 0, 0, 255)},
+            {71, 50, IM_COL32(255, 0, 0, 255)},
+            {58, 1, IM_COL32(255, 0, 0, 255)},
+            {7, 50, IM_COL32(255, 0, 0, 255)},
+            {4, 68, IM_COL32(255, 0, 0, 255)},
+            {67, 3, IM_COL32(255, 0, 0, 255)},
+            {66, 1, IM_COL32(255, 0, 0, 255)},
+            {7, 71, IM_COL32(255, 0, 0, 255)},
+            {70, 6, IM_COL32(255, 0, 0, 255)},
+            {5, 69, IM_COL32(255, 0, 0, 255)},
+            {58, 8, IM_COL32(255, 0, 0, 255)},
+            {14, 50, IM_COL32(255, 0, 0, 255)},
+            {58, 15, IM_COL32(255, 0, 0, 255)},
+            {21, 50, IM_COL32(255, 0, 0, 255)},
+            {58, 22, IM_COL32(255, 0, 0, 255)},
+            {28, 50, IM_COL32(255, 0, 0, 255)},
+            {58, 29, IM_COL32(255, 0, 0, 255)},
+            {35, 50, IM_COL32(255, 0, 0, 255)},
+            {58, 36, IM_COL32(255, 0, 0, 255)},
+            {42, 50, IM_COL32(255, 0, 0, 255)},
+            {58, 43, IM_COL32(255, 0, 0, 255)},
+            {58, 51, IM_COL32(255, 0, 0, 255)},
+            {57, 50, IM_COL32(255, 0, 0, 255)},
+            {65, 50, IM_COL32(255, 0, 0, 255)},
+            {60, 0, IM_COL32(255, 0, 0, 255)},
+        } };
+    return model;
+}
+ImGui3D::ImGuiWireModel& GetModel_SphereRadius1() {
+    return GetModel_UVSphere_10_8();
+}
 ImGui3D::ImGuiWireModel& GetModel_MarkerWithClearOrientation() {
     // The Blender's Camera model has a clearly readable origin, direction and orientation, works well for visualization.
     return GetModel_Camera();
@@ -139,6 +489,7 @@ private:
     void DrawDisplayTab();
     void DrawDetailsTab();
     void DrawActionTypesTab();
+    void DrawEnforceTab();
 
 
     void ResetWhenStartDrawFrame();
@@ -163,89 +514,22 @@ private:
 public:
     std::optional<EnumParkourAction> m_HoveredType;
     ParkourActionLogged* m_HoveredAction = nullptr;
+
+private:
+    void SetEnforcedAction(ParkourActionLogged& action);
+    struct ContextMenuForAction
+    {
+        std::shared_ptr<ParkourCycleLogged> m_Cycle;
+        ParkourActionLogged* m_Action;
+    };
+    ImGuiID imid_contextMenuForAction = 0;
+    std::optional<ContextMenuForAction> m_ContextMenuForAction;
 };
 
 }
 class ParkourVisualization : public ImGui3D::CustomDraw::CustomDrawer
 {
 public:
-    History_Location m_History_SelectedMoves;
-    History_ManyLocations m_History_MovesBeforeFiltering;
-    static void DoDraw_Location(History_Location& historySingleLoc)
-    {
-        auto* world = World::GetSingleton();
-        if (!world) return;
-        auto& crossModel = ImGui3D::GetCrossModel();
-        auto& history = historySingleLoc.m_History;
-        size_t curSize = history.size();
-        size_t numDisplayed = std::min(curSize, historySingleLoc.m_MaxDisplayNum);
-        size_t firstIdx = curSize - numDisplayed;
-        size_t pastLastIdx = curSize;
-        auto CalculateFadeFactor_ByIndex = [&](size_t i)
-            {
-                return (float)(i + 1) / numDisplayed;
-            };
-        auto CalculateFadeFactor_ByTimestamp = [&](size_t i)
-            {
-                auto& entry = history[i];
-                const float currentTime = world->clockInWorldWithSlowmotion.GetCurrentTimeFloat();
-                const float timeElapsed = currentTime - entry.m_Timestamp;
-                float fadeFactor = 1 - timeElapsed / historySingleLoc.m_MaxRetainHowLongSecs;
-                if (fadeFactor < 0) fadeFactor = 0;
-                else if (fadeFactor > 1) fadeFactor = 1;
-                return fadeFactor;
-            };
-        for (size_t i = firstIdx; i < pastLastIdx; i++)
-        {
-            float fadeFactor = CalculateFadeFactor_ByTimestamp(i);
-            ImU32 color = IM_COL32(
-                int(fadeFactor * 255),
-                255,
-                int((1 - fadeFactor) * 255),
-                255
-            );
-            ImGui3D::DrawWireModel(crossModel, history[i].m_Location, 1.0f, 0.2f, color);
-        }
-    }
-    static void DoDraw_ManyLocations(History_ManyLocations& historyManyLocs)
-    {
-        World* world = World::GetSingleton();
-        if (!world) return;
-        auto& crossModel = ImGui3D::GetCrossModel();
-        auto& history = historyManyLocs.m_History;
-        size_t curSize = history.size();
-        size_t numDisplayed = std::min(curSize, historyManyLocs.m_MaxDisplayNum);
-        size_t firstIdx = curSize - numDisplayed;
-        size_t pastLastIdx = curSize;
-        auto CalculateFadeFactor_ByIndex = [&](size_t i)
-            {
-                return (float)(i + 1) / numDisplayed;
-            };
-        auto CalculateFadeFactor_ByTimestamp = [&](size_t i)
-            {
-                auto& entry = history[i];
-                const float currentTime = world->clockInWorldWithSlowmotion.GetCurrentTimeFloat();
-                const float timeElapsed = currentTime - entry.m_Timestamp;
-                float fadeFactor = 1 - timeElapsed / historyManyLocs.m_MaxRetainHowLongSecs;
-                if (fadeFactor < 0) fadeFactor = 0;
-                else if (fadeFactor > 1) fadeFactor = 1;
-                return fadeFactor;
-            };
-        for (size_t i = firstIdx; i < pastLastIdx; i++)
-        {
-            float fadeFactor = CalculateFadeFactor_ByTimestamp(i);
-            ImU32 color = IM_COL32(
-                int(fadeFactor * 255),
-                0,
-                int((1 - fadeFactor) * 255),
-                255
-            );
-            for (size_t j = 0; j < history[i].m_ManyLocations.size(); j++)
-            {
-                ImGui3D::DrawWireModel(crossModel, history[i].m_ManyLocations[j], 1.0f, 0.2f, color);
-            }
-        }
-    }
     static void SetMatrix4fLookAt(Matrix4f& m, const Vector3f& eyePos, const Vector3f& forwardNormalized)
     {
         Vector3f side;
@@ -296,10 +580,22 @@ public:
         if (!world) return;
         const int64 currentTime = world->clockInWorldWithSlowmotion.GetCurrent_RawIntTimestamp();
         auto& parkourLog = ParkourLog::GetSingleton();
-        std::vector<std::shared_ptr<ParkourCycleLogged>> history = parkourLog.GetRecentCycles();
-
         auto& markerModel = GetModel_MarkerWithClearOrientation();
         Matrix4f transform;
+
+        if (parkourLog.m_EnforcedMove)
+        {
+            static auto& modelSphere = GetModel_SphereRadius1();
+            SetMatrix4fLookAt(transform, parkourLog.m_EnforcedMove->m_Position, parkourLog.m_EnforcedMove->m_DirectionFacingOut);
+            ImU32 enforcedMoveColor = IM_COL32(0, 255, 0, 255);
+            ImGui3D::DrawWireModelTransform(markerModel, transform, 5.0f, enforcedMoveColor);
+            ImGui3D::DrawWireModel(modelSphere,
+                parkourLog.m_EnforcedMove->m_Position, 0.5f,
+                parkourLog.m_EnforcedMove->m_Radius, enforcedMoveColor
+            );
+        }
+        std::vector<std::shared_ptr<ParkourCycleLogged>> history = parkourLog.GetRecentCycles();
+
         Matrix4f scaleForOlderCycles = Matrix4f::createScale(0.6f, 0.6f, 0.6f);
 
         auto DrawCycle = [&](ParkourCycleLogged& cycle, const bool isMostRecent) {
@@ -482,17 +778,6 @@ void LogActionsBeforeFiltering_ConsoleAnd3D(SmallArray<AvailableParkourAction*>&
             );
         }
     }
-    std::vector<Vector3f> entries;
-    entries.reserve(moves.size);
-    for (uint16 i = 0; i < moves.size; i++)
-    {
-        AvailableParkourAction* parkourMove = moves[i];
-        entries.push_back((Vector3f&)parkourMove->locationAnchorDest);
-    }
-    g_ParkourVisualization.m_History_MovesBeforeFiltering.Add(
-        std::move(entries)
-        , World::GetSingleton()->clockInWorldWithSlowmotion.GetCurrentTimeFloat()
-    );
 }
 void LogActionBestMatch_ConsoleAnd3D(AvailableParkourAction& bestMatchMove)
 {
@@ -503,19 +788,11 @@ void LogActionBestMatch_ConsoleAnd3D(AvailableParkourAction& bestMatchMove)
     }
     LOG_DEBUG(ParkourLogger
         , "Selected: %7.2f %7.2f %7.2f (%d == %s)"
-        , bestMatchMove.locationAnchorSrc.x
-        , bestMatchMove.locationAnchorSrc.y
-        , bestMatchMove.locationAnchorSrc.z
+        , bestMatchMove.locationAnchorDest.x
+        , bestMatchMove.locationAnchorDest.y
+        , bestMatchMove.locationAnchorDest.z
         , actionType
         , enum_reflection<EnumParkourAction>::GetString(actionType)
-    );
-    //ImGui3D::DrawLocationNamed((Vector3f&)bestMatchMove->locationAnchorSrc, "locationAnchorSrc");
-    //ImGui3D::DrawLocationNamed((Vector3f&)bestMatchMove->locationAnchorDest, "locationAnchorDest");
-    //ImGui3D::DrawLocationNamed((Vector3f&)bestMatchMove->handsLocationTo_right_mb, "handsLocationTo_right_mb");
-    //ImGui3D::DrawLocationNamed((Vector3f&)bestMatchMove->handsLocationTo_left_mb, "handsLocationTo_left_mb");
-    g_ParkourVisualization.m_History_SelectedMoves.Add(
-        (Vector3f&)bestMatchMove.locationAnchorDest
-        , World::GetSingleton()->clockInWorldWithSlowmotion.GetCurrentTimeFloat()
     );
 }
 std::optional<int> ParkourDebugging_SelectMove(SmallArray<AvailableParkourAction*>& availableParkourActions)
@@ -728,6 +1005,16 @@ void ParkourDebugWindow::DrawModWeightSlider(std::optional<float>& modWeight)
     }
     ImGui::PopStyleCompact();
 }
+void ParkourDebugWindow::SetEnforcedAction(ParkourActionLogged& action)
+{
+    parkourLog.m_EnforcedMove = {
+        action.m_LocationDst,
+        action.m_DirDstFacingOut,
+        0.25f,
+        action.m_ActionType
+    };
+}
+const char* strId_contextMenuForAction = "ContextMenuForAction";
 auto ParkourDebugWindow::MakeColumnsForParkourDetails()
 {
     auto DrawCol_Index = [](Action_t& action) { ImGui::Text("%3d", action->m_Index); };
@@ -758,12 +1045,21 @@ auto ParkourDebugWindow::MakeColumnsForParkourDetails()
                 , action->m_DirDstFacingOut.y
                 , action->m_DirDstFacingOut.z
             );
-            ImGui::SetItemTooltip(
-                "%s\n"
-                "(Right click to copy to clipboard)"
-                , buf.c_str()
-            );
-            if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) ImGui::SetClipboardText(buf.c_str());
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip(
+                    "%s\n"
+                    "(Right click to copy to clipboard)"
+                    , buf.c_str()
+                );
+            if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+            {
+                ImGui::OpenPopup(imid_contextMenuForAction);
+                m_ContextMenuForAction = { latestCycle, action.get() };
+            }
+            if (ImGui::IsItemClicked(ImGuiMouseButton_Middle))
+            {
+                SetEnforcedAction(*action);
+            }
         }
         };
     auto DrawCol_IsDiscardedImmediately = [](Action_t& action) {
@@ -923,6 +1219,48 @@ void ParkourDebugWindow::DrawDisplayTab()
     auto& parkourLog = ParkourLog::GetSingleton();
     parkourLog.DrawDisplayControls();
 }
+void ParkourDebugWindow::DrawEnforceTab()
+{
+    if (!ImGui::IsKeyDown(ImGuiKey_ModAlt))
+        ImGui::SetNextFrameWantCaptureMouse(true);
+    ImGui::HelpMarker(
+        "Hold Alt to _un_block game mouse.\n"
+        "If a parkour action will be found at the given location (within the given radius)\n"
+        "with the given facing direction it will be force selected.\n"
+        "Something might happen, might not."
+    );
+    //static RaycastPickerModal picker;
+    //picker.Pick("Pick location",
+    //    [](const MyRaycastSuccessfulHit& hit) {
+    //        hit.m_HitLocation;
+    //    }
+    //    , RaycastPickerModal::DefaultOnEveryHit
+    //    , RaycastPickerModal::DefaultOnNoHit
+    //);
+    if (parkourLog.m_EnforcedMove)
+    {
+        bool isNeedToReset = false;
+        if (ImGui::Button("Clear enforced actions"))
+            isNeedToReset = true;
+        ImGui::Text(
+            "%8.3f,%8.3f,%8.3f\n"
+            "%8.3f,%8.3f,%8.3f\n"
+            , parkourLog.m_EnforcedMove->m_Position.x
+            , parkourLog.m_EnforcedMove->m_Position.y
+            , parkourLog.m_EnforcedMove->m_Position.z
+            , parkourLog.m_EnforcedMove->m_DirectionFacingOut.x
+            , parkourLog.m_EnforcedMove->m_DirectionFacingOut.y
+            , parkourLog.m_EnforcedMove->m_DirectionFacingOut.z
+        );
+        ImGui::DragFloat("Radius", &parkourLog.m_EnforcedMove->m_Radius, 0.0025f, 0.1f, 5.0f);
+        if (isNeedToReset)
+            parkourLog.m_EnforcedMove.reset();
+    }
+    else
+    {
+        ImGui::Text("Nothing is being enforced now.");
+    }
+}
 namespace ImGui
 {
 static void DrawRowsWithClipper(int items_count, std::invocable<int> auto&& callableForRowWithIdx)
@@ -960,6 +1298,57 @@ void ParkourDebugWindow::DrawDetailsTab()
         | ImGuiTableFlags_Sortable
         | ImGuiTableFlags_SizingFixedFit
         ;
+    imid_contextMenuForAction = ImGui::GetID(strId_contextMenuForAction);
+    bool m_RequestedToOpenContextMenuForAction = true;
+    if (m_RequestedToOpenContextMenuForAction)
+    {
+        m_RequestedToOpenContextMenuForAction = false;
+        ImGui::OpenPopup(strId_contextMenuForAction);
+    }
+    if (m_ContextMenuForAction)
+    {
+        auto& actions = m_ContextMenuForAction->m_Cycle->m_Actions;
+        auto foundIt = std::find_if(actions.begin(), actions.end(), [&](auto&& a) {
+            return a.get() == m_ContextMenuForAction->m_Action;
+            });
+        if (foundIt == actions.end())
+        {
+            m_ContextMenuForAction.reset();
+        }
+        else
+        {
+            ParkourActionLogged& action = **foundIt;
+            if (ImGuiCTX::Popup _contextMenuForAction{ strId_contextMenuForAction })
+            {
+                static ImGuiTextBuffer buf;
+                buf.resize(0);
+                buf.appendf(
+                    "FancyVTable: %llX\n"
+                    "%8.3f,%8.3f,%8.3f\n"
+                    "%8.3f,%8.3f,%8.3f\n"
+                    "%8.3f,%8.3f,%8.3f\n"
+                    "%8.3f,%8.3f,%8.3f\n"
+                    , action.m_FancyVTable
+                    , action.m_LocationSrc.x, action.m_LocationSrc.y, action.m_LocationSrc.z
+                    , action.m_DirSrc.x, action.m_DirSrc.y, action.m_DirSrc.z
+                    , action.m_LocationDst.x
+                    , action.m_LocationDst.y
+                    , action.m_LocationDst.z
+                    , action.m_DirDstFacingOut.x
+                    , action.m_DirDstFacingOut.y
+                    , action.m_DirDstFacingOut.z
+                );
+                ImGui::Text(buf.c_str());
+                ImGui::Separator();
+                if (ImGui::MenuItem("Copy to clipboard"))
+                    ImGui::SetClipboardText(buf.c_str());
+                if (ImGui::MenuItem("Enforce"))
+                {
+                    SetEnforcedAction(action);
+                }
+            }
+        }
+    }
     if (ImGui::BeginTable("Moves details", (int)numColumns, table_flags))
     {
         ImGui::TableSetupScrollFreeze(0, 1); // Make top row always visible
@@ -1169,6 +1558,9 @@ void ParkourDebugWindow::Draw()
             }
             if (ImGuiCTX::Tab _tabDisplay{ "Display" }) {
                 DrawDisplayTab();
+            }
+            if (ImGuiCTX::Tab _tabDisplay{ "Enforce" }) {
+                DrawEnforceTab();
             }
         }
     }

@@ -204,19 +204,35 @@ int SortAndSelectBestMatchingAction_FullReplacement(
         break;
     }
 
+    auto FindIndexForAction = [&p_parkourSensorsResults](AvailableParkourAction& action) -> std::optional<int> {
+        auto foundIt = std::find(p_parkourSensorsResults.begin(), p_parkourSensorsResults.end(), &action);
+        if (foundIt != p_parkourSensorsResults.end())
+        {
+            return foundIt - p_parkourSensorsResults.begin();
+        }
+        return {};
+        };
     if (parkourCallbacks)
     {
         AvailableParkourAction* selectedAfterSorting =
             parkourCallbacks->ChooseAfterSorting(p_parkourSensorsResults, selectedBestMatch ? p_parkourSensorsResults[*selectedBestMatch] : nullptr);
         if (selectedAfterSorting)
         {
-            auto foundIt = std::find(p_parkourSensorsResults.begin(), p_parkourSensorsResults.end(), selectedAfterSorting);
-            if (foundIt != p_parkourSensorsResults.end())
+            if (std::optional<int> idx = FindIndexForAction(*selectedAfterSorting))
             {
-                selectedBestMatch = foundIt - p_parkourSensorsResults.begin();
+                selectedBestMatch = idx;
             }
         }
     }
+
+    AvailableParkourAction* selectedByGameAndCallbacks = selectedBestMatch ? p_parkourSensorsResults[*selectedBestMatch] : nullptr;
+    AvailableParkourAction* realFinalSelection = selectedByGameAndCallbacks;
+    currentCycle->LogAndChangeFinalSelection(realFinalSelection, p_parkourSensorsResults);
+    if (realFinalSelection)
+        if (std::optional<int> idx = FindIndexForAction(*realFinalSelection))
+        {
+            selectedBestMatch = idx;
+        }
     if (selectedBestMatch)
         currentCycle->LogActionWhenReturningBestMatch(*p_parkourSensorsResults[*selectedBestMatch]);
     int result = selectedBestMatch ? *selectedBestMatch : RESULT_OF_PARKOUR_SORT_AND_SELECT__NO_ACTIONS_ACCEPTED;

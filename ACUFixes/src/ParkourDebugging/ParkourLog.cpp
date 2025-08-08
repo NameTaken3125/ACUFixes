@@ -28,16 +28,32 @@ ParkourActionLogged::ParkourActionLogged(AvailableParkourAction& action, size_t 
     , m_Index(indexInOrderOfCreationInCycle)
 {}
 
-void ParkourCycleLogged::LogActionInitialCreation(AvailableParkourAction& action, bool isDiscarded_immediatelyAfterCreation)
+void ParkourCycleLogged::LogActionInitialCreation(AvailableParkourAction& action, bool& isDiscarded_immediatelyAfterCreation)
 {
     if (m_IsDisabled) return;
     ParkourActionLogged& recordForAction = MakeRecordForAction(action);
+    auto& parkourLog = ParkourLog::GetSingleton();
+    if (parkourLog.m_EnforcedMove)
+    {
+        if (action.GetEnumParkourAction() == parkourLog.m_EnforcedMove->m_ActionType)
+        {
+            isDiscarded_immediatelyAfterCreation = false;
+        }
+    }
     recordForAction.m_IsDiscarded_immediatelyAfterCreation = isDiscarded_immediatelyAfterCreation;
 }
-void ParkourCycleLogged::LogActionBeforeFiltering(AvailableParkourAction& action, float fitness, bool isDiscarded_becauseFitnessWeightTooLow)
+void ParkourCycleLogged::LogActionBeforeFiltering(AvailableParkourAction& action, float fitness, bool& isDiscarded_becauseFitnessWeightTooLow)
 {
     if (m_IsDisabled) return;
     ParkourActionLogged& recordForAction = this->GetOrMakeRecordForAction(action);
+    auto& parkourLog = ParkourLog::GetSingleton();
+    if (parkourLog.m_EnforcedMove)
+    {
+        if (action.GetEnumParkourAction() == parkourLog.m_EnforcedMove->m_ActionType)
+        {
+            isDiscarded_becauseFitnessWeightTooLow = false;
+        }
+    }
     recordForAction.m_FitnessWeight = fitness;
     recordForAction.m_IsDiscarded_becauseFitnessWeightTooLow = isDiscarded_becauseFitnessWeightTooLow;
 }
@@ -79,6 +95,38 @@ void ParkourCycleLogged::LogActionWhenReturningBestMatch(AvailableParkourAction&
     ParkourActionLogged& record = this->GetOrMakeRecordForAction(bestMatchMove);
     record.m_IsTheSelectedBestMatch = true;
     LogActionBestMatch_ConsoleAnd3D(bestMatchMove);
+}
+
+void ParkourCycleLogged::LogAndChangeFinalSelection(AvailableParkourAction*& selectionAfterGameAndCallbacks, SmallArray<AvailableParkourAction*>& allActionsSorted)
+{
+    if (m_IsDisabled) return;
+    auto& parkourLog = ParkourLog::GetSingleton();
+    if (parkourLog.m_EnforcedMove)
+    {
+        AvailableParkourAction* bestAction = nullptr;
+        float bestDistanceSqr = std::numeric_limits<float>::max();
+        float radiusSqr = parkourLog.m_EnforcedMove->m_Radius * parkourLog.m_EnforcedMove->m_Radius;
+        for (AvailableParkourAction* action : allActionsSorted)
+        {
+            if (action->GetEnumParkourAction() != parkourLog.m_EnforcedMove->m_ActionType) continue;
+            const Vector3f& pos = (Vector3f&)action->locationAnchorDest;
+            const float distToEnforcedCenterSqr = (pos - parkourLog.m_EnforcedMove->m_Position).lengthSq();
+            if (distToEnforcedCenterSqr > radiusSqr) continue;
+            const Vector3f& dir = (Vector3f&)action->directionDestFacingOut;
+            const float minDirectionAlignment = 0.8f;
+            if (parkourLog.m_EnforcedMove->m_DirectionFacingOut.dotProduct(dir) < minDirectionAlignment) continue;
+            if (distToEnforcedCenterSqr > bestDistanceSqr) continue;
+
+            bestDistanceSqr = distToEnforcedCenterSqr;
+            bestAction = action;
+        }
+        if (bestAction)
+        {
+            ParkourActionLogged& record = this->GetOrMakeRecordForAction(*bestAction);
+            selectionAfterGameAndCallbacks = bestAction;
+            record.m_HasBeenEnforced = true;
+        }
+    }
 }
 ParkourLog::ParkourLog()
     : m_DisabledDummyCycle(new ParkourCycleLogged())

@@ -35,6 +35,7 @@ public:
     std::optional<bool> m_ResultOfFinalFilter1;
     std::optional<bool> m_ResultOfFinalFilter2;
     bool m_IsTheSelectedBestMatch = false;
+    bool m_HasBeenEnforced = false;
 
     bool m_IsSelectedInEditor = false;
 };
@@ -51,13 +52,14 @@ public:
     Vector3f m_LocationOfOrigin;
     Vector3f m_DirectionOfMovementInputWorldSpace;
 
-    void LogActionInitialCreation(AvailableParkourAction& newAction, bool isDiscarded_immediatelyAfterCreation);
+    void LogActionInitialCreation(AvailableParkourAction& newAction, bool& isDiscarded_immediatelyAfterCreation);
     void LogActionsBeforeFiltering(SmallArray<AvailableParkourAction*>& allActionsBeforeFiltering);
-    void LogActionBeforeFiltering(AvailableParkourAction& action, float fitness, bool isDiscarded_becauseFitnessWeightTooLow);
+    void LogActionBeforeFiltering(AvailableParkourAction& action, float fitness, bool& isDiscarded_becauseFitnessWeightTooLow);
     float LogActionWeights(AvailableParkourAction& action, float defaultWeight, float totalWeight);
     void LogActionFinalFilter1(AvailableParkourAction& action, bool resultOfFinalFilter1);
     void LogActionFinalFilter2(AvailableParkourAction& action, bool resultOfFinalFilter2);
     void LogActionWhenReturningBestMatch(AvailableParkourAction& bestMatchMove);
+    void LogAndChangeFinalSelection(AvailableParkourAction*& selectionAfterGameAndCallbacks, SmallArray<AvailableParkourAction*>& allActionsSorted);
 
 private:
     size_t m_IndexOfNextLoggedAction = 0; // To keep track of the order of creation.
@@ -109,6 +111,14 @@ public:
     void DrawDisplayControls();
     bool IsActionShouldBeDisplayed(ParkourActionLogged& action);
 
+    struct EnforcedMove
+    {
+        Vector3f m_Position;
+        Vector3f m_DirectionFacingOut;
+        float m_Radius;
+        EnumParkourAction m_ActionType;
+    };
+    std::optional<EnforcedMove> m_EnforcedMove;
 public:
     static ParkourLog& GetSingleton() { static ParkourLog singleton; return singleton; }
 private:
