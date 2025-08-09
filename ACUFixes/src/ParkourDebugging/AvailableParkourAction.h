@@ -87,7 +87,9 @@ public:
     float flt_D4; //0x00D4
     float flt_D8; //0x00D8
     uint32 dword_DC; //0x00DC // EnumParkourMode?
-    char pad_00E0[8]; //0x00E0
+    uint32 collisionLayer_mb; //0x00E0 // I don't really know what this is.
+    byte byte_E4; //0x00E4
+    char pad_00E5[3]; //0x00E5
     SharedPtrNew<Entity>* shared_buildingEntity; //0x00E8
     char pad_00F0[16]; //0x00F0
     PlayerRefInParkourAction playerRef; //0x0100

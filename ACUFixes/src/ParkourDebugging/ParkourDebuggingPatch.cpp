@@ -3,6 +3,7 @@
 #include "ParkourDebugging/ParkourDebuggingPatch.h"
 
 #include "vmath/vmath_extra.h"
+#include "imgui/imgui_internal.h"
 
 #include "ACU/World.h"
 #include "ACU/ACUGetSingletons.h"
@@ -12,6 +13,7 @@
 #include "MyLog.h"
 #include "ImGui3D/ImGui3D.h"
 #include "ImGui3D/ImGui3DCustomDraw.h"
+#include "ImGui3D/UsefulWireModels.h"
 #include "ImGuiCTX.h"
 #include "ImGuiConfigUtils.h"
 #include "Raycasting/RaycastPicker.h"
@@ -30,454 +32,8 @@ public:
 }; //Size: 0x02B0
 assert_sizeof(ParkourAction_Commonbase, 0x2B0);
 
-
 DEFINE_LOGGER_CONSOLE_AND_FILE(ParkourLogger, "[Parkour]");
-ImGui3D::ImGuiWireModel& GetModel_Camera()
-{
-    using namespace ImGui3D;
-    static ImGuiWireModel camModel = {
-        // Points.
-        {
-            {-0.154847f, 0.342506f, -0.088164f},
-            {0.154847f, 0.342506f, -0.088164f},
-            {-0.154847f, 0.342506f, 0.088164f},
-            {0.154847f, 0.342506f, 0.088164f},
-            {0.000000f, 0.000000f, 0.000000f},
-            {-0.109504f, 0.341621f, 0.104011f},
-            {0.109225f, 0.341621f, 0.104011f},
-            {-0.000139f, 0.341621f, 0.218292f},
-        },
-        // Edges
-        {
-            {2, 0, IM_COL32(255, 0, 0, 255)},
-            {0, 1, IM_COL32(255, 0, 0, 255)},
-            {1, 3, IM_COL32(255, 0, 0, 255)},
-            {3, 2, IM_COL32(255, 0, 0, 255)},
-            {0, 4, IM_COL32(255, 0, 0, 255)},
-            {3, 4, IM_COL32(255, 0, 0, 255)},
-            {4, 1, IM_COL32(255, 0, 0, 255)},
-            {4, 2, IM_COL32(255, 0, 0, 255)},
-            {7, 5, IM_COL32(255, 0, 0, 255)},
-            {5, 6, IM_COL32(255, 0, 0, 255)},
-            {6, 7, IM_COL32(255, 0, 0, 255)},
-        } };
-    return camModel;
-}
-ImGui3D::ImGuiWireModel& GetModel_IcosphereSub2()
-{
-    using namespace ImGui3D;
-    static ImGuiWireModel model = {
-        // Points.
-        {
-            {0.000000f, 0.000000f, -1.000000f},
-            {0.723607f, -0.525725f, -0.447220f},
-            {-0.276388f, -0.850649f, -0.447220f},
-            {-0.894426f, 0.000000f, -0.447216f},
-            {-0.276388f, 0.850649f, -0.447220f},
-            {0.723607f, 0.525725f, -0.447220f},
-            {0.276388f, -0.850649f, 0.447220f},
-            {-0.723607f, -0.525725f, 0.447220f},
-            {-0.723607f, 0.525725f, 0.447220f},
-            {0.276388f, 0.850649f, 0.447220f},
-            {0.894426f, 0.000000f, 0.447216f},
-            {0.000000f, 0.000000f, 1.000000f},
-            {-0.162456f, -0.499995f, -0.850654f},
-            {0.425323f, -0.309011f, -0.850654f},
-            {0.262869f, -0.809012f, -0.525738f},
-            {0.850648f, 0.000000f, -0.525736f},
-            {0.425323f, 0.309011f, -0.850654f},
-            {-0.525730f, 0.000000f, -0.850652f},
-            {-0.688189f, -0.499997f, -0.525736f},
-            {-0.162456f, 0.499995f, -0.850654f},
-            {-0.688189f, 0.499997f, -0.525736f},
-            {0.262869f, 0.809012f, -0.525738f},
-            {0.951058f, -0.309013f, 0.000000f},
-            {0.951058f, 0.309013f, 0.000000f},
-            {0.000000f, -1.000000f, 0.000000f},
-            {0.587786f, -0.809017f, 0.000000f},
-            {-0.951058f, -0.309013f, 0.000000f},
-            {-0.587786f, -0.809017f, 0.000000f},
-            {-0.587786f, 0.809017f, 0.000000f},
-            {-0.951058f, 0.309013f, 0.000000f},
-            {0.587786f, 0.809017f, 0.000000f},
-            {0.000000f, 1.000000f, 0.000000f},
-            {0.688189f, -0.499997f, 0.525736f},
-            {-0.262869f, -0.809012f, 0.525738f},
-            {-0.850648f, 0.000000f, 0.525736f},
-            {-0.262869f, 0.809012f, 0.525738f},
-            {0.688189f, 0.499997f, 0.525736f},
-            {0.162456f, -0.499995f, 0.850654f},
-            {0.525730f, 0.000000f, 0.850652f},
-            {-0.425323f, -0.309011f, 0.850654f},
-            {-0.425323f, 0.309011f, 0.850654f},
-            {0.162456f, 0.499995f, 0.850654f},
-        },
-        // Edges
-        {
-            {12, 0, IM_COL32(255, 0, 0, 255)},
-            {13, 1, IM_COL32(255, 0, 0, 255)},
-            {14, 2, IM_COL32(255, 0, 0, 255)},
-            {15, 1, IM_COL32(255, 0, 0, 255)},
-            {16, 5, IM_COL32(255, 0, 0, 255)},
-            {17, 0, IM_COL32(255, 0, 0, 255)},
-            {18, 3, IM_COL32(255, 0, 0, 255)},
-            {19, 0, IM_COL32(255, 0, 0, 255)},
-            {20, 4, IM_COL32(255, 0, 0, 255)},
-            {21, 5, IM_COL32(255, 0, 0, 255)},
-            {22, 1, IM_COL32(255, 0, 0, 255)},
-            {23, 10, IM_COL32(255, 0, 0, 255)},
-            {24, 2, IM_COL32(255, 0, 0, 255)},
-            {25, 6, IM_COL32(255, 0, 0, 255)},
-            {26, 3, IM_COL32(255, 0, 0, 255)},
-            {27, 7, IM_COL32(255, 0, 0, 255)},
-            {28, 4, IM_COL32(255, 0, 0, 255)},
-            {29, 8, IM_COL32(255, 0, 0, 255)},
-            {30, 5, IM_COL32(255, 0, 0, 255)},
-            {31, 9, IM_COL32(255, 0, 0, 255)},
-            {32, 6, IM_COL32(255, 0, 0, 255)},
-            {33, 7, IM_COL32(255, 0, 0, 255)},
-            {34, 8, IM_COL32(255, 0, 0, 255)},
-            {35, 9, IM_COL32(255, 0, 0, 255)},
-            {36, 10, IM_COL32(255, 0, 0, 255)},
-            {37, 6, IM_COL32(255, 0, 0, 255)},
-            {38, 11, IM_COL32(255, 0, 0, 255)},
-            {39, 7, IM_COL32(255, 0, 0, 255)},
-            {40, 8, IM_COL32(255, 0, 0, 255)},
-            {41, 9, IM_COL32(255, 0, 0, 255)},
-            {2, 12, IM_COL32(255, 0, 0, 255)},
-            {0, 13, IM_COL32(255, 0, 0, 255)},
-            {1, 14, IM_COL32(255, 0, 0, 255)},
-            {5, 15, IM_COL32(255, 0, 0, 255)},
-            {0, 16, IM_COL32(255, 0, 0, 255)},
-            {3, 17, IM_COL32(255, 0, 0, 255)},
-            {2, 18, IM_COL32(255, 0, 0, 255)},
-            {4, 19, IM_COL32(255, 0, 0, 255)},
-            {3, 20, IM_COL32(255, 0, 0, 255)},
-            {4, 21, IM_COL32(255, 0, 0, 255)},
-            {10, 22, IM_COL32(255, 0, 0, 255)},
-            {5, 23, IM_COL32(255, 0, 0, 255)},
-            {6, 24, IM_COL32(255, 0, 0, 255)},
-            {1, 25, IM_COL32(255, 0, 0, 255)},
-            {7, 26, IM_COL32(255, 0, 0, 255)},
-            {2, 27, IM_COL32(255, 0, 0, 255)},
-            {8, 28, IM_COL32(255, 0, 0, 255)},
-            {3, 29, IM_COL32(255, 0, 0, 255)},
-            {9, 30, IM_COL32(255, 0, 0, 255)},
-            {4, 31, IM_COL32(255, 0, 0, 255)},
-            {10, 32, IM_COL32(255, 0, 0, 255)},
-            {6, 33, IM_COL32(255, 0, 0, 255)},
-            {7, 34, IM_COL32(255, 0, 0, 255)},
-            {8, 35, IM_COL32(255, 0, 0, 255)},
-            {9, 36, IM_COL32(255, 0, 0, 255)},
-            {11, 37, IM_COL32(255, 0, 0, 255)},
-            {10, 38, IM_COL32(255, 0, 0, 255)},
-            {11, 39, IM_COL32(255, 0, 0, 255)},
-            {11, 40, IM_COL32(255, 0, 0, 255)},
-            {11, 41, IM_COL32(255, 0, 0, 255)},
-            {38, 41, IM_COL32(255, 0, 0, 255)},
-            {38, 36, IM_COL32(255, 0, 0, 255)},
-            {41, 36, IM_COL32(255, 0, 0, 255)},
-            {41, 40, IM_COL32(255, 0, 0, 255)},
-            {41, 35, IM_COL32(255, 0, 0, 255)},
-            {40, 35, IM_COL32(255, 0, 0, 255)},
-            {40, 39, IM_COL32(255, 0, 0, 255)},
-            {40, 34, IM_COL32(255, 0, 0, 255)},
-            {39, 34, IM_COL32(255, 0, 0, 255)},
-            {39, 37, IM_COL32(255, 0, 0, 255)},
-            {39, 33, IM_COL32(255, 0, 0, 255)},
-            {37, 33, IM_COL32(255, 0, 0, 255)},
-            {37, 38, IM_COL32(255, 0, 0, 255)},
-            {37, 32, IM_COL32(255, 0, 0, 255)},
-            {38, 32, IM_COL32(255, 0, 0, 255)},
-            {23, 36, IM_COL32(255, 0, 0, 255)},
-            {23, 30, IM_COL32(255, 0, 0, 255)},
-            {36, 30, IM_COL32(255, 0, 0, 255)},
-            {31, 35, IM_COL32(255, 0, 0, 255)},
-            {31, 28, IM_COL32(255, 0, 0, 255)},
-            {35, 28, IM_COL32(255, 0, 0, 255)},
-            {29, 34, IM_COL32(255, 0, 0, 255)},
-            {29, 26, IM_COL32(255, 0, 0, 255)},
-            {34, 26, IM_COL32(255, 0, 0, 255)},
-            {27, 33, IM_COL32(255, 0, 0, 255)},
-            {27, 24, IM_COL32(255, 0, 0, 255)},
-            {33, 24, IM_COL32(255, 0, 0, 255)},
-            {25, 32, IM_COL32(255, 0, 0, 255)},
-            {25, 22, IM_COL32(255, 0, 0, 255)},
-            {32, 22, IM_COL32(255, 0, 0, 255)},
-            {30, 31, IM_COL32(255, 0, 0, 255)},
-            {30, 21, IM_COL32(255, 0, 0, 255)},
-            {31, 21, IM_COL32(255, 0, 0, 255)},
-            {28, 29, IM_COL32(255, 0, 0, 255)},
-            {28, 20, IM_COL32(255, 0, 0, 255)},
-            {29, 20, IM_COL32(255, 0, 0, 255)},
-            {26, 27, IM_COL32(255, 0, 0, 255)},
-            {26, 18, IM_COL32(255, 0, 0, 255)},
-            {27, 18, IM_COL32(255, 0, 0, 255)},
-            {24, 25, IM_COL32(255, 0, 0, 255)},
-            {24, 14, IM_COL32(255, 0, 0, 255)},
-            {25, 14, IM_COL32(255, 0, 0, 255)},
-            {22, 23, IM_COL32(255, 0, 0, 255)},
-            {22, 15, IM_COL32(255, 0, 0, 255)},
-            {23, 15, IM_COL32(255, 0, 0, 255)},
-            {16, 21, IM_COL32(255, 0, 0, 255)},
-            {16, 19, IM_COL32(255, 0, 0, 255)},
-            {21, 19, IM_COL32(255, 0, 0, 255)},
-            {19, 20, IM_COL32(255, 0, 0, 255)},
-            {19, 17, IM_COL32(255, 0, 0, 255)},
-            {20, 17, IM_COL32(255, 0, 0, 255)},
-            {17, 18, IM_COL32(255, 0, 0, 255)},
-            {17, 12, IM_COL32(255, 0, 0, 255)},
-            {18, 12, IM_COL32(255, 0, 0, 255)},
-            {15, 16, IM_COL32(255, 0, 0, 255)},
-            {15, 13, IM_COL32(255, 0, 0, 255)},
-            {16, 13, IM_COL32(255, 0, 0, 255)},
-            {12, 14, IM_COL32(255, 0, 0, 255)},
-            {12, 13, IM_COL32(255, 0, 0, 255)},
-            {14, 13, IM_COL32(255, 0, 0, 255)},
-        } };
-    return model;
-}
-ImGui3D::ImGuiWireModel& GetModel_UVSphere_10_8()
-{
-    using namespace ImGui3D;
-    static ImGuiWireModel model = {
-        // Points.
-        {
-            {0.000000f, 0.707107f, 0.707107f},
-            {0.224936f, 0.309597f, 0.923880f},
-            {0.415627f, 0.572061f, 0.707107f},
-            {0.543043f, 0.747434f, 0.382683f},
-            {0.587785f, 0.809017f, 0.000000f},
-            {0.543043f, 0.747434f, -0.382683f},
-            {0.415627f, 0.572061f, -0.707107f},
-            {0.224936f, 0.309597f, -0.923880f},
-            {0.363954f, 0.118256f, 0.923880f},
-            {0.672498f, 0.218508f, 0.707107f},
-            {0.878662f, 0.285494f, 0.382683f},
-            {0.951057f, 0.309017f, 0.000000f},
-            {0.878662f, 0.285494f, -0.382683f},
-            {0.672498f, 0.218508f, -0.707107f},
-            {0.363954f, 0.118256f, -0.923880f},
-            {0.363954f, -0.118256f, 0.923880f},
-            {0.672498f, -0.218508f, 0.707107f},
-            {0.878662f, -0.285494f, 0.382683f},
-            {0.951057f, -0.309017f, 0.000000f},
-            {0.878662f, -0.285494f, -0.382683f},
-            {0.672498f, -0.218508f, -0.707107f},
-            {0.363954f, -0.118256f, -0.923880f},
-            {0.224936f, -0.309597f, 0.923880f},
-            {0.415627f, -0.572061f, 0.707107f},
-            {0.543043f, -0.747434f, 0.382683f},
-            {0.587785f, -0.809017f, 0.000000f},
-            {0.543043f, -0.747434f, -0.382683f},
-            {0.415627f, -0.572061f, -0.707107f},
-            {0.224936f, -0.309597f, -0.923880f},
-            {0.000000f, -0.382684f, 0.923880f},
-            {0.000000f, -0.707107f, 0.707107f},
-            {0.000000f, -0.923879f, 0.382683f},
-            {0.000000f, -1.000000f, 0.000000f},
-            {0.000000f, -0.923879f, -0.382683f},
-            {0.000000f, -0.707107f, -0.707107f},
-            {0.000000f, -0.382684f, -0.923880f},
-            {-0.224936f, -0.309597f, 0.923880f},
-            {-0.415627f, -0.572061f, 0.707107f},
-            {-0.543043f, -0.747434f, 0.382683f},
-            {-0.587785f, -0.809017f, 0.000000f},
-            {-0.543043f, -0.747434f, -0.382683f},
-            {-0.415627f, -0.572061f, -0.707107f},
-            {-0.224936f, -0.309597f, -0.923880f},
-            {-0.363954f, -0.118256f, 0.923880f},
-            {-0.672498f, -0.218508f, 0.707107f},
-            {-0.878662f, -0.285495f, 0.382683f},
-            {-0.951057f, -0.309017f, 0.000000f},
-            {-0.878662f, -0.285495f, -0.382683f},
-            {-0.672498f, -0.218508f, -0.707107f},
-            {-0.363954f, -0.118256f, -0.923880f},
-            {0.000000f, 0.000000f, -1.000000f},
-            {-0.363954f, 0.118256f, 0.923880f},
-            {-0.672498f, 0.218508f, 0.707107f},
-            {-0.878662f, 0.285494f, 0.382683f},
-            {-0.951057f, 0.309017f, 0.000000f},
-            {-0.878662f, 0.285494f, -0.382683f},
-            {-0.672498f, 0.218508f, -0.707107f},
-            {-0.363954f, 0.118256f, -0.923880f},
-            {0.000000f, 0.000000f, 1.000000f},
-            {-0.224936f, 0.309597f, 0.923880f},
-            {-0.415627f, 0.572061f, 0.707107f},
-            {-0.543043f, 0.747434f, 0.382683f},
-            {-0.587785f, 0.809017f, 0.000000f},
-            {-0.543043f, 0.747434f, -0.382683f},
-            {-0.415627f, 0.572061f, -0.707107f},
-            {-0.224936f, 0.309597f, -0.923880f},
-            {-0.000000f, 0.382684f, 0.923880f},
-            {-0.000000f, 0.923880f, 0.382683f},
-            {-0.000000f, 1.000000f, 0.000000f},
-            {-0.000000f, 0.923880f, -0.382683f},
-            {0.000000f, 0.707107f, -0.707107f},
-            {-0.000000f, 0.382684f, -0.923880f},
-        },
-        // Edges
-        {
-            {1, 2, IM_COL32(255, 0, 0, 255)},
-            {2, 3, IM_COL32(255, 0, 0, 255)},
-            {3, 4, IM_COL32(255, 0, 0, 255)},
-            {4, 5, IM_COL32(255, 0, 0, 255)},
-            {5, 6, IM_COL32(255, 0, 0, 255)},
-            {6, 7, IM_COL32(255, 0, 0, 255)},
-            {2, 0, IM_COL32(255, 0, 0, 255)},
-            {8, 9, IM_COL32(255, 0, 0, 255)},
-            {9, 10, IM_COL32(255, 0, 0, 255)},
-            {10, 11, IM_COL32(255, 0, 0, 255)},
-            {11, 12, IM_COL32(255, 0, 0, 255)},
-            {12, 13, IM_COL32(255, 0, 0, 255)},
-            {13, 14, IM_COL32(255, 0, 0, 255)},
-            {14, 7, IM_COL32(255, 0, 0, 255)},
-            {6, 13, IM_COL32(255, 0, 0, 255)},
-            {12, 5, IM_COL32(255, 0, 0, 255)},
-            {4, 11, IM_COL32(255, 0, 0, 255)},
-            {10, 3, IM_COL32(255, 0, 0, 255)},
-            {2, 9, IM_COL32(255, 0, 0, 255)},
-            {8, 1, IM_COL32(255, 0, 0, 255)},
-            {15, 16, IM_COL32(255, 0, 0, 255)},
-            {16, 17, IM_COL32(255, 0, 0, 255)},
-            {17, 18, IM_COL32(255, 0, 0, 255)},
-            {18, 19, IM_COL32(255, 0, 0, 255)},
-            {19, 20, IM_COL32(255, 0, 0, 255)},
-            {20, 21, IM_COL32(255, 0, 0, 255)},
-            {15, 8, IM_COL32(255, 0, 0, 255)},
-            {14, 21, IM_COL32(255, 0, 0, 255)},
-            {20, 13, IM_COL32(255, 0, 0, 255)},
-            {12, 19, IM_COL32(255, 0, 0, 255)},
-            {18, 11, IM_COL32(255, 0, 0, 255)},
-            {10, 17, IM_COL32(255, 0, 0, 255)},
-            {16, 9, IM_COL32(255, 0, 0, 255)},
-            {22, 23, IM_COL32(255, 0, 0, 255)},
-            {23, 24, IM_COL32(255, 0, 0, 255)},
-            {24, 25, IM_COL32(255, 0, 0, 255)},
-            {25, 26, IM_COL32(255, 0, 0, 255)},
-            {26, 27, IM_COL32(255, 0, 0, 255)},
-            {27, 28, IM_COL32(255, 0, 0, 255)},
-            {27, 20, IM_COL32(255, 0, 0, 255)},
-            {19, 26, IM_COL32(255, 0, 0, 255)},
-            {25, 18, IM_COL32(255, 0, 0, 255)},
-            {17, 24, IM_COL32(255, 0, 0, 255)},
-            {23, 16, IM_COL32(255, 0, 0, 255)},
-            {15, 22, IM_COL32(255, 0, 0, 255)},
-            {28, 21, IM_COL32(255, 0, 0, 255)},
-            {29, 30, IM_COL32(255, 0, 0, 255)},
-            {30, 31, IM_COL32(255, 0, 0, 255)},
-            {31, 32, IM_COL32(255, 0, 0, 255)},
-            {32, 33, IM_COL32(255, 0, 0, 255)},
-            {33, 34, IM_COL32(255, 0, 0, 255)},
-            {34, 35, IM_COL32(255, 0, 0, 255)},
-            {35, 28, IM_COL32(255, 0, 0, 255)},
-            {27, 34, IM_COL32(255, 0, 0, 255)},
-            {33, 26, IM_COL32(255, 0, 0, 255)},
-            {25, 32, IM_COL32(255, 0, 0, 255)},
-            {31, 24, IM_COL32(255, 0, 0, 255)},
-            {23, 30, IM_COL32(255, 0, 0, 255)},
-            {29, 22, IM_COL32(255, 0, 0, 255)},
-            {36, 37, IM_COL32(255, 0, 0, 255)},
-            {37, 38, IM_COL32(255, 0, 0, 255)},
-            {38, 39, IM_COL32(255, 0, 0, 255)},
-            {39, 40, IM_COL32(255, 0, 0, 255)},
-            {40, 41, IM_COL32(255, 0, 0, 255)},
-            {41, 42, IM_COL32(255, 0, 0, 255)},
-            {40, 33, IM_COL32(255, 0, 0, 255)},
-            {32, 39, IM_COL32(255, 0, 0, 255)},
-            {38, 31, IM_COL32(255, 0, 0, 255)},
-            {30, 37, IM_COL32(255, 0, 0, 255)},
-            {36, 29, IM_COL32(255, 0, 0, 255)},
-            {35, 42, IM_COL32(255, 0, 0, 255)},
-            {41, 34, IM_COL32(255, 0, 0, 255)},
-            {43, 44, IM_COL32(255, 0, 0, 255)},
-            {44, 45, IM_COL32(255, 0, 0, 255)},
-            {45, 46, IM_COL32(255, 0, 0, 255)},
-            {46, 47, IM_COL32(255, 0, 0, 255)},
-            {47, 48, IM_COL32(255, 0, 0, 255)},
-            {48, 49, IM_COL32(255, 0, 0, 255)},
-            {49, 50, IM_COL32(255, 0, 0, 255)},
-            {42, 49, IM_COL32(255, 0, 0, 255)},
-            {48, 41, IM_COL32(255, 0, 0, 255)},
-            {40, 47, IM_COL32(255, 0, 0, 255)},
-            {46, 39, IM_COL32(255, 0, 0, 255)},
-            {38, 45, IM_COL32(255, 0, 0, 255)},
-            {44, 37, IM_COL32(255, 0, 0, 255)},
-            {36, 43, IM_COL32(255, 0, 0, 255)},
-            {51, 52, IM_COL32(255, 0, 0, 255)},
-            {52, 53, IM_COL32(255, 0, 0, 255)},
-            {53, 54, IM_COL32(255, 0, 0, 255)},
-            {54, 55, IM_COL32(255, 0, 0, 255)},
-            {55, 56, IM_COL32(255, 0, 0, 255)},
-            {56, 57, IM_COL32(255, 0, 0, 255)},
-            {54, 46, IM_COL32(255, 0, 0, 255)},
-            {45, 53, IM_COL32(255, 0, 0, 255)},
-            {52, 44, IM_COL32(255, 0, 0, 255)},
-            {43, 51, IM_COL32(255, 0, 0, 255)},
-            {57, 49, IM_COL32(255, 0, 0, 255)},
-            {48, 56, IM_COL32(255, 0, 0, 255)},
-            {55, 47, IM_COL32(255, 0, 0, 255)},
-            {58, 59, IM_COL32(255, 0, 0, 255)},
-            {59, 60, IM_COL32(255, 0, 0, 255)},
-            {60, 61, IM_COL32(255, 0, 0, 255)},
-            {61, 62, IM_COL32(255, 0, 0, 255)},
-            {62, 63, IM_COL32(255, 0, 0, 255)},
-            {63, 64, IM_COL32(255, 0, 0, 255)},
-            {64, 65, IM_COL32(255, 0, 0, 255)},
-            {65, 57, IM_COL32(255, 0, 0, 255)},
-            {56, 64, IM_COL32(255, 0, 0, 255)},
-            {63, 55, IM_COL32(255, 0, 0, 255)},
-            {54, 62, IM_COL32(255, 0, 0, 255)},
-            {61, 53, IM_COL32(255, 0, 0, 255)},
-            {52, 60, IM_COL32(255, 0, 0, 255)},
-            {59, 51, IM_COL32(255, 0, 0, 255)},
-            {67, 68, IM_COL32(255, 0, 0, 255)},
-            {68, 69, IM_COL32(255, 0, 0, 255)},
-            {69, 70, IM_COL32(255, 0, 0, 255)},
-            {70, 71, IM_COL32(255, 0, 0, 255)},
-            {67, 61, IM_COL32(255, 0, 0, 255)},
-            {66, 59, IM_COL32(255, 0, 0, 255)},
-            {65, 71, IM_COL32(255, 0, 0, 255)},
-            {70, 64, IM_COL32(255, 0, 0, 255)},
-            {63, 69, IM_COL32(255, 0, 0, 255)},
-            {68, 62, IM_COL32(255, 0, 0, 255)},
-            {58, 66, IM_COL32(255, 0, 0, 255)},
-            {66, 0, IM_COL32(255, 0, 0, 255)},
-            {0, 67, IM_COL32(255, 0, 0, 255)},
-            {71, 50, IM_COL32(255, 0, 0, 255)},
-            {58, 1, IM_COL32(255, 0, 0, 255)},
-            {7, 50, IM_COL32(255, 0, 0, 255)},
-            {4, 68, IM_COL32(255, 0, 0, 255)},
-            {67, 3, IM_COL32(255, 0, 0, 255)},
-            {66, 1, IM_COL32(255, 0, 0, 255)},
-            {7, 71, IM_COL32(255, 0, 0, 255)},
-            {70, 6, IM_COL32(255, 0, 0, 255)},
-            {5, 69, IM_COL32(255, 0, 0, 255)},
-            {58, 8, IM_COL32(255, 0, 0, 255)},
-            {14, 50, IM_COL32(255, 0, 0, 255)},
-            {58, 15, IM_COL32(255, 0, 0, 255)},
-            {21, 50, IM_COL32(255, 0, 0, 255)},
-            {58, 22, IM_COL32(255, 0, 0, 255)},
-            {28, 50, IM_COL32(255, 0, 0, 255)},
-            {58, 29, IM_COL32(255, 0, 0, 255)},
-            {35, 50, IM_COL32(255, 0, 0, 255)},
-            {58, 36, IM_COL32(255, 0, 0, 255)},
-            {42, 50, IM_COL32(255, 0, 0, 255)},
-            {58, 43, IM_COL32(255, 0, 0, 255)},
-            {58, 51, IM_COL32(255, 0, 0, 255)},
-            {57, 50, IM_COL32(255, 0, 0, 255)},
-            {65, 50, IM_COL32(255, 0, 0, 255)},
-            {60, 0, IM_COL32(255, 0, 0, 255)},
-        } };
-    return model;
-}
-ImGui3D::ImGuiWireModel& GetModel_SphereRadius1() {
-    return GetModel_UVSphere_10_8();
-}
-ImGui3D::ImGuiWireModel& GetModel_MarkerWithClearOrientation() {
-    // The Blender's Camera model has a clearly readable origin, direction and orientation, works well for visualization.
-    return GetModel_Camera();
-}
+
 namespace
 {
 class ParkourDebugWindow
@@ -583,15 +139,15 @@ public:
         auto& markerModel = GetModel_MarkerWithClearOrientation();
         Matrix4f transform;
 
-        if (parkourLog.m_EnforcedMove)
+        if (parkourLog.m_EnforcedMove.m_Position)
         {
             static auto& modelSphere = GetModel_SphereRadius1();
-            SetMatrix4fLookAt(transform, parkourLog.m_EnforcedMove->m_Position, parkourLog.m_EnforcedMove->m_DirectionFacingOut);
+            SetMatrix4fLookAt(transform, *parkourLog.m_EnforcedMove.m_Position, parkourLog.m_EnforcedMove.m_DirectionFacingOut);
             ImU32 enforcedMoveColor = IM_COL32(0, 255, 0, 255);
             ImGui3D::DrawWireModelTransform(markerModel, transform, 5.0f, enforcedMoveColor);
             ImGui3D::DrawWireModel(modelSphere,
-                parkourLog.m_EnforcedMove->m_Position, 0.5f,
-                parkourLog.m_EnforcedMove->m_Radius, enforcedMoveColor
+                *parkourLog.m_EnforcedMove.m_Position, 0.5f,
+                parkourLog.m_EnforcedMove.m_Radius, enforcedMoveColor
             );
         }
         std::vector<std::shared_ptr<ParkourCycleLogged>> history = parkourLog.GetRecentCycles();
@@ -1007,12 +563,9 @@ void ParkourDebugWindow::DrawModWeightSlider(std::optional<float>& modWeight)
 }
 void ParkourDebugWindow::SetEnforcedAction(ParkourActionLogged& action)
 {
-    parkourLog.m_EnforcedMove = {
-        action.m_LocationDst,
-        action.m_DirDstFacingOut,
-        0.25f,
-        action.m_ActionType
-    };
+    parkourLog.m_EnforcedMove.m_ActionType = action.m_ActionType;
+    parkourLog.m_EnforcedMove.m_Position = action.m_LocationDst;
+    parkourLog.m_EnforcedMove.m_DirectionFacingOut = action.m_DirDstFacingOut;
 }
 const char* strId_contextMenuForAction = "ContextMenuForAction";
 auto ParkourDebugWindow::MakeColumnsForParkourDetails()
@@ -1086,6 +639,7 @@ auto ParkourDebugWindow::MakeColumnsForParkourDetails()
             ImGui::Text("+");
         }
         };
+    auto DrawCol_Collision = [](Action_t& action) { ImGui::Text("%d", action->m_CollisionLayer); };
     auto DrawCol_Fitness = [](Action_t& action) { if (action->m_FitnessWeight) ImGui::Text("%f", *action->m_FitnessWeight); };
     auto DrawCol_DefaultWeight = [](Action_t& action) { if (action->m_DefaultWeight) ImGui::Text("%f", *action->m_DefaultWeight); };
     auto DrawCol_ModWeight = [this](Action_t& action) {
@@ -1110,6 +664,7 @@ auto ParkourDebugWindow::MakeColumnsForParkourDetails()
         Index = 0,
         Type,
         TypeReadable,
+        Collision,
         IsDiscardedImmediately,
         Fitness,
         IsDiscardedBecauseFitnessTooLow,
@@ -1123,6 +678,7 @@ auto ParkourDebugWindow::MakeColumnsForParkourDetails()
             MoveDetailsColumn{ MDCOL(Index), SortByAttribute{[](Action_t& a) { return a->m_Index; }} }
             , MoveDetailsColumn{ MDCOL(Type), SortByAttribute{ [](Action_t& a) { return a->m_ActionType; } } }
             , MoveDetailsColumn{ MDCOL(TypeReadable), SortByAttribute{ [](Action_t& a) { return std::string_view(enum_reflection<EnumParkourAction>::GetString(a->m_ActionType)); } } }
+            , MoveDetailsColumn{ MDCOL(Collision), SortByAttribute{ [](Action_t& a) { return a->m_CollisionLayer; } } }
             , MoveDetailsColumn{ MDCOL(IsDiscardedImmediately), SortByAttribute{ [](Action_t& a) { return a->m_IsDiscarded_immediatelyAfterCreation; } } }
             , MoveDetailsColumn{ MDCOL(Fitness), SortByAttribute{ [](Action_t& a) { return a->m_FitnessWeight; } } }
             , MoveDetailsColumn{ MDCOL(IsDiscardedBecauseFitnessTooLow), SortByAttribute{ [](Action_t& a) { return a->m_IsDiscarded_becauseFitnessWeightTooLow; } } }
@@ -1143,6 +699,11 @@ ParkourDebugWindow::ParkourDebugWindow()
 {}
 void ParkourDebugWindow::DrawSummaryTab()
 {
+    if (ImGui::IsKeyDown(ImGuiKey_ModAlt))
+        ImGui::SetNextFrameWantCaptureMouse(true);
+    ImGui::HelpMarker(
+        "Hold Alt to block game mouse."
+    );
     ImGui::Text("Latest parkour cycle:");
     if (!latestCycle)
     {
@@ -1219,6 +780,63 @@ void ParkourDebugWindow::DrawDisplayTab()
     auto& parkourLog = ParkourLog::GetSingleton();
     parkourLog.DrawDisplayControls();
 }
+// this implementation assumes normalized quaternion
+// converts to Euler angles in 3-2-1 sequence
+static Vector3f QuaternionToEulerAngles(Vector4f q) {
+    Vector3f angles;
+
+    // roll (x-axis rotation)
+    float sinr_cosp = 2 * (q.w * q.x + q.y * q.z);
+    float cosr_cosp = 1 - 2 * (q.x * q.x + q.y * q.y);
+    angles.x = std::atan2(sinr_cosp, cosr_cosp);
+
+    // pitch (y-axis rotation)
+    float sinp = std::sqrt(1 + 2 * (q.w * q.y - q.x * q.z));
+    float cosp = std::sqrt(1 - 2 * (q.w * q.y - q.x * q.z));
+    angles.y = 2 * std::atan2(sinp, cosp) - M_PI / 2;
+
+    // yaw (z-axis rotation)
+    float siny_cosp = 2 * (q.w * q.z + q.x * q.y);
+    float cosy_cosp = 1 - 2 * (q.y * q.y + q.z * q.z);
+    angles.z = std::atan2(siny_cosp, cosy_cosp);
+
+    return angles;
+}
+static Vector4f EulerToQuaternion(float roll, float pitch, float yaw) // roll (x), pitch (y), yaw (z), angles are in radians
+{
+    // Abbreviations for the various angular functions
+
+    float cr = cos(roll * 0.5);
+    float sr = sin(roll * 0.5);
+    float cp = cos(pitch * 0.5);
+    float sp = sin(pitch * 0.5);
+    float cy = cos(yaw * 0.5);
+    float sy = sin(yaw * 0.5);
+
+    Vector4f q;
+    q.w = cr * cp * cy + sr * sp * sy;
+    q.x = sr * cp * cy - cr * sp * sy;
+    q.y = cr * sp * cy + sr * cp * sy;
+    q.z = cr * cp * sy - sr * sp * cy;
+
+    return q;
+}
+static Vector3f GetDirAngles(const Vector3f& dir) {
+    Matrix4f m = CreateMatrix4fLookAt(Vector3f(), dir);
+    Quatf q = Quatf::fromMatrix(m.getRotation());
+    Vector3f dirAsAngles = QuaternionToEulerAngles((Vector4f&)q);
+    return dirAsAngles;
+}
+static Vector3f GetForwardDirFromAngles(const Vector3f& dirAsAngles) {
+    Matrix3f rotMat = ((Quatf&)EulerToQuaternion(dirAsAngles.x, dirAsAngles.y, dirAsAngles.z)).rotMatrix();
+    return (Vector3f&)rotMat.data[3 * 1];
+}
+static auto ImGuiEditDirectionAsAngles(Vector3f& dir, auto&& callableOnAngles) {
+    Vector3f dirAsAngles = GetDirAngles(dir);
+    auto&& result = callableOnAngles(dirAsAngles);
+    dir = GetForwardDirFromAngles(dirAsAngles);
+    return result;
+}
 void ParkourDebugWindow::DrawEnforceTab()
 {
     if (!ImGui::IsKeyDown(ImGuiKey_ModAlt))
@@ -1229,37 +847,59 @@ void ParkourDebugWindow::DrawEnforceTab()
         "with the given facing direction it will be force selected.\n"
         "Something might happen, might not."
     );
-    //static RaycastPickerModal picker;
-    //picker.Pick("Pick location",
-    //    [](const MyRaycastSuccessfulHit& hit) {
-    //        hit.m_HitLocation;
-    //    }
-    //    , RaycastPickerModal::DefaultOnEveryHit
-    //    , RaycastPickerModal::DefaultOnNoHit
-    //);
-    if (parkourLog.m_EnforcedMove)
     {
         bool isNeedToReset = false;
         if (ImGui::Button("Clear enforced actions"))
             isNeedToReset = true;
-        ImGui::Text(
-            "%8.3f,%8.3f,%8.3f\n"
-            "%8.3f,%8.3f,%8.3f\n"
-            , parkourLog.m_EnforcedMove->m_Position.x
-            , parkourLog.m_EnforcedMove->m_Position.y
-            , parkourLog.m_EnforcedMove->m_Position.z
-            , parkourLog.m_EnforcedMove->m_DirectionFacingOut.x
-            , parkourLog.m_EnforcedMove->m_DirectionFacingOut.y
-            , parkourLog.m_EnforcedMove->m_DirectionFacingOut.z
-        );
-        ImGui::DragFloat("Radius", &parkourLog.m_EnforcedMove->m_Radius, 0.0025f, 0.1f, 5.0f);
         if (isNeedToReset)
-            parkourLog.m_EnforcedMove.reset();
+        {
+            parkourLog.m_EnforcedMove.m_Position.reset();
+            parkourLog.m_EnforcedMove.m_ActionType.reset();
+        }
+    }
+    std::optional<Vector3f> currentFramePos = parkourLog.m_EnforcedMove.m_Position;
+    Vector3f currentFrameDir = parkourLog.m_EnforcedMove.m_DirectionFacingOut;
+    static RaycastPickerModal picker;
+    picker.Pick("Pick location",
+        [&](const MyRaycastSuccessfulHit& hit) {
+            parkourLog.m_EnforcedMove.m_Position = hit.m_HitLocation;
+            parkourLog.m_EnforcedMove.m_DirectionFacingOut = hit.m_Normal;
+        },
+        [&](const MyRaycastSuccessfulHit& hit) {
+            RaycastPickerModal::DefaultOnEveryHit(hit);
+            currentFramePos = hit.m_HitLocation;
+            currentFrameDir = hit.m_Normal;
+        },
+        RaycastPickerModal::DefaultOnNoHit
+    );
+    if (currentFramePos)
+    {
+        ImGui::SameLine();
+        bool isNeedToReset = false;
+        if (ImGui::Button("Clear"))
+            isNeedToReset = true;
+        bool isChanged = false;
+        ImGui::AlignTextToFramePadding();
+        ImGui::Text("Position :"); ImGui::SameLine();
+        isChanged |= ImGui::DragFloat3("##pos", *currentFramePos, 0.01f);
+        ImGui::AlignTextToFramePadding();
+        ImGui::Text("Direction:"); ImGui::SameLine();
+        isChanged |= ImGuiEditDirectionAsAngles(currentFrameDir, [](Vector3f& dirAsAngles) {
+            return ImGui::DragFloat3("##dir", dirAsAngles, 0.01f);
+            });
+        if (isChanged)
+        {
+            parkourLog.m_EnforcedMove.m_Position = currentFramePos;
+            parkourLog.m_EnforcedMove.m_DirectionFacingOut = currentFrameDir;
+        }
+        if (isNeedToReset)
+            parkourLog.m_EnforcedMove.m_Position.reset();
     }
     else
     {
-        ImGui::Text("Nothing is being enforced now.");
+        ImGui::Dummy(ImVec2{ 0, ImGui::GetFrameHeight() * 2 + ImGui::GetStyle().ItemSpacing.y });
     }
+    ImGui::DragFloat("Radius", &parkourLog.m_EnforcedMove.m_Radius, 0.0025f, 0.1f, 5.0f);
 }
 namespace ImGui
 {
@@ -1562,30 +1202,10 @@ void ParkourDebugWindow::Draw()
 AvailableParkourAction* ParkourCallbacksForParkourDebug::ChooseAfterSorting(SmallArray<AvailableParkourAction*>& allActionsSorted, AvailableParkourAction* selectionAfterGameAndCallbacks)
 {
     auto& parkourLog = ParkourLog::GetSingleton();
-    if (parkourLog.m_EnforcedMove)
+    if (AvailableParkourAction* bestAction = parkourLog.m_EnforcedMove.FindMatchingAction(allActionsSorted))
     {
-        AvailableParkourAction* bestAction = nullptr;
-        float bestDistanceSqr = std::numeric_limits<float>::max();
-        float radiusSqr = parkourLog.m_EnforcedMove->m_Radius * parkourLog.m_EnforcedMove->m_Radius;
-        for (AvailableParkourAction* action : allActionsSorted)
-        {
-            if (action->GetEnumParkourAction() != parkourLog.m_EnforcedMove->m_ActionType) continue;
-            const Vector3f& pos = (Vector3f&)action->locationAnchorDest;
-            const float distToEnforcedCenterSqr = (pos - parkourLog.m_EnforcedMove->m_Position).lengthSq();
-            if (distToEnforcedCenterSqr > radiusSqr) continue;
-            const Vector3f& dir = (Vector3f&)action->directionDestFacingOut;
-            const float minDirectionAlignment = 0.8f;
-            if (parkourLog.m_EnforcedMove->m_DirectionFacingOut.dotProduct(dir) < minDirectionAlignment) continue;
-            if (distToEnforcedCenterSqr > bestDistanceSqr) continue;
-
-            bestDistanceSqr = distToEnforcedCenterSqr;
-            bestAction = action;
-        }
-        if (bestAction)
-        {
-            selectionAfterGameAndCallbacks = bestAction;
-            return bestAction;
-        }
+        selectionAfterGameAndCallbacks = bestAction;
+        return bestAction;
     }
     return nullptr;
 }

@@ -32,6 +32,36 @@ inline Matrix3f MakeRotationAlignZWithVector(Vector3f axisZ)
         axisZ.x, axisZ.y, axisZ.z };
     return result;
 }
+inline Matrix4f CreateMatrix4fLookAt(const Vector3f& eyePos, const Vector3f& forwardNormalized)
+{
+    Matrix4f m;
+    Vector3f side;
+    Vector3f up{ 0, 0, 1 };
+
+    // Side = forward x up
+    side = forwardNormalized.crossProduct(up);
+    if (side.lengthSq() < EPSILON)
+    {
+        /*
+        By default I try to align the 3D marker's "up" with the positive Z.
+        Sometimes the normal direction vector is exactly the same,
+        so in that case I have to pick a different default.
+        */
+        up = { 1, 0, 0 };
+        side = forwardNormalized.crossProduct(up);
+    }
+    side.normalize();
+
+    // Recompute up as: up = side x forward
+    up = side.crossProduct(forwardNormalized);
+
+    (Vector3f&)m.data[4 * 0] = side;
+    (Vector3f&)m.data[4 * 1] = forwardNormalized;
+    (Vector3f&)m.data[4 * 2] = up;
+
+    m.setTranslation(eyePos);
+    return m;
+}
 
 #ifdef VMATH_NAMESPACE
 }

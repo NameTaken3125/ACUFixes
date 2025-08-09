@@ -26,6 +26,7 @@ ParkourActionLogged::ParkourActionLogged(AvailableParkourAction& action, size_t 
     , m_DirSrc((Vector3f&)action.direction_20)
     , m_DirDstFacingOut((Vector3f&)action.directionDestFacingOut)
     , m_Index(indexInOrderOfCreationInCycle)
+    , m_CollisionLayer(action.collisionLayer_mb)
 {}
 
 void ParkourCycleLogged::LogActionInitialCreation(AvailableParkourAction& action, bool& isDiscarded_immediatelyAfterCreation)
@@ -33,12 +34,9 @@ void ParkourCycleLogged::LogActionInitialCreation(AvailableParkourAction& action
     if (m_IsDisabled) return;
     ParkourActionLogged& recordForAction = MakeRecordForAction(action);
     auto& parkourLog = ParkourLog::GetSingleton();
-    if (parkourLog.m_EnforcedMove)
+    if (parkourLog.m_EnforcedMove.IsMatchingAction(action))
     {
-        if (action.GetEnumParkourAction() == parkourLog.m_EnforcedMove->m_ActionType)
-        {
-            isDiscarded_immediatelyAfterCreation = false;
-        }
+        isDiscarded_immediatelyAfterCreation = false;
     }
     recordForAction.m_IsDiscarded_immediatelyAfterCreation = isDiscarded_immediatelyAfterCreation;
 }
@@ -47,12 +45,9 @@ void ParkourCycleLogged::LogActionBeforeFiltering(AvailableParkourAction& action
     if (m_IsDisabled) return;
     ParkourActionLogged& recordForAction = this->GetOrMakeRecordForAction(action);
     auto& parkourLog = ParkourLog::GetSingleton();
-    if (parkourLog.m_EnforcedMove)
+    if (parkourLog.m_EnforcedMove.IsMatchingAction(action))
     {
-        if (action.GetEnumParkourAction() == parkourLog.m_EnforcedMove->m_ActionType)
-        {
-            isDiscarded_becauseFitnessWeightTooLow = false;
-        }
+        isDiscarded_becauseFitnessWeightTooLow = false;
     }
     recordForAction.m_FitnessWeight = fitness;
     recordForAction.m_IsDiscarded_becauseFitnessWeightTooLow = isDiscarded_becauseFitnessWeightTooLow;
@@ -95,6 +90,49 @@ void ParkourCycleLogged::LogActionWhenReturningBestMatch(AvailableParkourAction&
     ParkourActionLogged& record = this->GetOrMakeRecordForAction(bestMatchMove);
     record.m_IsTheSelectedBestMatch = true;
     LogActionBestMatch_ConsoleAnd3D(bestMatchMove);
+}
+ParkourActionLogged& ParkourCycleLogged::GetOrMakeRecordForAction(AvailableParkourAction& action)
+{
+    std::lock_guard _lock{ m_Mutex };
+    m_IsSortingDirty = true; // Assume something gets modified after this call.
+    for (auto& record : m_Actions)
+    {
+        if (record->m_ActionPtr != &action) continue;
+        if (record->m_IsDiscarded_immediatelyAfterCreation) continue;
+        return *record;
+    }
+    return *m_Actions.emplace_back(std::make_unique<ParkourActionLogged>(action, m_IndexOfNextLoggedAction++));
+}
+ParkourActionLogged& ParkourCycleLogged::MakeRecordForAction(AvailableParkourAction& action)
+{
+    std::lock_guard _lock{ m_Mutex };
+    return *m_Actions.emplace_back(std::make_unique<ParkourActionLogged>(action, m_IndexOfNextLoggedAction++));
+}
+bool ParkourLog::EnforcedMove::IsMatchingAction(AvailableParkourAction& action)
+{
+    return m_Position && m_ActionType == action.GetEnumParkourAction();
+}
+AvailableParkourAction* ParkourLog::EnforcedMove::FindMatchingAction(SmallArray<AvailableParkourAction*>& allActionsSorted)
+{
+    if (!m_ActionType || !m_Position) return nullptr;
+    AvailableParkourAction* bestAction = nullptr;
+    float bestDistanceSqr = std::numeric_limits<float>::max();
+    float radiusSqr = m_Radius * m_Radius;
+    for (AvailableParkourAction* action : allActionsSorted)
+    {
+        if (action->GetEnumParkourAction() != m_ActionType) continue;
+        const Vector3f& pos = (Vector3f&)action->locationAnchorDest;
+        const float distToEnforcedCenterSqr = (pos - *m_Position).lengthSq();
+        if (distToEnforcedCenterSqr > radiusSqr) continue;
+        const Vector3f& dir = (Vector3f&)action->directionDestFacingOut;
+        const float minDirectionAlignment = 0.8f;
+        if (m_DirectionFacingOut.dotProduct(dir) < minDirectionAlignment) continue;
+        if (distToEnforcedCenterSqr > bestDistanceSqr) continue;
+
+        bestDistanceSqr = distToEnforcedCenterSqr;
+        bestAction = action;
+    }
+    return bestAction;
 }
 ParkourLog::ParkourLog()
     : m_DisabledDummyCycle(new ParkourCycleLogged())

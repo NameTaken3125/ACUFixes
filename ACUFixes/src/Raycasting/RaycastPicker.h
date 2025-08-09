@@ -1,12 +1,14 @@
 #pragma once
 
 #include "vmath/vmath.h"
+#include "vmath/vmath_extra.h"
 #include "ACU/Entity.h"
 #include "ACU/ManagedPtrs/ManagedPtrs.h"
 
 #include "Raycasting.h"
 #include "ImGuiCTX.h"
 #include "ImGui3D/ImGui3D.h"
+#include "ImGui3D/UsefulWireModels.h"
 
 class RaycastPickerModal
 {
@@ -30,7 +32,8 @@ public:
         ImGui::Text(
             buf.c_str()
         );
-        ImGui3D::DrawLocationOnce(hit.m_HitLocation, 0.2f);
+        Matrix4f hitMarkerTransform = CreateMatrix4fLookAt(hit.m_HitLocation, hit.m_Normal);
+        ImGui3D::DrawWireModelOnce(GetModel_MarkerWithClearOrientation(), hitMarkerTransform);
         Vector3f entityPos = ent->GetPosition();
         ImGui3D::DrawLocationOnce(entityPos, 0.2f);
         BoundingVolume& bbox = ent->BoundingVolume_;

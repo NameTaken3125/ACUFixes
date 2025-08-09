@@ -165,6 +165,7 @@ std::optional<MyRaycastSuccessfulHit> CastRayToMouseOnScreen(float range)
         RaycastResult& hit = nativeRaycast.raycastResults[0];
         result = MyRaycastSuccessfulHit{
             (Vector3f&)hit.hitLocation
+            , (Vector3f&)hit.targetNormal
             , hit.shared_targetEntity->GetPtr()->GetPosition()
             , ACU::StrongRef<Entity>(*hit.shared_targetEntity)
         };

@@ -35,6 +35,7 @@ public:
     std::optional<bool> m_ResultOfFinalFilter1;
     std::optional<bool> m_ResultOfFinalFilter2;
     bool m_IsTheSelectedBestMatch = false;
+    uint32 m_CollisionLayer; // I don't really know what this is.
 
     bool m_IsSelectedInEditor = false;
 };
@@ -61,23 +62,8 @@ public:
 
 private:
     size_t m_IndexOfNextLoggedAction = 0; // To keep track of the order of creation.
-    ParkourActionLogged& GetOrMakeRecordForAction(AvailableParkourAction& action)
-    {
-        std::lock_guard _lock{ m_Mutex };
-        m_IsSortingDirty = true; // Assume something gets modified after this call.
-        for (auto& record : m_Actions)
-        {
-            if (record->m_ActionPtr != &action) continue;
-            if (record->m_IsDiscarded_immediatelyAfterCreation) continue;
-            return *record;
-        }
-        return *m_Actions.emplace_back(std::make_unique<ParkourActionLogged>(action, m_IndexOfNextLoggedAction++));
-    }
-    ParkourActionLogged& MakeRecordForAction(AvailableParkourAction& action)
-    {
-        std::lock_guard _lock{ m_Mutex };
-        return *m_Actions.emplace_back(std::make_unique<ParkourActionLogged>(action, m_IndexOfNextLoggedAction++));
-    }
+    ParkourActionLogged& GetOrMakeRecordForAction(AvailableParkourAction& action);
+    ParkourActionLogged& MakeRecordForAction(AvailableParkourAction& action);
 private:
     bool m_IsDisabled;
     ParkourCycleLogged() : m_Timestamp(-1), m_IsDisabled(true) {}
@@ -111,12 +97,15 @@ public:
 
     struct EnforcedMove
     {
-        Vector3f m_Position;
-        Vector3f m_DirectionFacingOut;
-        float m_Radius;
-        EnumParkourAction m_ActionType;
+        std::optional<Vector3f> m_Position;
+        Vector3f m_DirectionFacingOut = { 0, 0, 1 };
+        float m_Radius = 0.25f;
+        std::optional<EnumParkourAction> m_ActionType;
+
+        bool IsMatchingAction(AvailableParkourAction& action);
+        AvailableParkourAction* FindMatchingAction(SmallArray<AvailableParkourAction*>& allActionsSorted);
     };
-    std::optional<EnforcedMove> m_EnforcedMove;
+    EnforcedMove m_EnforcedMove;
 public:
     static ParkourLog& GetSingleton() { static ParkourLog singleton; return singleton; }
 private:

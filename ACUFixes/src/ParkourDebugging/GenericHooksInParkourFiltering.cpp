@@ -23,21 +23,37 @@ DEFINE_GAME_FUNCTION(SmallArray_POD__RemoveGeneric, 0x142725F00, void, __fastcal
 
 
 #include "MyLog.h"
-
+class CollisionProbeForParkour_mb
+{
+public:
+    Vector4f locationAnchorDest; //0x0000
+    Vector4f direction; //0x0010
+    char pad_0020[20]; //0x0020
+    float flt_34; //0x0034
+    uint32 collisionLayer_mb; //0x0038
+    char pad_003C[4]; //0x003C
+    Vector4f pos40; //0x0040
+    Vector4f pos50; //0x0050
+    PlayerRefInParkourAction shared_buildingEntity; //0x0060
+    char pad_0078[8]; //0x0078
+}; //Size: 0x0080
+assert_offsetof(CollisionProbeForParkour_mb, collisionLayer_mb, 0x38);
+assert_offsetof(CollisionProbeForParkour_mb, shared_buildingEntity, 0x60);
+assert_sizeof(CollisionProbeForParkour_mb, 0x80); // Allocated and constructed at 140184AEF
 static DEFINE_LOGGER_CONSOLE_AND_FILE(ParkourLogger, "[Parkour]");
 bool CreateParkourActionAndPerformInitialTestIfFits_A_FullReplacement(
     EnumParkourAction actionType,
     __m128* p_locationOfOrigin,
     __m128* a3,
     __m128* p_directionOfMovementInputWorldSpace,
-    float a5, int a6, char a7, uint64 a8,
+    float a5, int a6, char a7, CollisionProbeForParkour_mb* a8,
     Entity* p_player,
     uint64 p_currentLedge_mb,
     AvailableParkourAction** const p_newAction_out,
     float a12,
     float p_epsilon_mb)
 {
-    AvailableParkourAction* newAction = ConstructParkourAction_A(actionType, p_locationOfOrigin, a3, p_directionOfMovementInputWorldSpace, a6, a7, a8, p_currentLedge_mb);
+    AvailableParkourAction* newAction = ConstructParkourAction_A(actionType, p_locationOfOrigin, a3, p_directionOfMovementInputWorldSpace, a6, a7, (uint64)a8, p_currentLedge_mb);
     *p_newAction_out = newAction;
     if (!newAction) return false;
     if (p_player)
@@ -50,7 +66,7 @@ bool CreateParkourActionAndPerformInitialTestIfFits_A_FullReplacement(
         p_directionOfMovementInputWorldSpace,
         a5,
         a6,
-        a8,
+        (uint64)a8,
         p_player,
         p_currentLedge_mb);
     std::shared_ptr<ParkourCycleLogged> currentCycle = GetCurrentLoggedParkourCycle();

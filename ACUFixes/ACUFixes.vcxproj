@@ -213,6 +213,7 @@ if exist "$(ProjectDir)copy_output_to_directory.txt" (
     <ClCompile Include="src\AnimationTools\AnimGraphMods.cpp" />
     <ClCompile Include="src\AnimationTools\AnimGraphMods_BasicLayer.cpp" />
     <ClCompile Include="src\AnimationTools\Animtools_ImGui.cpp" />
+    <ClCompile Include="src\ImGui3D\UsefulWireModels.cpp" />
     <ClCompile Include="src\ParkourDebugging\AvailableParkourAction.cpp" />
     <ClCompile Include="src\ParkourDebugging\GenericHooksInParkourFiltering.cpp" />
     <ClCompile Include="src\ParkourDebugging\Hack_PickEntityToShoot.cpp" />
@@ -286,6 +287,7 @@ if exist "$(ProjectDir)copy_output_to_directory.txt" (
     <ClInclude Include="src\AnimationTools\AnimationsLog\AnimationGraphEvaluationLog.h" />
     <ClInclude Include="src\AnimationTools\AtomGraphControls.h" />
     <ClInclude Include="src\AnimationTools\AtomGraphModsCommon.h" />
+    <ClInclude Include="src\ImGui3D\UsefulWireModels.h" />
     <ClInclude Include="src\ParkourDebugging\AvailableParkourAction.h" />
     <ClInclude Include="src\ParkourDebugging\FancyVFunctionDescription.h" />
     <ClInclude Include="src\ParkourDebugging\GenericHooksInParkourFiltering.h" />
