@@ -35,7 +35,6 @@ public:
     std::optional<bool> m_ResultOfFinalFilter1;
     std::optional<bool> m_ResultOfFinalFilter2;
     bool m_IsTheSelectedBestMatch = false;
-    bool m_HasBeenEnforced = false;
 
     bool m_IsSelectedInEditor = false;
 };
@@ -59,7 +58,6 @@ public:
     void LogActionFinalFilter1(AvailableParkourAction& action, bool resultOfFinalFilter1);
     void LogActionFinalFilter2(AvailableParkourAction& action, bool resultOfFinalFilter2);
     void LogActionWhenReturningBestMatch(AvailableParkourAction& bestMatchMove);
-    void LogAndChangeFinalSelection(AvailableParkourAction*& selectionAfterGameAndCallbacks, SmallArray<AvailableParkourAction*>& allActionsSorted);
 
 private:
     size_t m_IndexOfNextLoggedAction = 0; // To keep track of the order of creation.

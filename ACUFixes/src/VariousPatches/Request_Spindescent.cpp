@@ -334,6 +334,7 @@ ParkourCallbacksForParkourHelpers::ParkourCallbacksForParkourHelpers()
         };
     m_Callbacks.m_UserData = this;
     m_Callbacks.m_CallbackPriority = 10.0f;
+    m_Callbacks.m_Name = "ParkourHelpers";
 }
 AvailableParkourAction* ParkourCallbacksForParkourHelpers::ChooseBeforeFiltering(SmallArray<AvailableParkourAction*>& actions)
 {

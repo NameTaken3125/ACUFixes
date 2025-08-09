@@ -109,29 +109,31 @@ bool CreateParkourActionAndPerformInitialTestIfFits_B_FullReplacement(
     }
     return true;
 }
-constexpr int RESULT_OF_PARKOUR_SORT_AND_SELECT__NO_ACTIONS_ACCEPTED = -1;
-int SortAndSelectBestMatchingAction_FullReplacement(
-    ParkourTester* parkourTester,
-    __m128* p_locationOfOrigin,
-    uint64 a3,
-    __m128* p_directionOfMovementInputWorldSpace,
-    float a5,
-    int a6,
-    char a7,
-    __int64 a8,
-    SmallArray<AvailableParkourAction*>& p_parkourSensorsResults)
+static std::optional<int> FindIndexForAction(AvailableParkourAction& action, SmallArray<AvailableParkourAction*>& p_parkourSensorsResults)
 {
-    std::shared_ptr<ParkourCycleLogged> currentCycle = GetCurrentLoggedParkourCycle();
+    auto foundIt = std::find(p_parkourSensorsResults.begin(), p_parkourSensorsResults.end(), &action);
+    if (foundIt != p_parkourSensorsResults.end())
+    {
+        return foundIt - p_parkourSensorsResults.begin();
+    }
+    return {};
+}
+constexpr int RESULT_OF_PARKOUR_SORT_AND_SELECT__NO_ACTIONS_ACCEPTED = -1;
+int SortAndSelectBestMatchingAction_FullReplacement_inner(
+    ParkourTester* parkourTester
+    , __m128* p_locationOfOrigin
+    , uint64 a3
+    , __m128* p_directionOfMovementInputWorldSpace
+    , float a5
+    , int a6
+    , char a7
+    , __int64 a8
+    , SmallArray<AvailableParkourAction*>& p_parkourSensorsResults
+    , std::shared_ptr<ParkourCycleLogged>& currentCycle
+)
+{
     currentCycle->LogActionsBeforeFiltering(p_parkourSensorsResults);
 
-    auto FindIndexForAction = [&p_parkourSensorsResults](AvailableParkourAction& action) -> std::optional<int> {
-        auto foundIt = std::find(p_parkourSensorsResults.begin(), p_parkourSensorsResults.end(), &action);
-        if (foundIt != p_parkourSensorsResults.end())
-        {
-            return foundIt - p_parkourSensorsResults.begin();
-        }
-        return {};
-        };
     auto& allParkourCallbacks = GenericHooksInParkourFiltering::GetSingleton()->m_Callbacks;
     for (ParkourCallbacks* parkourCallbacks : allParkourCallbacks)
     {
@@ -139,9 +141,8 @@ int SortAndSelectBestMatchingAction_FullReplacement(
         AvailableParkourAction* selectedBeforeFiltering = parkourCallbacks->ChooseBeforeFiltering_fnp(parkourCallbacks->m_UserData, p_parkourSensorsResults);
         if (selectedBeforeFiltering)
         {
-            if (std::optional<int> idx = FindIndexForAction(*selectedBeforeFiltering))
+            if (std::optional<int> idx = FindIndexForAction(*selectedBeforeFiltering, p_parkourSensorsResults))
             {
-                currentCycle->LogActionWhenReturningBestMatch(*selectedBeforeFiltering);
                 return *idx;
             }
         }
@@ -218,7 +219,7 @@ int SortAndSelectBestMatchingAction_FullReplacement(
             parkourCallbacks->ChooseAfterSorting_fnp(parkourCallbacks->m_UserData, p_parkourSensorsResults, selectedBestMatch ? p_parkourSensorsResults[*selectedBestMatch] : nullptr);
         if (selectedAfterSorting)
         {
-            if (std::optional<int> idx = FindIndexForAction(*selectedAfterSorting))
+            if (std::optional<int> idx = FindIndexForAction(*selectedAfterSorting, p_parkourSensorsResults))
             {
                 selectedBestMatch = idx;
                 break;
@@ -226,21 +227,37 @@ int SortAndSelectBestMatchingAction_FullReplacement(
         }
     }
 
-    AvailableParkourAction* selectedByGameAndCallbacks = selectedBestMatch ? p_parkourSensorsResults[*selectedBestMatch] : nullptr;
-    AvailableParkourAction* realFinalSelection = selectedByGameAndCallbacks;
-    currentCycle->LogAndChangeFinalSelection(realFinalSelection, p_parkourSensorsResults);
-    if (realFinalSelection)
-        if (std::optional<int> idx = FindIndexForAction(*realFinalSelection))
-        {
-            selectedBestMatch = idx;
-        }
-    if (selectedBestMatch)
-        currentCycle->LogActionWhenReturningBestMatch(*p_parkourSensorsResults[*selectedBestMatch]);
     int result = selectedBestMatch ? *selectedBestMatch : RESULT_OF_PARKOUR_SORT_AND_SELECT__NO_ACTIONS_ACCEPTED;
 
     return result;
 }
-
+int SortAndSelectBestMatchingAction_FullReplacement(
+    ParkourTester* parkourTester,
+    __m128* p_locationOfOrigin,
+    uint64 a3,
+    __m128* p_directionOfMovementInputWorldSpace,
+    float a5,
+    int a6,
+    char a7,
+    __int64 a8,
+    SmallArray<AvailableParkourAction*>& p_parkourSensorsResults)
+{
+    std::shared_ptr<ParkourCycleLogged> currentCycle = GetCurrentLoggedParkourCycle();
+    int selectedIdx = SortAndSelectBestMatchingAction_FullReplacement_inner(
+        parkourTester,
+        p_locationOfOrigin,
+        a3, p_directionOfMovementInputWorldSpace,
+        a5, a6, a7, a8,
+        p_parkourSensorsResults,
+        currentCycle
+    );
+    if (selectedIdx != RESULT_OF_PARKOUR_SORT_AND_SELECT__NO_ACTIONS_ACCEPTED)
+    {
+        AvailableParkourAction* selectedAction = p_parkourSensorsResults[selectedIdx];
+        currentCycle->LogActionWhenReturningBestMatch(*selectedAction);
+    }
+    return selectedIdx;
+}
 GPH_Creation::GPH_Creation()
 {
     // Most "action types" are created from this call.

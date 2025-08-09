@@ -1299,12 +1299,6 @@ void ParkourDebugWindow::DrawDetailsTab()
         | ImGuiTableFlags_SizingFixedFit
         ;
     imid_contextMenuForAction = ImGui::GetID(strId_contextMenuForAction);
-    bool m_RequestedToOpenContextMenuForAction = true;
-    if (m_RequestedToOpenContextMenuForAction)
-    {
-        m_RequestedToOpenContextMenuForAction = false;
-        ImGui::OpenPopup(strId_contextMenuForAction);
-    }
     if (m_ContextMenuForAction)
     {
         auto& actions = m_ContextMenuForAction->m_Cycle->m_Actions;
@@ -1565,12 +1559,52 @@ void ParkourDebugWindow::Draw()
         }
     }
 }
+AvailableParkourAction* ParkourCallbacksForParkourDebug::ChooseAfterSorting(SmallArray<AvailableParkourAction*>& allActionsSorted, AvailableParkourAction* selectionAfterGameAndCallbacks)
+{
+    auto& parkourLog = ParkourLog::GetSingleton();
+    if (parkourLog.m_EnforcedMove)
+    {
+        AvailableParkourAction* bestAction = nullptr;
+        float bestDistanceSqr = std::numeric_limits<float>::max();
+        float radiusSqr = parkourLog.m_EnforcedMove->m_Radius * parkourLog.m_EnforcedMove->m_Radius;
+        for (AvailableParkourAction* action : allActionsSorted)
+        {
+            if (action->GetEnumParkourAction() != parkourLog.m_EnforcedMove->m_ActionType) continue;
+            const Vector3f& pos = (Vector3f&)action->locationAnchorDest;
+            const float distToEnforcedCenterSqr = (pos - parkourLog.m_EnforcedMove->m_Position).lengthSq();
+            if (distToEnforcedCenterSqr > radiusSqr) continue;
+            const Vector3f& dir = (Vector3f&)action->directionDestFacingOut;
+            const float minDirectionAlignment = 0.8f;
+            if (parkourLog.m_EnforcedMove->m_DirectionFacingOut.dotProduct(dir) < minDirectionAlignment) continue;
+            if (distToEnforcedCenterSqr > bestDistanceSqr) continue;
+
+            bestDistanceSqr = distToEnforcedCenterSqr;
+            bestAction = action;
+        }
+        if (bestAction)
+        {
+            selectionAfterGameAndCallbacks = bestAction;
+            return bestAction;
+        }
+    }
+    return nullptr;
+}
+ParkourCallbacksForParkourDebug::ParkourCallbacksForParkourDebug()
+{
+    m_Callbacks.ChooseAfterSorting_fnp = [](void* userData, SmallArray<AvailableParkourAction*>& actions, AvailableParkourAction* selectedByGame) -> AvailableParkourAction* {
+        return static_cast<ParkourCallbacksForParkourDebug*>(userData)->ChooseAfterSorting(actions, selectedByGame);
+        };
+    m_Callbacks.m_UserData = this;
+    m_Callbacks.m_CallbackPriority = 10000.0f;
+    m_Callbacks.m_Name = "ParkourDebug_EnforceMove";
+}
 bool g_IsParkourDebuggingActive = false;
 ParkourDebuggingPatch::ParkourDebuggingPatch()
     : m_GPH(GenericHooksInParkourFiltering::GetSingleton())
 {}
 void ParkourDebuggingPatch::OnBeforeActivate()
 {
+    m_GPH->Subscribe(m_Callbacks.m_Callbacks);
     m_Activator_GPHCreation = m_GPH->RequestGPHCreation();
     m_Activator_GPHSortAndSelect = m_GPH->RequestGPHSortAndSelect();
     g_IsParkourDebuggingActive = true;
@@ -1578,8 +1612,9 @@ void ParkourDebuggingPatch::OnBeforeActivate()
 }
 void ParkourDebuggingPatch::OnBeforeDeactivate()
 {
+    g_IsParkourDebuggingActive = false;
     m_Activator_GPHCreation.reset();
     m_Activator_GPHSortAndSelect.reset();
-    g_IsParkourDebuggingActive = false;
+    m_GPH->Unsubscribe(m_Callbacks.m_Callbacks);
     ImGui3D::CustomDraw::CustomDraw_Unsubscribe(g_ParkourVisualization);
 }

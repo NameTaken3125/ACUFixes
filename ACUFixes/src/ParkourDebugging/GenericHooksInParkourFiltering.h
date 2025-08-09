@@ -35,6 +35,7 @@ struct ParkourCallbacks
     AvailableParkourAction* (*ChooseAfterSorting_fnp)(void* userData, SmallArray<AvailableParkourAction*>& actions, AvailableParkourAction* selectedByGame) = nullptr;
     void* m_UserData = nullptr;
     float m_CallbackPriority;
+    const char* m_Name = nullptr;
 };
 class GenericHooksInParkourFiltering
 {

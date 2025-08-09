@@ -96,38 +96,6 @@ void ParkourCycleLogged::LogActionWhenReturningBestMatch(AvailableParkourAction&
     record.m_IsTheSelectedBestMatch = true;
     LogActionBestMatch_ConsoleAnd3D(bestMatchMove);
 }
-
-void ParkourCycleLogged::LogAndChangeFinalSelection(AvailableParkourAction*& selectionAfterGameAndCallbacks, SmallArray<AvailableParkourAction*>& allActionsSorted)
-{
-    if (m_IsDisabled) return;
-    auto& parkourLog = ParkourLog::GetSingleton();
-    if (parkourLog.m_EnforcedMove)
-    {
-        AvailableParkourAction* bestAction = nullptr;
-        float bestDistanceSqr = std::numeric_limits<float>::max();
-        float radiusSqr = parkourLog.m_EnforcedMove->m_Radius * parkourLog.m_EnforcedMove->m_Radius;
-        for (AvailableParkourAction* action : allActionsSorted)
-        {
-            if (action->GetEnumParkourAction() != parkourLog.m_EnforcedMove->m_ActionType) continue;
-            const Vector3f& pos = (Vector3f&)action->locationAnchorDest;
-            const float distToEnforcedCenterSqr = (pos - parkourLog.m_EnforcedMove->m_Position).lengthSq();
-            if (distToEnforcedCenterSqr > radiusSqr) continue;
-            const Vector3f& dir = (Vector3f&)action->directionDestFacingOut;
-            const float minDirectionAlignment = 0.8f;
-            if (parkourLog.m_EnforcedMove->m_DirectionFacingOut.dotProduct(dir) < minDirectionAlignment) continue;
-            if (distToEnforcedCenterSqr > bestDistanceSqr) continue;
-
-            bestDistanceSqr = distToEnforcedCenterSqr;
-            bestAction = action;
-        }
-        if (bestAction)
-        {
-            ParkourActionLogged& record = this->GetOrMakeRecordForAction(*bestAction);
-            selectionAfterGameAndCallbacks = bestAction;
-            record.m_HasBeenEnforced = true;
-        }
-    }
-}
 ParkourLog::ParkourLog()
     : m_DisabledDummyCycle(new ParkourCycleLogged())
 {
