@@ -10,6 +10,7 @@ struct ParkourDebuggingPatch : public AutoAssemblerCodeHolder_Base
 	virtual void OnBeforeActivate() override;
 	virtual void OnBeforeDeactivate() override;
 
+	std::shared_ptr<GenericHooksInParkourFiltering> m_GPH;
 	std::shared_ptr<SharedHookActivator> m_Activator_GPHCreation;
 	std::shared_ptr<SharedHookActivator> m_Activator_GPHSortAndSelect;
 };

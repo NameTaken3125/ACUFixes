@@ -124,18 +124,25 @@ int SortAndSelectBestMatchingAction_FullReplacement(
     std::shared_ptr<ParkourCycleLogged> currentCycle = GetCurrentLoggedParkourCycle();
     currentCycle->LogActionsBeforeFiltering(p_parkourSensorsResults);
 
-    ParkourCallbacks* parkourCallbacks = GenericHooksInParkourFiltering::GetSingleton().m_Callbacks;
-    if (parkourCallbacks)
+    auto FindIndexForAction = [&p_parkourSensorsResults](AvailableParkourAction& action) -> std::optional<int> {
+        auto foundIt = std::find(p_parkourSensorsResults.begin(), p_parkourSensorsResults.end(), &action);
+        if (foundIt != p_parkourSensorsResults.end())
+        {
+            return foundIt - p_parkourSensorsResults.begin();
+        }
+        return {};
+        };
+    auto& allParkourCallbacks = GenericHooksInParkourFiltering::GetSingleton()->m_Callbacks;
+    for (ParkourCallbacks* parkourCallbacks : allParkourCallbacks)
     {
-        AvailableParkourAction* selectedBeforeFiltering = parkourCallbacks->ChooseBeforeFiltering(p_parkourSensorsResults);
+        if (!parkourCallbacks->ChooseBeforeFiltering_fnp) continue;
+        AvailableParkourAction* selectedBeforeFiltering = parkourCallbacks->ChooseBeforeFiltering_fnp(parkourCallbacks->m_UserData, p_parkourSensorsResults);
         if (selectedBeforeFiltering)
         {
-            auto foundIt = std::find(p_parkourSensorsResults.begin(), p_parkourSensorsResults.end(), selectedBeforeFiltering);
-            if (foundIt != p_parkourSensorsResults.end())
+            if (std::optional<int> idx = FindIndexForAction(*selectedBeforeFiltering))
             {
                 currentCycle->LogActionWhenReturningBestMatch(*selectedBeforeFiltering);
-                int selectedIdx = foundIt - p_parkourSensorsResults.begin();
-                return selectedIdx;
+                return *idx;
             }
         }
     }
@@ -204,23 +211,17 @@ int SortAndSelectBestMatchingAction_FullReplacement(
         break;
     }
 
-    auto FindIndexForAction = [&p_parkourSensorsResults](AvailableParkourAction& action) -> std::optional<int> {
-        auto foundIt = std::find(p_parkourSensorsResults.begin(), p_parkourSensorsResults.end(), &action);
-        if (foundIt != p_parkourSensorsResults.end())
-        {
-            return foundIt - p_parkourSensorsResults.begin();
-        }
-        return {};
-        };
-    if (parkourCallbacks)
+    for (ParkourCallbacks* parkourCallbacks : allParkourCallbacks)
     {
+        if (!parkourCallbacks->ChooseAfterSorting_fnp) continue;
         AvailableParkourAction* selectedAfterSorting =
-            parkourCallbacks->ChooseAfterSorting(p_parkourSensorsResults, selectedBestMatch ? p_parkourSensorsResults[*selectedBestMatch] : nullptr);
+            parkourCallbacks->ChooseAfterSorting_fnp(parkourCallbacks->m_UserData, p_parkourSensorsResults, selectedBestMatch ? p_parkourSensorsResults[*selectedBestMatch] : nullptr);
         if (selectedAfterSorting)
         {
             if (std::optional<int> idx = FindIndexForAction(*selectedAfterSorting))
             {
                 selectedBestMatch = idx;
+                break;
             }
         }
     }
@@ -286,4 +287,59 @@ std::shared_ptr<SharedHookActivator> GenericHooksInParkourFiltering::RequestGPHS
     );
     m_Activator_GPHSortAndSelect = activator;
     return activator;
+}
+
+// This singleton is shared_ptr, inconsistent with the rest of the singletons I use
+// because I ran into the "deinitialization order fiasco".
+// If I just use "static GenericHooksInParkourFiltering" in the GetSingleton()
+// then the order of calling of constructors is as follows:
+//      std::optional g_MyHacks;
+//      ...
+//      g_MyHacks.emplace()
+//          ParkourActionsExtraProcessing::ctor()
+//              GenericHooksInParkourFiltering::GetSingleton() { static GenericHooksInParkourFiltering singleton; return singleton; }
+// which means that the order of completed construction is rearranged:
+//      std::optional g_MyHacks
+//      ...
+//      static GenericHooksInParkourFiltering singleton
+//      ParkourActionsExtraProcessing
+// And so the order of pushed "atexit"s is:
+//      std::optional g_MyHacks
+//      ...
+//      static GenericHooksInParkourFiltering singleton
+// And so the order of destructors is:
+//      static GenericHooksInParkourFiltering singleton::dtor()
+//          m_Callbacks::dtor()
+//      ...
+//      std::optional g_MyHacks::dtor()
+//          AutoAssemblerWrapper<ParkourActionsExtraProcessing>::dtor()
+//              AutoAssemblerWrapper<ParkourActionsExtraProcessing>::OnBeforeDeactivate()
+//                  ^^^---  And this is where GenericHooksInParkourFiltering::Unsubscribe() is called,
+//                          when the GenericHooksInParkourFiltering::singleton::m_Callbacks is already
+//                          destroyed, and its erase() throws an "vector erase iterator outside range" assertion and crashes.
+// So because of std::optional's delayed construction, the static GenericHooksInParkourFiltering
+// is guaranteed to be constructed later than g_MyHacks,
+// and automatic destruction order is guaranteed to be incorrect.
+// Basically, I need to keep the instance of GenericHooksInParkourFiltering alive for longer
+// than the global g_MyHacks
+// and the way I choose to do it here is shared_ptr.
+// It's not great, not foolproof, but it solves this crash.
+// I guess something better would be a dedicated initialization stage for the shared patches/features?
+std::shared_ptr<GenericHooksInParkourFiltering>& GenericHooksInParkourFiltering::GetSingleton()
+{
+    static auto singleton = std::make_shared<GenericHooksInParkourFiltering>();
+    return singleton;
+}
+void GenericHooksInParkourFiltering::Subscribe(ParkourCallbacks& callbacks)
+{
+    auto insertIt = m_Callbacks.begin();
+    for (; insertIt != m_Callbacks.end(); insertIt++)
+    {
+        if (callbacks.m_CallbackPriority < (*insertIt)->m_CallbackPriority) break;
+    }
+    m_Callbacks.insert(insertIt, &callbacks);
+}
+void GenericHooksInParkourFiltering::Unsubscribe(ParkourCallbacks& callbacks)
+{
+    std::erase(m_Callbacks, &callbacks);
 }

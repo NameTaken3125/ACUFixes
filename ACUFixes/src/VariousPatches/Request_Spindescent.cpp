@@ -324,6 +324,17 @@ void WhenStartingFailedWallrunCycle_ChangeFVTables(AllRegisters* params)
         climbFacadeFancyVTable = climbFacadeTester_FancyVTable_default;
     }
 }
+ParkourCallbacksForParkourHelpers::ParkourCallbacksForParkourHelpers()
+{
+    m_Callbacks.ChooseBeforeFiltering_fnp = [](void* userData, SmallArray<AvailableParkourAction*>& actions) -> AvailableParkourAction* {
+        return static_cast<ParkourCallbacksForParkourHelpers*>(userData)->ChooseBeforeFiltering(actions);
+        };
+    m_Callbacks.ChooseAfterSorting_fnp = [](void* userData, SmallArray<AvailableParkourAction*>& actions, AvailableParkourAction* selectedByGame) -> AvailableParkourAction* {
+        return static_cast<ParkourCallbacksForParkourHelpers*>(userData)->ChooseAfterSorting(actions, selectedByGame);
+        };
+    m_Callbacks.m_UserData = this;
+    m_Callbacks.m_CallbackPriority = 10.0f;
+}
 AvailableParkourAction* ParkourCallbacksForParkourHelpers::ChooseBeforeFiltering(SmallArray<AvailableParkourAction*>& actions)
 {
     auto [selectedSpindescent, _spindescentIdxBeforeSorting] = SelectBestMatchingMoveIdx_ExtraProcessing_CustomSelection_Spindescent(actions);
@@ -415,6 +426,7 @@ void WhenSettingRTCPTargetAngleForTheSelectedParkourAction_AdjustAngleWhenBackEj
         calculatedRTCPTargetAngle = -calculatedRTCPTargetAngle;
 }
 ParkourActionsExtraProcessing::ParkourActionsExtraProcessing()
+    : m_GPH(GenericHooksInParkourFiltering::GetSingleton())
 {
     m_ParkourCallbacksForParkourHelpers = std::make_unique<ParkourCallbacksForParkourHelpers>();
 
@@ -455,12 +467,11 @@ ParkourActionsExtraProcessing::ParkourActionsExtraProcessing()
 }
 void ParkourActionsExtraProcessing::OnBeforeActivate()
 {
-    auto& gph = GenericHooksInParkourFiltering::GetSingleton();
-    gph.m_Callbacks = m_ParkourCallbacksForParkourHelpers.get();
-    m_Activator_GPHSortAndSelect = gph.RequestGPHSortAndSelect();
+    m_GPH->Subscribe(m_ParkourCallbacksForParkourHelpers->m_Callbacks);
+    m_Activator_GPHSortAndSelect = m_GPH->RequestGPHSortAndSelect();
 }
 void ParkourActionsExtraProcessing::OnBeforeDeactivate()
 {
-    GenericHooksInParkourFiltering::GetSingleton().m_Callbacks = nullptr;
     m_Activator_GPHSortAndSelect.reset();
+    m_GPH->Unsubscribe(m_ParkourCallbacksForParkourHelpers->m_Callbacks);
 }

@@ -1566,11 +1566,13 @@ void ParkourDebugWindow::Draw()
     }
 }
 bool g_IsParkourDebuggingActive = false;
-ParkourDebuggingPatch::ParkourDebuggingPatch() {}
+ParkourDebuggingPatch::ParkourDebuggingPatch()
+    : m_GPH(GenericHooksInParkourFiltering::GetSingleton())
+{}
 void ParkourDebuggingPatch::OnBeforeActivate()
 {
-    m_Activator_GPHCreation = GenericHooksInParkourFiltering::GetSingleton().RequestGPHCreation();
-    m_Activator_GPHSortAndSelect = GenericHooksInParkourFiltering::GetSingleton().RequestGPHSortAndSelect();
+    m_Activator_GPHCreation = m_GPH->RequestGPHCreation();
+    m_Activator_GPHSortAndSelect = m_GPH->RequestGPHSortAndSelect();
     g_IsParkourDebuggingActive = true;
     ImGui3D::CustomDraw::CustomDraw_Subscribe(g_ParkourVisualization);
 }

@@ -29,12 +29,12 @@ struct SharedHookActivator
 };
 
 class AvailableParkourAction;
-class ParkourCallbacks
+struct ParkourCallbacks
 {
-public:
-    virtual ~ParkourCallbacks() {}
-    virtual AvailableParkourAction* ChooseBeforeFiltering(SmallArray<AvailableParkourAction*>& actions) { return nullptr; }
-    virtual AvailableParkourAction* ChooseAfterSorting(SmallArray<AvailableParkourAction*>& actions, AvailableParkourAction* selectedByGame) { return nullptr; }
+    AvailableParkourAction* (*ChooseBeforeFiltering_fnp)(void* userData, SmallArray<AvailableParkourAction*>& actions) = nullptr;
+    AvailableParkourAction* (*ChooseAfterSorting_fnp)(void* userData, SmallArray<AvailableParkourAction*>& actions, AvailableParkourAction* selectedByGame) = nullptr;
+    void* m_UserData = nullptr;
+    float m_CallbackPriority;
 };
 class GenericHooksInParkourFiltering
 {
@@ -42,11 +42,13 @@ public:
     AutoAssembleWrapper<GPH_Creation> gph_creation;
     AutoAssembleWrapper<GPH_SortAndSelect> gph_sortAndSelect;
 
-    static GenericHooksInParkourFiltering& GetSingleton() { static GenericHooksInParkourFiltering singleton; return singleton; }
+    static std::shared_ptr<GenericHooksInParkourFiltering>& GetSingleton();
     std::shared_ptr<SharedHookActivator> RequestGPHCreation();
     std::shared_ptr<SharedHookActivator> RequestGPHSortAndSelect();
 
-    ParkourCallbacks* m_Callbacks = nullptr;
+    void Subscribe(ParkourCallbacks& callbacks);
+    void Unsubscribe(ParkourCallbacks& callbacks);
+    std::vector<ParkourCallbacks*> m_Callbacks;
 
 private:
     std::weak_ptr<SharedHookActivator> m_Activator_GPHCreation;
