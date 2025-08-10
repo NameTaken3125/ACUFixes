@@ -110,7 +110,16 @@ ParkourActionLogged& ParkourCycleLogged::MakeRecordForAction(AvailableParkourAct
 }
 bool ParkourLog::EnforcedMove::IsMatchingAction(AvailableParkourAction& action)
 {
-    return m_Position && m_ActionType == action.GetEnumParkourAction();
+    if (!m_Position) return false;
+    if (m_ActionType != action.GetEnumParkourAction()) return false;
+    const Vector3f& pos = (Vector3f&)action.locationAnchorDest;
+    const float radiusSqr = m_Radius * m_Radius;
+    const float distToEnforcedCenterSqr = (pos - *m_Position).lengthSq();
+    if (distToEnforcedCenterSqr > radiusSqr) return false;
+    const Vector3f& dir = (Vector3f&)action.directionDestFacingOut;
+    const float minDirectionAlignment = 0.8f;
+    if (m_DirectionFacingOut.dotProduct(dir) < minDirectionAlignment) return false;
+    return true;
 }
 AvailableParkourAction* ParkourLog::EnforcedMove::FindMatchingAction(SmallArray<AvailableParkourAction*>& allActionsSorted)
 {

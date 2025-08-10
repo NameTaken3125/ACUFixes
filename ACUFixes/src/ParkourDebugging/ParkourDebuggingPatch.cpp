@@ -837,6 +837,21 @@ static auto ImGuiEditDirectionAsAngles(Vector3f& dir, auto&& callableOnAngles) {
     dir = GetForwardDirFromAngles(dirAsAngles);
     return result;
 }
+#include "ACU/Human.h"
+DEFINE_GAME_FUNCTION(Human__Dispatch_HSTE_ResetBehavior, 0x14131A530, char, __fastcall, (Human* a1));
+static void ResetPlayer()
+{
+    if (auto* human = Human::GetForPlayer())
+        Human__Dispatch_HSTE_ResetBehavior(human);
+}
+static void TeleportPlayer(const Vector3f& pos)
+{
+    if (auto* player = ACU::GetPlayer())
+    {
+        player->GetPosition() = pos;
+        ResetPlayer();
+    }
+}
 void ParkourDebugWindow::DrawEnforceTab()
 {
     if (!ImGui::IsKeyDown(ImGuiKey_ModAlt))
@@ -856,6 +871,21 @@ void ParkourDebugWindow::DrawEnforceTab()
             parkourLog.m_EnforcedMove.m_Position.reset();
             parkourLog.m_EnforcedMove.m_ActionType.reset();
         }
+        ImGui::SameLine();
+        if (ImGui::Button("Get unstuck"))
+        {
+            if (Entity* player = ACU::GetPlayer())
+            {
+                player->GetPosition().z += 3.0f;
+                ResetPlayer();
+            }
+        }
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip(
+                "Messing with the parkour system might get you stuck in the ground, in walls etc.\n"
+                "Press to attempt to reset the player character and teleport 3 meter above.\n"
+                "Might crash."
+            );
     }
     std::optional<Vector3f> currentFramePos = parkourLog.m_EnforcedMove.m_Position;
     Vector3f currentFrameDir = parkourLog.m_EnforcedMove.m_DirectionFacingOut;
