@@ -41,6 +41,7 @@ void VisualizeDirectionFromClipboard()
     g_VisualizedDebugDirection = ParseVector3fFromClipboard().value_or(g_VisualizedDebugDirection);
 }
 void DrawHacksControls();
+void WriteAppliedHacksStateToConfig();
 void TypeInfoSystemTests();
 
 
@@ -82,6 +83,11 @@ void ImGuiLayer_WhenMenuIsOpen()
             }
             if (ImGuiCTX::Tab _extraoptions{ "Extra" })
             {
+                if (ImGui::Button("Save config file"))
+                {
+                    WriteAppliedHacksStateToConfig();
+                    MainConfig::WriteToFile();
+                }
                 DrawModMenuControls();
                 ImGui::Separator();
                 if (ImGui::Button("Unload this plugin"))

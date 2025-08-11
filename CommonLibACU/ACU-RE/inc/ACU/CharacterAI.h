@@ -17,7 +17,8 @@ public:
     void* CLPlayerDeath_; //0x00E8
     char pad_00F0[40]; //0x00F0
     BhvAssassin* bhvAssassin; //0x0118
-    char pad_0120[80]; //0x0120
+    Entity* entity; //0x0120
+    char pad_0128[72]; //0x0128
 }; //Size: 0x0170
 assert_sizeof(AbstractEntityAI, 0x0170);
 

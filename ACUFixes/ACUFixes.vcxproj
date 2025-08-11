@@ -222,6 +222,7 @@ if exist "$(ProjectDir)copy_output_to_directory.txt" (
     <ClCompile Include="src\ParkourDebugging\LoggingTheHumanStates.cpp" />
     <ClCompile Include="src\ParkourDebugging\ParkourDebuggingPatch.cpp" />
     <ClCompile Include="src\ParkourDebugging\ParkourLog.cpp" />
+    <ClCompile Include="src\VariousPatches\Cheat_Ammo.cpp" />
     <ClCompile Include="src\VariousPatches\Cheat_WeatherControls.cpp" />
     <ClCompile Include="src\AnimationTools\DumpAnimationGraph.cpp" />
     <ClCompile Include="src\VariousPatches\Hack_AllowCustomizeEquipment.cpp" />

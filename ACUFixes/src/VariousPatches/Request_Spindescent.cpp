@@ -7,6 +7,8 @@
 
 #include "ParkourDebugging/AvailableParkourAction.h"
 
+#include "MyLog.h"
+
 
 class Entity;
 class EntityGroup;

@@ -464,7 +464,6 @@ public:
                 ImGui::DrawEnumPicker("Dive helper hotkey", g_Config.personalRequests->parkourHelper->diveHelper->hotkey.get(), ImGuiComboFlags_HeightLarge);
                 ImGui::Checkbox("Allow wall-eject-to-hang", &g_Config.personalRequests->parkourHelper->diveHelper->allowWallEjectToHang.get());
                 {
-                    ImGui::SameLine();
                     static ImGuiTextBuffer infoAboutWallEjectToHang = []() {
                         ImGuiTextBuffer buf;
                         buf.appendf(
@@ -475,7 +474,7 @@ public:
                             "Credit for discovery to TheManWithNothing\n"
                             "   https://www.youtube.com/@TheManWithNothing\n"
                             "   https://www.youtube.com/watch?v=SjgeA2mUs30\n"
-                            "(Click to copy to clipboard)\n"
+                            "(Right click to copy to clipboard)\n"
                             "Fun fact for any modders reading this:\n"
                             "Simply NOOPing 4 bytes at 0x14015423F\n"
                             "would already give an almost-functional sidehop-to-hang.\n"
@@ -483,8 +482,9 @@ public:
                         );
                         return buf;
                         }();
-                    ImGui::HelpMarker(infoAboutWallEjectToHang.c_str());
-                    if (ImGui::IsItemClicked())
+                    if (ImGui::IsItemHovered())
+                        ImGui::SetTooltip(infoAboutWallEjectToHang.c_str());
+                    if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
                         ImGui::SetClipboardText(infoAboutWallEjectToHang.c_str());
                 }
             }
@@ -566,6 +566,13 @@ public:
     AutoAssembleWrapper<FreezeFOV> freezeFOV;
 };
 std::optional<MyHacks> g_MyHacks;
+void WriteAppliedHacksStateToConfig()
+{
+    if (g_MyHacks)
+    {
+        g_MyHacks->WriteConfig(g_Config);
+    }
+}
 void DrawHacksControls()
 {
     if (g_MyHacks)

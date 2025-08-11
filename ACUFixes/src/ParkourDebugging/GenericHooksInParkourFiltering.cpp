@@ -15,8 +15,8 @@ class Entity;
 
 DEFINE_GAME_FUNCTION(AvailableParkourAction__FinalFilter1, 0x1401D4DE0, bool, __fastcall, (AvailableParkourAction* p_parkourAction, __m128* a2, uint64 a3, Entity* p_playerEntity));
 DEFINE_GAME_FUNCTION(AvailableParkourAction__FinalFilter2, 0x1401D3000, bool, __fastcall, (AvailableParkourAction* p_parkourAction, Entity* p_playerEntity, __int64 a3));
-DEFINE_GAME_FUNCTION(ConstructParkourAction_A, 0x1401CC990, AvailableParkourAction*, __fastcall, (EnumParkourAction p_actionEnum, __m128* a2, __m128* a3, __m128* p_movementVecWorld_mb, int a5, char a6, __int64 a7, __int64 a8));
-DEFINE_GAME_FUNCTION(ConstructParkourAction_B, 0x1401D1FC0, AvailableParkourAction*, __fastcall, (EnumParkourAction p_actionEnum, __m128* a2, __m128* a3, __m128* p_movementVecWorld_mb, int a5, char a6, __int64 a7, __int64 a8, Entity* p_player, uint64 p_currentLedge_mb));
+DEFINE_GAME_FUNCTION(ConstructParkourAction_A, 0x1401CC990, AvailableParkourAction*, __fastcall, (EnumParkourAction p_actionEnum, __m128* a2, __m128* a3, __m128* p_movementVecWorld_mb, int a5, char a6, __int64 a7, AvailableParkourAction* p_previousAction_mb));
+DEFINE_GAME_FUNCTION(ConstructParkourAction_B, 0x1401D1FC0, AvailableParkourAction*, __fastcall, (EnumParkourAction p_actionEnum, __m128* a2, __m128* a3, __m128* p_movementVecWorld_mb, int a5, char a6, __int64 a7, __int64 a8, Entity* p_player, AvailableParkourAction* p_previousAction_mb));
 DEFINE_GAME_FUNCTION(AvailableParkourAction__InitializePlayerRef, 0x14015A570, void, __fastcall, (PlayerRefInParkourAction* p_playerRefOut, Entity* a2));
 // Used for a SmallArray of plain types, where constructors/destructors don't matter.
 DEFINE_GAME_FUNCTION(SmallArray_POD__RemoveGeneric, 0x142725F00, void, __fastcall, (void* smallArray, int p_idx, unsigned int p_elemSize));
@@ -48,12 +48,12 @@ bool CreateParkourActionAndPerformInitialTestIfFits_A_FullReplacement(
     __m128* p_directionOfMovementInputWorldSpace,
     float a5, int a6, char a7, CollisionProbeForParkour_mb* a8,
     Entity* p_player,
-    uint64 p_currentLedge_mb,
+    AvailableParkourAction* p_previousAction_mb,
     AvailableParkourAction** const p_newAction_out,
     float a12,
     float p_epsilon_mb)
 {
-    AvailableParkourAction* newAction = ConstructParkourAction_A(actionType, p_locationOfOrigin, a3, p_directionOfMovementInputWorldSpace, a6, a7, (uint64)a8, p_currentLedge_mb);
+    AvailableParkourAction* newAction = ConstructParkourAction_A(actionType, p_locationOfOrigin, a3, p_directionOfMovementInputWorldSpace, a6, a7, (uint64)a8, p_previousAction_mb);
     *p_newAction_out = newAction;
     if (!newAction) return false;
     if (p_player)
@@ -68,7 +68,7 @@ bool CreateParkourActionAndPerformInitialTestIfFits_A_FullReplacement(
         a6,
         (uint64)a8,
         p_player,
-        p_currentLedge_mb);
+        p_previousAction_mb);
     std::shared_ptr<ParkourCycleLogged> currentCycle = GetCurrentLoggedParkourCycle();
     bool isDiscarded = !isActionFits;
     currentCycle->LogActionInitialCreation(*newAction, isDiscarded);
@@ -90,12 +90,12 @@ bool CreateParkourActionAndPerformInitialTestIfFits_B_FullReplacement(
     __m128* p_directionOfMovementInputWorldSpace,
     float a5, int a6, char a7, uint64 a8, uint64 a9,
     Entity* p_player,
-    uint64 p_currentLedge_mb,
+    AvailableParkourAction* p_previousAction_mb,
     AvailableParkourAction** const p_newAction_out,
     float a13,
     float p_epsilon_mb)
 {
-    AvailableParkourAction* newAction = ConstructParkourAction_B(actionType, p_locationOfOrigin, a3, p_directionOfMovementInputWorldSpace, a6, a7, a8, a9, p_player, p_currentLedge_mb);
+    AvailableParkourAction* newAction = ConstructParkourAction_B(actionType, p_locationOfOrigin, a3, p_directionOfMovementInputWorldSpace, a6, a7, a8, a9, p_player, p_previousAction_mb);
     *p_newAction_out = newAction;
     if (!newAction) return false;
     if (p_player)
@@ -110,7 +110,7 @@ bool CreateParkourActionAndPerformInitialTestIfFits_B_FullReplacement(
         a6,
         a9,
         p_player,
-        p_currentLedge_mb);
+        p_previousAction_mb);
     std::shared_ptr<ParkourCycleLogged> currentCycle = GetCurrentLoggedParkourCycle();
     bool isDiscarded = !isActionFits;
     currentCycle->LogActionInitialCreation(*newAction, isDiscarded);
