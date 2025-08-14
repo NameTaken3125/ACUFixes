@@ -29,7 +29,12 @@ class EntityDescriptor
 public:
     enum class EntityDescriptorType : uint32
     {
-        EntityDescriptor_Main = 1,
+        EntityDescriptor_None = 0x00,
+        EntityDescriptor_Main = 0x01,
+        EntityDescriptor_NPC = 0x02,
+        EntityDescriptor_Object = 0x03,
+        EntityDescriptor_FarObject = 0x04,
+        EntityDescriptor_COUNT = 0x05,
     };
 
     EntityDescriptorType DescriptorType : 3;
@@ -45,9 +50,42 @@ public:
 };
 const int x = sizeof(EntityDescriptor);
 assert_sizeof(EntityDescriptor, 4);
-using bool_64 = uint64;
 struct EntityFlags
 {
+    enum class EntityCategory : uint64
+    {
+        Unknown = 0x00,
+        EntityCharacter = 0x01,
+        EntitySmallObject = 0x02,
+        EntityBigObject = 0x03,
+        EntityInvisibleObject = 0x04,
+        EntitySmallBuilding = 0x05,
+        EntityBigBuilding = 0x06,
+        EntityLandmark = 0x07,
+        EntityGround = 0x08,
+        EntityOmnipresent = 0x09,
+        EntityDebug1 = 0x0A,
+        EntityObsolete1 = 0x0B,
+        EntityAutoFake = 0x0C,
+        EntityLargeMeshChunk = 0x0D,
+        EntityMissionShared = 0x0E,
+        EntityWorldOnly = 0x0F,
+        EntityMissionOnly = 0x10,
+        EntityTemporaryHelpers = 0x11,
+        EntitySnow = 0x12,
+        EntityToolModeOnly = 0x13,
+        EntityUIWorld = 0x14,
+        EntityUIHUD = 0x15,
+        EntityInterior = 0x16,
+        EntityUIWorldTop = 0x17,
+        EntityHBInvisible = 0x18,
+        EntityUIMinimap = 0x19,
+        EntityUIWorldmap = 0x1A,
+        EntityUIZone = 0x1B,
+        EntityUIHUDMask = 0x1C,
+    };
+    using bool_64 = uint64;
+
     bool_64 SkipGroupMatrixUpdate : 1;
     bool_64 IsGraphicsUnitTestCameraReferencePosition : 1;
     uint64 bits_2_5 : (6 - 2);
@@ -73,7 +111,7 @@ struct EntityFlags
 
     uint64 bits_35_42 : (43 - 35);
 
-    uint64 EntityCategory : 5;
+    EntityCategory EntityCategory : 5;
     bool_64 UserMask1 : 1;
     bool_64 UserMask2 : 1;
     bool_64 UserMask3 : 1;

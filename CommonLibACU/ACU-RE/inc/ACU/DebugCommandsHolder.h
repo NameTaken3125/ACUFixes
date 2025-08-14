@@ -21,7 +21,7 @@ class Clock;
 class DebugCommand
 {
 public:
-    using CommandExecute_t = void(__fastcall*)(int a1, DebugCommandsHolder* a2);
+    using CommandExecute_t = void(__fastcall*)(int a1, DebugCommandsHolder* a2, char** strOut);
 
     char pad_0000[8]; //0x0000
     uint64 creationTimestamp; //0x0008
@@ -44,6 +44,8 @@ public:
     InputContainer* mainInputContainer; //0x0040
     char pad_0048[1924]; //0x0048
     SmallArray<DebugCommand*> arrDebugCommands; //0x07CC
-    char pad_07D8[136]; //0x07D8
+    char pad_07D8[8]; //0x07D8
+    Timer timerWithWorldClock; //0x07E0
+    char pad_0808[88]; //0x0808
 }; //Size: 0x0860
 assert_sizeof(DebugCommandsHolder, 0x860);
