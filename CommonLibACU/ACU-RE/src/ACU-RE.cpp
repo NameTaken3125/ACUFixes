@@ -81,6 +81,7 @@
 #include "ACU/ReactionRadiusData.h"
 
 #include "ACU/Event.h"
+#include "ACU/DangerEvent.h"
 #include "ACU/WitnessEvent.h"
 #include "ACU/AlertedParams.h"
 #include "ACU/EventListener.h"

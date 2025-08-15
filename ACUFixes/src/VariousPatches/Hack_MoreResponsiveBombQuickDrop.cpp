@@ -283,6 +283,15 @@ public:
     ReactionRadiusData_Database() = default;
     static ReactionRadiusData_Database& GetSingleton() { static ReactionRadiusData_Database inst; return inst; }
 };
+
+constexpr DangerEvent::SubType witnessEventResponseHash_StartAimWristbow = DangerEvent::SubType::SubType_SeePhantomBladeAimAt;
+constexpr DangerEvent::SubType witnessEventResponseHash_FirePhantomBladeSpecifically = DangerEvent::SubType::SubType_IconicBladeImpact;
+constexpr DangerEvent::SubType witnessEventResponseHash_StartAimGun = DangerEvent::SubType::SubType_SeeGunAimAt;
+constexpr DangerEvent::SubType witnessEventResponseHash_PlayerCrouching = DangerEvent::SubType::SubType_SeePlayerSneaking;
+constexpr DangerEvent::SubType witnessEventResponseHash_WeaponDrawnMeleeOrGun = DangerEvent::SubType::SubType_SeeArmedAssassin;
+constexpr DangerEvent::SubType witnessEventResponseHash_PlayerHitSomeoneWithWristbow_mb = DangerEvent::SubType::SubType_SeePhantomBladeFatal;
+constexpr DangerEvent::SubType witnessEventResponseHash_BombQuickdropped1 = DangerEvent::SubType::SubType_ThrowingProjectile;
+constexpr DangerEvent::SubType witnessEventResponseHash_BombQuickdropped2 = DangerEvent::SubType::SubType_ThrowingSmokeBomb;
 void FixReactionRadiusDatas()
 {
     auto& reactionRadiusMap = ReactionManager::GetSingleton()->hashmapReactionRadiusData;
@@ -299,8 +308,8 @@ void FixReactionRadiusDatas()
         // resulting in a detection, which in turn forces the assassination to fail.
         // Here's a very simplistic fix: I just reduce the allowed radius for this reaction.
         // Side effects of this change are TBD.
-        ReactionRadiusData** radiusData_bombQuickdropped1 = reactionRadiusMap.Get(ReactionHash_ReactToWhat::BombQuickdropped1);
-        ReactionRadiusData** radiusData_bombQuickdropped2 = reactionRadiusMap.Get(ReactionHash_ReactToWhat::BombQuickdropped2);
+        ReactionRadiusData** radiusData_bombQuickdropped1 = reactionRadiusMap.Get(witnessEventResponseHash_BombQuickdropped1);
+        ReactionRadiusData** radiusData_bombQuickdropped2 = reactionRadiusMap.Get(witnessEventResponseHash_BombQuickdropped2);
         if (
             radiusData_bombQuickdropped1
             && *radiusData_bombQuickdropped1
@@ -353,8 +362,8 @@ void FixReactionRadiusDatas()
         //   from the brute immediately, but now the brute might merely notice something is wrong with the gunner,
         //   and _then_ start looking more closely at you)
         // - Detection can still immediately trigger from the guard if _he_ specifically is shot.
-        ReactionRadiusData** radiusData_aimingWristbow = reactionRadiusMap.Get(ReactionHash_ReactToWhat::StartAimWristbow);
-        ReactionRadiusData** radiusData_hitSomeoneWithWristbow = reactionRadiusMap.Get(ReactionHash_ReactToWhat::PlayerHitSomeoneWithWristbow_mb);
+        ReactionRadiusData** radiusData_aimingWristbow = reactionRadiusMap.Get(witnessEventResponseHash_StartAimWristbow);
+        ReactionRadiusData** radiusData_hitSomeoneWithWristbow = reactionRadiusMap.Get(witnessEventResponseHash_PlayerHitSomeoneWithWristbow_mb);
         if (
             radiusData_aimingWristbow
             && *radiusData_aimingWristbow

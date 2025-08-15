@@ -2,6 +2,7 @@
 
 #include "ManagedObject.h"
 #include "SharedPtr.h"
+class Entity;
 
 class Event : public Object
 {

@@ -55,15 +55,15 @@ void WhenCheckingIfLineOfSightIsNotToNPCsOcciput_AllowNPCsSeeingFromOutTheBackOf
         *(byte*)(params->r15_ + 0x30) &= (~1);
     }
 }
-constexpr uint32 witnessEventResponseHash_asIfYouUnsheathedMeleeWeapon = 0x8315F5D1;
-constexpr uint32 witnessEventResponseHash_triggersMostGuardsIntoCombat = 0xDDAEB4AF;
-constexpr uint32 witnessEventResponseHash_triggersEveryoneIntoCombat_mb = 0xC3FCE2A2;
-constexpr uint32 witnessEventResponseHash_turnsGuardsHeads = 0xF5D8F6B2;
-constexpr uint32 witnessEventResponseHash_seenSmokeBomb = 0xAFD9D1B6;
-constexpr uint32 witnessEventResponseHash_seenSomethingSpooky = 0xD420939B;
-constexpr uint32 witnessEventResponseHash_likeWhenYouSprintAtSomeoneAndTheyTurnAround = 0xFECD3BBD;
-constexpr uint32 witnessEventResponseHash_seenSomethingAmusing = 0x26DBE0D0;
-constexpr uint32 witnessEventResponseHash_seenSomeoneToScoldAndWaveArmsAt = 0x6167CCC9;
+constexpr DangerEvent::SubType witnessEventResponseHash_asIfYouUnsheathedMeleeWeapon = DangerEvent::SubType::SubType_SeeArmedAssassin;
+constexpr DangerEvent::SubType witnessEventResponseHash_triggersMostGuardsIntoCombat = DangerEvent::SubType::SubType_SeeArmedAssassinClose;
+constexpr DangerEvent::SubType witnessEventResponseHash_triggersEveryoneIntoCombat_mb = DangerEvent::SubType::SubType_SeePlayerInAwareState;
+constexpr DangerEvent::SubType witnessEventResponseHash_turnsGuardsHeads = DangerEvent::SubType::SubType_SeePlayer;
+constexpr DangerEvent::SubType witnessEventResponseHash_seenSmokeBomb = DangerEvent::SubType::SubType_SmokeBombExplosion;
+constexpr DangerEvent::SubType witnessEventResponseHash_seenSomethingSpooky = DangerEvent::SubType::SubType_SmokeBombArround;
+constexpr DangerEvent::SubType witnessEventResponseHash_likeWhenYouSprintAtSomeoneAndTheyTurnAround = DangerEvent::SubType::SubType_SeePlayerInWater;
+constexpr DangerEvent::SubType witnessEventResponseHash_seenSomethingAmusing = DangerEvent::SubType::SubType_MoneyGrabbed;
+constexpr DangerEvent::SubType witnessEventResponseHash_seenSomeoneToScoldAndWaveArmsAt = DangerEvent::SubType::SubType_SeePlayerFallingInWater;
 
 void OnReactionHandlerRespondsToWitnessEvent_ChangeWitnessEventToAlertGuards(AllRegisters* params)
 {
