@@ -1326,7 +1326,7 @@ MySpoofAnimation::MySpoofAnimation(uint64 handle)
         {
             Bone* bone = skel->Bones[i];
             MyAnimTrackdata<MyKeyframe_FullblastQuaternion_0x1_u16> rotation{
-                bone->BoneID_boneNameHash,
+                bone->BoneID,
                 {
                     MyKeyframe_FullblastQuaternion_0x1_u16{0x00,bone->LocalRotation },
                     MyKeyframe_FullblastQuaternion_0x1_u16{0x30,bone->LocalRotation },
@@ -1337,7 +1337,7 @@ MySpoofAnimation::MySpoofAnimation(uint64 handle)
                 }
             };
             //MyAnimTrackdata<MyKeyframe_Quaternion> rotation{
-            //    bone->BoneID_boneNameHash,
+            //    bone->BoneID,
             //    {
             //        MyKeyframe_Quaternion{0x00,bone->LocalRotation },
             //        MyKeyframe_Quaternion{0x30,bone->LocalRotation },
@@ -1349,7 +1349,7 @@ MySpoofAnimation::MySpoofAnimation(uint64 handle)
             //};
             SpoofAnimationRawTrackData(thisAnim, rotation);
             MyAnimTrackdata<MyKeyframe_Translation> translation{
-                bone->BoneID_boneNameHash,
+                bone->BoneID,
                 {
                     MyKeyframe_Translation{0x00,(Vector3f&)bone->LocalPosition },
                     MyKeyframe_Translation{0x30,(Vector3f&)bone->LocalPosition },
@@ -1382,20 +1382,20 @@ std::optional<ACU::StrongRef<Animation>> CreatePosingAnimation(const std::vector
     {
         for (Bone* bone : skel->Bones)
         {
-            if (bone->BoneID_boneNameHash == boneID_Reference)
+            if (bone->BoneID == boneID_Reference)
             {
                 continue;
             }
             const bool isThisBoneIDTrackAlreadyAdded = std::find_if(newAnimTrackData->AnimTrackDataMapping_.begin(), newAnimTrackData->AnimTrackDataMapping_.end(), [bone](AnimTrackDataMapping& tdMapp)
                 {
-                    return tdMapp.TrackID == bone->BoneID_boneNameHash;
+                    return tdMapp.TrackID == bone->BoneID;
                 }) != newAnimTrackData->AnimTrackDataMapping_.end();
             if (isThisBoneIDTrackAlreadyAdded)
             {
                 continue;
             }
             MyAnimTrackdata<MyKeyframe_FullblastQuaternion_0x1_u16> rotation{
-                bone->BoneID_boneNameHash,
+                bone->BoneID,
                 {
                     MyKeyframe_FullblastQuaternion_0x1_u16{0x00,bone->LocalRotation },
                     MyKeyframe_FullblastQuaternion_0x1_u16{0x30,bone->LocalRotation },
@@ -1406,7 +1406,7 @@ std::optional<ACU::StrongRef<Animation>> CreatePosingAnimation(const std::vector
                 }
             };
             MyAnimTrackdata<MyKeyframe_Translation> translation{
-                bone->BoneID_boneNameHash,
+                bone->BoneID,
                 {
                     MyKeyframe_Translation{0x00,(Vector3f&)bone->LocalPosition },
                     MyKeyframe_Translation{0x30,(Vector3f&)bone->LocalPosition },

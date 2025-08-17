@@ -167,17 +167,26 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="inc\ACU\AbstractEntityAI.h" />
+    <ClInclude Include="inc\ACU\AIComponent.h" />
     <ClInclude Include="inc\ACU\AnimTrackEvent.h" />
     <ClInclude Include="inc\ACU\AtomIkPathExtension.h" />
     <ClInclude Include="inc\ACU\AtomPoseParamExtension.h" />
     <ClInclude Include="inc\ACU\AtomStateExtension.h" />
     <ClInclude Include="inc\ACU\AvatarCustomizationManager.h" />
+    <ClInclude Include="inc\ACU\BallisticProjectileSettings.h" />
     <ClInclude Include="inc\ACU\DangerEvent.h" />
+    <ClInclude Include="inc\ACU\ELAbstract.h" />
     <ClInclude Include="inc\ACU\FX.h" />
     <ClInclude Include="inc\ACU\FXElement.h" />
     <ClInclude Include="inc\ACU\FXProperty.h" />
     <ClInclude Include="inc\ACU\FXSpawnedEntity.h" />
     <ClInclude Include="inc\ACU\HomePage.h" />
+    <ClInclude Include="inc\ACU\HUDModules.h" />
+    <ClInclude Include="inc\ACU\HUDVisibilityManagerGame.h" />
+    <ClInclude Include="inc\ACU\NetComponent.h" />
+    <ClInclude Include="inc\ACU\OLAbstract.h" />
+    <ClInclude Include="inc\ACU\OLBallisticProjectile.h" />
     <ClInclude Include="inc\ACU\PhysicComponent.h" />
     <ClInclude Include="inc\ACU\PropertyPathNode.h" />
     <ClInclude Include="inc\ACU\RagdollBoneData.h" />
@@ -186,6 +195,8 @@
     <ClInclude Include="inc\ACU\RagdollNew.h" />
     <ClInclude Include="inc\ACU\ScrollingListComponent.h" />
     <ClInclude Include="inc\ACU\UIEventReaction.h" />
+    <ClInclude Include="inc\ACU\UIHUDModeEntry.h" />
+    <ClInclude Include="inc\ACU\UniverseComponent.h" />
     <ClInclude Include="inc\Handles\Handles.h" />
     <ClInclude Include="inc\ACU\LoadingThread.h" />
     <ClInclude Include="inc\ACU\ManagedPtrs\AllManagedObjects.h" />
@@ -387,6 +398,7 @@
     <ClCompile Include="src\Entity.cpp" />
     <ClCompile Include="src\ForgeManager.cpp" />
     <ClCompile Include="src\Handles\Handles.cpp" />
+    <ClCompile Include="src\HomePage.cpp" />
     <ClCompile Include="src\Human.cpp" />
     <ClCompile Include="src\HumanStatesHolder.cpp" />
     <ClCompile Include="src\LocalizationManager.cpp" />

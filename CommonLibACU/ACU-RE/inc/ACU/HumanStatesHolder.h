@@ -282,7 +282,13 @@ public:
     Timer timerToLeaveCoverByMovingAway; //0x04D8
     char pad_0500[2100]; //0x0500
     EquipmentType ballisticAimingCurrentEquipmentType; //0x0D34
-    char pad_0D38[56]; //0x0D38
+    SharedPtrNew<BallisticProjectileSettings>* shared_ballProjSett_SmokeBomb; //0x0D38
+    SharedPtrNew<BallisticProjectileSettings>* shared_ballProjSett_MoneyPouch; //0x0D40
+    SharedPtrNew<BallisticProjectileSettings>* shared_ballProjSett_CherryBomb; //0x0D48
+    SharedPtrNew<BallisticProjectileSettings>* shared_ballProjSett_PoisonBomb; //0x0D50
+    SharedPtrNew<BallisticProjectileSettings>* shared_ballProjSett_Default; //0x0D58
+    SharedPtrNew<BallisticProjectileSettings>* shared_ballProjSett_equip0x19; //0x0D60
+    SharedPtrNew<BallisticProjectileSettings>* shared_ballProjSett_GuillotineGun; //0x0D68
     BallisticProjectileAimingProcess aimingSmokeBomb; //0x0D70
     BallisticProjectileAimingProcess aimingMoneyPouch; //0x0F70
     BallisticProjectileAimingProcess aimingCherryBomb; //0x1170

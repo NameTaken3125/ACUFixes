@@ -203,6 +203,17 @@
     <ClInclude Include="inc\ACU\AtomIkPathExtension.h" />
     <ClInclude Include="inc\ACU\AtomPoseParamExtension.h" />
     <ClInclude Include="inc\ACU\DangerEvent.h" />
+    <ClInclude Include="inc\ACU\HUDVisibilityManagerGame.h" />
+    <ClInclude Include="inc\ACU\UniverseComponent.h" />
+    <ClInclude Include="inc\ACU\UIHUDModeEntry.h" />
+    <ClInclude Include="inc\ACU\HUDModules.h" />
+    <ClInclude Include="inc\ACU\NetComponent.h" />
+    <ClInclude Include="inc\ACU\AIComponent.h" />
+    <ClInclude Include="inc\ACU\AbstractEntityAI.h" />
+    <ClInclude Include="inc\ACU\OLBallisticProjectile.h" />
+    <ClInclude Include="inc\ACU\ELAbstract.h" />
+    <ClInclude Include="inc\ACU\OLAbstract.h" />
+    <ClInclude Include="inc\ACU\BallisticProjectileSettings.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />
@@ -233,6 +244,7 @@
     <ClCompile Include="src\ACUAllocs.cpp" />
     <ClCompile Include="src\ACU_SoundUtils.cpp" />
     <ClCompile Include="src\Handles\Handles.cpp" />
+    <ClCompile Include="src\HomePage.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="misc\debuggers\SmallArray.natvis" />

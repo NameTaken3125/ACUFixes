@@ -5,7 +5,9 @@
 enum class MissionReplicationStyle : uint32
 {
 	MissionReplicationStyle_Inherit = 0,
+	MissionReplicationStyle_GlobalReplication = 1,
 	MissionReplicationStyle_NoReplication = 2,
+	MissionReplicationStyle_CabalReplication = 3,
 };
 class MissionReplicationPack : public Object
 {

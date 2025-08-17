@@ -52,5 +52,8 @@ public:
 	SharedPtrNew<Entity>* PCVersionNumber; //0x0150
 	SharedPtrNew<Entity>* shared_UI_GenMenu_MainNav_ListItem_WithMessage; //0x0158
 	char pad_0160[632]; //0x0160
+
+	// @helper_functions
+	static HomePage* GetSingleton();
 }; //Size: 0x03D8
 assert_sizeof(HomePage, 0x3D8);

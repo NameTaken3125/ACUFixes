@@ -231,4 +231,16 @@ public:
         ImGui::PopStyleVar();
     }
 };
+class Disabled
+{
+public:
+    Disabled(bool disabled = true)
+    {
+        ImGui::BeginDisabled(disabled);
+    }
+    ~Disabled()
+    {
+        ImGui::EndDisabled();
+    }
+};
 }

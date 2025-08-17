@@ -6,6 +6,18 @@
 
 class BoneModifier;
 
+enum class BoneMirroringType : uint32
+{
+	BONEMIRRORING_NONE = 0,
+	BONEMIRRORING_WORLD_TO_WORLD = 1,
+	BONEMIRRORING_WORLD_TO_PELVIS = 2,
+	BONEMIRRORING_PELVIS_TO_PELVIS = 3,
+	BONEMIRRORING_PELVIS_TO_BIPED = 4,
+	BONEMIRRORING_BIPED_TO_BIPED = 5,
+	BONEMIRRORING_WEAPONREF = 6,
+	BONEMIRRORING_COUNT = 7,
+
+};
 class Bone : public Object
 {
 public:
@@ -16,11 +28,11 @@ public:
 	Vector4f LocalRotation; //0x0040
 	Bone* FatherBone; //0x0050
 	Bone* MirrorBone; //0x0058
-	uint32 MirroringType; //0x0060
+	BoneMirroringType MirroringType; //0x0060
 	SmallArray<BoneModifier*> boneModifiers; //0x0064
 	char pad_0070[12]; //0x0070
 	uint32 WrinkleCategory; //0x007C
-	uint32 BoneID_boneNameHash; //0x0080
+	uint32 BoneID; //0x0080 // == CRC32 hash of bone's name
 	float WrinkleFactor; //0x0084
 	uint16 Index; //0x0088
 	uint16 ChildBoneCount; //0x008A

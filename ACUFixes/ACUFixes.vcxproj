@@ -213,6 +213,7 @@ if exist "$(ProjectDir)copy_output_to_directory.txt" (
     <ClCompile Include="src\AnimationTools\AnimGraphMods.cpp" />
     <ClCompile Include="src\AnimationTools\AnimGraphMods_BasicLayer.cpp" />
     <ClCompile Include="src\AnimationTools\Animtools_ImGui.cpp" />
+    <ClCompile Include="src\AnimationTools\SkeletonDumper.cpp" />
     <ClCompile Include="src\ImGui3D\UsefulWireModels.cpp" />
     <ClCompile Include="src\ParkourDebugging\AvailableParkourAction.cpp" />
     <ClCompile Include="src\ParkourDebugging\GenericHooksInParkourFiltering.cpp" />
