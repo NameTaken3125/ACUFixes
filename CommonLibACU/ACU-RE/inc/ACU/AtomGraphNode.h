@@ -8,21 +8,28 @@
 class AtomGraphNode;
 class AtomOutputPort;
 
-enum class AtomInputPort_BindingType
+enum class AtomInputPort_BindingType : uint32
 {
-	BT_RTCP = 0x0,
-	BT_ConstantBool = 0x2,
-	BT_ConstantFloat = 0x3,
-	BT_ConstantInteger = 0x4,
-	BT_OutputPortPointer = 0x9,
-	BT_SyncPortPointer = 0x11,
+	BT_RTCP = 0,
+	BT_ConstantAsset = 1,
+	BT_ConstantBool = 2,
+	BT_ConstantFloat = 3,
+	BT_ConstantInteger = 4,
+	BT_ConstantVector2 = 5,
+	BT_ConstantVector3 = 6,
+	BT_ConstantQuaternion = 7,
+	BT_OutputPortIndex = 8,
+	BT_OutputPortPointer = 9,
+	BT_SyncPortIndex = 10,
+	BT_SyncPortPointer = 11,
 	BT_Unused = 12,
+	BT_Invalid = 13,
 };
 class AtomInputPort
 {
 public:
 	// @members
-	uint32 BindingType; //0x0000
+	AtomInputPort_BindingType BindingType; //0x0000
 	char pad_0004[12]; //0x0004
 	AtomOutputPort* outputPortIfTypeEq9_graphVarIdxIfEq0; //0x0010
 	char pad_0018[8]; //0x0018

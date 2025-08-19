@@ -28,10 +28,10 @@ AtomAnimationDataNode& GraphStateNode_PushAnimationDataNode(AtomGraphStateNode& 
     node_animData->TagSynchronizationID = node_animData->DisplacementResultID;
 
     SmallArray_GameType_Reserve(node_animData->InputPorts, 4);
-    AtomInputPort* port0 = CreateInputPort(*node_animData, 4, 0);
-    AtomInputPort* port1 = CreateInputPort(*node_animData, 4, 0);
-    AtomInputPort* port2 = CreateInputPort(*node_animData, 2, 0);
-    AtomInputPort* port3 = CreateInputPort(*node_animData, 4, 0);
+    AtomInputPort* port0 = CreateInputPort(*node_animData, AtomInputPort_BindingType::BT_ConstantInteger, 0);
+    AtomInputPort* port1 = CreateInputPort(*node_animData, AtomInputPort_BindingType::BT_ConstantInteger, 0);
+    AtomInputPort* port2 = CreateInputPort(*node_animData, AtomInputPort_BindingType::BT_ConstantBool, 0);
+    AtomInputPort* port3 = CreateInputPort(*node_animData, AtomInputPort_BindingType::BT_ConstantInteger, 0);
     AtomOutputPort& defaultOutputPort = node_animData->OutputPorts[0];
     defaultOutputPort.graphNode = node_animData;
     node_animData->shared_Animation = &static_cast<SharedPtrNew<Animation>&>(FindOrMakeSharedBlockByHandleAndIncrementStrongRefcount(animHandle));
@@ -53,11 +53,11 @@ AtomAnimationRootNode& GraphStateNode_PushAnimationRootNode(AtomGraphStateNode& 
     graphStateNode.InstanceDataSize += 32;
 
     SmallArray_GameType_Reserve(node_animRoot->InputPorts, 5);
-    AtomInputPort* port0 = CreateInputPort(*node_animRoot, 9, 0);
-    AtomInputPort* port1 = CreateInputPort(*node_animRoot, 3, 0);
-    AtomInputPort* port2 = CreateInputPort(*node_animRoot, 3, 0);
-    AtomInputPort* port3 = CreateInputPort(*node_animRoot, 2, 0);
-    AtomInputPort* port4 = CreateInputPort(*node_animRoot, 2, 0);
+    AtomInputPort* port0 = CreateInputPort(*node_animRoot, AtomInputPort_BindingType::BT_OutputPortPointer, 0);
+    AtomInputPort* port1 = CreateInputPort(*node_animRoot, AtomInputPort_BindingType::BT_ConstantFloat, 0);
+    AtomInputPort* port2 = CreateInputPort(*node_animRoot, AtomInputPort_BindingType::BT_ConstantFloat, 0);
+    AtomInputPort* port3 = CreateInputPort(*node_animRoot, AtomInputPort_BindingType::BT_ConstantBool, 0);
+    AtomInputPort* port4 = CreateInputPort(*node_animRoot, AtomInputPort_BindingType::BT_ConstantBool, 0);
     AtomOutputPort& defaultOutputPort = *CreateOutputPort(*node_animRoot);
     node_animRoot->CurrentLengthOffset = 20;
     node_animRoot->CurrentRatioOffset = 24;
@@ -70,7 +70,7 @@ AtomAnimationRootNode& GraphStateNode_PushAnimationRootNode(AtomGraphStateNode& 
 }
 void AnimationRootNode_SetAnimationInput(AtomAnimationRootNode& animRoot, AtomAnimationDataBaseNode& animationInput)
 {
-    animRoot.InputPorts[0].BindingType = 9;
+    animRoot.InputPorts[0].BindingType = AtomInputPort_BindingType::BT_OutputPortPointer;
     animRoot.InputPorts[0].outputPortIfTypeEq9_graphVarIdxIfEq0 = &animationInput.OutputPorts[0];
 }
 AtomGraphStateNode& CreateGraphState_SimpleAnimation(uint64 animationHandle)
@@ -674,8 +674,8 @@ AtomLayeringInfo& LayeringState_CreateNewLayerWithStateMachine(AtomLayeringState
     newLayer->StateImplementation->parentNode_mb = &layeringState;
     SmallArrayAppend(newLayer->LayerMarkUpIDHierarchy, (uint32)0xFFFFFFFF);
     SmallArrayAppend(newLayer->LayerMarkUpIDHierarchy, (uint32)0xFFFFFFFF);
-    CreateInputPort(*layeringState.GraphNodes[0], 3, 1.0f);
-    CreateInputPort(*layeringState.GraphNodes[0], 3, 1.0f);
+    CreateInputPort(*layeringState.GraphNodes[0], AtomInputPort_BindingType::BT_ConstantFloat, 1.0f);
+    CreateInputPort(*layeringState.GraphNodes[0], AtomInputPort_BindingType::BT_ConstantFloat, 1.0f);
     return *newLayer;
 }
 

@@ -689,7 +689,7 @@ public:
             );
             auto _ind = IndentScoped();
             IDOFFSETS_PUSH_NODEREFERENCE(i * sizeof(AtomInputPort));
-            if (inp.BindingType == 9)
+            if (inp.BindingType == AtomInputPort_BindingType::BT_OutputPortPointer)
             {
                 IDOFFSETS_PUSH(offsetof(AtomInputPort, outputPortIfTypeEq9_graphVarIdxIfEq0));
                 AtomGraphNode* inpNode = inp.outputPortIfTypeEq9_graphVarIdxIfEq0->graphNode;
@@ -703,7 +703,7 @@ public:
                     }
                 }
             }
-            else if (inp.BindingType == 0)
+            else if (inp.BindingType == AtomInputPort_BindingType::BT_RTCP)
             {
                 ImGui::LogText(
                     "%s GraphVar: %d== %s\n"

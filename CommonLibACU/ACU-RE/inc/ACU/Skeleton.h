@@ -16,28 +16,129 @@ class ReflexSystem;
 class Skeleton : public ManagedObject
 {
 public:
-	enum class BipedBoneID : int32
-	{
-		BIPEDBONE_RIGHTHAND_WEAPON_REF = 1068652261,
-		BIPEDBONE_lEFTHAND_WEAPON_REF = -1453256445,
-	};
+    enum class BipedBoneID : uint32
+    {
+        BIPEDBONE_REFERENCE = 0x2c52cbb0,
+        BIPEDBONE_SPINE = 0x530ec1cb,
+        BIPEDBONE_SPINE1 = 0x8f39fa4e,
+        BIPEDBONE_SPINE2 = 0x1630abf4,
+        BIPEDBONE_NECK = 0x8023796d,
+        BIPEDBONE_HEAD = 0x7c159a2,
+        BIPEDBONE_LEFTCLAVICLE = 0xb898b609,
+        BIPEDBONE_LEFTARM = 0xeb830ada,
+        BIPEDBONE_LEFTFOREARM = 0x89b93a80,
+        BIPEDBONE_LEFTHAND = 0xb675f36c,
+        BIPEDBONE_LEFTHANDTHUMB1 = 0x78f4e1ac,
+        BIPEDBONE_LEFTHANDTHUMB2 = 0xe1fdb016,
+        BIPEDBONE_LEFTHANDTHUMB3 = 0x96fa8080,
+        BIPEDBONE_LEFTHANDINDEX1 = 0x1e679ed0,
+        BIPEDBONE_LEFTHANDINDEX2 = 0x876ecf6a,
+        BIPEDBONE_LEFTHANDINDEX3 = 0xf069fffc,
+        BIPEDBONE_LEFTHANDMIDDLE1 = 0x911fbacf,
+        BIPEDBONE_LEFTHANDMIDDLE2 = 0x816eb75,
+        BIPEDBONE_LEFTHANDMIDDLE3 = 0x7f11dbe3,
+        BIPEDBONE_LEFTHANDRING1 = 0xd34048cf,
+        BIPEDBONE_LEFTHANDRING2 = 0x4a491975,
+        BIPEDBONE_LEFTHANDRING3 = 0x3d4e29e3,
+        BIPEDBONE_LEFTHANDPINKY1 = 0xf4a6edbc,
+        BIPEDBONE_LEFTHANDPINKY2 = 0x6dafbc06,
+        BIPEDBONE_LEFTHANDPINKY3 = 0x1aa88c90,
+        BIPEDBONE_RIGHTCLAVICLE = 0x63d89144,
+        BIPEDBONE_RIGHTARM = 0x6bb3f727,
+        BIPEDBONE_RIGHTFOREARM = 0x7257a1aa,
+        BIPEDBONE_RIGHTHAND = 0x75f94d30,
+        BIPEDBONE_RIGHTHANDTHUMB1 = 0x9829becf,
+        BIPEDBONE_RIGHTHANDTHUMB2 = 0x120ef75,
+        BIPEDBONE_RIGHTHANDTHUMB3 = 0x7627dfe3,
+        BIPEDBONE_RIGHTHANDINDEX1 = 0xfebac1b3,
+        BIPEDBONE_RIGHTHANDINDEX2 = 0x67b39009,
+        BIPEDBONE_RIGHTHANDINDEX3 = 0x10b4a09f,
+        BIPEDBONE_RIGHTHANDMIDDLE1 = 0x45445772,
+        BIPEDBONE_RIGHTHANDMIDDLE2 = 0xdc4d06c8,
+        BIPEDBONE_RIGHTHANDMIDDLE3 = 0xab4a365e,
+        BIPEDBONE_RIGHTHANDRING1 = 0xdbf635c5,
+        BIPEDBONE_RIGHTHANDRING2 = 0x42ff647f,
+        BIPEDBONE_RIGHTHANDRING3 = 0x35f854e9,
+        BIPEDBONE_RIGHTHANDPINKY1 = 0x147bb2df,
+        BIPEDBONE_RIGHTHANDPINKY2 = 0x8d72e365,
+        BIPEDBONE_RIGHTHANDPINKY3 = 0xfa75d3f3,
+        BIPEDBONE_HIPS = 0xded10611,
+        BIPEDBONE_LEFTUPLEG = 0x176183f0,
+        BIPEDBONE_LEFTLEG = 0x60df401,
+        BIPEDBONE_LEFTFOOT = 0x58988870,
+        BIPEDBONE_LEFTFOOTTHUMB1 = 0x58b96dd,
+        BIPEDBONE_RIGHTUPLEG = 0x757f1291,
+        BIPEDBONE_RIGHTLEG = 0x863d09fc,
+        BIPEDBONE_RIGHTFOOT = 0x9b14362c,
+        BIPEDBONE_RIGHTFOOTTHUMB1 = 0xe556c9be,
+        BIPEDBONE_EYE_RIGHT = 0x18100292,
+        BIPEDBONE_EYE_LEFT = 0x1ce92143,
+        BIPEDBONE_EYELID_LEFT_DOWN = 0xa30bfd0f,
+        BIPEDBONE_EYELID_LEFT_UP = 0xfb157b83,
+        BIPEDBONE_EYELID_RIGHT_DOWN = 0xdfce215c,
+        BIPEDBONE_EYELID_RIGHT_UP = 0xa4c7c415,
+        BIPEDBONE_EYEBROW_LEFT_IN = 0xba3f21a8,
+        BIPEDBONE_EYEBROW_RIGHT_IN = 0x6e7e1e77,
+        BIPEDBONE_JAW = 0xfd854a47,
 
-	Vector4f RootBoneDefaultLocalPosition; //0x0010
-	Vector4f RootBoneDefaultLocalRotation; //0x0020
-	char pad_0030[4]; //0x0030
-	SmallArray<Bone*> Bones; //0x0034
-	Bone* RootBone; //0x0040
-	SharedPtrNew<BodyPartMapping>* shared_BodyPartMapping; //0x0048
-	SmallArray<SkeletonPoseGroup> PoseGroups; //0x0050
-	char pad_005C[4]; //0x005C
-	IKData* ikData; //0x0060
-	COMData* COMData_; //0x0068
-	SharedPtrNew<LookAtDataSkeletonDefinition>* shared_LookAtDataSkeletonDefinition; //0x0070
-	ReflexSystem* reflexSystem; //0x0078
-	uint32 SkeletonKey; //0x0080
-	uint32 SkeletonHierarchyKey; //0x0084
-	char pad_0088[1]; //0x0088
-	SmallArray<void*> arr89; //0x0089
-	char pad_0095[11]; //0x0095
+        BIPEDBONE_INVALID_ATTACHMENT_BONES_BEGIN = 0xffffffff,
+
+        BIPEDBONE_RIGHTHAND_WEAPON_REF = 0x3fb256e5,
+        BIPEDBONE_LEFTHAND_WEAPON_REF = 0xa9611103,
+        BIPEDBONE_P_LEFTWAIST_TAG = 0x3a835926,
+        BIPEDBONE_A_SMALLWEAPON_TAG = 0x60d2cd32,
+        BIPEDBONE_P_SMALLWEAPON = 0xd1a11d74,
+        BIPEDBONE_A_BLOODFX = 0xfb2e1c81,
+        BIPEDBONE_P_BOW_TAG = 0x95c93005,
+        BIPEDBONE_P_GENERIC_OBJECT_01 = 0xa63b524b,
+        BIPEDBONE_P_GENERIC_OBJECT_02 = 0x3f3203f1,
+        BIPEDBONE_P_GENERIC_OBJECT_03 = 0x48353367,
+        BIPEDBONE_P_GENERIC_OBJECT_04 = 0xd651a6c4,
+        BIPEDBONE_P_GENERIC_OBJECT_05 = 0xa1569652,
+        BIPEDBONE_I_LB_SKIRT = 0xe243588c,
+        BIPEDBONE_H_LB_SKIRT = 0xd8133b2,
+        BIPEDBONE_H_LB2_SKIRT = 0x40da34be,
+        BIPEDBONE_H_LF2_SKIRT = 0xc4903a44,
+        BIPEDBONE_I_RB_SKIRT = 0x8b727b95,
+        BIPEDBONE_H_RB_SKIRT = 0x64b010ab,
+        BIPEDBONE_H_RB2_SKIRT = 0x24d8ad5d,
+        BIPEDBONE_H_RF2_SKIRT = 0xa092a3a7,
+        BIPEDBONE_H_LB_FLAPS = 0x9a17b560,
+        BIPEDBONE_H_RB_FLAPS = 0xf3269679,
+        BIPEDBONE_H_BACK_FLAPS = 0x1249f0a3,
+        BIPEDBONE_P_LUTE_TAG = 0xeec0cb08,
+        BIPEDBONE_P_CROSSBOW = 0x8beba298,
+        BIPEDBONE_P_MUSKET = 0x13d5ca41,
+        BIPEDBONE_P_LEFT_HAND_PISTOL = 0xaa612425,
+        BIPEDBONE_A_PISTOL_L_TAG = 0xf6c97f9e,
+        BIPEDBONE_A_PISTOL_R_TAG = 0x2919567d,
+        BIPEDBONE_A_CHAINBLADE = 0xbf6d95c5,
+        BIPEDBONE_BJ_DRUMBONE = 0x998de5c2,
+        BIPEDBONE_A_KNIFE_L_TAG = 0x133da4d7,
+        BIPEDBONE_A_LONGWEAPON_BOTTOM_ALIGN = 0x6b5b2e9e,
+        BIPEDBONE_A_MUSKET_BOTTOM_ALIGN = 0xac234e99,
+        BIPEDBONE_A_HEAVYWEAPON_ALIGN = 0x555b255d,
+        BIPEDBONE_A_HEAVYSWORD_ALIGN = 0xe9317574,
+        BIPEDBONE_A_BLUNDERBUSS_ALIGN = 0x21b0b4fd,
+        BIPEDBONE_A_HIDDENBLADE_MASTER = 0x4b843810,
+    };
+
+    Vector4f RootBoneDefaultLocalPosition; //0x0010
+    Vector4f RootBoneDefaultLocalRotation; //0x0020
+    char pad_0030[4]; //0x0030
+    SmallArray<Bone*> Bones; //0x0034
+    Bone* RootBone; //0x0040
+    SharedPtrNew<BodyPartMapping>* shared_BodyPartMapping; //0x0048
+    SmallArray<SkeletonPoseGroup> PoseGroups; //0x0050
+    char pad_005C[4]; //0x005C
+    IKData* ikData; //0x0060
+    COMData* COMData_; //0x0068
+    SharedPtrNew<LookAtDataSkeletonDefinition>* shared_LookAtDataSkeletonDefinition; //0x0070
+    ReflexSystem* reflexSystem; //0x0078
+    uint32 SkeletonKey; //0x0080
+    uint32 SkeletonHierarchyKey; //0x0084
+    char pad_0088[1]; //0x0088
+    SmallArray<void*> arr89; //0x0089
+    char pad_0095[11]; //0x0095
 }; //Size: 0x00A0
 assert_sizeof(Skeleton, 0xA0);

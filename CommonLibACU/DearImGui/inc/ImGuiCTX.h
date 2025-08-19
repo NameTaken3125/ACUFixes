@@ -231,6 +231,7 @@ public:
         ImGui::PopStyleVar();
     }
 };
+// Make the UI compact because there are so many fields.
 class PushStyleCompact
 {
 public:

@@ -41,7 +41,7 @@ union InputPortPossibleValue_t
     InputPortPossibleValue_t(int integer) : integer(integer) {}
     InputPortPossibleValue_t(float flt) : flt(flt) {}
 };
-AtomInputPort* CreateInputPort(AtomGraphNode& graphNode, uint32 bindingType, InputPortPossibleValue_t value)
+AtomInputPort* CreateInputPort(AtomGraphNode& graphNode, AtomInputPort_BindingType bindingType, InputPortPossibleValue_t value)
 {
     AtomInputPort* newInport = ACU::Memory::SmallArray_GameType_Append(graphNode.InputPorts);
     newInport->BindingType = bindingType;

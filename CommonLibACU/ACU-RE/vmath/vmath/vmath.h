@@ -141,6 +141,7 @@ namespace VMATH_NAMESPACE
 #endif
 
 #define DEG2RAD(x) ((x * M_PI) / 180.0)
+#define RAD2DEG(x) ((x * 180.0) / M_PI)
 //#define EPSILON (4.37114e-07)
 
 const double epsilon = 4.37114e-05;
