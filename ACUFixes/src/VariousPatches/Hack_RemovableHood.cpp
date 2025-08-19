@@ -39,6 +39,26 @@ when the Hood mode changes in the Sequence 7, Mission 1: Cautious Alliance.
 #include "ACU/ACUGetSingletons.h"
 #include "ACU/Entity.h"
 #include "ACU/Visual.h"
+#include "ACU/Sound/ACU_SoundUtils.h"
+#include "ACU/ACUGlobalSoundSet.h"
+#include "ACU/AtomAnimComponent.h"
+#include "ACU/LODSelectorInstance.h"
+#include "ACU/Material.h"
+#include "ACU/ManagedPtrs/ManagedPtrs.h"
+#include "ACU/TypeInfo.h"
+#include "ACU_DefineNativeFunction.h"
+
+#include "AnimationTools/AtomGraphControls.h"
+#include "AnimationTools/Hack_RemovableHood_Animations.h"
+#include "Common_Plugins/AnimationGraphMods/RTCPVariableDescriptor.h"
+#include "Common_Plugins/ACU_InputUtils.h"
+
+#include "ImGuiConfigUtils.h"
+#include "Handles.h"
+#include "MainConfig.h"
+#include "Raycasting/RaycastPicker.h"
+
+#include "ImGuiCTX.h"
 
 constexpr uint64 Visual__VTable = 0x14309C7A0;
 Visual* FindVisualCpnt(Entity& entity, uint64 lodSelectorHandle)
@@ -57,7 +77,6 @@ Visual* FindVisualCpnt(Entity& entity, uint64 lodSelectorHandle)
     return nullptr;
 }
 
-#include "ACU_DefineNativeFunction.h"
 DEFINE_GAME_FUNCTION(Visual__ToggleVisibility, 0x1421F4DD0, int, __fastcall, (Visual* a1, unsigned char a2));
 DEFINE_GAME_FUNCTION(Visual__ToggleVisibility_P, 0x141CE1440, int, __fastcall, (Visual* a1, unsigned char a2));
 inline void ToggleVisualCpntVisibility(Visual& vis, bool doEnable)
@@ -249,8 +268,6 @@ void ToggleHoodVisuals(HoodVariation& hood, bool doPutHoodOn)
         EnableVisibilityForVisualCpnt(*player, handle, !doPutHoodOn);
     FindPlayerFaceComponentAndApplyTheMaterialWithoutTheFakeHoodShadow(*player, !doPutHoodOn);
 }
-#include "ACU/Sound/ACU_SoundUtils.h"
-#include "ACU/ACUGlobalSoundSet.h"
 void PlaySound_ToggleHood(Entity& player, bool doPutItOn)
 {
     auto* agss = ACUGlobalSoundSet::GetSingleton();
@@ -266,10 +283,6 @@ bool IsToggleHoodSoundEnabled()
 {
     return true;
 }
-#include "ACU/AtomAnimComponent.h"
-#include "AnimationTools/AtomGraphControls.h"
-#include "Common_Plugins/AnimationGraphMods/RTCPVariableDescriptor.h"
-#include "AnimationTools/Hack_RemovableHood_Animations.h"
 void PlayHoodAnimation(bool doPutHoodOn)
 {
     AtomAnimComponent* animCpnt = ACU::GetPlayerCpnt_AtomAnimComponent();
@@ -366,8 +379,6 @@ void StartToggleHood()
     if (IsToggleHoodSoundEnabled())
         PlaySound_ToggleHood(*player, !currentHood.m_isHoodOn);
 }
-#include "Common_Plugins/ACU_InputUtils.h"
-#include "MainConfig.h"
 void DoManualHoodControls()
 {
     if (!g_Config.hacks->hoodControls->isActive)
@@ -389,8 +400,6 @@ void DoManualHoodControls()
         StartToggleHood();
     }
 }
-#include "ACU/LODSelectorInstance.h"
-#include "ACU/Material.h"
 class MeshInstanceData;
 class Material;
 class FXMaterialOverlayContainer_10_0
@@ -466,21 +475,33 @@ void FindPlayerFaceComponentAndApplyTheMaterialWithoutTheFakeHoodShadow(Entity& 
         }
     }
 }
-#include "ImGuiConfigUtils.h"
-#include "Handles.h"
 void DrawEntityVisualsControls(Entity& entity)
 {
+    ImGuiCTX::PushStyleCompact _compact;
     static ImGuiTextBuffer fmt;
     for (Component* cpnt : entity.cpnts_mb)
     {
+        fmt.resize(0);
         if (*(uint64*)cpnt != Visual__VTable)
         {
+            TypeInfo& ti = cpnt->Unk028_GetTI();
+            fmt.appendf("%13llX ", cpnt);
+            if (ti.typeName)
+                fmt.append(ti.typeName);
+            ImGui::BulletText(fmt.c_str());
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("Click to copy to clipboard");
+            if (ImGui::IsItemClicked())
+            {
+                fmt.resize(0);
+                fmt.appendf("%llX", cpnt);
+                ImGui::SetClipboardText(fmt.c_str());
+            }
             continue;
         }
         Visual* vis = (Visual*)cpnt;
-        ImGui::PushID(vis);
+        ImGuiCTX::PushID _id(vis);
         bool isVisible = !vis->flags.isHidden;
-        fmt.clear();
         fmt.appendf(
             "%llu => %s"
             , vis->shared_LODSelector->handle
@@ -494,11 +515,8 @@ void DrawEntityVisualsControls(Entity& entity)
         {
             ImGui::SetClipboardText(fmt.c_str());
         }
-        ImGui::PopID();
     }
 }
-#include "ACU/ManagedPtrs/ManagedPtrs.h"
-#include "Raycasting/RaycastPicker.h"
 ACU::WeakRef<Entity> g_VisualCpntsControls_SelectedEntity;
 void RaycastPicker_PickEntityForVisualsToggles()
 {
@@ -539,6 +557,15 @@ void DrawPlayerVisualsControls()
         ent = sharedEnt.GetPtr();
     }
     if (!ent) { return; }
+    ImGui::Text("Entity: %llX", ent);
+    if (ImGui::IsItemHovered())
+        ImGui::SetTooltip("Click to copy to clipboard");
+    if (ImGui::IsItemClicked())
+    {
+        static ImGuiTextBuffer buf; buf.resize(0);
+        buf.appendf("%llX", ent);
+        ImGui::SetClipboardText(buf.c_str());
+    }
     DrawEntityVisualsControls(*ent);
 }
 void DrawHoodControls()

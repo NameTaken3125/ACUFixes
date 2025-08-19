@@ -231,6 +231,20 @@ public:
         ImGui::PopStyleVar();
     }
 };
+class PushStyleCompact
+{
+public:
+    PushStyleCompact()
+    {
+        ImGuiStyle& style = ImGui::GetStyle();
+        ImGui::PushStyleVarY(ImGuiStyleVar_FramePadding, (float)(int)(style.FramePadding.y * 0.60f));
+        ImGui::PushStyleVarY(ImGuiStyleVar_ItemSpacing, (float)(int)(style.ItemSpacing.y * 0.60f));
+    }
+    ~PushStyleCompact()
+    {
+        ImGui::PopStyleVar(2);
+    }
+};
 class Disabled
 {
 public:

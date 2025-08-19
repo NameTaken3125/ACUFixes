@@ -318,9 +318,23 @@ void FixReactionRadiusDatas()
             )
         {
             radiusDatas.radiusData_bombQuickdropped1.emplace(**radiusData_bombQuickdropped1);
-            (**radiusData_bombQuickdropped1).flts = { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
+            //(**radiusData_bombQuickdropped1).flts = { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
             radiusDatas.radiusData_bombQuickdropped2.emplace(**radiusData_bombQuickdropped2);
-            (**radiusData_bombQuickdropped2).flts = { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
+            //(**radiusData_bombQuickdropped2).flts = { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
+            auto& radData = (**radiusData_bombQuickdropped2);
+            // Warning: I used to change both of the "throw bomb"-related reaction datas,
+            // setting all 6 floats in each to 0.
+            // A strange side effect of this was a bug in one of the Paris Crowd Events,
+            // namely the one where two blue guards witness a murder of one civilian by another one
+            // (the latter usually wearing a purple vest and a top hat). It seems that this events uses one of the
+            // "throw bomb"-related hashes in the Events it emits, and when I reduce all the "radius values" to 1.0f,
+            // the blue guards just fail to notice the criminal standing just a couple of meters right in front of them,
+            // so he runs away, and the guards start investigating the dead body.
+            // With ACViewer and AnvilToolkit having recovered a bunch of class member names
+            // I'm able to make a smaller change, editing just the "ZCutoffUp" and "ZCutoffDown" values.
+            // This seems to be enough to have the desired effect on the "bomb thrown event"
+            // and doesn't have this strange crowd bug.
+            radData.flts.ZCutoffDown = radData.flts.ZCutoffUp = 1.0f;
         }
     }
     if (!radiusDatas.radiusData_hitSomeoneWithWristbow)

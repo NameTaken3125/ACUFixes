@@ -46,6 +46,7 @@ private:
     void DrawDetailsTab();
     void DrawActionTypesTab();
     void DrawEnforceTab();
+    void DrawNotesTab();
 
 
     void ResetWhenStartDrawFrame();
@@ -852,6 +853,15 @@ static void TeleportPlayer(const Vector3f& pos)
         ResetPlayer();
     }
 }
+extern const char* g_NotesAboutParkourCycle;
+void ParkourDebugWindow::DrawNotesTab()
+{
+    if (!ImGui::IsKeyDown(ImGuiKey_ModAlt))
+        ImGui::SetNextFrameWantCaptureMouse(true);
+    if (ImGui::Button("Copy to clipboard"))
+        ImGui::SetClipboardText(g_NotesAboutParkourCycle);
+    ImGui::Text(g_NotesAboutParkourCycle);
+}
 void ParkourDebugWindow::DrawEnforceTab()
 {
     if (!ImGui::IsKeyDown(ImGuiKey_ModAlt))
@@ -1225,6 +1235,9 @@ void ParkourDebugWindow::Draw()
             }
             if (ImGuiCTX::Tab _tabDisplay{ "Enforce" }) {
                 DrawEnforceTab();
+            }
+            if (ImGuiCTX::Tab _tabDisplay{ "Notes" }) {
+                DrawNotesTab();
             }
         }
     }
