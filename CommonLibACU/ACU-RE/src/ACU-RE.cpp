@@ -32,6 +32,7 @@
 #include "ACU/ELAbstract.h"
 #include "ACU/OLAbstract.h"
 #include "ACU/OLBallisticProjectile.h"
+#include "ACU/OLGenericBomb.h"
 #include "ACU/CLAbstract.h"
 #include "ACU/CLAssassin.h"
 
@@ -232,6 +233,7 @@
 #include "ACU/RagdollBoneData.h"
 #include "ACU/RagdollConstraintData.h"
 #include "ACU/RagdollNew.h"
+#include "ACU/GuidanceSystem.h"
 
 #include "ACU/FX.h"
 #include "ACU/FXProperty.h"

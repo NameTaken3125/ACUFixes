@@ -214,6 +214,8 @@
     <ClInclude Include="inc\ACU\ELAbstract.h" />
     <ClInclude Include="inc\ACU\OLAbstract.h" />
     <ClInclude Include="inc\ACU\BallisticProjectileSettings.h" />
+    <ClInclude Include="inc\ACU\GuidanceSystem.h" />
+    <ClInclude Include="inc\ACU\OLGenericBomb.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />
