@@ -31,7 +31,7 @@ std::optional<float> CalculateAdjustedRangeForCurrentRangedWeapon(Entity& player
 {
     WeaponComponent* wpnCpnt = FindCurrentRangedWeaponComponent(player);
     if (!wpnCpnt) { return {}; }
-    const bool isGuillotineGun = wpnCpnt->weaponCpntType == WeaponComponentType::GuillotineGun;
+    const bool isGuillotineGun = wpnCpnt->weaponCpntType == WeaponType::WeaponType_Mortar;
     if (isGuillotineGun)
     {
         return 20.0f;

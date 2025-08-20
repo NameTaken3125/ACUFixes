@@ -5,6 +5,7 @@
 
 #include <intrin.h>
 #include <string_view>
+#include <array>
 #include <fstream>
 #include <filesystem>
 namespace fs = std::filesystem;

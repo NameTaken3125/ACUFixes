@@ -21,6 +21,7 @@
 #include "ACU/WorldComponent.h"
 #include "ACU/MandatoryWorldComponent.h"
 #include "ACU/AIComponent.h"
+#include "ACU/CharacterBehavior.h"
 #include "ACU/BhvAssassin.h"
 #include "ACU/AbstractEntityAI.h"
 #include "ACU/CharacterAI.h"
@@ -144,6 +145,7 @@
 
 #include "ACU/BuildTags.h"
 #include "ACU/BuildTable.h"
+#include "ACU/EntityBuilder.h"
 
 #include "ACU/TagRules.h"
 #include "ACU/WorldTagRules.h"

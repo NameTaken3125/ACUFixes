@@ -43,25 +43,56 @@ public:
     char pad_0024[92]; //0x0024
 }; //Size: 0x0080
 
-
-enum class WeaponComponentType : uint32
+enum class WeaponType : uint32
 {
-    PhantomBlade = 0x18,
-    BerserkBlade = 0x1A,
-    Pistol = 0xB,
-    Rifle = 5,
-    Blunderbuss = 6,
-    GuillotineGun = 0x1D,
-
-    // There might also be some values to identify the melee weapon types.
+    WeaponType_Unarmed = 0,
+    WeaponType_Medium = 1,
+    WeaponType_Small = 2,
+    WeaponType_Heavy = 3,
+    WeaponType_Long = 4,
+    WeaponType_Musket = 5, // Rifle
+    WeaponType_Blunderbuss = 6,
+    WeaponType_Blunt = 7,
+    WeaponType_HiddenBlade = 8,
+    WeaponType_MediumBlunt = 9,
+    WeaponType_Crossbow = 10,
+    WeaponType_RightHolsterPistol = 11, // Pistol
+    WeaponType_Bow = 12,
+    WeaponType_ThrowingDagger = 13,
+    WeaponType_Arrow = 14,
+    WeaponType_Rock = 15,
+    WeaponType_Gun = 16,
+    WeaponType_AppleOfEden = 17,
+    WeaponType_RopeDart = 18,
+    WeaponType_LeftHolsterPistol = 19,
+    WeaponType_Explosive = 20,
+    WeaponType_LeftHandKnife = 21,
+    WeaponType_SnitchDrum = 22,
+    WeaponType_FreeAimGun = 23,
+    WeaponType_WristCrossbow = 24, // PhantomBlade
+    WeaponType_Bomb = 25,
+    WeaponType_BeserkDart = 26, // BerserkBlade
+    WeaponType_RiftMachineGun = 27,
+    WeaponType_RiftCrossbow = 28,
+    WeaponType_Mortar = 29, // GuillotineGun
+    WeaponType_LanternDLC = 30,
+    WeaponType_MaxWeaponType = 31,
 };
-
+enum class WeaponDesc
+{
+    WeaponDesc_None = 0,
+    WeaponDesc_Pistol_Silenced = 1,
+    WeaponDesc_Pistol_DoubleBarrel = 2,
+    WeaponDesc_Pistol_DuckFoot = 3,
+    WeaponDesc_Nightstick = 4,
+    WeaponDesc_MAX = 5,
+};
 class WeaponComponent : public EquippableComponent
 {
 public:
     // @members
     char pad_0030[64]; //0x0030
-    WeaponComponentType weaponCpntType; //0x0070
+    WeaponType weaponCpntType; //0x0070
     char pad_0074[4]; //0x0074
     SharedPtrNew<NetFightWeapon>* netFightWeapon; //0x0078
     char pad_0080[208]; //0x0080

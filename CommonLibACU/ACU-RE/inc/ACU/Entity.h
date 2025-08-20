@@ -151,6 +151,54 @@ class GameStateData;
 class Entity : public BaseEntity
 {
 public:
+    // @vtbl
+
+    virtual void Unk000() override;
+    virtual void Unk008() override;
+    virtual void Unk010_Deserialize(DeserializationStream* deserializationStream) override;
+    virtual Object* Unk018_Clone(uint64 a2, uint32 a3) override;
+    virtual void Unk020() override;
+    virtual TypeInfo& Unk028_GetTI() override;
+    virtual void Unk030();
+    virtual void Unk038();
+    virtual void Unk040();
+    virtual void Unk048();
+    virtual void Unk050();
+    virtual void Unk058();
+    virtual void Unk060();
+    virtual void Unk068();
+    virtual void Unk070();
+    virtual void Unk078();
+    virtual void Unk080();
+    virtual void Unk088();
+    virtual void Unk090();
+    virtual void Unk098();
+    virtual void Unk0A0();
+    virtual void Unk0A8();
+    virtual void Unk0B0();
+    virtual void Unk0B8();
+    virtual void Unk0C0();
+    virtual void Unk0C8();
+    virtual void Unk0D0();
+    virtual void Unk0D8();
+    virtual void Unk0E0();
+    virtual void Unk0E8();
+    virtual void Unk0F0();
+    virtual void Unk0F8();
+    virtual void Unk100();
+    virtual void Unk108();
+    virtual void Unk110();
+    virtual void Unk118();
+    virtual void Unk120();
+    virtual void Unk128();
+    virtual void Unk130();
+    virtual void Unk138();
+    virtual void Unk140();
+    virtual void Unk148();
+    virtual void Unk150();
+    virtual void Unk158();
+    virtual void Unk160();
+    virtual void Unk168_FindComponentThatsASubclassForTypeInfo(TypeInfo* ti, Component*& cpntOut);
 
     // @members
     SmallArray<Component*> cpnts_mb; //0x0078

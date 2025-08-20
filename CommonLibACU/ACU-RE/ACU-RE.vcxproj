@@ -175,8 +175,10 @@
     <ClInclude Include="inc\ACU\AtomStateExtension.h" />
     <ClInclude Include="inc\ACU\AvatarCustomizationManager.h" />
     <ClInclude Include="inc\ACU\BallisticProjectileSettings.h" />
+    <ClInclude Include="inc\ACU\CharacterBehavior.h" />
     <ClInclude Include="inc\ACU\DangerEvent.h" />
     <ClInclude Include="inc\ACU\ELAbstract.h" />
+    <ClInclude Include="inc\ACU\EntityBuilder.h" />
     <ClInclude Include="inc\ACU\FX.h" />
     <ClInclude Include="inc\ACU\FXElement.h" />
     <ClInclude Include="inc\ACU\FXProperty.h" />

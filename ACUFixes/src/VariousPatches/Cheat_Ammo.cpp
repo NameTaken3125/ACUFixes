@@ -2,6 +2,7 @@
 
 #include "Cheat_Ammo.h"
 
+#include "ACU/Human.h"
 #include "ACU/HumanStatesHolder.h"
 #include "ACU/ACUGetSingletons.h"
 #include "ACU/WeaponComponent.h"
@@ -10,10 +11,6 @@
 #include "ACU/ManagedPtrs/ManagedPtrs.h"
 #include "ACU_DefineNativeFunction.h"
 
-struct Human1C8
-{
-    uint64 vtbl;
-};
 DEFINE_GAME_FUNCTION(Entity__Get_Human1C8, 0x140C17A50, Human1C8*, __fastcall, (Entity* entity));
 DEFINE_GAME_FUNCTION(Human_1C8__DecreaseFirearmAmmo, 0x140C05780, void, __fastcall, (Human1C8* p_human1C8));
 DEFINE_GAME_FUNCTION(Human1C8__GetCurrentRangedWeaponShared_mb, 0x140C15130, ACU::StrongRef<Entity>*, __fastcall, (Human1C8* p_human1C8, ACU::StrongRef<Entity>&, char a3));

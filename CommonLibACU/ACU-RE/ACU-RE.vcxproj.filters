@@ -216,6 +216,8 @@
     <ClInclude Include="inc\ACU\BallisticProjectileSettings.h" />
     <ClInclude Include="inc\ACU\GuidanceSystem.h" />
     <ClInclude Include="inc\ACU\OLGenericBomb.h" />
+    <ClInclude Include="inc\ACU\CharacterBehavior.h" />
+    <ClInclude Include="inc\ACU\EntityBuilder.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp" />
