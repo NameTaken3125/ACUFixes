@@ -36,20 +36,198 @@ public:
         EntityDescriptor_FarObject = 0x04,
         EntityDescriptor_COUNT = 0x05,
     };
+    enum class EntityDescriptorNetworkType : uint32
+    {
+        EntityDescriptorNetworkType_Any = 0,
+        EntityDescriptorNetworkType_Local = 1,
+        EntityDescriptorNetworkType_Replica = 2,
+        EntityDescriptorNetworkType_Count = 3,
+    };
+    enum class EntityDescriptorNPCSubType : uint32
+    {
+        EntityDescriptorNPC_All = 0,
+        EntityDescriptorNPC_Templar = 1,
+        EntityDescriptorNPC_Peasant = 2,
+        EntityDescriptorNPC_Thief = 3,
+        EntityDescriptorNPC_Courtesan = 4,
+        EntityDescriptorNPC_Mercenary = 5,
+        EntityDescriptorNPC_Target = 6,
+        EntityDescriptorNPC_CityEventBourgeois = 7,
+        EntityDescriptorNPC_CityEventPickpocketeer = 8,
+        EntityDescriptorNPC_CityEventOfficial = 9,
+        EntityDescriptorNPC_Orator = 10,
+        EntityDescriptorNPC_Horse = 11,
+        EntityDescriptorNPC_Nurse = 12,
+        EntityDescriptorNPC_TemplarAchievement = 13,
+        EntityDescriptorNPC_Male_Present_Hardsole = 14,
+        EntityDescriptorNPC_Assassin = 15,
+        EntityDescriptorNPC_Harasser = 16,
+        EntityDescriptorNPC_CesareBorgia = 17,
+        EntityDescriptorNPC_WolfmenLeader = 18,
+        EntityDescriptorNPC_Animal = 19,
+        EntityDescriptorNPC_Haytham = 20,
+        EntityDescriptorNPC_HomesteadNPC = 21,
+        EntityDescriptorNPC_Drunk = 22,
+        EntityDescriptorNPC_NavalNPC = 23,
+        EntityDescriptorNPC_CartHorse = 24,
+        EntityDescriptorNPC_Criminal = 25,
+        EntityDescriptorNPC_Dealer = 26,
+        EntityDescriptorNPC_NewspaperBoy = 27,
+        EntityDescriptorNPC_Vigilantes = 28,
+        EntityDescriptorNPC_RiftNPC = 29,
+        EntityDescriptorNPC_FakeStationNPC = 30,
+        EntityDescriptorNPC_VillaNPC = 31,
+        EntityDescriptorNPC_GroupBhvDriver = 32,
+        EntityDescriptorNPC_UniqueNPC = 33,
+    };
+    enum class EntityDescriptorObjectSubType : uint32
+    {
+        EntityDescriptorObject_All = 0,
+        EntityDescriptorObject_Weapon = 1,
+        EntityDescriptorObject_Ladder = 2,
+        EntityDescriptorObject_Pole = 3,
+        EntityDescriptorObject_Rope = 4,
+        EntityDescriptorObject_Breakable = 5,
+        EntityDescriptorObject_Kiosk = 6,
+        EntityDescriptorObject_Scaffold = 7,
+        EntityDescriptorObject_HayStack = 8,
+        EntityDescriptorObject_HidingPlace = 9,
+        EntityDescriptorObject_Boat = 10,
+        EntityDescriptorObject_Horse_Hitch = 11,
+        EntityDescriptorObject_Wagon_Cart = 12,
+        EntityDescriptorObject_Wheel_Front = 13,
+        EntityDescriptorObject_Wheel_Rear = 14,
+        EntityDescriptorObject_CherryBomb = 15,
+        EntityDescriptorObject_TreasureChest = 16,
+        EntityDescriptorObject_WaterWell = 17,
+        EntityDescriptorObject_Bench = 18,
+        EntityDescriptorObject_SmokeBomb = 19,
+        EntityDescriptorObject_CornerSpin = 20,
+        EntityDescriptorObject_SpringJump = 21,
+        EntityDescriptorObject_Cannon = 22,
+        EntityDescriptorObject_Money = 23,
+        EntityDescriptorObject_CannonBall = 24,
+        EntityDescriptorObject_Lute = 25,
+        EntityDescriptorObject_BatteringRamUnit = 26,
+        EntityDescriptorObject_Tank = 27,
+        EntityDescriptorObject_GenericFocusableEntity = 28,
+        EntityDescriptorObject_Watercraft = 29,
+        EntityDescriptorObject_WatercraftControlPoint = 30,
+        EntityDescriptorObject_Snare = 31,
+        EntityDescriptorObject_Tripmine = 32,
+        EntityDescriptorObject_PowderKeg = 33,
+        EntityDescriptorObject_NavalFort = 34,
+        EntityDescriptorObject_NavalProjectileBarrier = 35,
+        EntityDescriptorObject_SwivelGun = 36,
+        EntityDescriptorObject_Bait = 37,
+        EntityDescriptorObject_ShipRowBoat = 38,
+        EntityDescriptorObject_FloatingPhysicObject = 39,
+        EntityDescriptorObject_PuzzleObject = 40,
+        EntityDescriptorObject_Tree = 41,
+        EntityDescriptorObject_StunGrenade = 42,
+        EntityDescriptorObject_Lantern = 43,
+        EntityDescriptorObject_Cart = 44,
+        EntityDescriptorObject_UsableObject = 45,
+        EntityDescriptorObject_NoCover = 46,
+        EntityDescriptorObject_BlendTrap = 47,
+        EntityDescriptorObject_RiftMachineGun = 48,
+        EntityDescriptorObject_RiftAutomaticMachineGun = 49,
+        EntityDescriptorObject_RiftTank = 50,
+        EntityDescriptorObject_ForceLowCover = 51,
+        EntityDescriptorObject_RiftAirplane = 52,
+        EntityDescriptorObject_RiftRelay = 53,
+        EntityDescriptorObject_RiftBallisticWeapon = 54,
+        EntityDescriptorObject_PowderReserve = 55,
+        EntityDescriptorObject_RiftWindObject = 56,
+        EntityDescriptorObject_CrowdAnimatedStation = 57,
+        EntityDescriptorObject_CrowdAttachableObject = 58,
+        EntityDescriptorObject_CrowdAnimatableObject = 59,
+        EntityDescriptorObject_RiftCrossbow = 60,
+        EntityDescriptorObject_RiftSearchLight = 61,
+        EntityDescriptorObject_AlarmBell = 62,
+        EntityDescriptorObject_CartHorse = 63,
+        EntityDescriptorObject_Count = 64,
+    };
+    enum class EntityDescriptorTreasureChestSubType : uint32
+    {
+        EntityDescriptorTreasureChest_None = 0,
+        EntityDescriptorTreasureChest_Small = 1,
+        EntityDescriptorTreasureChest_Large = 2,
+        EntityDescriptorTreasureChest_Small_Locked = 3,
+        EntityDescriptorTreasureChest_Large_Locked = 4,
+        EntityDescriptorTreasureChest_Lootable_Boat = 5,
+    };
+    enum class EntityDescriptorExplicitAnimal : uint32
+    {
+        EntityDescriptorExplicitAnimal_Any = 0,
+        EntityDescriptorExplicitAnimal_Wolf = 1,
+        EntityDescriptorExplicitAnimal_Bear = 2,
+        EntityDescriptorExplicitAnimal_Deer = 3,
+        EntityDescriptorExplicitAnimal_Dog = 4,
+        EntityDescriptorExplicitAnimal_Turkey = 5,
+        EntityDescriptorExplicitAnimal_Chicken = 6,
+        EntityDescriptorExplicitAnimal_Fox = 7,
+        EntityDescriptorExplicitAnimal_Cougar = 8,
+        EntityDescriptorExplicitAnimal_Cow = 9,
+        EntityDescriptorExplicitAnimal_GuardDog = 10,
+        EntityDescriptorExplicitAnimal_Bobcat = 11,
+        EntityDescriptorExplicitAnimal_Elk = 12,
+        EntityDescriptorExplicitAnimal_Hare = 13,
+        EntityDescriptorExplicitAnimal_Beaver = 14,
+        EntityDescriptorExplicitAnimal_Racoon = 15,
+        EntityDescriptorExplicitAnimal_Pig = 16,
+        EntityDescriptorExplicitAnimal_Cat = 17,
+        EntityDescriptorExplicitAnimal_Sheep = 18,
+        EntityDescriptorExplicitAnimal_Goat = 19,
+        EntityDescriptorExplicitAnimal_Max = 20,
+    };
+    enum class EntityDescriptorExplicitRiftNPC : uint32
+    {
+        EntityDescriptorExplicitRiftNPC_Soldier = 0,
+        EntityDescriptorExplicitRiftNPC_Agent = 1,
+        EntityDescriptorExplicitRiftNPC_Max = 2,
+    };
+    enum class EntityDescriptorExplicitRiftWindObject : uint32
+    {
+        EntityDescriptorExplicitRiftWindObject_WoodBarrel = 0,
+        EntityDescriptorExplicitRiftWindObject_WoodTable = 1,
+        EntityDescriptorExplicitRiftWindObject_Count = 2,
+    };
+    enum class EntityDescriptorExplicitVillaNPC : uint32
+    {
+        EntityDescriptorExplicitVillaNPC_Barista = 0,
+        EntityDescriptorExplicitVillaNPC_Gardener = 1,
+        EntityDescriptorExplicitVillaNPC_Maid = 2,
+        EntityDescriptorExplicitVillaNPC_Cook = 3,
+        EntityDescriptorExplicitVillaNPC_Intendant = 4,
+        EntityDescriptorExplicitVillaNPC_Max = 5,
+    };
+    enum class EntityDescriptorExplicitUniqueNPC : uint32
+    {
+        EntityDescriptorExplicitUniqueNPC_Napoleon = 0,
+        EntityDescriptorExplicitUniqueNPC_GuillotineVictim = 1,
+        EntityDescriptorExplicitUniqueNPC_MissionSpecific1 = 2,
+        EntityDescriptorExplicitUniqueNPC_MissionSpecific2 = 3,
+        EntityDescriptorExplicitUniqueNPC_MissionSpecific3 = 4,
+        EntityDescriptorExplicitUniqueNPC_MissionSpecific4 = 5,
+        EntityDescriptorExplicitUniqueNPC_MissionSpecific5 = 6,
+        EntityDescriptorExplicitUniqueNPC_Max = 7,
+    };
 
     EntityDescriptorType DescriptorType : 3;
     uint32 SubDescriptorType : 6;
     uint32 ExplicitProperty : 6;
     uint32 IsPickableByPlayer : 1;
     uint32 IsPickableByNPC : 1;
-
-    uint32 bits_0x11_0x13 : 3;
-
+    uint32 IsTargetable : 1;
+    EntityDescriptorNetworkType NetworkType : 2;
     uint32 ADBEntryID : 6;
     uint32 HasWideHips : 1;
 };
 const int x = sizeof(EntityDescriptor);
 assert_sizeof(EntityDescriptor, 4);
+
+#include "LODLevel.h"
 struct EntityFlags
 {
     enum class EntityCategory : uint64
@@ -88,43 +266,67 @@ struct EntityFlags
 
     bool_64 SkipGroupMatrixUpdate : 1;
     bool_64 IsGraphicsUnitTestCameraReferencePosition : 1;
-    uint64 bits_2_5 : (6 - 2);
+    bool_64 IsSpawned : 1;
+    bool_64 IsAutomaticallyRemovedFromWorld : 1;
+    bool_64 IsVisible : 1;
+    bool_64 WasVisible : 1;
     bool_64 IsPhantom : 1;
     bool_64 IsHidden : 1;
+
     bool_64 IsSmallObject : 1;
     bool_64 IsMediumObject : 1;
     uint64 RenderLast : 2;
     bool_64 ForceIncludedInReflection : 1;
     bool_64 ForceExcludedFromReflection : 1;
     bool_64 UsePlanarDistanceForGraphicObject : 1;
-    uint64 bits_15_23 : (24 - 15);
+    bool_64 WasHidden : 1;
+
+    bool_64 IsHiddenByInheritance : 1;
+    bool_64 HasMovedFromOrigin : 1;
+    bool_64 WasHiddenByAFakeEntity : 1;
+    bool_64 IsInitialized : 1;
+    LODLevel CurrentLODLevel : 3;
+    bool_64 LODLevelDirty : 1;
+
     bool_64 IsCharacter : 1;
     bool_64 ShadowCaster : 1;
     bool_64 ShadowReceiver : 1;
     bool_64 SunlightReceiver : 1;
     bool_64 DynamicLightsReceiver : 1;
-    uint64 bits_29_30 : (31 - 29);
+    bool_64 ForbidNotVisibleLODFromRagdoll : 1;
+    bool_64 HasSkeletonComponent : 1;
     bool_64 UseVisibilityQueries : 1;
+
     bool_64 VisibilityOccluder : 1;
     bool_64 AlwaysVisibilityOccluder : 1;
     bool_64 IgnoreOcclusionForLODLevel : 1;
+    bool_64 CanUsePreviousOcclusionForLODLevel : 1;
+    bool_64 CanUseOcclusionForLODLevel : 1;
+    bool_64 RequiresCullingInfo : 1;
+    bool_64 VisibleFromMultipleViews : 1;
+    bool_64 IgnoreUserCullingPlanes : 1;
 
-    uint64 bits_35_42 : (43 - 35);
-
+    bool_64 IsHiddenByUserCullingPlanes : 1;
+    bool_64 UseExactSkeletonUpdateThreadPath : 1;
+    bool_64 LockLODToNearest : 1;
     EntityCategory EntityCategory : 5;
+
     bool_64 UserMask1 : 1;
     bool_64 UserMask2 : 1;
     bool_64 UserMask3 : 1;
     bool_64 UserMask4 : 1;
     bool_64 UserMask5 : 1;
+    bool_64 OnEngineStartFlag : 1;
+    bool_64 HighResBulk : 1;
+    bool_64 ComputeDistanceFromCam : 1;
 
-    uint64 bits_53_57 : (58 - 53);
-
+    bool_64 ManuallySorted : 1;
+    bool_64 DistanceFromCameraOverriden : 1;
     bool_64 UIFlag : 1;
-
-    uint64 bits_59_61 : (62 - 59);
-
-    bool_64 prop_B0EF08A7 : 1;
+    bool_64 IsUIHUDMasked : 1;
+    bool_64 IsUIHUDMaskedByInheritance : 1;
+    bool_64 IsCullingFlagsValid : 1;
+    bool_64 ExcludeEntityBVFromParentGroupBV : 1;
     bool_64 NeverDynamicInStencil : 1;
 };
 assert_sizeof(EntityFlags, 8);

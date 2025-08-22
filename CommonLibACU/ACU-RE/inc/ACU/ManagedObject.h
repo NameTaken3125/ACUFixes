@@ -20,9 +20,11 @@ assert_sizeof(Object, 8);
 class ManagedObject : public Object
 {
 public:
-    uint32 bits_8_0_0x1C : 0x1C;
-    uint32 isComponentNotDisabled_mb : 1;
-    uint32 bits_8_0x1D_0x20 : 0x20 - 0x1D;
+    uint32 bits_8_0_0x1B : 0x1B;
+    uint32 OptimizedForHardwareInstancing : 1;
+    uint32 Active : 1;
+    uint32 IsInWorld : 1;
+    uint32 bits_8_0x1D_0x20 : 0x20 - 0x1E;
     char pad_000C[4]; //0x000C
 }; //Size: 0x0010
 assert_sizeof(ManagedObject, 0x10);

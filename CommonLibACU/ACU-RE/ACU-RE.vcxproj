@@ -187,6 +187,7 @@
     <ClInclude Include="inc\ACU\HomePage.h" />
     <ClInclude Include="inc\ACU\HUDModules.h" />
     <ClInclude Include="inc\ACU\HUDVisibilityManagerGame.h" />
+    <ClInclude Include="inc\ACU\LODLevel.h" />
     <ClInclude Include="inc\ACU\NetComponent.h" />
     <ClInclude Include="inc\ACU\OLAbstract.h" />
     <ClInclude Include="inc\ACU\OLBallisticProjectile.h" />

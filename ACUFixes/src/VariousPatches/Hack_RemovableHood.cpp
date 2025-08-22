@@ -481,9 +481,13 @@ void DrawEntityVisualsControls(Entity& entity)
     static ImGuiTextBuffer fmt;
     for (Component* cpnt : entity.cpnts_mb)
     {
+        ImGuiCTX::PushID _id{ cpnt };
         fmt.resize(0);
         if (*(uint64*)cpnt != Visual__VTable)
         {
+            //bool isNotDisabled = cpnt->Active;
+            //ImGui::Checkbox("##chb", &isNotDisabled);
+            //ImGui::SameLine();
             TypeInfo& ti = cpnt->Unk028_GetTI();
             fmt.appendf("%13llX ", cpnt);
             if (ti.typeName)
@@ -500,7 +504,6 @@ void DrawEntityVisualsControls(Entity& entity)
             continue;
         }
         Visual* vis = (Visual*)cpnt;
-        ImGuiCTX::PushID _id(vis);
         bool isVisible = !vis->flags.isHidden;
         fmt.appendf(
             "%llu => %s"
