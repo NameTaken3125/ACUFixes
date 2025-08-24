@@ -565,6 +565,7 @@ void ParkourDebugWindow::DrawModWeightSlider(std::optional<float>& modWeight)
 void ParkourDebugWindow::SetEnforcedAction(ParkourActionLogged& action)
 {
     parkourLog.m_EnforcedMove.m_ActionType = action.m_ActionType;
+    parkourLog.m_EnforcedMove.m_IsSetActionType = true;
     parkourLog.m_EnforcedMove.m_Position = action.m_LocationDst;
     parkourLog.m_EnforcedMove.m_DirectionFacingOut = action.m_DirDstFacingOut;
 }
@@ -870,7 +871,8 @@ void ParkourDebugWindow::DrawEnforceTab()
         "Hold Alt to _un_block game mouse.\n"
         "If a parkour action will be found at the given location (within the given radius)\n"
         "with the given facing direction it will be force selected.\n"
-        "Something might happen, might not."
+        "Something might happen, might not.\n"
+        "You can right click on a logged action in the Details tab to set that one as enforced."
     );
     {
         bool isNeedToReset = false;
@@ -879,7 +881,7 @@ void ParkourDebugWindow::DrawEnforceTab()
         if (isNeedToReset)
         {
             parkourLog.m_EnforcedMove.m_Position.reset();
-            parkourLog.m_EnforcedMove.m_ActionType.reset();
+            parkourLog.m_EnforcedMove.m_IsSetActionType = false;
         }
         ImGui::SameLine();
         if (ImGui::Button("Get unstuck"))
@@ -896,6 +898,13 @@ void ParkourDebugWindow::DrawEnforceTab()
                 "Press to attempt to reset the player character and teleport 3 meter above.\n"
                 "Might crash."
             );
+        ImGui::BulletText("Right click on a logged action in the Details tab to set that one as enforced");
+        ImGui::Checkbox("##isSetActionType", &parkourLog.m_EnforcedMove.m_IsSetActionType);
+        ImGui::SameLine();
+        std::optional<ImGuiCTX::Disabled> _disableEnumSelector;
+        if (!parkourLog.m_EnforcedMove.m_IsSetActionType)
+            _disableEnumSelector.emplace();
+        ImGui::DrawEnumPicker("Action type", parkourLog.m_EnforcedMove.m_ActionType, ImGuiComboFlags_HeightLargest);
     }
     std::optional<Vector3f> currentFramePos = parkourLog.m_EnforcedMove.m_Position;
     Vector3f currentFrameDir = parkourLog.m_EnforcedMove.m_DirectionFacingOut;

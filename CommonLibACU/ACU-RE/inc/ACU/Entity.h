@@ -334,10 +334,18 @@ assert_sizeof(EntityFlags, 8);
 class BoundingVolume
 {
 public:
-	uint32 Type; //0x0000
-	Vector3f Min; //0x0004
-	Vector3f Max; //0x0010
-	char pad_001C[12]; //0x001C
+    enum class BVType : uint32
+    {
+        AABBox = 0,
+        Sphere = 1,
+        OOBBox = 2,
+    };
+
+    // @members
+    BVType Type; //0x0000
+    Vector3f Min; //0x0004
+    Vector3f Max; //0x0010
+    char pad_001C[12]; //0x001C
 }; //Size: 0x0028
 assert_sizeof(BoundingVolume, 0x28);
 class DataLayerAction;
@@ -403,12 +411,14 @@ public:
     virtual void Unk168_FindComponentThatsASubclassForTypeInfo(TypeInfo* ti, Component*& cpntOut);
 
     // @members
+    ManagedObject* DataOwner; //0x0070
     SmallArray<Component*> cpnts_mb; //0x0078
     char pad_0084[4]; //0x0084
     EntityFlags flags88; //0x0088 // Read below.
     GameStateData* ResetData; //0x0090
     BoundingVolume BoundingVolume_; //0x0098
-    char pad_00C0[8]; //0x00C0
+    float Scale; // Offset: 0x00C0, Set(): 14059FB20
+    char pad_00C4[4]; //0x00C4
     DataLayerFilter DataLayerFilter_; //0x00C8
     EntityDescriptor EntityDescriptor_; //0x00D4
     char pad_00D8[88]; //0x00D8

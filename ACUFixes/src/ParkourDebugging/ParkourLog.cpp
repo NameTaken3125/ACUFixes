@@ -123,7 +123,7 @@ bool ParkourLog::EnforcedMove::IsMatchingAction(AvailableParkourAction& action)
 }
 AvailableParkourAction* ParkourLog::EnforcedMove::FindMatchingAction(SmallArray<AvailableParkourAction*>& allActionsSorted)
 {
-    if (!m_ActionType || !m_Position) return nullptr;
+    if (!m_IsSetActionType || !m_Position) return nullptr;
     AvailableParkourAction* bestAction = nullptr;
     float bestDistanceSqr = std::numeric_limits<float>::max();
     float radiusSqr = m_Radius * m_Radius;

@@ -107,6 +107,19 @@ public:
     virtual void Unk280();
     virtual void Unk288_ApplyCameraFX(__m128* p_cameraPosInOut, __m128* p_cameraQuatInOut, float* p_cameraFOVInOut);
 
+    enum class SubMenuOption
+    {
+        AimTarget = 0,
+        AltitudeFollow = 1,
+        Animation = 2,
+        AzimuthFollow = 3,
+        Curve = 4,
+        Framing = 5,
+        Target = 6,
+        SideOffset = 7,
+        NBOption = 8,
+    };
+
     // @members
     char pad_0120[1936]; //0x0120
     Vector4f locationMovetoward_mb; //0x08B0

@@ -8,9 +8,27 @@ bool DrawEnumPicker(const char* label, EnumType& currentValueInOut, ImGuiComboFl
     auto itemsStrings = enum_reflection<EnumType>::GetAllStrings();
     auto itemsValues = enum_reflection<EnumType>::GetAllValues();
     auto it = std::find(itemsValues.begin(), itemsValues.end(), currentValueInOut);
-    int item_current_idx = (int)(it - itemsValues.begin());                    // Here our selection data is an index.
-    if (ImGui::BeginCombo(label, itemsStrings[item_current_idx], flags))
+    const bool isInvalidValue = it == itemsValues.end();
+
+    const char* strCurrentValue = nullptr;
+    int item_current_idx{ -1 };
+    std::string strInvalidValue;
+    if (!isInvalidValue)
     {
+        item_current_idx = (int)(it - itemsValues.begin());                    // Here our selection data is an index.
+    }
+    else
+    {
+        std::stringstream ss;
+        ss << "INVALID VALUE: 0x" << std::hex << (unsigned long long)currentValueInOut;
+        strInvalidValue = ss.str();
+    }
+    const char* preview_value = isInvalidValue ? strInvalidValue.c_str() : itemsStrings[item_current_idx];
+
+    if (ImGui::BeginCombo(label, preview_value, flags))
+    {
+        if (isInvalidValue)
+            ImGui::Selectable(strInvalidValue.c_str(), true);
         for (int n = 0; n < itemsStrings.size(); n++)
         {
             const bool is_selected = (item_current_idx == n);

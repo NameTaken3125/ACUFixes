@@ -152,6 +152,7 @@ namespace ParkourActionKnownFancyVFuncs
     DEFINE_FANCY_VF(0x3D, Set2FloatsAfterCreation, 0xB6319102, float (*)(AvailableParkourAction*, float a2, float p_epsilon_mb));
     DEFINE_FANCY_VF(0x45, GetEnumParkourAction, 0x986EB60D, EnumParkourAction(*)(AvailableParkourAction*));
     DEFINE_FANCY_VF(0x4B, InitialTestIfActionFits, 0x3DD63101, bool (*)(AvailableParkourAction*, __m128* a2, __m128* a3, __m128* a4, float a5, __int64 a6, __int64 a7, Entity* p_player, AvailableParkourAction* p_previousAction_mb));
+    DEFINE_FANCY_VF(0x4E, FinalFilter2, 0x323150BF, bool (*)(AvailableParkourAction*));
     // See 1401AD4E0: Multiple RTCP variables (like the "scalar TargetDistance; // 0x97a0d819/2543900697")
     // are being set.
     DEFINE_FANCY_VF(0x54, GetTargetDistance, 0x349D0508, float (*)(AvailableParkourAction*, Entity*));
@@ -170,6 +171,7 @@ namespace ParkourActionKnownFancyVFuncs
     DEFINE_FANCY_VF(0x70, QuickCheckAcceptableDistanceRanges, 0x228CB41C, bool (*)(AvailableParkourAction*, EnumParkourMode p_parkourMode));
     DEFINE_FANCY_VF(0x72, QuickCheckAcceptableTargetObjectType_mb, 0xB7D5270B, bool (*)(AvailableParkourAction*, __int64 p_parkourProbe));
     DEFINE_FANCY_VF(0x73, QuickCheckAcceptableParkourMode, 0x081284CA, bool (*)(AvailableParkourAction*, EnumParkourMode p_parkourMode));
+    DEFINE_FANCY_VF(0x76, FinalFilter1, 0xF0455AE0, bool (*)(AvailableParkourAction*));
 
 #undef DEFINE_FANCY_VF
 }

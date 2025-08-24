@@ -13,6 +13,13 @@ assert_sizeof(ITargetPrecision, 0x28);
 class ThrowTargetPrecision : public ITargetPrecision
 {
 public:
+    enum class PrecisionType
+    {
+        PT_Position = 0,
+        PT_Orientation = 1,
+        PT_PositionOrientation = 2,
+    };
+
     char pad_0028[8]; //0x0028
     Vector4f trackerCrawlsTowardPredictorBeamEnd; //0x0030
     char pad_0040[36]; //0x0040

@@ -100,7 +100,8 @@ public:
         std::optional<Vector3f> m_Position;
         Vector3f m_DirectionFacingOut = { 0, 0, 1 };
         float m_Radius = 0.25f;
-        std::optional<EnumParkourAction> m_ActionType;
+        bool m_IsSetActionType = false;
+        EnumParkourAction m_ActionType = EnumParkourAction::unk0;
 
         bool IsMatchingAction(AvailableParkourAction& action);
         AvailableParkourAction* FindMatchingAction(SmallArray<AvailableParkourAction*>& allActionsSorted);

@@ -13,7 +13,7 @@ public:
     char pad_0010[16]; //0x0010
     Matrix4f mainTransform; //0x0020
     World* world; //0x0060
-    char pad_0068[16]; //0x0068
+    char pad_0068[8]; //0x0068
 
     // @helper_functions
     Matrix4f& GetTransform() { return mainTransform; }
@@ -21,4 +21,4 @@ public:
     Vector3f GetDirectionRight() { return (Vector3f&)mainTransform[4 * 0]; }
     Vector3f GetDirectionForward() { return (Vector3f&)mainTransform[4 * 1]; }
 }; //Size: 0x0078
-assert_sizeof(BaseEntity, 0x78);
+assert_sizeof(BaseEntity, 0x70);

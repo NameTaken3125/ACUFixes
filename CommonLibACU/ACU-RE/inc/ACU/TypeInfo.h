@@ -13,36 +13,56 @@ public:
     enum class PrimitiveType : uint32
     {
         TIPT_Bool = 0,
-        TIPT_Byte = 3,
-        TIPT_Word = 5,
-        TIPT_Dword = 7,
+        TIPT_ByteOnlyUsedInTestEvent = 1,
+        TIPT_SInt8 = 2,
+        TIPT_UInt8 = 3,
+        TIPT_SInt16 = 4,
+        TIPT_UInt16 = 5,
+        TIPT_SInt32 = 6,
+        TIPT_UInt32 = 7,
+        TIPT_SInt64 = 8,
+        TIPT_UInt64 = 9,
         TIPT_Float = 0xA,
-        TIPT_Vector3 = 0xD,
-        TIPT_Quat = 0xE,
+        TIPT_Vector2 = 0xB,
+        TIPT_Vector3 = 0xC,
+        TIPT_Vector4 = 0xD,
+        TIPT_Quaternion = 0xE,
         TIPT_Matrix4 = 0x10,
+        TIPT_ObjectID = 0x11, // Just a uint64 handle, I think.
         TIPT_WeakPtr = 0x12,
-        TIPT_RawPtr = 0x14,
+        TIPT_InstanceSubclassObject = 0x13,
+        TIPT_RawPtrSubclassObject = 0x14,
+        TIPT_RawPtr = 0x15,
         TIPT_Instance = 0x16,
+        TIPT_InlineArray = 0x17,
+        TIPT_BigArray = 0x18,
         TIPT_Enum = 0x19,
         TIPT_String = 0x1A,
+        TIPT_LString = 0x1B,
         TIPT_StrongPtr = 0x1C,
-        //TIPT_SmallArray_RawPtr = 0xA1D; // Only appears as the dword_C << 16
-        //TIPT_SmallArray_Instance = 0xB1D; // Only appears as the dword_C << 16
-        //TIPT_SmallArray_StrongPtr = 0xE1D; // Only appears as the dword_C << 16
+        TIPT_SmallArrayObjectPtr = 0x1D,
+        TIPT_SloppyHandle = 0x1E, // Wut? The deserialization looks to me like a normal WeakRef.
     };
     uint32 bits_0_0_0x19 : 0x19;
     uint32 isDeserialized_mb : 1;
     uint32 bits_0_0x1A_0x20 : 0x20 - 0x1A;
     uint32 memberNameHash; //0x0004
     uint32 typeNameHash; //0x0008
-    uint32 bits_0xC_0_0x10 : 0x10;
-    PrimitiveType primitiveTypeAgainCanAlsoDescribeModifiers : 12;
+
+    uint32 sizeOfInlineArray : 0x10;
+    PrimitiveType primitiveTypeAgainCanAlsoDescribeArrays : 5;
+    uint32 bits_0xC_0_0x10 : 0x20 - 0x10 - 5;
+
     PrimitiveType primitiveType : 5;
     uint32 offsetInBitfield : 6;
-    uint32 bitWidthInBitfield : 3;
-    uint32 bits_0x10_0xB_0x12 : 0x12 - 0xE;
+    uint32 bitWidthInBitfield : 5;
+    uint32 bits_0x10_0x10_0x12 : 0x12 - 0x10;
     uint32 offsetInStruct : 0x20 - 0x12;
-    char pad_0014[36]; //0x0014
+    char pad_0014[4]; //0x0014
+    void* fnGet18; //0x0018
+    void* fnGet20; //0x0020
+    void* fnSet28; //0x0028
+    void* fnSet30; //0x0030
 }; //Size: 0x0038
 assert_sizeof(TypeInfo_ClassMember, 0x38);
 

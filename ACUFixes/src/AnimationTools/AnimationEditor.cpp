@@ -903,10 +903,63 @@ static void AppendTrackName(ImGuiTextBuffer& buf, uint32 trackID)
     }
     buf.appendf("%x", trackID);
 }
+#include "ACU/SkeletonComponent.h"
+#include "ACU/Entity.h"
+#include "ACU/ACUGetSingletons.h"
+#include "ImGui3D/ImGui3D.h"
+constexpr uint64 vtbl_SkeletonComponent = 0x142E76630;
+static SkeletonComponent* GetEntityCpnt_SkeletonComponent(Entity& entity)
+{
+    return static_cast<SkeletonComponent*>(entity.FindComponentByVTBL(vtbl_SkeletonComponent));
+}
+DEFINE_GAME_FUNCTION(BoneHandle__Get_GlobalPosition, 0x140030030, void, __fastcall, (BoneHandle* a1, __m128* posOut));
+void AnimEditor_Draw3D::DrawBoneIfFound(SkeletonComponent& skelCpnt, uint32 boneID)
+{
+    for (BoneHandle& bh : skelCpnt.BoneInstances)
+    {
+        if (bh.BoneID != boneID) continue;
+
+        __m128 pos{ 0 };
+        BoneHandle__Get_GlobalPosition(&bh, &pos);
+        ImGui3D::DrawLocationOnce((Vector3f&)pos, m_MarkerSize);
+        break;
+    }
+}
+void AnimEditor_Draw3D::DrawBonesThatAreUsedInAnimation(Entity& ent, Animation& anim)
+{
+    auto* skelCpnt = GetEntityCpnt_SkeletonComponent(ent); if (!skelCpnt) return;
+    for (uint16 i = 0; i < anim.rawTracks.size; i++)
+    {
+        uint32 trackID = anim.AnimTrackData_->AnimTrackDataMapping_[i].TrackID;
+        DrawBoneIfFound(*skelCpnt, trackID);
+    }
+}
+void AnimEditor_Draw3D::DoDraw()
+{
+    if (!m_Enabled) return;
+    Animation* anim = m_AnimEditor.m_editedAnim.GetPtr();
+    if (!anim)
+    {
+        return;
+    }
+    if (auto* player = ACU::GetPlayer())
+        DrawBonesThatAreUsedInAnimation(*player, *anim);
+}
+AnimationEditor::AnimationEditor()
+    : m_Draw3D(*this)
+{
+    ImGui3D::CustomDraw::CustomDraw_Subscribe(m_Draw3D);
+}
+AnimationEditor::~AnimationEditor()
+{
+    ImGui3D::CustomDraw::CustomDraw_Unsubscribe(m_Draw3D);
+}
+
 ResultEditedKeyframe_t DrawAnimationEditor(Animation& anim)
 {
     ResultEditedKeyframe_t resultKeyframe;
     ImGuiTextBuffer buf;
+    ImGuiCTX::PushStyleCompact _compact;
     for (uint16 i = 0; i < anim.rawTracks.size; i++)
     {
         buf.clear();
@@ -1090,6 +1143,17 @@ void ImportAnimationTracksFromJSON_KeepOthers(Animation& anim, json::JSON& jsonA
 }
 void AnimationEditor::Draw()
 {
+    ImGui::Separator();
+    ImGui::Checkbox("Draw Player Bones used in this animation", &m_Draw3D.m_Enabled);
+    if (m_Draw3D.m_Enabled)
+    {
+        ImGui::SliderFloat("##markerSize", &m_Draw3D.m_MarkerSize, 0.01f, 0.1f, "Marker size: %.3f");
+    }
+    else
+    {
+        ImGui::Dummy(ImVec2{ 0, ImGui::GetFrameHeight() });
+    }
+    ImGui::Separator();
     static AnimationPicker picker;
     picker.Draw("Pick animation to edit", m_editedAnim);
     if (Animation* anim = m_editedAnim.GetPtr())
